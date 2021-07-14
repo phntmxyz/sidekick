@@ -1,0 +1,14 @@
+name: sidekick_vault
+
+environment:
+  sdk: '>=2.12.0 <3.0.0'
+
+dependencies:
+  sidekick_core: '>=0.1.0 <1.0.0'
+
+dependency_overrides:
+  sidekick_core:
+    path: ../sidekick_core
+
+dev_dependencies:
+  lint: ^1.5.0
