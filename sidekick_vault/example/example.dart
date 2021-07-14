@@ -11,4 +11,5 @@ void main() {
   final secret = vault.loadText('secret.txt');
 
   // Use secret on your CI to do magic things
+  print(secret);
 }
