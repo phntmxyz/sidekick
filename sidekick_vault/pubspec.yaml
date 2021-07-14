@@ -8,10 +8,11 @@ environment:
 
 dependencies:
   sidekick_core: '>=0.1.0 <1.0.0'
+  dcli: ^1.7.1
 
-dependency_overrides:
-  sidekick_core:
-    path: ../sidekick_core
+#dependency_overrides:
+#  sidekick_core:
+#    path: ../sidekick_core
 
 dev_dependencies:
   lint: ^1.5.0
