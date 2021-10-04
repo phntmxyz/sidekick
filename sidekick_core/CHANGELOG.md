@@ -1,3 +1,7 @@
+## 0.3.1
+
+- `AnalayzeCommand` now fails with correct exit code
+
 ## 0.3.0
 
 - Include `ForwardCommand` and add `flutterw`, `dart` and `analyze` subcommands
