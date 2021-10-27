@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:sidekick_core/sidekick_core.dart';
 
 /// Makes the `dart` command available as subcommand

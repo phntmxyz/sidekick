@@ -1,8 +1,8 @@
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
-import 'package:sidekick/src/init/project_structure_detector.dart';
 import 'package:dartx/dartx_io.dart';
+import 'package:sidekick/src/init/project_structure_detector.dart';
 
 class InitCommand extends Command {
   @override
@@ -12,7 +12,9 @@ class InitCommand extends Command {
   String get name => 'init';
 
   InitCommand() {
-    argParser.addOption('path', help: 'The path to the Dart/Flutter project the sidekick cli should be created for');
+    argParser.addOption('path',
+        help:
+            'The path to the Dart/Flutter project the sidekick cli should be created for');
   }
 
   @override
@@ -33,20 +35,22 @@ class InitCommand extends Command {
     }();
 
     final detector = ProjectStructureDetector();
-    final type = await detector.detectProjectType(projectDir);
+    final type = detector.detectProjectType(projectDir);
 
     switch (type) {
       case ProjectStructure.simple:
         throw 'A simple project layout is not yet supported';
-      case ProjectStructure.multi_package:
+      case ProjectStructure.multiPackage:
         throw 'The multi package project layout is not yet supported';
-      case ProjectStructure.root_with_packages:
+      case ProjectStructure.rootWithPackages:
         print('Detected a Dart/Flutter project with a /packages dictionary');
         createSidekickPackage(path: projectDir.directory('packages/sidekick'));
         break;
       case ProjectStructure.unknown:
-        print('The project structure is not yet supported.'
-            'Please open an issue at https://github.com/phntmxyz/sidekick/issues with details about your project structure');
+        print(
+          'The project structure is not yet supported. '
+          'Please open an issue at https://github.com/phntmxyz/sidekick/issues with details about your project structure',
+        );
         exit(1);
     }
   }

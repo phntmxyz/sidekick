@@ -35,7 +35,8 @@ void initializeSidekick({
   _cliName = name;
   _repository = findRepository();
   if (mainProjectPath != null) {
-    _mainProject = DartPackage.fromDirectory(repository.root.directory(mainProjectPath));
+    _mainProject =
+        DartPackage.fromDirectory(repository.root.directory(mainProjectPath));
   }
 }
 
@@ -66,7 +67,9 @@ Repository? _repository;
 /// This has to be set by the
 DartPackage get mainProject {
   if (_mainProject == null) {
-    error('mainProject is not initialized. Set mainProjectPath when calling initializeSidekick();');
+    error(
+      'mainProject is not initialized. Set mainProjectPath when calling initializeSidekick();',
+    );
   }
   return _mainProject!;
 }

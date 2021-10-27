@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:sidekick_core/sidekick_core.dart';
 
 /// Makes the `flutter` command available as subcommand
@@ -7,7 +5,8 @@ import 'package:sidekick_core/sidekick_core.dart';
 /// Links to the embedded flutter, not flutter installed on the system
 class FlutterCommand extends ForwardCommand {
   @override
-  final String description = 'Use the Flutter SDK associated with the project (Calls flutterw).\n'
+  final String description =
+      'Use the Flutter SDK associated with the project (Calls flutterw).\n'
       'Can be used inside packages instead of calling ./../../flutterw';
 
   @override

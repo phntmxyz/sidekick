@@ -6,21 +6,21 @@ class ProjectStructureDetector {
   ProjectStructure detectProjectType(Directory dir) {
     print('Analyzing project in ${dir.path}');
     final pubspec = dir.file('pubspec.yaml');
-    bool hasToplevelPubspecYaml = pubspec.existsSync();
+    final hasToplevelPubspecYaml = pubspec.existsSync();
 
     final packagesDir = dir.directory('packages');
-    bool hasPackagesDir = packagesDir.existsSync();
+    final hasPackagesDir = packagesDir.existsSync();
 
     if (hasToplevelPubspecYaml && !hasPackagesDir) {
       return ProjectStructure.simple;
     }
 
     if (!hasToplevelPubspecYaml && hasPackagesDir) {
-      return ProjectStructure.multi_package;
+      return ProjectStructure.multiPackage;
     }
 
     if (hasToplevelPubspecYaml && hasPackagesDir) {
-      return ProjectStructure.root_with_packages;
+      return ProjectStructure.rootWithPackages;
     }
 
     return ProjectStructure.unknown;
@@ -33,10 +33,10 @@ enum ProjectStructure {
   simple,
 
   /// Repo with a top-level `packages` directory, containing all packages
-  multi_package,
+  multiPackage,
 
   /// A single flutter project in root, with multiple packages in `packages`
-  root_with_packages,
+  rootWithPackages,
 
   /// A, so far, unknown project structure
   unknown,

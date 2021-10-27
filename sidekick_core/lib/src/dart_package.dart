@@ -81,7 +81,9 @@ class DartPackage {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is DartPackage && runtimeType == other.runtimeType && root.path == other.root.path;
+      other is DartPackage &&
+          runtimeType == other.runtimeType &&
+          root.path == other.root.path;
 
   @override
   int get hashCode => root.path.hashCode;

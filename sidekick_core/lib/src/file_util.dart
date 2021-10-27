@@ -2,7 +2,11 @@ import 'package:sidekick_core/sidekick_core.dart';
 
 extension FileModifier on File {
   /// Replaces the content between [startTag] and [endTag] with [content]
-  void replaceSectionWith({required String startTag, required String endTag, required String content}) {
+  void replaceSectionWith({
+    required String startTag,
+    required String endTag,
+    required String content,
+  }) {
     final original = readAsStringSync();
     final startIndex = original.indexOf(startTag);
     if (startIndex == -1) {
@@ -34,7 +38,11 @@ extension FileModifier on File {
     if (startIndex == -1) {
       throw "String '$text' not found in ${absolute.path}";
     }
-    final mutated = original.replaceRange(startIndex, startIndex + text.length, replacement);
+    final mutated = original.replaceRange(
+      startIndex,
+      startIndex + text.length,
+      replacement,
+    );
     writeAsStringSync(mutated);
   }
 

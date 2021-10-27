@@ -1,0 +1,31 @@
+name: Dart Analyzer
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+
+    strategy:
+      fail-fast: false
+      matrix:
+        package: [ "sidekick", "sidekick_core", "sidekick_vault" ]
+
+    container:
+      image: google/dart:2.14
+
+    steps:
+      - uses: actions/checkout@v1
+      - name: Install dependencies
+        run: cd "${{ matrix.package }}" && dart pub get --no-precompile
+      - name: lint
+        run: cd "${{ matrix.package }}" && dart analyze --fatal-infos
+      - name: docs
+        run: |
+             dart pub global activate dartdoc
+             cd "${{ matrix.package }}" && $HOME/.pub-cache/bin/dartdoc
+      - name: Verify package completness
+        run: cd "${{ matrix.package }}" && dart pub publish -n

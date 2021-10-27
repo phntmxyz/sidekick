@@ -1,0 +1,17 @@
+name: Dart Format
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+
+    container:
+      image: google/dart:2.14
+
+    steps:
+      - uses: actions/checkout@v1
+      - name: check formatting
+        run: dart format --fix --output none --set-exit-if-changed .

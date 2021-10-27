@@ -1,8 +1,6 @@
-import 'dart:io';
-
 import 'package:dcli/dcli.dart' as dcli;
-import 'package:sidekick_vault/src/gpg.dart';
 import 'package:sidekick_core/sidekick_core.dart';
+import 'package:sidekick_vault/src/gpg.dart';
 
 /// Grants access to project secrets stored gpg encrypted in this repository
 class SidekickVault {
@@ -14,7 +12,10 @@ class SidekickVault {
   /// i.e. FLT_VAULT_PASSPHRASE
   final String environmentVariableName;
 
-  SidekickVault({required this.location, required this.environmentVariableName});
+  SidekickVault({
+    required this.location,
+    required this.environmentVariableName,
+  });
 
   String? _passphrase;
 
@@ -54,5 +55,10 @@ String getEnvPassword(String envKey, [String? name]) {
   if (password != null) {
     return password;
   }
-  return dcli.ask('Enter ${name ?? envKey} password (or provide env.$envKey):', hidden: true).trim();
+  return dcli
+      .ask(
+        'Enter ${name ?? envKey} password (or provide env.$envKey):',
+        hidden: true,
+      )
+      .trim();
 }

@@ -1,0 +1,23 @@
+name: sidekick CLI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        version: ["2.12", "2.13", "dev"]
+
+    container:
+      image: google/dart:${{ matrix.version }}
+
+    steps:
+      - uses: actions/checkout@v1
+      - name: Install dependencies
+        run: cd sidekick && dart pub get --no-precompile
+      - name: Run tests
+        run: cd sidekick && dart test

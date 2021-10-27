@@ -9,5 +9,6 @@ Future<void> main(List<String> args) async {
 class SidekickCommandRunner extends CommandRunner {
   SidekickCommandRunner() : super('sidekick', _desc);
 
-  static const _desc = 'Generator for a sidekick command line application (cli)';
+  static const _desc =
+      'Generator for a sidekick command line application (cli)';
 }

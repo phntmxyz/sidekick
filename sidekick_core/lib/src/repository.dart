@@ -37,14 +37,17 @@ Repository findRepository() {
   var root = _findRootInWorkingDir(_isRepositoryRootDir);
   if (root == null) {
     try {
-      final String entrypointPath = "realpath /usr/local/bin/$cliName".lastLine!;
+      final String entrypointPath =
+          "realpath /usr/local/bin/$cliName".lastLine!;
       final entryPoint = File(entrypointPath);
       if (!entryPoint.existsSync()) {
         throw 'could not read system link target';
       }
       root = entryPoint.parent;
     } catch (e) {
-      error('Could not find the $cliName project repository in parent of ${Directory.current}');
+      error(
+        'Could not find the $cliName project repository in parent of ${Directory.current}',
+      );
     }
   }
   return Repository(root);

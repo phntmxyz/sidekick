@@ -7,12 +7,14 @@ environment:
   sdk: '>=2.12.0 <3.0.0'
 
 dependencies:
+  args: ^2.0.0
   dartx: ^0.7.1
-  mason: ^0.0.1-dev.55
+  #mason: ^0.0.1-dev.51
 
 dev_dependencies:
   lint: ^1.5.0
-  test: ^1.19.0
+  path: ^1.8.0
+  test: ^1.17.0
 
 executables:
   sidekick:
