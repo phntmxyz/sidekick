@@ -18,6 +18,13 @@ void main() {
       final result = detector.detectProjectType(project);
       expect(result, ProjectStructure.multi_package);
     });
+
+    test('root with packages', () {
+      final project = setupTemplateProject('test/templates/root_with_packages');
+      final detector = ProjectStructureDetector();
+      final result = detector.detectProjectType(project);
+      expect(result, ProjectStructure.root_with_packages);
+    });
   });
 }
 
