@@ -4,11 +4,19 @@ The sidekick to your Flutter app - a CLI that allows you to extend you project w
 
 # Project state
 
-Woah! You found this amazing project without use ever publicly talking about it. 
+Woah! You found this amazing project without us ever publicly talking about it. 
 
 Stay tuned for our public announcement while we're working hard on getting this baby ready for prime time 👨‍💻
 
 ## Install
+
+```bash
+pub global activate sidekick
+```
+
+```bash
+sidekick init <path-to-repo> 
+```
 
 ## Plugins
 
