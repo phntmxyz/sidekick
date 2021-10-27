@@ -12,9 +12,11 @@ class InitCommand extends Command {
   String get name => 'init';
 
   InitCommand() {
-    argParser.addOption('path',
-        help:
-            'The path to the Dart/Flutter project the sidekick cli should be created for');
+    argParser.addOption(
+      'path',
+      help:
+          'The path to the Dart/Flutter project the sidekick cli should be created for',
+    );
   }
 
   @override
