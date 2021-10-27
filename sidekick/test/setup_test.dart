@@ -11,6 +11,13 @@ void main() {
       final result = detector.detectProjectType(project);
       expect(result, ProjectStructure.simple);
     });
+
+    test('multi package', () {
+      final project = setupTemplateProject('test/templates/multi_package');
+      final detector = ProjectStructureDetector();
+      final result = detector.detectProjectType(project);
+      expect(result, ProjectStructure.multi_package);
+    });
   });
 }
 
