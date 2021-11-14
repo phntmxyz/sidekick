@@ -1,9 +1,10 @@
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
+import 'package:dartx/dartx_io.dart';
 import 'package:mason/mason.dart';
 import 'package:sidekick/src/init/project_structure_detector.dart';
-import 'package:sidekick/src/templates/templates.dart';
+import 'package:sidekick/src/templates/cli_bundle.g.dart';
 
 /// A method which returns a [Future<MasonGenerator>] given a [MasonBundle].
 typedef GeneratorBuilder = Future<MasonGenerator> Function(MasonBundle);
@@ -15,20 +16,19 @@ class InitCommand extends Command {
   @override
   String get name => 'init';
 
-  /// Holds all Sidekick Templates
-  final _templates = SidekickTemplate();
-
   InitCommand() {
     argParser
       ..addOption(
         'path',
         abbr: 'p',
-        help: 'The path to the Dart/Flutter project the sidekick cli should be created for',
+        help:
+            'The path to the Dart/Flutter project the sidekick cli should be created for',
       )
       ..addOption(
         'cliName',
         abbr: 'n',
-        help: 'The name of the CLI to be created \n The `_cli` prefix, will be define automaticaly',
+        help:
+            'The name of the CLI to be created \nThe `_cli` prefix, will be define automatically',
       );
   }
 
@@ -51,6 +51,7 @@ class InitCommand extends Command {
     if (cliName == null) {
       throw 'No CLI name provided';
     }
+    print("Generating $cliName cli");
 
     final detector = ProjectStructureDetector();
     final type = detector.detectProjectType(projectDir);
@@ -74,14 +75,32 @@ class InitCommand extends Command {
     }
   }
 
-  Future<void> createSidekickPackage({required Directory path, required String cliName}) async {
-    final generator = await MasonGenerator.fromBundle(_templates.bundle);
-    final generatorTarget = DirectoryGeneratorTarget(path, Logger(), FileConflictResolution.prompt);
-    generator.generate(
-      generatorTarget,
-      vars: <String, dynamic>{
-        'name': cliName,
-      },
-    );
+  Future<void> createSidekickPackage({
+    required Directory path,
+    required String cliName,
+  }) async {
+    final generator = await MasonGenerator.fromBundle(cliBundle);
+    final generatorTarget =
+        DirectoryGeneratorTarget(path, Logger(), FileConflictResolution.prompt);
+    await generator.generate(generatorTarget, vars: {'name': cliName});
+
+    final entrypointSh = path.file(cliName);
+    await makeExecutable(entrypointSh);
+  }
+}
+
+Future<void> makeExecutable(File file) async {
+  if (Platform.isWindows) {
+    // TODO can this be somehow encoded into the file so that windows users
+    //  can generate it and unix users can execute it right away?
+    return;
+  }
+  if (!file.existsSync()) {
+    throw 'File not found ${file.path}';
+  }
+  final p = await Process.start('chmod', ['755', file.absolute.path]);
+  final exitCode = await p.exitCode;
+  if (exitCode != 0) {
+    throw 'Cloud not set permission 755 for file ${file.path}';
   }
 }
