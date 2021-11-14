@@ -1,8 +1,14 @@
 import 'dart:io';
 
+import 'package:args/args.dart';
 import 'package:args/command_runner.dart';
 import 'package:dartx/dartx_io.dart';
+import 'package:mason/mason.dart';
 import 'package:sidekick/src/init/project_structure_detector.dart';
+import 'package:sidekick/src/templates/templates.dart';
+
+/// A method which returns a [Future<MasonGenerator>] given a [MasonBundle].
+typedef GeneratorBuilder = Future<MasonGenerator> Function(MasonBundle);
 
 class InitCommand extends Command {
   @override
@@ -11,12 +17,21 @@ class InitCommand extends Command {
   @override
   String get name => 'init';
 
+  /// Holds all Sidekick Templates
+  final _templates = SidekickTemplate();
+
   InitCommand() {
-    argParser.addOption(
-      'path',
-      help:
-          'The path to the Dart/Flutter project the sidekick cli should be created for',
-    );
+    argParser
+      ..addOption(
+        'path',
+        abbr: 'p',
+        help: 'The path to the Dart/Flutter project the sidekick cli should be created for',
+      )
+      ..addOption(
+        'cliName',
+        abbr: 'n',
+        help: 'The name of the CLI to be created \n The `_cli` prefix, will be define automaticaly',
+      );
   }
 
   @override
@@ -31,22 +46,26 @@ class InitCommand extends Command {
         }
         return dir;
       }
-
       // fallback to cwd
       return cwd;
     }();
+    final cliName = argResults!['cliName'] as String?;
+    if (cliName == null) {
+      throw 'No CLI name provided';
+    }
 
     final detector = ProjectStructureDetector();
     final type = detector.detectProjectType(projectDir);
 
     switch (type) {
       case ProjectStructure.simple:
-        throw 'A simple project layout is not yet supported';
+        createSidekickPackage(path: projectDir, cliName: cliName);
+        break;
       case ProjectStructure.multiPackage:
         throw 'The multi package project layout is not yet supported';
       case ProjectStructure.rootWithPackages:
         print('Detected a Dart/Flutter project with a /packages dictionary');
-        createSidekickPackage(path: projectDir.directory('packages/sidekick'));
+        createSidekickPackage(path: projectDir, cliName: cliName);
         break;
       case ProjectStructure.unknown:
         print(
@@ -57,7 +76,14 @@ class InitCommand extends Command {
     }
   }
 
-  void createSidekickPackage({required Directory path}) {
-    throw "TODO";
+  Future<void> createSidekickPackage({required Directory path, required String cliName}) async {
+    final generator = await MasonGenerator.fromBundle(_templates.bundle);
+    final generatorTarget = DirectoryGeneratorTarget(path, Logger(), FileConflictResolution.prompt);
+    generator.generate(
+      generatorTarget,
+      vars: <String, dynamic>{
+        'name': cliName,
+      },
+    );
   }
 }
