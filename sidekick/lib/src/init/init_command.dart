@@ -1,8 +1,6 @@
 import 'dart:io';
 
-import 'package:args/args.dart';
 import 'package:args/command_runner.dart';
-import 'package:dartx/dartx_io.dart';
 import 'package:mason/mason.dart';
 import 'package:sidekick/src/init/project_structure_detector.dart';
 import 'package:sidekick/src/templates/templates.dart';
