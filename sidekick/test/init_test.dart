@@ -40,8 +40,11 @@ void main() {
       final entrypoint = File("${project.path}/dash");
       expect(entrypoint.existsSync(), isTrue);
 
-      final dashProcess = await TestProcess.start(entrypoint.path, [],
-          workingDirectory: project.path);
+      final dashProcess = await TestProcess.start(
+        entrypoint.path,
+        [],
+        workingDirectory: project.path,
+      );
       printOnFailure(await dashProcess.stdoutStream().join('\n'));
       printOnFailure(await dashProcess.stderrStream().join('\n'));
       dashProcess.shouldExit(0);
