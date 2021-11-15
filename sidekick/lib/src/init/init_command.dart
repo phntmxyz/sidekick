@@ -5,6 +5,7 @@ import 'package:dartx/dartx_io.dart';
 import 'package:mason/mason.dart';
 import 'package:sidekick/src/init/project_structure_detector.dart';
 import 'package:sidekick/src/templates/cli_bundle.g.dart';
+import 'package:http/http.dart' as http;
 
 /// A method which returns a [Future<MasonGenerator>] given a [MasonBundle].
 typedef GeneratorBuilder = Future<MasonGenerator> Function(MasonBundle);
@@ -79,6 +80,7 @@ class InitCommand extends Command {
     required Directory path,
     required String cliName,
   }) async {
+    await gitInit(path);
     final generator = await MasonGenerator.fromBundle(cliBundle);
     final generatorTarget =
         DirectoryGeneratorTarget(path, Logger(), FileConflictResolution.prompt);
@@ -86,7 +88,31 @@ class InitCommand extends Command {
 
     final entrypointSh = path.file(cliName);
     await makeExecutable(entrypointSh);
+    await installFlutterWrapper(path);
   }
+}
+
+Future<void> gitInit(Directory directory) async {
+  final Process process = await Process.start('git', ['init']);
+  stdout.addStream(process.stdout);
+  stderr.addStream(process.stderr);
+  await process.exitCode;
+}
+
+Future<void> installFlutterWrapper(Directory directory) async {
+  final content = (await http.get(Uri.parse(
+          'https://raw.githubusercontent.com/passsy/flutter_wrapper/master/install.sh')))
+      .body;
+  final Process process = await Process.start(
+    'sh',
+    ['-c', content],
+    workingDirectory: directory.absolute.path,
+    // runInShell: true,
+    includeParentEnvironment: true,
+  );
+  stdout.addStream(process.stdout);
+  stderr.addStream(process.stderr);
+  await process.exitCode;
 }
 
 Future<void> makeExecutable(File file) async {
