@@ -28,7 +28,7 @@ cd "${CLI_PACKAGE_DIR}" || exit
   mkdir -p build
   printf -- "\033[1A\033[2K✔ Bundling assets\n"
   printf -- "- Compiling $name cli\n"
-  CLI_COMMITS=$(git rev-list --count HEAD .)
+  CLI_COMMITS=$(git rev-list --count HEAD . || echo "0")
   EXE="build/${name}_cli-${CLI_COMMITS}.exe"
   $DART compile exe -o "${EXE}" bin/${name}.dart >/dev/null 2>&1
   printf -- "\033[1A\033[2K✔ Compiling $name cli\n"

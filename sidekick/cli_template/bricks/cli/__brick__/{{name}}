@@ -19,7 +19,7 @@ else
 fi
 
 CLI_PACKAGE="${ROOT}/packages/${name}_cli"
-CLI_COMMITS=$(git -C "$ROOT" rev-list --count HEAD "${CLI_PACKAGE}")
+CLI_COMMITS=$(git -C "$ROOT" rev-list --count HEAD "${CLI_PACKAGE}" || echo "0")
 
 EXE="${CLI_PACKAGE}/build/${name}_cli-$CLI_COMMITS.exe"
 
