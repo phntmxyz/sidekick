@@ -4,6 +4,7 @@ version: 0.0.1
 repository: https://github.com/phntmxyz/sidekick
 
 environment:
+  # TODO Allow 2.12 once https://github.com/VeryGoodOpenSource/pub_updater/pull/20 is merged and part of mason
   sdk: '>=2.13.0 <3.0.0'
 
 dependencies:
