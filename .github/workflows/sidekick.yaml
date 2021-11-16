@@ -10,7 +10,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        version: ["2.12", "2.13", "dev"]
+        version: ["2.13", "2.14", "dev"]
 
     container:
       image: google/dart:${{ matrix.version }}
