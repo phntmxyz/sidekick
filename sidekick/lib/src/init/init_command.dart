@@ -15,32 +15,26 @@ class InitCommand extends Command {
   String get name => 'init';
 
   InitCommand() {
-    argParser
-      ..addOption(
-        'path',
-        abbr: 'p',
-        help:
-            'The path to the Dart/Flutter project the sidekick cli should be created for',
-      )
-      ..addOption(
-        'cliName',
-        abbr: 'n',
-        help:
-            'The name of the CLI to be created \nThe `_cli` prefix, will be define automatically',
-      );
+    argParser.addOption(
+      'cliName',
+      abbr: 'n',
+      help: 'The name of the CLI to be created \nThe `_cli` prefix, will be define automatically',
+    );
   }
 
   @override
   Future<void> run() async {
     final cwd = Directory.current;
     final Directory projectDir = () {
-      final path = argResults!['path'] as String?;
-      if (path != null) {
-        final dir = Directory(path);
-        if (!dir.existsSync()) {
-          throw '${dir.path} is not a valid path to a Dart/Flutter project';
+      if (argResults?.rest != null && argResults?.rest.length == 1) {
+        final path = argResults?.rest[0];
+        if (path != null) {
+          final dir = Directory(path);
+          if (!dir.existsSync()) {
+            throw '${dir.path} is not a valid path to a Dart/Flutter project';
+          }
+          return dir;
         }
-        return dir;
       }
       // fallback to cwd
       return cwd;
@@ -49,7 +43,8 @@ class InitCommand extends Command {
     if (cliName == null) {
       throw 'No CLI name provided';
     }
-    print("Generating $cliName cli");
+    print("Generating ${cliName}_cli");
+    print("In directory: ${projectDir.path}");
 
     final detector = ProjectStructureDetector();
     final type = detector.detectProjectType(projectDir);
@@ -82,8 +77,7 @@ class InitCommand extends Command {
 
     // Generate the package code
     final generator = await MasonGenerator.fromBundle(cliBundle);
-    final generatorTarget =
-        DirectoryGeneratorTarget(path, Logger(), FileConflictResolution.prompt);
+    final generatorTarget = DirectoryGeneratorTarget(path, Logger(), FileConflictResolution.prompt);
     await generator.generate(generatorTarget, vars: {'name': cliName});
 
     // Make the entrypoint executable
@@ -107,8 +101,7 @@ Future<void> gitInit(Directory directory) async {
 /// Installs the [flutter_wrapper](https://github.com/passsy/flutter_wrapper) in
 /// [directory] using the provided install script
 Future<void> installFlutterWrapper(Directory directory) async {
-  const installUri =
-      'https://raw.githubusercontent.com/passsy/flutter_wrapper/master/install.sh';
+  const installUri = 'https://raw.githubusercontent.com/passsy/flutter_wrapper/master/install.sh';
   final content = (await http.get(Uri.parse(installUri))).body;
   final Process process = await Process.start(
     'sh',

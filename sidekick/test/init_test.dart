@@ -10,10 +10,9 @@ void main() {
   group('project type detection', () {
     test('init generates cli files', () async {
       final project = setupTemplateProject('test/templates/root_with_packages');
-      final process =
-          await sidekickCli(['init', '-n', 'dash'], workingDirectory: project);
+      final process = await sidekickCli(['init', '-n', 'dash'], workingDirectory: project);
 
-      await expectLater(process.stdout, emitsThrough('Generating dash cli'));
+      await expectLater(process.stdout, emitsThrough('Generating dash_cli'));
       printOnFailure(await process.stdoutStream().join('\n'));
       printOnFailure(await process.stderrStream().join('\n'));
       await process.shouldExit(0);
@@ -34,8 +33,7 @@ void main() {
 
     test('entrypoint executes fine after sidekick init', () async {
       final project = setupTemplateProject('test/templates/root_with_packages');
-      final process =
-          await sidekickCli(['init', '-n', 'dash'], workingDirectory: project);
+      final process = await sidekickCli(['init', '-n', 'dash'], workingDirectory: project);
       await process.shouldExit(0);
       final entrypoint = File("${project.path}/dash");
       expect(entrypoint.existsSync(), isTrue);
