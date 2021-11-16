@@ -27,5 +27,7 @@ jobs:
         run: |
              dart pub global activate dartdoc
              cd "${{ matrix.package }}" && $HOME/.pub-cache/bin/dartdoc
-      - name: Verify package completness
-        run: cd "${{ matrix.package }}" && dart pub publish -n
+
+      # Enable when mason released a non-dev dependency
+      #- name: Verify package completness
+      #  run: cd "${{ matrix.package }}" && dart pub publish -n
