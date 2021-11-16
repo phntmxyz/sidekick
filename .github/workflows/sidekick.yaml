@@ -16,7 +16,7 @@ jobs:
       image: google/dart:${{ matrix.version }}
 
     steps:
-      - run: sudo apt-get install unzip
+      - run: apt-get install unzip
       - uses: actions/checkout@v1
       - name: Install dependencies
         run: cd sidekick && dart pub get --no-precompile
