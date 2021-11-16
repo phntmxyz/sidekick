@@ -14,4 +14,4 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - name: check formatting
-        run: dart format --fix --output none --set-exit-if-changed .
+        run: dart format --fix --output none --set-exit-if-changed bin lib test tool

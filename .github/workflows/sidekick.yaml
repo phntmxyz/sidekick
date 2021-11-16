@@ -10,12 +10,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        version: ["2.12", "2.13", "dev"]
+        version: ["2.13", "2.14", "dev"]
 
     container:
       image: google/dart:${{ matrix.version }}
 
     steps:
+      - run: |
+         apt-get update
+         apt-get install unzip
       - uses: actions/checkout@v1
       - name: Install dependencies
         run: cd sidekick && dart pub get --no-precompile

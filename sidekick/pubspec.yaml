@@ -4,11 +4,14 @@ version: 0.0.1
 repository: https://github.com/phntmxyz/sidekick
 
 environment:
-  sdk: '>=2.12.0 <3.0.0'
+  # TODO Allow 2.12 once https://github.com/VeryGoodOpenSource/pub_updater/pull/20 is merged and part of mason
+  sdk: '>=2.13.0 <3.0.0'
 
 dependencies:
   args: ^2.0.0
   dartx: ^0.7.1
+  http: ^0.13.3
+  mason: ^0.0.1-dev.57
 
 dev_dependencies:
   lint: ^1.5.0

@@ -1,10 +1,5 @@
 include: package:lint/analysis_options.yaml
 
-analyzer:
-  exclude:
-    - '**.g.dart'
-    - 'cli_template'
-
 linter:
   rules:
     avoid_print: false

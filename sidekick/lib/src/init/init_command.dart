@@ -2,7 +2,10 @@ import 'dart:io';
 
 import 'package:args/command_runner.dart';
 import 'package:dartx/dartx_io.dart';
+import 'package:http/http.dart' as http;
+import 'package:mason/mason.dart';
 import 'package:sidekick/src/init/project_structure_detector.dart';
+import 'package:sidekick/src/templates/cli_bundle.g.dart';
 
 class InitCommand extends Command {
   @override
@@ -12,11 +15,19 @@ class InitCommand extends Command {
   String get name => 'init';
 
   InitCommand() {
-    argParser.addOption(
-      'path',
-      help:
-          'The path to the Dart/Flutter project the sidekick cli should be created for',
-    );
+    argParser
+      ..addOption(
+        'path',
+        abbr: 'p',
+        help:
+            'The path to the Dart/Flutter project the sidekick cli should be created for',
+      )
+      ..addOption(
+        'cliName',
+        abbr: 'n',
+        help:
+            'The name of the CLI to be created \nThe `_cli` prefix, will be define automatically',
+      );
   }
 
   @override
@@ -31,22 +42,27 @@ class InitCommand extends Command {
         }
         return dir;
       }
-
       // fallback to cwd
       return cwd;
     }();
+    final cliName = argResults!['cliName'] as String?;
+    if (cliName == null) {
+      throw 'No CLI name provided';
+    }
+    print("Generating $cliName cli");
 
     final detector = ProjectStructureDetector();
     final type = detector.detectProjectType(projectDir);
 
     switch (type) {
       case ProjectStructure.simple:
-        throw 'A simple project layout is not yet supported';
+        createSidekickPackage(path: projectDir, cliName: cliName);
+        break;
       case ProjectStructure.multiPackage:
         throw 'The multi package project layout is not yet supported';
       case ProjectStructure.rootWithPackages:
         print('Detected a Dart/Flutter project with a /packages dictionary');
-        createSidekickPackage(path: projectDir.directory('packages/sidekick'));
+        createSidekickPackage(path: projectDir, cliName: cliName);
         break;
       case ProjectStructure.unknown:
         print(
@@ -57,7 +73,66 @@ class InitCommand extends Command {
     }
   }
 
-  void createSidekickPackage({required Directory path}) {
-    throw "TODO";
+  Future<void> createSidekickPackage({
+    required Directory path,
+    required String cliName,
+  }) async {
+    // init git, required for flutterw
+    await gitInit(path);
+
+    // Generate the package code
+    final generator = await MasonGenerator.fromBundle(cliBundle);
+    final generatorTarget =
+        DirectoryGeneratorTarget(path, Logger(), FileConflictResolution.prompt);
+    await generator.generate(generatorTarget, vars: {'name': cliName});
+
+    // Make the entrypoint executable
+    final entrypointSh = path.file(cliName);
+    await makeExecutable(entrypointSh);
+
+    // For now, we install the flutter wrapper to get a dart runtime.
+    // TODO That should be changed!
+    await installFlutterWrapper(path);
+  }
+}
+
+/// Initializes git via `git init` in [directory]
+Future<void> gitInit(Directory directory) async {
+  final Process process = await Process.start('git', ['init']);
+  stdout.addStream(process.stdout);
+  stderr.addStream(process.stderr);
+  await process.exitCode;
+}
+
+/// Installs the [flutter_wrapper](https://github.com/passsy/flutter_wrapper) in
+/// [directory] using the provided install script
+Future<void> installFlutterWrapper(Directory directory) async {
+  const installUri =
+      'https://raw.githubusercontent.com/passsy/flutter_wrapper/master/install.sh';
+  final content = (await http.get(Uri.parse(installUri))).body;
+  final Process process = await Process.start(
+    'sh',
+    ['-c', content],
+    workingDirectory: directory.absolute.path,
+  );
+  stdout.addStream(process.stdout);
+  stderr.addStream(process.stderr);
+  await process.exitCode;
+}
+
+/// Makes a file executable 'rwxr-xr-x' (755)
+Future<void> makeExecutable(File file) async {
+  if (Platform.isWindows) {
+    // TODO can this be somehow encoded into the file so that windows users
+    //  can generate it and unix users can execute it right away?
+    return;
+  }
+  if (!file.existsSync()) {
+    throw 'File not found ${file.path}';
+  }
+  final p = await Process.start('chmod', ['755', file.absolute.path]);
+  final exitCode = await p.exitCode;
+  if (exitCode != 0) {
+    throw 'Cloud not set permission 755 for file ${file.path}';
   }
 }

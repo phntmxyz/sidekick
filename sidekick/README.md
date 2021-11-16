@@ -13,3 +13,12 @@ dart pub global activate sidekick
 ```bash
 sidekick create <path/to/flutter/app>
 ```
+
+
+## Developer guide
+
+To generate the template run this command from the `sidekick` package root
+
+```bash
+./tool/generateTemplate.sh
+```
