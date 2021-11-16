@@ -29,5 +29,5 @@ jobs:
              cd "${{ matrix.package }}" && $HOME/.pub-cache/bin/dartdoc
 
       # Enable when mason released a non-dev dependency
-      #- name: Verify package completness
+      #- name: Verify package completeness
       #  run: cd "${{ matrix.package }}" && dart pub publish -n
