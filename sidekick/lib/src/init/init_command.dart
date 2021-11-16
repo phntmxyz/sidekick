@@ -7,9 +7,6 @@ import 'package:mason/mason.dart';
 import 'package:sidekick/src/init/project_structure_detector.dart';
 import 'package:sidekick/src/templates/cli_bundle.g.dart';
 
-/// A method which returns a [Future<MasonGenerator>] given a [MasonBundle].
-typedef GeneratorBuilder = Future<MasonGenerator> Function(MasonBundle);
-
 class InitCommand extends Command {
   @override
   String get description => 'Creates a new sidekick CLI';
@@ -80,18 +77,26 @@ class InitCommand extends Command {
     required Directory path,
     required String cliName,
   }) async {
+    // init git, required for flutterw
     await gitInit(path);
+
+    // Generate the package code
     final generator = await MasonGenerator.fromBundle(cliBundle);
     final generatorTarget =
         DirectoryGeneratorTarget(path, Logger(), FileConflictResolution.prompt);
     await generator.generate(generatorTarget, vars: {'name': cliName});
 
+    // Make the entrypoint executable
     final entrypointSh = path.file(cliName);
     await makeExecutable(entrypointSh);
+
+    // For now, we install the flutter wrapper to get a dart runtime.
+    // TODO That should be changed!
     await installFlutterWrapper(path);
   }
 }
 
+/// Initializes git via `git init` in [directory]
 Future<void> gitInit(Directory directory) async {
   final Process process = await Process.start('git', ['init']);
   stdout.addStream(process.stdout);
@@ -99,6 +104,8 @@ Future<void> gitInit(Directory directory) async {
   await process.exitCode;
 }
 
+/// Installs the [flutter_wrapper](https://github.com/passsy/flutter_wrapper) in
+/// [directory] using the provided install script
 Future<void> installFlutterWrapper(Directory directory) async {
   const installUri =
       'https://raw.githubusercontent.com/passsy/flutter_wrapper/master/install.sh';
@@ -113,6 +120,7 @@ Future<void> installFlutterWrapper(Directory directory) async {
   await process.exitCode;
 }
 
+/// Makes a file executable 'rwxr-xr-x' (755)
 Future<void> makeExecutable(File file) async {
   if (Platform.isWindows) {
     // TODO can this be somehow encoded into the file so that windows users
