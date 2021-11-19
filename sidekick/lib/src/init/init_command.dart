@@ -18,7 +18,8 @@ class InitCommand extends Command {
     argParser.addOption(
       'cliName',
       abbr: 'n',
-      help: 'The name of the CLI to be created \nThe `_cli` prefix, will be define automatically',
+      help:
+          'The name of the CLI to be created \nThe `_cli` prefix, will be define automatically',
     );
   }
 
@@ -77,7 +78,8 @@ class InitCommand extends Command {
 
     // Generate the package code
     final generator = await MasonGenerator.fromBundle(cliBundle);
-    final generatorTarget = DirectoryGeneratorTarget(path, Logger(), FileConflictResolution.prompt);
+    final generatorTarget =
+        DirectoryGeneratorTarget(path, Logger(), FileConflictResolution.prompt);
     await generator.generate(generatorTarget, vars: {'name': cliName});
 
     // Make the entrypoint executable
@@ -102,7 +104,8 @@ Future<void> gitInit(Directory directory) async {
 /// Installs the [flutter_wrapper](https://github.com/passsy/flutter_wrapper) in
 /// [directory] using the provided install script
 Future<void> installFlutterWrapper(Directory directory) async {
-  const installUri = 'https://raw.githubusercontent.com/passsy/flutter_wrapper/master/install.sh';
+  const installUri =
+      'https://raw.githubusercontent.com/passsy/flutter_wrapper/master/install.sh';
   final content = (await http.get(Uri.parse(installUri))).body;
   final Process process = await Process.start(
     'sh',
