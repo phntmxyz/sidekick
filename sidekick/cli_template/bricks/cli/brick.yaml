@@ -1,4 +1,0 @@
-name: cli
-description: Creates the sidekick basic structure.
-vars:
-  - name
