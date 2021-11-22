@@ -54,7 +54,7 @@ void main() {
       final project = setupTemplateProject('test/templates/root_with_packages');
       final process = await sidekickCli(
           ['init', '-n', 'dash', project.absolute.path],
-          workingDirectory: project.parent);
+          workingDirectory: project.parent,);
       await process.shouldExit(0);
 
       // check git is initialized
