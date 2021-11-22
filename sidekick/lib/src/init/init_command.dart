@@ -15,32 +15,27 @@ class InitCommand extends Command {
   String get name => 'init';
 
   InitCommand() {
-    argParser
-      ..addOption(
-        'path',
-        abbr: 'p',
-        help:
-            'The path to the Dart/Flutter project the sidekick cli should be created for',
-      )
-      ..addOption(
-        'cliName',
-        abbr: 'n',
-        help:
-            'The name of the CLI to be created \nThe `_cli` prefix, will be define automatically',
-      );
+    argParser.addOption(
+      'cliName',
+      abbr: 'n',
+      help:
+          'The name of the CLI to be created \nThe `_cli` prefix, will be define automatically',
+    );
   }
 
   @override
   Future<void> run() async {
     final cwd = Directory.current;
     final Directory projectDir = () {
-      final path = argResults!['path'] as String?;
-      if (path != null) {
-        final dir = Directory(path);
-        if (!dir.existsSync()) {
-          throw '${dir.path} is not a valid path to a Dart/Flutter project';
+      if (argResults?.rest != null && argResults?.rest.length == 1) {
+        final path = argResults?.rest[0];
+        if (path != null) {
+          final dir = Directory(path);
+          if (!dir.existsSync()) {
+            throw '${dir.path} is not a valid path to a Dart/Flutter project';
+          }
+          return dir;
         }
-        return dir;
       }
       // fallback to cwd
       return cwd;
@@ -49,7 +44,8 @@ class InitCommand extends Command {
     if (cliName == null) {
       throw 'No CLI name provided';
     }
-    print("Generating $cliName cli");
+    print("Generating ${cliName}_cli");
+    print("In directory: ${projectDir.path}");
 
     final detector = ProjectStructureDetector();
     final type = detector.detectProjectType(projectDir);
@@ -98,7 +94,8 @@ class InitCommand extends Command {
 
 /// Initializes git via `git init` in [directory]
 Future<void> gitInit(Directory directory) async {
-  final Process process = await Process.start('git', ['init']);
+  final Process process =
+      await Process.start('git', ['init'], workingDirectory: directory.path);
   stdout.addStream(process.stdout);
   stderr.addStream(process.stderr);
   await process.exitCode;

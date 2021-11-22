@@ -13,7 +13,7 @@ void main() {
       final process =
           await sidekickCli(['init', '-n', 'dash'], workingDirectory: project);
 
-      await expectLater(process.stdout, emitsThrough('Generating dash cli'));
+      await expectLater(process.stdout, emitsThrough('Generating dash_cli'));
       printOnFailure(await process.stdoutStream().join('\n'));
       printOnFailure(await process.stderrStream().join('\n'));
       await process.shouldExit(0);
@@ -39,6 +39,36 @@ void main() {
       await process.shouldExit(0);
       final entrypoint = File("${project.path}/dash");
       expect(entrypoint.existsSync(), isTrue);
+
+      final dashProcess = await TestProcess.start(
+        entrypoint.path,
+        [],
+        workingDirectory: project.path,
+      );
+      printOnFailure(await dashProcess.stdoutStream().join('\n'));
+      printOnFailure(await dashProcess.stderrStream().join('\n'));
+      dashProcess.shouldExit(0);
+    });
+
+    test('init with path (absolute)', () async {
+      final project = setupTemplateProject('test/templates/root_with_packages');
+      final process = await sidekickCli(
+          ['init', '-n', 'dash', project.absolute.path],
+          workingDirectory: project.parent,);
+      await process.shouldExit(0);
+
+      // check git is initialized
+      final git = Directory("${project.path}/.git");
+      expect(git.existsSync(), isTrue);
+
+      // check entrypoint is executable
+      final entrypoint = File("${project.path}/dash");
+      expect(entrypoint.existsSync(), isTrue);
+      expect(entrypoint.statSync().modeString(), 'rwxr-xr-x');
+
+      // check flutterw exists
+      final flutterw = File("${project.path}/flutterw");
+      expect(flutterw.existsSync(), isTrue);
 
       final dashProcess = await TestProcess.start(
         entrypoint.path,
