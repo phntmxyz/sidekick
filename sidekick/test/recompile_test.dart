@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:io';
 
 import 'package:test/test.dart';
@@ -15,7 +14,9 @@ void main() {
           await sidekickCli(['init', '-n', 'dash'], workingDirectory: project);
 
       await expectLater(
-          process.stdout, emitsThrough('Generating dash_sidekick'));
+        process.stdout,
+        emitsThrough('Generating dash_sidekick'),
+      );
       printOnFailure(await process.stdoutStream().join('\n'));
       printOnFailure(await process.stderrStream().join('\n'));
       await process.shouldExit(0);
