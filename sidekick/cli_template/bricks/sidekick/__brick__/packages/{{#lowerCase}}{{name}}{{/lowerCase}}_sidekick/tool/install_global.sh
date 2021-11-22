@@ -27,18 +27,18 @@ cd "${CLI_PACKAGE_DIR}" || exit
   rm -rf build
   mkdir -p build
   printf -- "\033[1A\033[2K✔ Bundling assets\n"
-  printf -- "- Compiling $name cli\n"
+  printf -- "- Compiling $name sidekick\n"
   CLI_COMMITS=$(git rev-list --count HEAD . || echo "0")
-  EXE="build/${name}_cli-${CLI_COMMITS}.exe"
+  EXE="build/${name}_sidekick-${CLI_COMMITS}.exe"
   $DART compile exe -o "${EXE}" bin/${name}.dart >/dev/null 2>&1
-  printf -- "\033[1A\033[2K✔ Compiling $name cli\n"
+  printf -- "\033[1A\033[2K✔ Compiling $name sidekick\n"
 
 
   if [ ! -f "/usr/local/bin/$name" ] ; then
     # when not linked globally
     if [ -t 0 ] ; then
       # stdin exits, human ist interacting with script
-      read -p "Do you want to install the $name cli globally? (y/n) " x
+      read -p "Do you want to install the $name sidekick globally? (y/n) " x
       if [ "$x" = "y" ] ; then
         sudo rm /usr/local/bin/$name > /dev/null 2>&1 || true
         SH="$(realpath "${REPO_ROOT}${name}")"

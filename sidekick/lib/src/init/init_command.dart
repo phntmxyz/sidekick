@@ -44,7 +44,7 @@ class InitCommand extends Command {
     if (cliName == null) {
       throw 'No CLI name provided';
     }
-    print("Generating ${cliName}_cli");
+    print("Generating ${cliName}_sidekick");
     print("In directory: ${projectDir.path}");
 
     final detector = ProjectStructureDetector();
@@ -77,7 +77,7 @@ class InitCommand extends Command {
     await gitInit(path);
 
     // Generate the package code
-    final generator = await MasonGenerator.fromBundle(cliBundle);
+    final generator = await MasonGenerator.fromBundle(sidekickBundle);
     final generatorTarget =
         DirectoryGeneratorTarget(path, Logger(), FileConflictResolution.prompt);
     await generator.generate(generatorTarget, vars: {'name': cliName});

@@ -18,13 +18,13 @@ else
   ROOT=$SCRIPT_LOCATION
 fi
 
-CLI_PACKAGE="${ROOT}/packages/${name}_cli"
-CLI_COMMITS=$(git -C "$ROOT" rev-list --count HEAD "${CLI_PACKAGE}" || echo "0")
+SIDEKICK_PACKAGE="${ROOT}/packages/${name}_sidekick"
+SIDEKICK_COMMITS=$(git -C "$ROOT" rev-list --count HEAD "${SIDEKICK_PACKAGE}" || echo "0")
 
-EXE="${CLI_PACKAGE}/build/${name}_cli-$CLI_COMMITS.exe"
+EXE="${SIDEKICK_PACKAGE}/build/${name}_sidekick-$SIDEKICK_COMMITS.exe"
 
 if [ ! -f "${EXE}" ]; then
-  sh "${CLI_PACKAGE}/tool/install_global.sh"
+  sh "${SIDEKICK_PACKAGE}/tool/install_global.sh"
 fi
 
 "${EXE}" "$@"

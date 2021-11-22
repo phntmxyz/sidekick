@@ -1,5 +1,5 @@
 import 'package:args/command_runner.dart';
-import 'package:{{#lowerCase}}{{name}}{{/lowerCase}}_cli/{{#lowerCase}}{{name}}{{/lowerCase}}_cli.dart';
+import 'package:{{#lowerCase}}{{name}}{{/lowerCase}}_sidekick/{{#lowerCase}}{{name}}{{/lowerCase}}_sidekick.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 
 class DepsCommand extends Command {

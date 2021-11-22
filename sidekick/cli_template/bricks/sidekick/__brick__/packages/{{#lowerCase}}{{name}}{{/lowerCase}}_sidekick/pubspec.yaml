@@ -1,4 +1,4 @@
-name: {{name}}_cli
+name: {{name}}_sidekick
 description: Sidekick CLI for {{name}}
 version: 0.0.1
 publish_to: none

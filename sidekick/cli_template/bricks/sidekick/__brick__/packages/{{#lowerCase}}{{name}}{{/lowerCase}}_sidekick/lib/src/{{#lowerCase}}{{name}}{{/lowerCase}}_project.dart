@@ -3,7 +3,7 @@ import 'package:sidekick_core/sidekick_core.dart';
 class {{#titleCase}}{{name}}{{/titleCase}}Project extends DartPackage {
   {{#titleCase}}{{name}}{{/titleCase}}Project(Directory root) : super.flutter(root, '');
 
-  DartPackage get {{#lowerCase}}{{name}}{{/lowerCase}}CliPackage => DartPackage.fromDirectory(root.directory('packages/{{#lowerCase}}{{name}}{{/lowerCase}}_cli'))!;
+  DartPackage get {{#lowerCase}}{{name}}{{/lowerCase}}SidekickPackage => DartPackage.fromDirectory(root.directory('packages/{{#lowerCase}}{{name}}{{/lowerCase}}_sidekick'))!;
 
   File get flutterw => root.file('flutterw');
 
