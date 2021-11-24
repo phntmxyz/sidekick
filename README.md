@@ -26,6 +26,17 @@ sidekick init <path-to-repo>
 
 ### Creating sub commands
 
+## Development
+
+### Install cli locally during development
+
+That's useful when you want to test the sidekick cli during development on your machine. Tests are great, but sometimes you want to see the beast in action.
+
+```bash
+cd sidekick
+dart pub global activate -s path .
+```
+
 ## License
 
 ```text

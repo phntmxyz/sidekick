@@ -86,6 +86,11 @@ class InitCommand extends Command {
     final entrypointSh = path.file(cliName);
     await makeExecutable(entrypointSh);
 
+    // Make update script executable
+    await makeExecutable(
+      path.file('packages/${cliName}_sidekick/tool/install_global.sh'),
+    );
+
     // For now, we install the flutter wrapper to get a dart runtime.
     // TODO That should be changed!
     await installFlutterWrapper(path);

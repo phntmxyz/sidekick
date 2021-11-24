@@ -1,10 +1,10 @@
-import 'dart:async';
 import 'dart:io';
 
 import 'package:test/test.dart';
 import 'package:test_process/test_process.dart';
 
 import 'templates/templates.dart';
+import 'util/cli_runner.dart';
 
 void main() {
   group('project type detection', () {
@@ -13,7 +13,10 @@ void main() {
       final process =
           await sidekickCli(['init', '-n', 'dash'], workingDirectory: project);
 
-      await expectLater(process.stdout, emitsThrough('Generating dash_sidekick'));
+      await expectLater(
+        process.stdout,
+        emitsThrough('Generating dash_sidekick'),
+      );
       printOnFailure(await process.stdoutStream().join('\n'));
       printOnFailure(await process.stderrStream().join('\n'));
       await process.shouldExit(0);
@@ -53,8 +56,9 @@ void main() {
     test('init with path (absolute)', () async {
       final project = setupTemplateProject('test/templates/root_with_packages');
       final process = await sidekickCli(
-          ['init', '-n', 'dash', project.absolute.path],
-          workingDirectory: project.parent,);
+        ['init', '-n', 'dash', project.absolute.path],
+        workingDirectory: project.parent,
+      );
       await process.shouldExit(0);
 
       // check git is initialized
@@ -80,15 +84,4 @@ void main() {
       dashProcess.shouldExit(0);
     });
   });
-}
-
-Future<TestProcess> sidekickCli(
-  List<String> args, {
-  required Directory workingDirectory,
-}) {
-  return TestProcess.start(
-    'dart',
-    ['${Directory.current.path}/bin/sidekick.dart', ...args],
-    workingDirectory: workingDirectory.path,
-  );
 }
