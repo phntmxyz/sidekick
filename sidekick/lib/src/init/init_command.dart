@@ -79,7 +79,7 @@ class InitCommand extends Command {
     // Generate the package code
     final generator = await MasonGenerator.fromBundle(sidekickBundle);
     final generatorTarget =
-        DirectoryGeneratorTarget(path, Logger(), FileConflictResolution.prompt);
+        DirectoryGeneratorTarget(path, Logger(), FileConflictResolution.overwrite);
     await generator.generate(generatorTarget, vars: {'name': cliName});
 
     // Make the entrypoint executable
