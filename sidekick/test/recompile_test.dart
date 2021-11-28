@@ -10,7 +10,8 @@ void main() {
   group('project type detection', () {
     test('init generates cli files', () async {
       final project = setupTemplateProject('test/templates/root_with_packages');
-      final process = await sidekickCli(['init', '-n', 'dash'], workingDirectory: project);
+      final process =
+          await sidekickCli(['init', '-n', 'dash'], workingDirectory: project);
 
       await expectLater(
         process.stdout,
@@ -26,7 +27,8 @@ void main() {
       expect(entrypoint.statSync().modeString(), 'rwxr-xr-x');
 
       // check install.sh is executable
-      final installSh = File("${project.path}/packages/dash_sidekick/tool/install.sh");
+      final installSh =
+          File("${project.path}/packages/dash_sidekick/tool/install.sh");
       expect(installSh.existsSync(), isTrue);
       expect(installSh.statSync().modeString(), 'rwxr-xr-x');
 
