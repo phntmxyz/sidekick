@@ -1,3 +1,8 @@
+## 0.3.2
+
+- Update `dcli`
+- Widen `dartx` version range
+
 ## 0.3.1
 
 - `AnalayzeCommand` now fails with correct exit code
