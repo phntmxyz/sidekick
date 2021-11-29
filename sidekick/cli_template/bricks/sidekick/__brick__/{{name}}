@@ -24,7 +24,7 @@ SIDEKICK_COMMITS=$(git -C "$ROOT" rev-list --count HEAD -- "${SIDEKICK_PACKAGE}"
 EXE="${SIDEKICK_PACKAGE}/build/${name}_sidekick-$SIDEKICK_COMMITS.exe"
 
 if [ ! -f "${EXE}" ]; then
-  sh "${SIDEKICK_PACKAGE}/tool/install_global.sh"
+  sh "${SIDEKICK_PACKAGE}/tool/install.sh"
 fi
 
 "${EXE}" "$@"

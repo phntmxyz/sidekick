@@ -78,8 +78,11 @@ class InitCommand extends Command {
 
     // Generate the package code
     final generator = await MasonGenerator.fromBundle(sidekickBundle);
-    final generatorTarget =
-        DirectoryGeneratorTarget(path, Logger(), FileConflictResolution.overwrite);
+    final generatorTarget = DirectoryGeneratorTarget(
+      path,
+      Logger(),
+      FileConflictResolution.overwrite,
+    );
     await generator.generate(generatorTarget, vars: {'name': cliName});
 
     // Make the entrypoint executable
@@ -88,7 +91,7 @@ class InitCommand extends Command {
 
     // Make update script executable
     await makeExecutable(
-      path.file('packages/${cliName}_sidekick/tool/install_global.sh'),
+      path.file('packages/${cliName}_sidekick/tool/install.sh'),
     );
 
     // For now, we install the flutter wrapper to get a dart runtime.

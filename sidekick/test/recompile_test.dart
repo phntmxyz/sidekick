@@ -28,7 +28,7 @@ void main() {
 
       // check install.sh is executable
       final installSh =
-          File("${project.path}/packages/dash_sidekick/tool/install_global.sh");
+          File("${project.path}/packages/dash_sidekick/tool/install.sh");
       expect(installSh.existsSync(), isTrue);
       expect(installSh.statSync().modeString(), 'rwxr-xr-x');
 

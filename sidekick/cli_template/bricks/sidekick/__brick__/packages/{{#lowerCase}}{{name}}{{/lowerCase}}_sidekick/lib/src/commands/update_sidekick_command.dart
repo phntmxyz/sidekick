@@ -14,7 +14,7 @@ class UpdateSidekickCommand extends Command {
 
   @override
   Future<void> run() async {
-    final installScript = {{#lowerCase}}{{name}}{{/lowerCase}}Project.root.file('packages/{{#lowerCase}}{{name}}{{/lowerCase}}_sidekick/tool/install_global.sh');
+    final installScript = {{#lowerCase}}{{name}}{{/lowerCase}}Project.root.file('packages/{{#lowerCase}}{{name}}{{/lowerCase}}_sidekick/tool/install.sh');
     final process = dcli.start(installScript.path, nothrow: true, terminal: true);
     exit(process.exitCode ?? 0);
   }
