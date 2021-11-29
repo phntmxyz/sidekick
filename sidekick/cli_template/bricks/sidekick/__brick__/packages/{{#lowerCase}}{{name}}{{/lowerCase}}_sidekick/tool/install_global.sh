@@ -30,7 +30,9 @@ cd "${CLI_PACKAGE_DIR}" || exit
   printf -- "- Compiling $name sidekick\n"
   CLI_COMMITS=$(git rev-list --count HEAD -- . || echo "0")
   EXE="build/${name}_sidekick-${CLI_COMMITS}.exe"
+  set -e
   $DART compile exe -o "${EXE}" bin/${name}.dart
+  set +e
   printf -- "\033[1A\033[2K✔ Compiling $name sidekick\n"
 
 
