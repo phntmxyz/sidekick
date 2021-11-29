@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.1
+
+Update `sidekick-core`
+
 ## 0.1.0
 
 First working prototype of `sidekick init` using `flutterw`
