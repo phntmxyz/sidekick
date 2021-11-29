@@ -1,6 +1,6 @@
 name: sidekick_core
 description: Reusable code pieces for sidekick CLIs
-version: 0.3.1
+version: 0.3.2
 repository: https://github.com/phntmxyz/sidekick
 
 environment:
@@ -8,8 +8,8 @@ environment:
 
 dependencies:
   args: ^2.1.0
-  dartx: ^0.7.1
-  dcli: ^1.7.1
+  dartx: '>=0.7.1 <2.0.0'
+  dcli: ^1.13.5
   yaml: ^3.1.0
 
 dev_dependencies:

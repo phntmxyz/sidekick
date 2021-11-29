@@ -19,7 +19,7 @@ else
 fi
 
 SIDEKICK_PACKAGE="${ROOT}/packages/${name}_sidekick"
-SIDEKICK_COMMITS=$(git -C "$ROOT" rev-list --count HEAD "${SIDEKICK_PACKAGE}" || echo "0")
+SIDEKICK_COMMITS=$(git -C "$ROOT" rev-list --count HEAD -- "${SIDEKICK_PACKAGE}" || echo "0")
 
 EXE="${SIDEKICK_PACKAGE}/build/${name}_sidekick-$SIDEKICK_COMMITS.exe"
 

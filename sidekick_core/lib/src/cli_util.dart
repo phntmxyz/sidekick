@@ -1,5 +1,7 @@
 import 'dart:io' as io;
+
 import 'package:dcli/dcli.dart' as dcli;
+import 'package:dcli/posix.dart' as posix;
 import 'package:sidekick_core/sidekick_core.dart';
 
 /// Exits the CLI immediately with a messages
@@ -28,7 +30,7 @@ io.File tempExecutableScriptFile(String content, {Directory? tempDir}) {
   final script = _tempDir.file('${content.md5}.sh')
     ..createSync(recursive: true);
   script.writeAsStringSync(content);
-  dcli.chmod(755, script.path);
+  posix.chmod(755, script.path);
   return script;
   // TODO add teardown and remove it again
 }
