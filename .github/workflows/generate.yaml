@@ -20,10 +20,12 @@ jobs:
       - uses: actions/checkout@v1
       - name: Install dependencies
         run: cd sidekick && dart pub get --no-precompile
+      - name: Print Current Working Directory
+        run: pwd
       - name: Rename existing generated file to lib/templates/temp_cli_bundle.g.dart
-        run: mv sidekick/lib/templates/cli_bundle.g.dart lib/templates/temp_cli_bundle.g.dart
+        run: mv lib/templates/cli_bundle.g.dart lib/templates/temp_cli_bundle.g.dart
       - name: Generate CLI bundle
-        run: ./sidekick/tool/generateTemplate.sh
+        run: ./tool/generateTemplate.sh
       - name: Compare generated file to lib/templates/temp_cli_bundle.g.dart should fail if they are different
         run: diff -q lib/templates/temp_cli_bundle.g.dart lib/templates/cli_bundle.g.dart
       
