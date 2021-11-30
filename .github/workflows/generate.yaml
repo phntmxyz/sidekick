@@ -20,6 +20,8 @@ jobs:
       - uses: actions/checkout@v1
       - name: Install dependencies
         run: cd sidekick && dart pub get --no-precompile
+      - name: Install Mason
+        run: cd sidekick && dart pub global activate mason
       - name: Print Current Working Directory
         run: pwd
       - name: Rename existing generated file to lib/templates/temp_cli_bundle.g.dart
