@@ -22,6 +22,8 @@ jobs:
         run: cd sidekick && dart pub get --no-precompile
       - name: Install Mason
         run: cd sidekick && dart pub global activate mason
+      - name: Export mason path
+        run: export PATH=$PATH:${{ env.HOME }}/.pub-cache/bin
       - name: Print Current Working Directory
         run: pwd
       - name: Rename existing generated file to lib/templates/temp_cli_bundle.g.dart
