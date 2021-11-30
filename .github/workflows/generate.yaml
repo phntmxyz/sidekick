@@ -1,0 +1,29 @@
+name: Mason Template Generated
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    container:
+      image: google/dart:2.14
+
+    steps:
+      - run: |
+         apt-get update
+         apt-get install unzip
+      - uses: actions/checkout@v1
+      - name: Install dependencies
+        run: cd sidekick && dart pub get --no-precompile
+      - name: Rename existing generated file to lib/templates/temp_cli_bundle.g.dart
+        run: mv sidekick/lib/templates/cli_bundle.g.dart lib/templates/temp_cli_bundle.g.dart
+      - name: Generate CLI bundle
+        run: ./sidekick/tool/generateTemplate.sh
+      - name: Compare generated file to lib/templates/temp_cli_bundle.g.dart should fail if they are different
+        run: diff -q lib/templates/temp_cli_bundle.g.dart lib/templates/cli_bundle.g.dart
+      
