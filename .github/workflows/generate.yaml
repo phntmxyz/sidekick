@@ -23,9 +23,9 @@ jobs:
       - name: Print Current Working Directory
         run: pwd
       - name: Rename existing generated file to lib/templates/temp_cli_bundle.g.dart
-        run: mv lib/templates/cli_bundle.g.dart lib/templates/temp_cli_bundle.g.dart
+        run: cd sidekick && mv lib/templates/cli_bundle.g.dart lib/templates/temp_cli_bundle.g.dart
       - name: Generate CLI bundle
-        run: ./tool/generateTemplate.sh
+        run: cd sidekick && ./tool/generateTemplate.sh
       - name: Compare generated file to lib/templates/temp_cli_bundle.g.dart should fail if they are different
-        run: diff -q lib/templates/temp_cli_bundle.g.dart lib/templates/cli_bundle.g.dart
+        run: cd sidekick && diff -q lib/templates/temp_cli_bundle.g.dart lib/templates/cli_bundle.g.dart
       
