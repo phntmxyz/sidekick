@@ -25,7 +25,7 @@ jobs:
       - name: Rename existing generated file to lib/templates/temp_cli_bundle.g.dart
         run: mv sidekick/lib/src/templates/cli_bundle.g.dart sidekick/lib/src/templates/temp_cli_bundle.g.dart
       - name: Generate CLI bundle
-        run:  ./sidekick/tool/generateTemplate.sh
+        run:  cd sidekick && ./tool/generateTemplate.sh
       - name: Compare generated file to lib/templates/temp_cli_bundle.g.dart should fail if they are different
         run: diff -q sidekick/lib/src/templates/temp_cli_bundle.g.dart sidekick/lib/src/templates/cli_bundle.g.dart
       
