@@ -45,7 +45,7 @@ void main() {
       // recompile works
       final updateProcess = await TestProcess.start(
         entrypoint.path,
-        ['update-sidekick'],
+        ['recompile'],
         workingDirectory: project.path,
       );
       final stdout = await updateProcess.stdoutStream().join('\n');

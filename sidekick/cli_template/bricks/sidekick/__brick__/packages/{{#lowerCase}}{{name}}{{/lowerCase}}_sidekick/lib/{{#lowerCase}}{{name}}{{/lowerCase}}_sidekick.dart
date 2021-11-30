@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:args/command_runner.dart';
 import 'package:{{#lowerCase}}{{name}}{{/lowerCase}}_sidekick/src/commands/deps_command.dart';
-import 'package:{{#lowerCase}}{{name}}{{/lowerCase}}_sidekick/src/commands/update_sidekick_command.dart';
+import 'package:{{#lowerCase}}{{name}}{{/lowerCase}}_sidekick/src/commands/recompile_command.dart';
 import 'package:{{#lowerCase}}{{name}}{{/lowerCase}}_sidekick/src/{{#lowerCase}}{{name}}{{/lowerCase}}_command_runner.dart';
 import 'package:{{#lowerCase}}{{name}}{{/lowerCase}}_sidekick/src/{{#lowerCase}}{{name}}{{/lowerCase}}_project.dart';
 import 'package:sidekick_core/sidekick_core.dart';
@@ -21,7 +21,7 @@ class {{#titleCase}}{{name}}{{/titleCase}}Sidekick {
     {{#lowerCase}}{{name}}{{/lowerCase}}Project = {{#titleCase}}{{name}}{{/titleCase}}Project(mainProject.root);
 
     final runner = {{#titleCase}}{{name}}{{/titleCase}}CommandRunner()
-      ..addCommand(UpdateSidekickCommand())
+      ..addCommand(RecompileCommand())
       ..addCommand(FlutterCommand())
       ..addCommand(DartCommand())
       ..addCommand(DepsCommand())
