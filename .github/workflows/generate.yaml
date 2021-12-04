@@ -11,25 +11,20 @@ jobs:
     runs-on: ubuntu-latest
 
     container:
-      image: google/dart:2.14
+      image: google/dart:2.13
 
     steps:
       - run: |
          apt-get update
-         apt-get install unzip
       - uses: actions/checkout@v1
-      - name: Install dependencies
-        run: cd sidekick && dart pub get --no-precompile
-      - name: Install Mason
-        run: cd sidekick && dart pub global activate mason
-      - name: Export mason path
-        run: export PATH=$PATH:${{ env.HOME }}/.pub-cache/bin
-      - name: Print Current Working Directory
-        run: pwd
-      - name: Rename existing generated file to lib/templates/temp_cli_bundle.g.dart
-        run: mv sidekick/lib/src/templates/cli_bundle.g.dart sidekick/lib/src/templates/temp_cli_bundle.g.dart
-      - name: Generate CLI bundle
-        run:  cd sidekick && ./tool/generateTemplate.sh
-      - name: Compare generated file to lib/templates/temp_cli_bundle.g.dart should fail if they are different
-        run: diff -q sidekick/lib/src/templates/temp_cli_bundle.g.dart sidekick/lib/src/templates/cli_bundle.g.dart
+      - name: Install Mason and export path in the Github CI and pull the updated path
+        run: |
+          which dart
+          dart pub global activate mason
+          ${{ env.HOME }}/.pub-cache/bin >> $GITHUB_ENV
+          echo "$PATH"
+          pwd
+          mv sidekick/lib/src/templates/cli_bundle.g.dart sidekick/lib/src/templates/temp_cli_bundle.g.dart
+          cd sidekick && ./tool/generateTemplate.sh
+          diff -q sidekick/lib/src/templates/temp_cli_bundle.g.dart sidekick/lib/src/templates/cli_bundle.g.dart
       
