@@ -25,12 +25,10 @@ bool isProgramInstalled(String name) {
 ///
 /// The file name is the md5 hash of the content, therefore doesn't create a new file when called with the same content
 io.File tempExecutableScriptFile(String content, {Directory? tempDir}) {
-  final io.Directory _tempDir =
-      tempDir ?? Directory.systemTemp.createTempSync();
-  final script = _tempDir.file('${content.md5}.sh')
-    ..createSync(recursive: true);
+  final io.Directory _tempDir = tempDir ?? Directory.systemTemp.createTempSync();
+  final script = _tempDir.file('${content.md5}.sh')..createSync(recursive: true);
   script.writeAsStringSync(content);
-  posix.chmod(755, script.path);
+  posix.chmod(script.path, permission: '755');
   return script;
   // TODO add teardown and remove it again
 }
@@ -44,8 +42,7 @@ dcli.Progress writeAndRunShellScript(
   final script = tempExecutableScriptFile(scriptContent);
   final process = dcli.start(
     script.absolute.path,
-    workingDirectory:
-        workingDirectory?.absolute.path ?? entryWorkingDirectory.path,
+    workingDirectory: workingDirectory?.absolute.path ?? entryWorkingDirectory.path,
     progress: progress,
   );
   script.deleteSync(recursive: true);
