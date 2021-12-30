@@ -13,8 +13,10 @@ void main() {
       () async {
         final project =
             setupTemplateProject('test/templates/root_with_packages');
-        final process = await sidekickCli(['init', '-n', 'dash'],
-            workingDirectory: project);
+        final process = await sidekickCli(
+          ['init', '-n', 'dash'],
+          workingDirectory: project,
+        );
 
         await expectLater(
           process.stdout,
@@ -45,8 +47,10 @@ void main() {
       () async {
         final project =
             setupTemplateProject('test/templates/root_with_packages');
-        final process = await sidekickCli(['init', '-n', 'dash'],
-            workingDirectory: project);
+        final process = await sidekickCli(
+          ['init', '-n', 'dash'],
+          workingDirectory: project,
+        );
         await process.shouldExit(0);
         final entrypoint = File("${project.path}/dash");
         expect(entrypoint.existsSync(), isTrue);
