@@ -6,13 +6,12 @@ import 'package:sidekick_core/sidekick_core.dart';
 
 /// Exits the CLI immediately with a messages
 Never error(String message) {
-  io.stderr.writeln(message);
   assert(
     () {
-      io.stderr.writeln(StackTrace.current);
-      return true;
+      throw message;
     }(),
   );
+  io.stderr.writeln(message);
   io.exit(-1);
 }
 
@@ -30,7 +29,7 @@ io.File tempExecutableScriptFile(String content, {Directory? tempDir}) {
   final script = _tempDir.file('${content.md5}.sh')
     ..createSync(recursive: true);
   script.writeAsStringSync(content);
-  posix.chmod(755, script.path);
+  posix.chmod(script.path, permission: '755');
   return script;
   // TODO add teardown and remove it again
 }
