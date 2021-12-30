@@ -1,0 +1,21 @@
+name: Unit Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  core_test:
+    runs-on: ubuntu-latest
+
+    container:
+      image: google/dart:dev
+
+    steps:
+      - uses: actions/checkout@v1
+      - name: Install dependencies
+        run: cd sidekick_core && dart pub get --no-precompile
+      - name: Run tests
+        run: cd sidekick_core && dart test
