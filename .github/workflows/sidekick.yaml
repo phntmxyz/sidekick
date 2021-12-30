@@ -7,12 +7,12 @@ on:
   pull_request:
 
 jobs:
-  test:
+  integration_tests:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        version: ["2.13", "2.14", "dev"]
+        version: ["2.13", "2.14", "2.15", "dev"]
 
     container:
       image: google/dart:${{ matrix.version }}
@@ -26,3 +26,16 @@ jobs:
         run: cd sidekick && dart pub get --no-precompile
       - name: Run tests
         run: cd sidekick && dart test
+
+  core_test:
+    runs-on: ubuntu-latest
+
+    container:
+      image: google/dart:2.15
+
+    steps:
+      - uses: actions/checkout@v1
+      - name: Install dependencies
+        run: cd sidekick_core && dart pub get --no-precompile
+      - name: Run tests
+        run: cd sidekick_core && dart test
