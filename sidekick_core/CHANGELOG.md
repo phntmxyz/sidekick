@@ -1,3 +1,7 @@
+## 0.3.3
+
+- Update `dcli` to `1.15.0` due to [breaking change](https://github.com/noojee/dcli/commit/d8a68546127fa5c7b32f1f97eb3020e79605c873)
+
 ## 0.3.2
 
 - Update `dcli`
