@@ -6,13 +6,12 @@ import 'package:sidekick_core/sidekick_core.dart';
 
 /// Exits the CLI immediately with a messages
 Never error(String message) {
-  io.stderr.writeln(message);
   assert(
     () {
-      io.stderr.writeln(StackTrace.current);
-      return true;
+      throw message;
     }(),
   );
+  io.stderr.writeln(message);
   io.exit(-1);
 }
 
