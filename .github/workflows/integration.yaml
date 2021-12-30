@@ -1,10 +1,13 @@
-name: sidekick CLI
+name: Integration Tests
 
 on:
   push:
     branches:
       - main
   pull_request:
+  schedule:
+    # Every night at 03:00
+    - cron: '0 3 * * *'
 
 jobs:
   integration_tests:
@@ -26,16 +29,3 @@ jobs:
         run: cd sidekick && dart pub get --no-precompile
       - name: Run tests
         run: cd sidekick && dart test
-
-  core_test:
-    runs-on: ubuntu-latest
-
-    container:
-      image: google/dart:2.15
-
-    steps:
-      - uses: actions/checkout@v1
-      - name: Install dependencies
-        run: cd sidekick_core && dart pub get --no-precompile
-      - name: Run tests
-        run: cd sidekick_core && dart test
