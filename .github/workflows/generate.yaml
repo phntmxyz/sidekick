@@ -23,7 +23,7 @@ jobs:
           echo "$PATH"
           pwd
           dart pub global activate mason
-          /usr/lib/dart/bin/dart/.pub-cache/bin >> $GITHUB_ENV
+          /usr/lib/dart/bin:/root/.pub-cache/bin >> $GITHUB_ENV
       - name: Regenerate the template
         run: |
           mv sidekick/lib/src/templates/cli_bundle.g.dart sidekick/lib/src/templates/temp_cli_bundle.g.dart
