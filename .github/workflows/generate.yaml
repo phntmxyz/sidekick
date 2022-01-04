@@ -22,7 +22,6 @@ jobs:
           which dart 
           dart pub global activate mason_cli
           export PATH=$PATH:$HOME/.pub-cache/bin/
-          mv sidekick/lib/src/templates/cli_bundle.g.dart sidekick/lib/src/templates/temp_cli_bundle.g.dart
           cd sidekick && ./tool/generateTemplate.sh
-          diff -q lib/src/templates/temp_cli_bundle.g.dart lib/src/templates/cli_bundle.g.dart
+          cd sidekick/lib/src/templates/ && git diff --exit-code
           
