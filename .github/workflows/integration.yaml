@@ -1,18 +1,21 @@
-name: sidekick CLI
+name: Integration Tests
 
 on:
   push:
     branches:
       - main
   pull_request:
+  schedule:
+    # Every night at 03:00
+    - cron: '0 3 * * *'
 
 jobs:
-  test:
+  integration_tests:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        version: ["2.13", "2.14", "dev"]
+        version: ["2.13", "2.14", "2.15", "dev"]
 
     container:
       image: google/dart:${{ matrix.version }}

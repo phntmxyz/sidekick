@@ -40,6 +40,12 @@ void initializeSidekick({
   }
 }
 
+void deinitializeSidekick() {
+  _cliName = null;
+  _repository = null;
+  _mainProject = null;
+}
+
 /// Name of the cli program
 ///
 /// Usually a short acronym, like 3 characters

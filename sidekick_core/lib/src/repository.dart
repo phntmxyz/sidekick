@@ -46,7 +46,7 @@ Repository findRepository() {
       root = entryPoint.parent;
     } catch (e) {
       error(
-        'Could not find the $cliName project repository in parent of ${Directory.current}',
+        'Could not find the $cliName entrypoint in parent of ${Directory.current}',
       );
     }
   }

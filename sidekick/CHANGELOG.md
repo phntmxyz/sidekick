@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.0
+
+- Rename `update_sidekick` task to `recompile`
+- Update `sidekick-core`
+- Udpate `mason`
+- Support for dart 2.12
+
 ## 0.1.1
 
 Update `sidekick-core`
