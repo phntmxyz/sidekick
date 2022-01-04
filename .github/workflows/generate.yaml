@@ -24,6 +24,8 @@ jobs:
           ${{ env.HOME }}/.pub-cache/bin >> $GITHUB_ENV
           echo "$PATH"
           pwd
+      - name: Regenerate the template
+        run: |
           mv sidekick/lib/src/templates/cli_bundle.g.dart sidekick/lib/src/templates/temp_cli_bundle.g.dart
           cd sidekick && ./tool/generateTemplate.sh
           diff -q sidekick/lib/src/templates/temp_cli_bundle.g.dart sidekick/lib/src/templates/cli_bundle.g.dart
