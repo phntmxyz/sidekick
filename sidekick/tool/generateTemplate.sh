@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-set -x
 
 echo "Generating Sidekick Template Bundle"
 mason bundle cli_template/bricks/sidekick -t dart -o lib/src/templates/
