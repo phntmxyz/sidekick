@@ -20,9 +20,7 @@ jobs:
       - name: Install Mason and export path in the Github CI and pull the updated path
         run: |
           which dart 
-          echo "$PATH"
-          pwd
-          pub global activate mason
-          export PATH=$PATH:$HOME/.pub-cache/bin
-          which mason
+          dart pub global activate mason_cli
+          export PATH=$PATH:$HOME/.pub-cache/bin/
+          cd sidekick && ./tool/generateTemplate.sh
       
