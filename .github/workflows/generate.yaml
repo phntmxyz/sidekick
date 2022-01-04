@@ -19,10 +19,9 @@ jobs:
       - uses: actions/checkout@v1
       - name: Install Mason and export path in the Github CI and pull the updated path
         run: |
-          which dart
-          ls -l
-          cd /usr/lib/dart/bin/dart
-          ls
+          which dart 
+          echo "$PATH"
+          pwd
           dart pub global activate mason
           /usr/lib/dart/bin/dart/.pub-cache/bin >> $GITHUB_ENV
       - name: Regenerate the template
