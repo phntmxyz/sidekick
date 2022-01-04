@@ -23,7 +23,10 @@ jobs:
           dart pub global activate mason_cli
           export PATH=$PATH:$HOME/.pub-cache/bin/
           cd sidekick && ./tool/generateTemplate.sh
-      - name: Check if the template has changed
+      - name: Check if the template has changed if not fail the build
         run: |
-          cd sidekick/lib/src/templates/ && git diff --exit-code
-      
+          cd sidekick && git diff --quiet
+          if [ $? -ne 0 ]; then
+            echo "Template has changed, please commit the changes"
+            exit 1
+          fi
