@@ -24,6 +24,7 @@ jobs:
           pwd
           dart pub global activate mason
           mv sidekick/lib/src/templates/cli_bundle.g.dart sidekick/lib/src/templates/temp_cli_bundle.g.dart
-          cd sidekick && ./tool/generateTemplate.sh
+          mason bundle cli_template/bricks/sidekick -t dart -o lib/src/templates/
+          mv lib/src/templates/sidekick_bundle.dart lib/src/templates/cli_bundle.g.dart
           diff -q sidekick/lib/src/templates/temp_cli_bundle.g.dart sidekick/lib/src/templates/cli_bundle.g.dart
       
