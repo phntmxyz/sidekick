@@ -22,11 +22,7 @@ jobs:
           which dart 
           dart pub global activate mason_cli
           export PATH=$PATH:$HOME/.pub-cache/bin/
+          mv sidekick/lib/src/templates/cli_bundle.g.dart sidekick/lib/src/templates/temp_cli_bundle.g.dart
           cd sidekick && ./tool/generateTemplate.sh
-      - name: Check if the template has changed if not fail the build
-        run: |
-          cd sidekick && git diff --quiet
-          if [ $? -ne 0 ]; then
-            echo "Template has changed, please commit the changes"
-            exit 1
-          fi
+          diff -q sidekick/lib/src/templates/temp_cli_bundle.g.dart sidekick/lib/src/templates/cli_bundle.g.dart
+          
