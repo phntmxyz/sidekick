@@ -23,4 +23,7 @@ jobs:
           dart pub global activate mason_cli
           export PATH=$PATH:$HOME/.pub-cache/bin/
           cd sidekick && ./tool/generateTemplate.sh
+      - name: Check if the template has changed
+        run: |
+          cd sidekick/lib/src/templates/ && git diff --exit-code
       
