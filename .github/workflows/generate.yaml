@@ -20,7 +20,7 @@ jobs:
       - name: Install Mason and export path in the Github CI and pull the updated path
         run: |
           which dart
-          cd /usr/lib/dart/bin/dart/
+          cd /usr/lib/dart/bin/dart
           ls -l
           dart pub global activate mason
           /usr/lib/dart/bin/dart/.pub-cache/bin >> $GITHUB_ENV
