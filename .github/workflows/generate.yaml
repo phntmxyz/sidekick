@@ -23,6 +23,7 @@ jobs:
           echo "$PATH"
           pwd
           dart pub global activate mason
+          ${{ env.HOME }}/.pub-cache/bin >> $GITHUB_ENV
           mv sidekick/lib/src/templates/cli_bundle.g.dart sidekick/lib/src/templates/temp_cli_bundle.g.dart
           mason bundle cli_template/bricks/sidekick -t dart -o lib/src/templates/
           mv lib/src/templates/sidekick_bundle.dart lib/src/templates/cli_bundle.g.dart
