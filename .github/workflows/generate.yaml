@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     container:
-      image: google/dart:2.15
+      image: google/dart:2.12
 
     steps:
       - run: |
@@ -19,11 +19,11 @@ jobs:
       - uses: actions/checkout@v1
       - name: Install Mason and export path in the Github CI and pull the updated path
         run: |
-          dart pub global activate mason_cli
+          set -e
           export PATH=$PATH:$HOME/.pub-cache/bin/
-          echo $PATH
-          ls -la $HOME/.pub-cache/bin/
-          ./sidekick/tool/generateTemplate.sh
+          dart pub global activate mason_cli
+          mason init
+          cd sidekick && ./tool/generateTemplate.sh
           
           git diff --exit-code **/*.g.dart
           
