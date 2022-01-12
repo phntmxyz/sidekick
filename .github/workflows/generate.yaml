@@ -22,7 +22,6 @@ jobs:
           set -e
           export PATH=$PATH:$HOME/.pub-cache/bin/
           dart pub global activate mason_cli
-          mason init
           cd sidekick && ./tool/generateTemplate.sh
           
           git diff --exit-code **/*.g.dart
