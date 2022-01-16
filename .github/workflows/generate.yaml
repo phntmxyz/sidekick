@@ -1,0 +1,28 @@
+name: Mason Template Generated
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  code_generation:
+    runs-on: ubuntu-latest
+
+    container:
+      image: google/dart:2.12
+
+    steps:
+      - run: |
+         apt-get update
+      - uses: actions/checkout@v1
+      - name: Install Mason and export path in the Github CI and pull the updated path
+        run: |
+          set -e
+          export PATH=$PATH:$HOME/.pub-cache/bin/
+          dart pub global activate mason_cli
+          cd sidekick && ./tool/generateTemplate.sh
+          
+          git diff --exit-code **/*.g.dart
+          

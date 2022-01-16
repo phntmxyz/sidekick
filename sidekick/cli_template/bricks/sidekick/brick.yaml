@@ -1,4 +1,5 @@
 name: sidekick
 description: Creates the sidekick basic structure.
+version: 1.0.0
 vars:
   - name
