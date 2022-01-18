@@ -9,9 +9,9 @@ int flutterw(
 }) {
   final workingDir =
       workingDirectory?.absolute ?? entryWorkingDirectory.absolute;
+  print('Assuming flutterw located in ${repository.root.path}');
   final flutterw = repository.root.file('flutterw');
 
-  print('Executing flutter wrapper ${flutterw.path} in ${workingDir.path}');
   final process = dcli.startFromArgs(
     flutterw.path,
     args,
