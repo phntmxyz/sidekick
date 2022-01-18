@@ -10,7 +10,7 @@ on:
     - cron: '0 3 * * *'
 
 jobs:
-  integration_tests:
+  integration_tests_linux:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -29,3 +29,17 @@ jobs:
         run: cd sidekick && dart pub get --no-precompile
       - name: Run tests
         run: cd sidekick && dart test
+
+  integration_tests_windows:
+    runs-on: windows-2022
+
+    # They don't work yet, but someone should invest time here
+    if: {{ false }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: dart-lang/setup-dart@v1
+      - name: Install dependencies
+        run: cd sidekick && dart pub get --no-precompile
+      - name: Run tests
+        run: cd sidekick && dart test
+

@@ -9,7 +9,15 @@ int dart(
   Directory? workingDirectory,
   dcli.Progress? progress,
 }) {
-  final dart = repository.root.file('.flutter/bin/cache/dart-sdk/bin/dart');
+  final binDir = repository.root.directory('.flutter/bin/cache/dart-sdk/bin/');
+  final dart = () {
+    if (Platform.isWindows) {
+      return binDir.file('dart.exe');
+    } else {
+      return binDir.file('dart');
+    }
+  }();
+
   if (!dart.existsSync()) {
     // run a flutterw command forcing flutter_tool to download the dart sdk
     print("running flutterw to download dart");
