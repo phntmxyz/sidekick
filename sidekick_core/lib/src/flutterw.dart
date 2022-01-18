@@ -10,18 +10,15 @@ int flutterw(
   final workingDir =
       workingDirectory?.absolute ?? entryWorkingDirectory.absolute;
   final flutterw = repository.root.file('flutterw');
-  try {
-    final process = dcli.startFromArgs(
-      flutterw.path,
-      args,
-      workingDirectory: workingDir.path,
-      nothrow: true,
-      progress: progress,
-      terminal: progress == null,
-    );
-    return process.exitCode ?? -1;
-  } catch (_) {
-    print('Error executing ${flutterw.path} in ${workingDir.path}');
-    rethrow;
-  }
+
+  print('Executing flutter wrapper ${flutterw.path} in ${workingDir.path}');
+  final process = dcli.startFromArgs(
+    flutterw.path,
+    args,
+    workingDirectory: workingDir.path,
+    nothrow: true,
+    progress: progress,
+    terminal: progress == null,
+  );
+  return process.exitCode ?? -1;
 }
