@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:dartx/dartx_io.dart';
+import 'package:sidekick_core/sidekick_core.dart';
 import 'package:yaml/yaml.dart';
 
 class DartPackage {
@@ -19,6 +20,10 @@ class DartPackage {
     }
     final lib = directory.directory('lib');
     if (!lib.existsSync()) {
+      printerr(
+        'Detected a pubspec.yaml in ${directory.absolute.path} but the /lib directory is missing. '
+        'The directory will not be interpreted as valid Dart package.',
+      );
       return null;
     }
     final pubspecYamlContent = pubspec.readAsStringSync();
