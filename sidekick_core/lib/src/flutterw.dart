@@ -9,7 +9,6 @@ int flutterw(
 }) {
   final workingDir =
       workingDirectory?.absolute ?? entryWorkingDirectory.absolute;
-  print('Assuming flutterw located in ${repository.root.path}');
   final flutterw = repository.root.file('flutterw');
 
   if (Platform.isWindows) {
