@@ -7,7 +7,7 @@ environment:
   sdk: '>=2.14.0 <3.0.0'
 
 dependencies:
-  dcli: ^1.15.0
+  dcli: # provided by sidekick_core
   sidekick_core: '>=0.3.0 <1.0.0'
 
 #dependency_overrides:
