@@ -11,8 +11,13 @@ cd "${CLI_PACKAGE_DIR}" || exit
   # export pub from .flutter dir
   REPO_ROOT=$(git rev-parse --show-cdup)
   DART_SDK="${REPO_ROOT}.flutter/bin/cache/dart-sdk"
-  PUB="$DART_SDK/bin/pub"
   DART="$DART_SDK/bin/dart"
+
+  # If we're on Windows, invoke the batch script instead
+  OS="$(uname -s)"
+  if [[ $OS =~ MINGW.* || $OS =~ CYGWIN.* ]]; then
+    DART="$DART_SDK/bin/dart.exe"
+  fi
 
   if [ ! -d "$DART_SDK" ]; then
     echo 'missing flutter sdk'
@@ -21,7 +26,7 @@ cd "${CLI_PACKAGE_DIR}" || exit
 
   # build
   printf -- "- Getting dependencies\n"
-  $PUB get >/dev/null 2>&1
+  "${DART}" pub get >/dev/null 2>&1
   printf -- "\033[1A\033[2K✔ Getting dependencies\n"
   printf -- "- Bundling assets\n"
   rm -rf build
@@ -31,7 +36,7 @@ cd "${CLI_PACKAGE_DIR}" || exit
   CLI_COMMITS=$(git rev-list --count HEAD -- . || echo "0")
   EXE="build/${name}_sidekick-${CLI_COMMITS}.exe"
   set -e
-  $DART compile exe -o "${EXE}" bin/${name}.dart
+  "${DART}" compile exe -o "${EXE}" bin/${name}.dart
   set +e
   printf -- "\033[1A\033[2K✔ Compiling $name sidekick\n"
 
