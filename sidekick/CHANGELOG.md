@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.0
+
+- Windows support
+- Better `cliName` missing error message
+
 ## 0.2.0
 
 - Rename `update_sidekick` task to `recompile`
