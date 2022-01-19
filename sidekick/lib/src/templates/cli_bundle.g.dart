@@ -58,7 +58,7 @@ final sidekickBundle = MasonBundle.fromJson(<String, dynamic>{
       "path":
           "packages/{{#lowerCase}}{{name}}{{/lowerCase}}_sidekick/pubspec.yaml",
       "data":
-          "bmFtZToge3tuYW1lfX1fc2lkZWtpY2sKZGVzY3JpcHRpb246IFNpZGVraWNrIENMSSBmb3Ige3tuYW1lfX0KdmVyc2lvbjogMC4wLjEKcHVibGlzaF90bzogbm9uZQoKZW52aXJvbm1lbnQ6CiAgc2RrOiAnPj0yLjE0LjAgPDMuMC4wJwoKZXhlY3V0YWJsZXM6CiAge3tuYW1lfX06IHt7bmFtZX19CgpkZXBlbmRlbmNpZXM6CiAgY3N2OiBeNS4wLjAKICBpbnRsOiBeMC4xNy4wCiAgc2lkZWtpY2tfY29yZTogXjAuMy4zCiAgdGltZWFnbzogXjMuMC4yCgpkZXZfZGVwZW5kZW5jaWVzOgogIGxpbnQ6IF4xLjUuMwo=",
+          "bmFtZToge3tuYW1lfX1fc2lkZWtpY2sKZGVzY3JpcHRpb246IFNpZGVraWNrIENMSSBmb3Ige3tuYW1lfX0KdmVyc2lvbjogMC4wLjEKcHVibGlzaF90bzogbm9uZQoKZW52aXJvbm1lbnQ6CiAgc2RrOiAnPj0yLjE0LjAgPDMuMC4wJwoKZXhlY3V0YWJsZXM6CiAge3tuYW1lfX06IHt7bmFtZX19CgpkZXBlbmRlbmNpZXM6CiAgY3N2OiBeNS4wLjAKICBpbnRsOiBeMC4xNy4wCiAgc2lkZWtpY2tfY29yZTogXjAuNC4xCiAgdGltZWFnbzogXjMuMC4yCgpkZXZfZGVwZW5kZW5jaWVzOgogIGxpbnQ6IF4xLjUuMwo=",
       "type": "text"
     },
     {
