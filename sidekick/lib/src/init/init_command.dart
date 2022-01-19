@@ -42,7 +42,7 @@ class InitCommand extends Command {
     }();
     final cliName = argResults!['cliName'] as String?;
     if (cliName == null) {
-      throw 'No CLI name provided';
+      throw 'No cliName provided. Call `sidekick init --cliName <your-name>`';
     }
     print("Generating ${cliName}_sidekick");
     print("In directory: ${projectDir.path}");
