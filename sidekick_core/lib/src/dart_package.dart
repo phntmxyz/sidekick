@@ -1,6 +1,3 @@
-import 'dart:io';
-
-import 'package:dartx/dartx_io.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:yaml/yaml.dart';
 

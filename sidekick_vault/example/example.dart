@@ -8,8 +8,12 @@ void main() {
     environmentVariableName: 'FLT_VAULT_PASSPHRASE',
   );
 
-  final secret = vault.loadText('secret.txt');
+// define encrypted files in vault
+  final EncryptedVaultString encrypted = vault.encryptedString('secret.txt');
+// access the text prompts the passsword
+  print(encrypted.text);
 
-  // Use secret on your CI to do magic things
+  // directly decrypt (prompts password immediately)
+  final secret = vault.loadText('secret.txt');
   print(secret);
 }
