@@ -4,7 +4,7 @@ version: 0.0.1
 publish_to: none
 
 environment:
-  sdk: '>=2.12.0 <3.0.0'
+  sdk: '>=2.14.0 <3.0.0'
 
 executables:
   {{name}}: {{name}}
@@ -14,7 +14,6 @@ dependencies:
   intl: ^0.17.0
   sidekick_core: ^0.3.3
   timeago: ^3.0.2
-
 
 dev_dependencies:
   lint: ^1.5.3

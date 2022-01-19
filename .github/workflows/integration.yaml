@@ -15,7 +15,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        version: ["2.13", "2.14", "2.15", "dev"]
+        # Always keep support to at least 2 stable versions
+        version: ["2.14", "2.15", "dev"]
 
     container:
       image: google/dart:${{ matrix.version }}
