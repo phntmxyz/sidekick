@@ -34,7 +34,7 @@ class DartPackage {
       }
 
       // Check for (optional) flutter dependency
-      final deps = pubspec['dependencies'] as Map?;
+      final deps = pubspec['dependencies'] as YamlMap?;
       final flutterDep = deps?['flutter'] as YamlMap?;
       if (flutterDep != null) {
         return DartPackage.flutter(directory, packageName);
