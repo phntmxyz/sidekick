@@ -1,3 +1,6 @@
+## 0.4.1
+- Require Dart 2.14
+
 ## 0.4.0
 - `flutterw()` is now windows compatible
 - `dart()` is now windows compatible
