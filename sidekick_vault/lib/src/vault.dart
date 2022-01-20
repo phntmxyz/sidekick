@@ -55,10 +55,19 @@ String getEnvPassword(String envKey, [String? name]) {
   if (password != null) {
     return password;
   }
-  return dcli
+
+  // Could not resolve password from env, ask user for password in shell
+  final userInput = dcli
       .ask(
         'Enter ${name ?? envKey} password (or provide env.$envKey):',
         hidden: true,
       )
       .trim();
+
+  // On CI without stdin the userInput returns ""
+  if (userInput.isEmpty) {
+    throw "Password in env.$envKey is not defined and user input was empty";
+  }
+
+  return userInput;
 }
