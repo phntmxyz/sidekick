@@ -23,3 +23,15 @@ jobs:
         run: cd sidekick_core && dart test
       - name: Run tests sidekick_vault
         run: cd sidekick_vault && dart test
+  vault_test:
+    runs-on: ubuntu-latest
+
+    container:
+      image: google/dart:dev
+
+    steps:
+      - uses: actions/checkout@v1
+      - name: Install dependencies sidekick_vault
+        run: cd sidekick_vault && dart pub get --no-precompile
+      - name: Run tests sidekick_vault
+        run: cd sidekick_vault && dart test
