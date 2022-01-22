@@ -82,8 +82,6 @@ class InitCommand extends Command {
     await generator.generate(
       generatorTarget,
       vars: {'name': cliName},
-      logger: Logger(),
-      fileConflictResolution: FileConflictResolution.overwrite,
     );
 
     // Make the entrypoint executable
