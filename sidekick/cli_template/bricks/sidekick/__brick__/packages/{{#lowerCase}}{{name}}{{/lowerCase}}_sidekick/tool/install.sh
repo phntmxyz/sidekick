@@ -2,11 +2,10 @@
 
 CWD=$PWD
 CLI_PACKAGE_DIR=$(dirname "$(dirname "$0")")
-name="{{#lowerCase}}{{name}}{{/lowerCase}}"
 
 cd "${CLI_PACKAGE_DIR}" || exit
 
-  echo "Installing $name command line application..."
+  echo "Installing sidekick command line application..."
 
   # export pub from .flutter dir
   REPO_ROOT=$(git rev-parse --show-cdup)
@@ -25,36 +24,20 @@ cd "${CLI_PACKAGE_DIR}" || exit
   fi
 
   # build
+  EXE="build/cli.exe"
   printf -- "- Getting dependencies\n"
-  "${DART}" pub get >/dev/null 2>&1
+  set -e
+  "${DART}" pub get
+  set +e
   printf -- "\033[1A\033[2K✔ Getting dependencies\n"
   printf -- "- Bundling assets\n"
-  rm -rf build
+  rm EXE
   mkdir -p build
   printf -- "\033[1A\033[2K✔ Bundling assets\n"
-  printf -- "- Compiling $name sidekick\n"
-  CLI_COMMITS=$(git rev-list --count HEAD -- . || echo "0")
-  EXE="build/${name}_sidekick-${CLI_COMMITS}.exe"
+  printf -- "- Compiling sidekick cli\n"
   set -e
-  "${DART}" compile exe -o "${EXE}" bin/${name}.dart
+  "${DART}" compile exe -o "${EXE}" bin/main.dart
   set +e
-  printf -- "\033[1A\033[2K✔ Compiling $name sidekick\n"
-
-
-  if [ ! -f "/usr/local/bin/$name" ] ; then
-    # when not linked globally
-    if [ -t 0 ] ; then
-      # stdin exits, human ist interacting with script
-      read -p "Do you want to install the $name sidekick globally? (y/n) " x
-      if [ "$x" = "y" ] ; then
-        sudo rm /usr/local/bin/$name > /dev/null 2>&1 || true
-        SH="$(realpath "${REPO_ROOT}${name}")"
-        sudo ln -s "${SH}" /usr/local/bin/$name
-        echo ""
-        echo "You can now use '$name' from everywhere"
-        echo ""
-      fi
-    fi
-  fi
+  printf -- "\033[1A\033[2K✔ Compiling sidekick cli\n"
 
 cd "${CWD}" || exit

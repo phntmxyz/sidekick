@@ -86,18 +86,26 @@ class InitCommand extends Command {
       fileConflictResolution: FileConflictResolution.overwrite,
     );
 
-    // Make the entrypoint executable
-    final entrypointSh = path.file(cliName);
-    await makeExecutable(entrypointSh);
-
-    // Make update script executable
+    // Make install script executable
     await makeExecutable(
       path.file('packages/${cliName}_sidekick/tool/install.sh'),
     );
+    // Make run script executable
+    final runScript = path.file('packages/${cliName}_sidekick/tool/run.sh');
+    await makeExecutable(runScript);
+
+    // link entrypoint to run script
+    // TODO make location configurable
+    final entrypointSh = Link(path.file(cliName).path)
+      ..createSync(runScript.path);
 
     // For now, we install the flutter wrapper to get a dart runtime.
-    // TODO That should be changed!
+    // TODO Add dart runtime so that dart packages can use sidekick without flutter
     await installFlutterWrapper(path);
+
+    if (!entrypointSh.existsSync()) {
+      throw "Could not link run script $runScript $entrypointSh";
+    }
   }
 }
 
@@ -127,11 +135,14 @@ Future<void> installFlutterWrapper(Directory directory) async {
 }
 
 /// Makes a file executable 'rwxr-xr-x' (755)
-Future<void> makeExecutable(File file) async {
+Future<void> makeExecutable(FileSystemEntity file) async {
   if (Platform.isWindows) {
     // TODO can this be somehow encoded into the file so that windows users
     //  can generate it and unix users can execute it right away?
     return;
+  }
+  if (file is Directory) {
+    throw "Can't make a Directory executable ($file)";
   }
   if (!file.existsSync()) {
     throw 'File not found ${file.path}';

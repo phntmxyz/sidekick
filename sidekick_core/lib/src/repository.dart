@@ -1,4 +1,5 @@
 import 'package:sidekick_core/sidekick_core.dart';
+import 'package:sidekick_core/src/global_sidekick_root.dart';
 
 /// Recursively goes up and tries to find a [Directory] matching [predicate]
 ///
@@ -33,31 +34,53 @@ bool _isRepositoryRootDir(Directory dir) {
 }
 
 /// Attempts to find the root of
-Repository findRepository() {
-  var root = _findRootInWorkingDir(_isRepositoryRootDir);
-  if (root == null) {
-    try {
-      final String entrypointPath =
-          "realpath /usr/local/bin/$cliName".lastLine!;
-      final entryPoint = File(entrypointPath);
-      if (!entryPoint.existsSync()) {
-        throw 'could not read system link target';
-      }
-      root = entryPoint.parent;
-    } catch (e) {
-      error(
-        'Could not find the $cliName entrypoint in parent of ${Directory.current}',
-      );
-    }
+Repository findRepository(String relativeCliPackagePath) {
+  final root = _findRootInWorkingDir(_isRepositoryRootDir);
+  if (root != null) {
+    return Repository(
+      root: root,
+      // TODO is it really relative to root?
+      cliPackage: root.directory(relativeCliPackagePath),
+      // TODO always lookup global entry point or detect the script location reliably
+      entryPoint: null,
+    );
   }
-  return Repository(root);
+
+  // Outside of repository. Read link to binary
+  try {
+    final globalEntryPoint =
+        GlobalSidekickRoot.linkedBinary(cliName).resolveSymbolicLinksSync();
+    final entryPoint = File(globalEntryPoint);
+
+    if (!entryPoint.existsSync()) {
+      // TODO remove broken symlink?
+      throw 'could not read system link target';
+    }
+    return Repository(
+      root: entryPoint.parent,
+      cliPackage: entryPoint.parent.directory(relativeCliPackagePath),
+      entryPoint: entryPoint,
+    );
+  } catch (e) {
+    error(
+      'Could not find the $cliName entrypoint in parent of ${Directory.current}',
+    );
+  }
 }
 
 /// The repository of the project
 ///
 /// Might be a single dart project or multiple packages, or even non dart packages
 class Repository {
-  Repository(this.root);
+  Repository({
+    required this.root,
+    required this.cliPackage,
+    required this.entryPoint,
+  });
 
   final Directory root;
+
+  final Directory cliPackage;
+
+  final File? entryPoint;
 }
