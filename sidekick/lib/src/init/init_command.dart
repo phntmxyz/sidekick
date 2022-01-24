@@ -114,6 +114,12 @@ class InitCommand extends Command {
 
 /// Initializes git via `git init` in [directory]
 Future<void> gitInit(Directory directory) async {
+  final bool inGitDir =
+      Process.runSync('git', ['rev-parse', '--git-dir']).exitCode == 0;
+  if (inGitDir) {
+    // no need to initialize
+    return;
+  }
   final Process process =
       await Process.start('git', ['init'], workingDirectory: directory.path);
   stdout.addStream(process.stdout);
