@@ -51,4 +51,4 @@ if [ "$HASH" != "$EXISTING_HASH" ]; then
 fi
 
 EXE="${SIDEKICK_PACKAGE_DIR}/build/cli.exe"
-"${EXE}" "$0"
+"${EXE}" "$@"

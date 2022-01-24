@@ -96,8 +96,11 @@ class InitCommand extends Command {
 
     // link entrypoint to run script
     // TODO make location configurable
-    final entrypointSh = Link(path.file(cliName).path)
-      ..createSync(runScript.path);
+    final entrypointSh = Link(path.file(cliName).path);
+    if (entrypointSh.existsSync()) {
+      entrypointSh.deleteSync();
+    }
+    entrypointSh.createSync(runScript.path);
 
     // For now, we install the flutter wrapper to get a dart runtime.
     // TODO Add dart runtime so that dart packages can use sidekick without flutter
