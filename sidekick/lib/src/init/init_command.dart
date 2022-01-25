@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:mason/mason.dart';
 import 'package:sidekick/src/init/project_structure_detector.dart';
 import 'package:sidekick/src/templates/cli_bundle.g.dart';
+import 'package:path/path.dart';
 
 class InitCommand extends Command {
   @override
@@ -100,7 +101,9 @@ class InitCommand extends Command {
     if (entrypointSh.existsSync()) {
       entrypointSh.deleteSync();
     }
-    entrypointSh.createSync(runScript.path);
+    // relative is important here, otherwise it couldn't be checked in
+    entrypointSh
+        .createSync(relative(runScript.path, from: entrypointSh.parent.path));
 
     // For now, we install the flutter wrapper to get a dart runtime.
     // TODO Add dart runtime so that dart packages can use sidekick without flutter
