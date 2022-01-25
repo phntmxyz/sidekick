@@ -123,8 +123,6 @@ class InitCommand extends Command {
       );
       final generatedEntrypoint = entrypointDir.file('entrypoint.sh');
       final File entrypoint = generatedEntrypoint.renameSync(cliName);
-      // Fixes https://github.com/felangel/mason/issues/211
-      entrypoint.replaceFirst('&#x2F;', '/');
       await makeExecutable(entrypoint);
     }
 
@@ -182,21 +180,5 @@ Future<void> makeExecutable(FileSystemEntity file) async {
   final exitCode = await p.exitCode;
   if (exitCode != 0) {
     throw 'Cloud not set permission 755 for file ${file.path}';
-  }
-}
-
-extension on File {
-  void replaceFirst(String text, String replacement) {
-    final original = readAsStringSync();
-    final startIndex = original.indexOf(text);
-    if (startIndex == -1) {
-      throw "String '$text' not found in ${this.absolute.path}";
-    }
-    final mutated = original.replaceRange(
-      startIndex,
-      startIndex + text.length,
-      replacement,
-    );
-    writeAsStringSync(mutated);
   }
 }
