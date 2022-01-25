@@ -38,7 +38,7 @@ void main() {
     test('mainProject returns when set in initializeSidekick', () {
       insideFakeSidekickProject((dir) {
         initializeSidekick(name: 'dash', mainProjectPath: '.');
-        expect(mainProject.root.path, '${dir.path}/.');
+        expect(mainProject.root.path, dir.path);
         expect(mainProject.name, 'dash_sdk');
       });
     });
