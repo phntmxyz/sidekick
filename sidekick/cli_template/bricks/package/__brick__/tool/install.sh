@@ -5,7 +5,7 @@ CLI_PACKAGE_DIR=$(dirname "$(dirname "$0")")
 
 cd "${CLI_PACKAGE_DIR}" || exit
 
-  echo "Installing sidekick command line application..."
+  echo "Installing {{name}} command line application..."
 
   # export pub from .flutter dir
   REPO_ROOT=$(git rev-parse --show-cdup)
@@ -31,7 +31,7 @@ cd "${CLI_PACKAGE_DIR}" || exit
   set +e
   printf -- "\033[1A\033[2K✔ Getting dependencies\n"
   printf -- "- Bundling assets\n"
-  rm EXE
+  rm "${EXE}"
   mkdir -p build
   printf -- "\033[1A\033[2K✔ Bundling assets\n"
   printf -- "- Compiling sidekick cli\n"
