@@ -19,14 +19,15 @@ cd "$(dirname "$PRG")/" >/dev/null
 TOOL_HOME="$(pwd -P)"
 cd "$SAVED" >/dev/null
 
-SIDEKICK_PACKAGE_DIR=$(dirname "$TOOL_HOME")
+export SIDEKICK_PACKAGE_HOME=$(dirname "$TOOL_HOME")
 
 REPO_ROOT=$(git -C "$TOOL_HOME" rev-parse --show-cdup)
 DART_SDK="${REPO_ROOT}.flutter/bin/cache/dart-sdk"
 DART="$DART_SDK/bin/dart"
 
+
 ## Run without compilation
-#"${DART}" "${SIDEKICK_PACKAGE_DIR}/bin/main.dart" "$@"
+#"${DART}" "${SIDEKICK_PACKAGE_HOME}/bin/main.dart" "$@"
 
 HASH_PROGRAM='sha1sum'
 OS="$(uname -s)"
@@ -34,21 +35,21 @@ if [[ $OS =~ DARWIN.* ]]; then
   HASH_PROGRAM="shasum"
 fi
 
-STAMP_FILE="${SIDEKICK_PACKAGE_DIR}/build/cli.stamp"
+STAMP_FILE="${SIDEKICK_PACKAGE_HOME}/build/cli.stamp"
 HASH=$(find \
-  "${SIDEKICK_PACKAGE_DIR}/bin" \
-  "${SIDEKICK_PACKAGE_DIR}/lib" \
-  "${SIDEKICK_PACKAGE_DIR}/tool" \
-  "${SIDEKICK_PACKAGE_DIR}/pubspec.yaml" \
-  "${SIDEKICK_PACKAGE_DIR}/pubspec.lock" \
+  "${SIDEKICK_PACKAGE_HOME}/bin" \
+  "${SIDEKICK_PACKAGE_HOME}/lib" \
+  "${SIDEKICK_PACKAGE_HOME}/tool" \
+  "${SIDEKICK_PACKAGE_HOME}/pubspec.yaml" \
+  "${SIDEKICK_PACKAGE_HOME}/pubspec.lock" \
   -type f -print0 | xargs -0 "$HASH_PROGRAM")
 EXISTING_HASH=$(cat $STAMP_FILE) || true
 
 if [ "$HASH" != "$EXISTING_HASH" ]; then
   # different hash, recompile
-  sh "${SIDEKICK_PACKAGE_DIR}/tool/install.sh"
+  sh "${SIDEKICK_PACKAGE_HOME}/tool/install.sh"
   echo "$HASH" > "$STAMP_FILE"
 fi
 
-EXE="${SIDEKICK_PACKAGE_DIR}/build/cli.exe"
+EXE="${SIDEKICK_PACKAGE_HOME}/build/cli.exe"
 "${EXE}" "$@"

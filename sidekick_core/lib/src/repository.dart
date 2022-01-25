@@ -1,71 +1,22 @@
 import 'package:sidekick_core/sidekick_core.dart';
-import 'package:sidekick_core/src/global_sidekick_root.dart';
 
-/// Recursively goes up and tries to find a [Directory] matching [predicate]
-///
-/// Returns `null` when reaching root (/) without a match
-Directory? _findRootInWorkingDir(bool Function(Directory dir) predicate) {
-  var dir = Directory.current;
-  while (true) {
-    if (predicate(dir)) {
-      return dir;
-    }
-    final parent = dir.parent;
-    if (dir.toString() == parent.toString()) {
-      // not found
-      return null;
-    }
-    dir = dir.parent;
-  }
-}
-
-bool _isRepositoryRootDir(Directory dir) {
-  final gitDir = dir.directory('.git');
-  if (!gitDir.existsSync()) {
-    return false;
-  }
-
-  final cliEntry = dir.file(cliName);
-  if (!cliEntry.existsSync()) {
-    return false;
-  }
-
-  return true;
-}
-
-/// Attempts to find the root of
+/// Finds the root of the repo
 Repository findRepository(String relativeCliPackagePath) {
-  final root = _findRootInWorkingDir(_isRepositoryRootDir);
-  if (root != null) {
-    return Repository(
-      root: root,
-      // TODO is it really relative to root?
-      cliPackage: root.directory(relativeCliPackagePath),
-      // TODO always lookup global entry point or detect the script location reliably
-      entryPoint: null,
-    );
-  }
+  final Directory packageHome =
+      // Usually the dir is injected
+      Repository.cliPackageDir ??
+          // the actual dart .exe located in `build`
+          File.fromUri(Platform.script).parent.parent;
 
-  // Outside of repository. Read link to binary
-  try {
-    final globalEntryPoint =
-        GlobalSidekickRoot.linkedBinary(cliName).resolveSymbolicLinksSync();
-    final entryPoint = File(globalEntryPoint);
+  // Platform.executable can be used to detect if the script was executed
+  // from the run script or via debugger
 
-    if (!entryPoint.existsSync()) {
-      // TODO remove broken symlink?
-      throw 'could not read system link target';
-    }
-    return Repository(
-      root: entryPoint.parent,
-      cliPackage: entryPoint.parent.directory(relativeCliPackagePath),
-      entryPoint: entryPoint,
-    );
-  } catch (e) {
-    error(
-      'Could not find the $cliName entrypoint in parent of ${Directory.current}',
-    );
+  final gitRoot =
+      packageHome.findParent((dir) => dir.directory('.git').existsSync());
+  if (gitRoot == null) {
+    error('Could not find the root of the repository');
   }
+  return Repository(root: gitRoot);
 }
 
 /// The repository of the project
@@ -74,13 +25,75 @@ Repository findRepository(String relativeCliPackagePath) {
 class Repository {
   Repository({
     required this.root,
-    required this.cliPackage,
-    required this.entryPoint,
   });
 
   final Directory root;
 
-  final Directory cliPackage;
+  /// The location of the package
+  ///
+  /// Usually injected from the tool/run.sh script itself via `env.SIDEKICK_PACKAGE_HOME`
+  static Directory? get cliPackageDir {
+    final injectedEntryPointPath = env['SIDEKICK_PACKAGE_HOME'];
+    if (injectedEntryPointPath == null || injectedEntryPointPath.isBlank) {
+      return null;
+    }
+    final packageHome = Directory(normalize(injectedEntryPointPath));
+    if (!packageHome.existsSync()) {
+      error(
+        'injected package home does not exist ${packageHome.absolute.path}',
+      );
+    }
+    return packageHome;
+  }
 
-  final File? entryPoint;
+  static Directory get requiredCliPackage {
+    final dir = cliPackageDir;
+    if (dir == null) {
+      throw "env.SIDEKICK_PACKAGE_HOME is not set";
+    }
+    return dir;
+  }
+
+  /// The location of the entrypoint
+  ///
+  /// Usually injected from the entrypoint itself via `env.SIDEKICK_ENTRYPOINT_HOME`
+  static File? get entryPoint {
+    final injectedEntryPointPath = env['SIDEKICK_ENTRYPOINT_HOME'];
+    if (injectedEntryPointPath == null || injectedEntryPointPath.isBlank) {
+      return null;
+    }
+    final entrypoint = File(normalize('$injectedEntryPointPath/$cliName'));
+    if (!entrypoint.existsSync()) {
+      error('injected entrypoint does not exist ${entrypoint.absolute.path}');
+    }
+    return entrypoint;
+  }
+
+  static File get requiredEntryPoint {
+    final file = entryPoint;
+    if (file == null) {
+      throw "env.SIDEKICK_ENTRYPOINT_HOME is not set";
+    }
+    return file;
+  }
+}
+
+extension FindInDirectory on Directory {
+  /// Recursively goes up and tries to find a [Directory] matching [predicate]
+  ///
+  /// Returns `null` when reaching root (/) without a match
+  Directory? findParent(bool Function(Directory dir) predicate) {
+    var dir = this;
+    while (true) {
+      if (predicate(dir)) {
+        return dir;
+      }
+      final parent = dir.parent;
+      if (dir.toString() == parent.toString()) {
+        // not found
+        return null;
+      }
+      dir = dir.parent;
+    }
+  }
 }

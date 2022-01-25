@@ -21,16 +21,7 @@ class InstallGlobalCommand extends Command {
     }
 
     /// The entrypoint injects its location
-    final injectedEntryPointPath = env['SIDEKICK_ENTRYPOINT_HOME'];
-    final entrypoint = File(normalize('$injectedEntryPointPath/$cliName'));
-    if (injectedEntryPointPath == null) {
-      error('$cliName not called via entrypoint executable');
-    } else {
-      if (!entrypoint.existsSync()) {
-        error('Entrypoint does not exist at ${entrypoint.absolute.path}');
-      }
-    }
-
+    final entrypoint = Repository.requiredEntryPoint;
     GlobalSidekickRoot.linkBinary(entrypoint);
 
     if (dcli.isOnPATH(GlobalSidekickRoot.binDir.path)) {
