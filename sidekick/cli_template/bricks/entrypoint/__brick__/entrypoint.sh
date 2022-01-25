@@ -19,4 +19,4 @@ cd "$(dirname "$PRG")/" >/dev/null
 export SIDEKICK_ENTRYPOINT_HOME="$(pwd -P)"
 cd "$SAVED" >/dev/null
 
-{{{packagePath}}}/tool/run.sh "$@"
+"${SIDEKICK_ENTRYPOINT_HOME}/{{{packagePath}}}/tool/run.sh" "$@"
