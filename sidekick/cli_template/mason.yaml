@@ -1,3 +1,5 @@
 bricks:
-  cli:
-    path: bricks/cli
+  package:
+    path: bricks/package
+  entrypoint:
+    path: bricks/entrypoint

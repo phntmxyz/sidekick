@@ -11,14 +11,15 @@ class DartPackage {
   /// - name in pubspec.yaml
   /// (- flutter dependency)
   static DartPackage? fromDirectory(Directory directory) {
-    final pubspec = directory.file('pubspec.yaml');
+    final normalizedDir = Directory(normalize(directory.path));
+    final pubspec = normalizedDir.file('pubspec.yaml');
     if (!pubspec.existsSync()) {
       return null;
     }
-    final lib = directory.directory('lib');
+    final lib = normalizedDir.directory('lib');
     if (!lib.existsSync()) {
       printerr(
-        'Detected a pubspec.yaml in ${directory.absolute.path} but the /lib directory is missing. '
+        'Detected a pubspec.yaml in ${normalizedDir.absolute.path} but the /lib directory is missing. '
         'The directory will not be interpreted as valid Dart package.',
       );
       return null;
@@ -37,9 +38,9 @@ class DartPackage {
       final deps = pubspec['dependencies'] as YamlMap?;
       final flutterDep = deps?['flutter'] as YamlMap?;
       if (flutterDep != null) {
-        return DartPackage.flutter(directory, packageName);
+        return DartPackage.flutter(normalizedDir, packageName);
       }
-      return DartPackage(directory, packageName);
+      return DartPackage(normalizedDir, packageName);
     } on YamlException {
       return null;
     }

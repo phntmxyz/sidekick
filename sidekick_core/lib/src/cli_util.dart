@@ -5,14 +5,17 @@ import 'package:dcli/posix.dart' as posix;
 import 'package:sidekick_core/sidekick_core.dart';
 
 /// Exits the CLI immediately with a messages
-Never error(String message) {
+Never error(String message, {int? errorCode}) {
   assert(
     () {
       throw message;
     }(),
   );
   io.stderr.writeln(message);
-  io.exit(-1);
+
+  final code = errorCode ?? -1;
+  exitCode = code;
+  io.exit(code);
 }
 
 /// Returns true when the cli program named [name] is available via PATH

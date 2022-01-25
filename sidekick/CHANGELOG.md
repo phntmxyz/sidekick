@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.4.0
+
+- Automatic recompile when cli code changes
+- New `install-global` command. This is now a manual step and works on M1 macs (Darwin-arm64)
+- entrypoint has been simplified and is now just a symlink on steroids
+- Remove dependency on `realpath` (which was a third-party tool on macos)
+- The root project has now a valid name
+
 ## 0.3.0
 
 - Windows support

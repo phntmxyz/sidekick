@@ -4,8 +4,10 @@ import 'package:args/command_runner.dart';
 import 'package:dartx/dartx_io.dart';
 import 'package:http/http.dart' as http;
 import 'package:mason/mason.dart';
+import 'package:path/path.dart';
 import 'package:sidekick/src/init/project_structure_detector.dart';
-import 'package:sidekick/src/templates/cli_bundle.g.dart';
+import 'package:sidekick/src/templates/entrypoint_bundle.g.dart';
+import 'package:sidekick/src/templates/package_bundle.g.dart';
 
 class InitCommand extends Command {
   @override
@@ -26,6 +28,7 @@ class InitCommand extends Command {
   @override
   Future<void> run() async {
     final cwd = Directory.current;
+    // TODO make package location and entrypoint location configurable
     final Directory projectDir = () {
       if (argResults?.rest != null && argResults?.rest.length == 1) {
         final path = argResults?.rest[0];
@@ -52,13 +55,23 @@ class InitCommand extends Command {
 
     switch (type) {
       case ProjectStructure.simple:
-        createSidekickPackage(path: projectDir, cliName: cliName);
+        createSidekickPackage(
+          cliName: cliName,
+          repoRoot: projectDir,
+          packageDir: projectDir.directory('packages'),
+          entrypointDir: projectDir,
+        );
         break;
       case ProjectStructure.multiPackage:
         throw 'The multi package project layout is not yet supported';
       case ProjectStructure.rootWithPackages:
         print('Detected a Dart/Flutter project with a /packages dictionary');
-        createSidekickPackage(path: projectDir, cliName: cliName);
+        createSidekickPackage(
+          cliName: cliName,
+          repoRoot: projectDir,
+          packageDir: projectDir.directory('packages'),
+          entrypointDir: projectDir,
+        );
         break;
       case ProjectStructure.unknown:
         print(
@@ -70,39 +83,63 @@ class InitCommand extends Command {
   }
 
   Future<void> createSidekickPackage({
-    required Directory path,
     required String cliName,
+    required Directory repoRoot,
+    required Directory packageDir,
+    required Directory entrypointDir,
   }) async {
     // init git, required for flutterw
-    await gitInit(path);
+    await gitInit(repoRoot);
 
-    // Generate the package code
-    final generator = await MasonGenerator.fromBundle(sidekickBundle);
-    final generatorTarget = DirectoryGeneratorTarget(path);
-    await generator.generate(
-      generatorTarget,
-      vars: {'name': cliName},
-      logger: Logger(),
-      fileConflictResolution: FileConflictResolution.overwrite,
-    );
+    final Directory cliPackage = packageDir.directory('${cliName}_sidekick');
+    {
+      // Generate the package code
+      final generator = await MasonGenerator.fromBundle(packageBundle);
+      final generatorTarget = DirectoryGeneratorTarget(cliPackage);
+      await generator.generate(
+        generatorTarget,
+        vars: {'name': cliName},
+        logger: Logger(),
+        fileConflictResolution: FileConflictResolution.overwrite,
+      );
 
-    // Make the entrypoint executable
-    final entrypointSh = path.file(cliName);
-    await makeExecutable(entrypointSh);
+      // Make install script executable
+      await makeExecutable(cliPackage.file('tool/install.sh'));
+      // Make run script executable
+      await makeExecutable(cliPackage.file('tool/run.sh'));
+    }
 
-    // Make update script executable
-    await makeExecutable(
-      path.file('packages/${cliName}_sidekick/tool/install.sh'),
-    );
+    {
+      // Generate entrypoint
+      final generator = await MasonGenerator.fromBundle(entrypointBundle);
+      final generatorTarget = DirectoryGeneratorTarget(entrypointDir);
+      await generator.generate(
+        generatorTarget,
+        vars: {
+          'packagePath': relative(cliPackage.path, from: entrypointDir.path),
+        },
+        logger: Logger(),
+        fileConflictResolution: FileConflictResolution.overwrite,
+      );
+      final generatedEntrypoint = entrypointDir.file('entrypoint.sh');
+      final File entrypoint = generatedEntrypoint.renameSync(cliName);
+      await makeExecutable(entrypoint);
+    }
 
     // For now, we install the flutter wrapper to get a dart runtime.
-    // TODO That should be changed!
-    await installFlutterWrapper(path);
+    // TODO Add dart runtime so that dart packages can use sidekick without flutter
+    await installFlutterWrapper(entrypointDir);
   }
 }
 
 /// Initializes git via `git init` in [directory]
 Future<void> gitInit(Directory directory) async {
+  final bool inGitDir =
+      Process.runSync('git', ['rev-parse', '--git-dir']).exitCode == 0;
+  if (inGitDir) {
+    // no need to initialize
+    return;
+  }
   final Process process =
       await Process.start('git', ['init'], workingDirectory: directory.path);
   stdout.addStream(process.stdout);
@@ -127,11 +164,14 @@ Future<void> installFlutterWrapper(Directory directory) async {
 }
 
 /// Makes a file executable 'rwxr-xr-x' (755)
-Future<void> makeExecutable(File file) async {
+Future<void> makeExecutable(FileSystemEntity file) async {
   if (Platform.isWindows) {
     // TODO can this be somehow encoded into the file so that windows users
     //  can generate it and unix users can execute it right away?
     return;
+  }
+  if (file is Directory) {
+    throw "Can't make a Directory executable ($file)";
   }
   if (!file.existsSync()) {
     throw 'File not found ${file.path}';

@@ -25,6 +25,7 @@ class {{#titleCase}}{{name}}{{/titleCase}}Sidekick {
       ..addCommand(FlutterCommand())
       ..addCommand(DartCommand())
       ..addCommand(DepsCommand())
+      ..addCommand(InstallGlobalCommand())
       ..addCommand(DartAnalyzeCommand());
 
     if (args.isEmpty) {

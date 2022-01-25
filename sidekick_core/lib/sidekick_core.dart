@@ -9,6 +9,7 @@ import 'package:sidekick_core/src/repository.dart';
 
 export 'dart:io' hide sleep;
 
+export 'package:args/command_runner.dart';
 export 'package:dartx/dartx.dart';
 export 'package:dartx/dartx_io.dart';
 export 'package:dcli/dcli.dart' hide run, start, startFromArgs, absolute;
@@ -16,6 +17,7 @@ export 'package:sidekick_core/src/cli_util.dart';
 export 'package:sidekick_core/src/commands/analyze_command.dart';
 export 'package:sidekick_core/src/commands/dart_command.dart';
 export 'package:sidekick_core/src/commands/flutter_command.dart';
+export 'package:sidekick_core/src/commands/install_global_command.dart';
 export 'package:sidekick_core/src/dart.dart';
 export 'package:sidekick_core/src/dart_package.dart';
 export 'package:sidekick_core/src/file_util.dart';
@@ -25,9 +27,16 @@ export 'package:sidekick_core/src/git.dart';
 export 'package:sidekick_core/src/repository.dart';
 
 /// The working directory (cwd) from which the cli was started
-final Directory entryWorkingDirectory = Directory.current;
+Directory get entryWorkingDirectory =>
+    _entryWorkingDirectory ??= Directory.current;
+Directory? _entryWorkingDirectory;
 
 /// Initializes sidekick, call this at the very start of your CLI program
+///
+/// Set [name] to the name of your CLI entrypoint
+///
+/// [mainProjectPath], when set, links to the main package. For a flutter apps
+/// it is the package that actually builds the flutter app.
 void initializeSidekick({
   required String name,
   String? mainProjectPath,
@@ -44,6 +53,7 @@ void deinitializeSidekick() {
   _cliName = null;
   _repository = null;
   _mainProject = null;
+  _entryWorkingDirectory = null;
 }
 
 /// Name of the cli program

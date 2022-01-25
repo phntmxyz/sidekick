@@ -1,7 +1,12 @@
 import 'package:sidekick_core/sidekick_core.dart';
 
 class {{#titleCase}}{{name}}{{/titleCase}}Project extends DartPackage {
-  {{#titleCase}}{{name}}{{/titleCase}}Project(Directory root) : super.flutter(root, '');
+  factory {{#titleCase}}{{name}}{{/titleCase}}Project(Directory root) {
+    final package = DartPackage.fromDirectory(root)!;
+    return {{#titleCase}}{{name}}{{/titleCase}}Project._(package.root, package.name);
+  }
+
+  {{#titleCase}}{{name}}{{/titleCase}}Project._(Directory root, String name) : super.flutter(root, name);
 
   DartPackage get {{#lowerCase}}{{name}}{{/lowerCase}}SidekickPackage => DartPackage.fromDirectory(root.directory('packages/{{#lowerCase}}{{name}}{{/lowerCase}}_sidekick'))!;
 
