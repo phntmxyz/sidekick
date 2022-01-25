@@ -4,7 +4,7 @@ import 'package:dartx/dartx_io.dart';
 /// Detects project structure and generates a representation in code
 class ProjectStructureDetector {
   ProjectStructure detectProjectType(Directory dir) {
-    print('Analyzing project in ${dir.path}');
+    print('Analyzing project structure in ${dir.path}');
     final pubspec = dir.file('pubspec.yaml');
     final hasToplevelPubspecYaml = pubspec.existsSync();
 

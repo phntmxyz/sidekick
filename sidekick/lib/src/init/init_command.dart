@@ -48,7 +48,6 @@ class InitCommand extends Command {
       throw 'No cliName provided. Call `sidekick init --cliName <your-name>`';
     }
     print("Generating ${cliName}_sidekick");
-    print("In directory: ${projectDir.path}");
 
     final detector = ProjectStructureDetector();
     final type = detector.detectProjectType(projectDir);
