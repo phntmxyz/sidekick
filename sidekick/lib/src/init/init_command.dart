@@ -4,11 +4,10 @@ import 'package:args/command_runner.dart';
 import 'package:dartx/dartx_io.dart';
 import 'package:http/http.dart' as http;
 import 'package:mason/mason.dart';
+import 'package:path/path.dart';
 import 'package:sidekick/src/init/project_structure_detector.dart';
 import 'package:sidekick/src/templates/entrypoint_bundle.g.dart';
 import 'package:sidekick/src/templates/package_bundle.g.dart';
-import 'package:path/path.dart';
-import 'dart:convert';
 
 class InitCommand extends Command {
   @override
@@ -123,7 +122,9 @@ class InitCommand extends Command {
         fileConflictResolution: FileConflictResolution.overwrite,
       );
       final generatedEntrypoint = entrypointDir.file('entrypoint.sh');
-      final entrypoint = generatedEntrypoint.renameSync(cliName);
+      final File entrypoint = generatedEntrypoint.renameSync(cliName);
+      // Fixes https://github.com/felangel/mason/issues/211
+      entrypoint.replaceFirst('&#x2F;', '/');
       await makeExecutable(entrypoint);
     }
 
@@ -181,5 +182,21 @@ Future<void> makeExecutable(FileSystemEntity file) async {
   final exitCode = await p.exitCode;
   if (exitCode != 0) {
     throw 'Cloud not set permission 755 for file ${file.path}';
+  }
+}
+
+extension on File {
+  void replaceFirst(String text, String replacement) {
+    final original = readAsStringSync();
+    final startIndex = original.indexOf(text);
+    if (startIndex == -1) {
+      throw "String '$text' not found in ${this.absolute.path}";
+    }
+    final mutated = original.replaceRange(
+      startIndex,
+      startIndex + text.length,
+      replacement,
+    );
+    writeAsStringSync(mutated);
   }
 }
