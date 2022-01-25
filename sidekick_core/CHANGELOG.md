@@ -1,3 +1,11 @@
+## 0.5.0
+
+**Breaking** This update requires the sidekick project to be initialized again with `sidekick: 0.4.0`
+
+- New `InstallGlobalCommand` (links binaries in `$HOME/.sidekick/bin`)
+- Simplified repository detection (breaking)
+- `error` now support errorCode
+
 ## 0.4.1
 - Require Dart 2.14
 
