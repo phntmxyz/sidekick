@@ -60,7 +60,7 @@ void main() {
         expect(stdout, contains('Installing dash command line application'));
         expect(stdout, contains('Getting dependencies'));
         expect(stdout, contains('Bundling assets'));
-        expect(stdout, contains('Compiling dash sidekick'));
+        expect(stdout, contains('Compiling sidekick cli'));
       },
       timeout: const Timeout(Duration(minutes: 5)),
     );
