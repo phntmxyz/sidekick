@@ -189,13 +189,21 @@ void upgradeSidekickDependencies(
 
 /// Makes a file executable 'rwxr-xr-x' (755)
 Future<void> makeExecutable(FileSystemEntity file) async {
-  if (Platform.isWindows) {
-    // TODO can this be somehow encoded into the file so that windows users
-    //  can generate it and unix users can execute it right away?
-    return;
-  }
   if (file is Directory) {
     throw "Can't make a Directory executable ($file)";
+  }
+  if (Platform.isWindows) {
+    // The windows file system works differently than unix based ones. exe files are automatically executable
+    // But when generating sidekick on windows, it should also be executable on unix systems on checkout.
+    // This is done by telling git about the file being executable.
+    // https://www.scivision.dev/git-windows-chmod-executable/
+    final p =
+        await Process.start('git', ['update-index', '--chmod=+x', file.path]);
+    final exitCode = await p.exitCode;
+    if (exitCode != 0) {
+      throw 'Cloud not set git file permission for unix systems for file ${file.path}';
+    }
+    return;
   }
   if (!file.existsSync()) {
     throw 'File not found ${file.path}';
