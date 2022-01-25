@@ -18,7 +18,10 @@ Repository findRepository(String relativeCliPackagePath) {
   gitRoot ??= entryWorkingDirectory.findParent(isGitDir);
   if (gitRoot == null) {
     error(
-        'Could not find the root of the repository. Search in ${entryWorkingDirectory.absolute.path} and ${packageHome.absolute.path}');
+      'Could not find the root of the repository. Searched in '
+      '${entryWorkingDirectory.absolute.path} and '
+      '${packageHome.absolute.path}',
+    );
   }
   return Repository(root: gitRoot);
 }
