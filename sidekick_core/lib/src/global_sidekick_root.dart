@@ -6,11 +6,17 @@ class GlobalSidekickRoot {
 
   static Directory get dir {
     final userHome = Platform.environment['HOME']!;
-    return Directory('$userHome/.sidekick/');
+    return Directory('$userHome/.sidekick');
   }
 
   static Directory get binDir {
     return Directory('${dir.path}/bin');
+  }
+
+  static String get binDirWithHomeEnv {
+    final binDir = GlobalSidekickRoot.binDir;
+    final userHome = Platform.environment['HOME']!;
+    return join(r'$HOME', relative(binDir.path, from: userHome));
   }
 
   /// Creates a symlink from [binDir] to [file]
@@ -20,6 +26,7 @@ class GlobalSidekickRoot {
     final destination = binDir.file(name);
     if (destination.existsSync()) {
       printerr('Overriding exiting linked binary ${destination.path}');
+      destination.deleteSync();
     }
     Link(destination.path).createSync(file.absolute.path, recursive: true);
   }

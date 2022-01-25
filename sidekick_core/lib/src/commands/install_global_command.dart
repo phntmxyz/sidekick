@@ -9,71 +9,62 @@ class InstallGlobalCommand extends Command {
   @override
   final String name = 'install-global';
 
+  InstallGlobalCommand() {
+    argParser.addOption('sidekick-entry-point');
+  }
+
   @override
   Future<void> run() async {
-    _addBinDirToPath();
-
-    // Get link to entrypoint
-    final entryPoint = repository.entryPoint;
-    // TODO inverse condition, or it won't make sense
-    if (entryPoint != null) {
-      GlobalSidekickRoot.linkBinary(entryPoint);
+    if (isProgramInstalled(cliName)) {
+      print('program $cliName is already globally installed');
+      exit(0);
     }
 
-    // repository.
+    /// The entrypoint injects its location
+    final injectedEntryPointPath = env['SIDEKICK_ENTRYPOINT_HOME'];
+    final entrypoint = File(normalize('$injectedEntryPointPath/$cliName'));
+    if (injectedEntryPointPath == null) {
+      error('$cliName not called via entrypoint executable');
+    } else {
+      if (!entrypoint.existsSync()) {
+        error('Entrypoint does not exist at ${entrypoint.absolute.path}');
+      }
+    }
+    // TODO make entrypoint bash again
+    // TODO make package location and entrypoint location configurable
+    // TODO create a separate brick for entrypoint
 
-    // dcli.ProcessHelper
-    //
-    // final os = Platform.operatingSystem;
-    // final File installLocation = (){
-    //
-    //   File('/usr/local/bin/$cliName');
-    //   File('/opt/sidekick/bin/$cliName'),
-    // }();
-    //
-    // for ()
+    GlobalSidekickRoot.linkBinary(entrypoint);
 
-    ///   if [ ! -f "/usr/local/bin/$name" ] ; then
-    ///     # when not linked globally
-    ///     if [ -t 0 ] ; then
-    ///       # stdin exits, human ist interacting with script
-    ///       read -p "Do you want to install the $name sidekick globally? (y/n) " x
-    ///       if [ "$x" = "y" ] ; then
-    ///         sudo rm /usr/local/bin/$name > /dev/null 2>&1 || true
-    ///         SH="$(realpath "${REPO_ROOT}${name}")"
-    ///         sudo ln -s "${SH}" /usr/local/bin/$name
-    ///         echo ""
-    ///         echo "You can now use '$name' from everywhere"
-    ///         echo ""
-    ///       fi
-    ///     fi
-    ///   fi
-    ///
+    final binDirPath = GlobalSidekickRoot.binDirWithHomeEnv;
+    if (dcli.isOnPATH(binDirPath)) {
+      print(
+        '\n'
+        "You can now use '$cliName' from everywhere\n"
+        '\n',
+      );
+      return;
+    }
+
+    _addBinDirToPathOrPrint();
+  }
+
+  void _addBinDirToPathOrPrint() {
+    final binDirPath = GlobalSidekickRoot.binDirWithHomeEnv;
+    final added = Shell.current.appendToPATH(binDirPath);
+    if (added) {
+      printerr('Added $binDirPath to PATH');
+      return;
+    }
 
     print(
       '\n'
-      "You can now use '$cliName' from everywhere\n"
-      '\n',
+      'Please add $binDirPath to your PATH. \n'
+      "Add this to your shell's config file (.zshrc, .bashrc, .bash_profile, ...)\n"
+      '\n'
+      "  ${dcli.green('export PATH="\$PATH":"$binDirPath"')}\n"
+      '\n'
+      'Then, restart your terminal',
     );
-  }
-
-  void _addBinDirToPath() {
-    final binDir = GlobalSidekickRoot.binDir;
-    if (!dcli.isOnPATH(binDir.path)) {
-      final added = Shell.current.appendToPATH(binDir.path);
-      if (added) {
-        printerr('Added ${binDir.path} to PATH');
-      } else {
-        print(
-          '\n'
-          'Please add ${binDir.path} to your PATH. \n'
-          "Add this to your shell's config file (.zshrc, .bashrc, .bash_profile, ...)\n"
-          '\n'
-          "  ${dcli.green('export PATH="\$PATH":"${binDir.path}"')}\n"
-          '\n'
-          'Then, restart your terminal',
-        );
-      }
-    }
   }
 }
