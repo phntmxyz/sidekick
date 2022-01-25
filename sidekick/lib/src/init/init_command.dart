@@ -122,7 +122,8 @@ class InitCommand extends Command {
         fileConflictResolution: FileConflictResolution.overwrite,
       );
       final generatedEntrypoint = entrypointDir.file('entrypoint.sh');
-      final File entrypoint = generatedEntrypoint.renameSync(cliName);
+      final File entrypoint = entrypointDir.file(cliName);
+      generatedEntrypoint.renameSync(entrypoint.path);
       await makeExecutable(entrypoint);
     }
 
