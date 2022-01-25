@@ -33,8 +33,7 @@ class InstallGlobalCommand extends Command {
 
     GlobalSidekickRoot.linkBinary(entrypoint);
 
-    final binDirPath = GlobalSidekickRoot.binDirWithHomeEnv;
-    if (dcli.isOnPATH(binDirPath)) {
+    if (dcli.isOnPATH(GlobalSidekickRoot.binDir.path)) {
       print(
         '\n'
         "You can now use '$cliName' from everywhere\n"
