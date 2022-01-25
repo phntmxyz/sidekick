@@ -182,7 +182,7 @@ Future<void> makeExecutable(FileSystemEntity file) async {
     // This is done by telling git about the file being executable.
     // https://www.scivision.dev/git-windows-chmod-executable/
     final p =
-        await Process.start('git', ['update-index', '--chmod=+x', file.path]);
+        await Process.start('git', ['update-index', '--chmod=+x', '--add', file.path]);
     final exitCode = await p.exitCode;
     if (exitCode != 0) {
       throw 'Cloud not set git file permission for unix systems for file ${file.path}';
