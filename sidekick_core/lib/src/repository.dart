@@ -1,7 +1,7 @@
 import 'package:sidekick_core/sidekick_core.dart';
 
 /// Finds the root of the repo
-Repository findRepository(String relativeCliPackagePath) {
+Repository findRepository() {
   final Directory packageHome =
       // Usually the dir is injected
       Repository.cliPackageDir ??

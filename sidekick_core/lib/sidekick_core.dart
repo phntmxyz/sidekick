@@ -34,20 +34,15 @@ Directory? _entryWorkingDirectory;
 /// Initializes sidekick, call this at the very start of your CLI program
 ///
 /// Set [name] to the name of your CLI entrypoint
-/// [cliPackagePath] is the CLI package location relative to entrypoint.
-/// When the sidekick package is located in `<git-root>/packages/my_sidekick`
-/// and the entrypoint (`my`) is in `<git-root>` set
-/// `cliPackagePath: packages/my_sidekick`
 ///
 /// [mainProjectPath], when set, links to the main package. For a flutter apps
 /// it is the package that actually builds the flutter app.
 void initializeSidekick({
   required String name,
-  String? cliPackagePath,
   String? mainProjectPath,
 }) {
   _cliName = name;
-  _repository = findRepository(cliPackagePath ?? 'packages/${name}_sidekick');
+  _repository = findRepository();
   if (mainProjectPath != null) {
     _mainProject =
         DartPackage.fromDirectory(repository.root.directory(mainProjectPath));
