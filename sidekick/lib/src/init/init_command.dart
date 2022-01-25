@@ -54,6 +54,7 @@ class InitCommand extends Command {
 
     switch (type) {
       case ProjectStructure.simple:
+        print('Detected a simple project with a single module');
         await createSidekickPackage(
           cliName: cliName,
           repoRoot: projectDir,
@@ -62,7 +63,14 @@ class InitCommand extends Command {
         );
         break;
       case ProjectStructure.multiPackage:
-        throw 'The multi package project layout is not yet supported';
+        print('Detected multiple `packages`, no main project');
+        await createSidekickPackage(
+          cliName: cliName,
+          repoRoot: projectDir,
+          packageDir: projectDir.directory('packages'),
+          entrypointDir: projectDir,
+        );
+        break;
       case ProjectStructure.rootWithPackages:
         print('Detected a Dart/Flutter project with a /packages dictionary');
         await createSidekickPackage(
