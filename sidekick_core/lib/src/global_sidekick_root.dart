@@ -33,7 +33,7 @@ class GlobalSidekickRoot {
 
   /// Use [Link.resolveSymbolicLinks] to access the path the link points to
   static Link linkedBinary(String name) {
-    final binaryPath = binDir.file(name).name;
+    final binaryPath = binDir.file(name).path;
     return Link(binaryPath);
   }
 
