@@ -11,10 +11,14 @@ Repository findRepository(String relativeCliPackagePath) {
   // Platform.executable can be used to detect if the script was executed
   // from the run script or via debugger
 
-  final gitRoot =
-      packageHome.findParent((dir) => dir.directory('.git').existsSync());
+  bool isGitDir(Directory dir) => dir.directory('.git').existsSync();
+
+  Directory? gitRoot = packageHome.findParent(isGitDir);
+  // fallback to CWD
+  gitRoot ??= entryWorkingDirectory.findParent(isGitDir);
   if (gitRoot == null) {
-    error('Could not find the root of the repository');
+    error(
+        'Could not find the root of the repository. Search in ${entryWorkingDirectory.absolute.path} and ${packageHome.absolute.path}');
   }
   return Repository(root: gitRoot);
 }

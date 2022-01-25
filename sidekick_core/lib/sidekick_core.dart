@@ -27,7 +27,9 @@ export 'package:sidekick_core/src/git.dart';
 export 'package:sidekick_core/src/repository.dart';
 
 /// The working directory (cwd) from which the cli was started
-final Directory entryWorkingDirectory = Directory.current;
+Directory get entryWorkingDirectory =>
+    _entryWorkingDirectory ??= Directory.current;
+Directory? _entryWorkingDirectory;
 
 /// Initializes sidekick, call this at the very start of your CLI program
 ///
@@ -56,6 +58,7 @@ void deinitializeSidekick() {
   _cliName = null;
   _repository = null;
   _mainProject = null;
+  _entryWorkingDirectory = null;
 }
 
 /// Name of the cli program
