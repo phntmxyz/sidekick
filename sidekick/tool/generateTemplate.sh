@@ -2,6 +2,9 @@
 set -e
 
 echo "Generating Sidekick Template Bundle"
-mason bundle cli_template/bricks/sidekick -t dart -o lib/src/templates/
-mv lib/src/templates/sidekick_bundle.dart lib/src/templates/cli_bundle.g.dart
-dart format lib/src/templates/cli_bundle.g.dart
+rm -rf lib/src/templates/
+mason bundle cli_template/bricks/package -t dart -o lib/src/templates/
+mason bundle cli_template/bricks/entrypoint -t dart -o lib/src/templates/
+mv lib/src/templates/package_bundle.dart lib/src/templates/package_bundle.g.dart
+mv lib/src/templates/entrypoint_bundle.dart lib/src/templates/entrypoint_bundle.g.dart
+dart format lib/src/templates/*.g.dart

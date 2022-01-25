@@ -1,0 +1,6 @@
+name: package
+description: Creates the sidekick cli package
+version: 1.0.0
+vars:
+  name:
+    type: string

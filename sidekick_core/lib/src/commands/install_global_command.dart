@@ -30,9 +30,6 @@ class InstallGlobalCommand extends Command {
         error('Entrypoint does not exist at ${entrypoint.absolute.path}');
       }
     }
-    // TODO make entrypoint bash again
-    // TODO make package location and entrypoint location configurable
-    // TODO create a separate brick for entrypoint
 
     GlobalSidekickRoot.linkBinary(entrypoint);
 
