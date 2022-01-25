@@ -1,7 +1,9 @@
 import 'dart:io';
 
+import 'package:acronym/acronym.dart';
 import 'package:args/command_runner.dart';
 import 'package:dartx/dartx_io.dart';
+import 'package:dcli/dcli.dart' as dcli;
 import 'package:http/http.dart' as http;
 import 'package:mason/mason.dart';
 import 'package:path/path.dart';
@@ -43,10 +45,37 @@ class InitCommand extends Command {
       // fallback to cwd
       return cwd;
     }();
-    final cliName = argResults!['cliName'] as String?;
-    if (cliName == null) {
-      throw 'No cliName provided. Call `sidekick init --cliName <your-name>`';
-    }
+    final cliName = argResults!['cliName'] as String? ??
+        () {
+          final List<String> pathParts =
+              projectDir.path.split(Platform.pathSeparator);
+          final String lastPart = pathParts.last;
+          final String parentLastPart =
+              '${pathParts[pathParts.length - 2]}/$lastPart';
+          print(parentLastPart);
+          final List<String> acronymSuggestions = [
+            lastPart.toAcronym(),
+            lastPart.toAcronym(splitSyllables: true),
+            parentLastPart.toAcronym(),
+            parentLastPart.toAcronym(splitSyllables: true),
+          ];
+          print('Type the number of the fitting acronym');
+          for (int i = 0; i < acronymSuggestions.length; i++) {
+            print('${i + 1}: ${acronymSuggestions[i]}');
+          }
+          print('${acronymSuggestions.length + 1}: Enter your own');
+          final String answer = dcli.ask('> ');
+          if (answer.toIntOrNull() != null) {
+            if (answer.toInt() == acronymSuggestions.length + 1) {
+              print('Enter your own CLI name');
+              return dcli.ask('> ').toLowerCase();
+            } else {
+              return acronymSuggestions[answer.toInt() - 1].toLowerCase();
+            }
+          } else {
+            throw 'Please provide a valid number';
+          }
+        }();
     print("Generating ${cliName}_sidekick");
 
     final detector = ProjectStructureDetector();
@@ -181,8 +210,8 @@ Future<void> makeExecutable(FileSystemEntity file) async {
     // But when generating sidekick on windows, it should also be executable on unix systems on checkout.
     // This is done by telling git about the file being executable.
     // https://www.scivision.dev/git-windows-chmod-executable/
-    final p =
-        await Process.start('git', ['update-index', '--chmod=+x', '--add', file.path]);
+    final p = await Process.start(
+        'git', ['update-index', '--chmod=+x', '--add', file.path]);
     final exitCode = await p.exitCode;
     if (exitCode != 0) {
       throw 'Cloud not set git file permission for unix systems for file ${file.path}';
