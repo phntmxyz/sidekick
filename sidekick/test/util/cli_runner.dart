@@ -11,5 +11,6 @@ Future<TestProcess> sidekickCli(
     'dart',
     ['${Directory.current.path}/bin/sidekick.dart', ...args],
     workingDirectory: workingDirectory.path,
+    forwardStdio: true,
   );
 }
