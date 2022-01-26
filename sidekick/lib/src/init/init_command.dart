@@ -52,28 +52,22 @@ class InitCommand extends Command {
           final String lastPart = pathParts.last;
           final String parentLastPart =
               '${pathParts[pathParts.length - 2]}/$lastPart';
-          print(parentLastPart);
-          final List<String> acronymSuggestions = [
+          final List<String> acronymSuggestions = {
             lastPart.toAcronym(),
             lastPart.toAcronym(splitSyllables: true),
             parentLastPart.toAcronym(),
             parentLastPart.toAcronym(splitSyllables: true),
-          ];
-          print('Type the number of the fitting acronym');
-          for (int i = 0; i < acronymSuggestions.length; i++) {
-            print('${i + 1}: ${acronymSuggestions[i]}');
-          }
-          print('${acronymSuggestions.length + 1}: Enter your own');
-          final String answer = dcli.ask('> ');
-          if (answer.toIntOrNull() != null) {
-            if (answer.toInt() == acronymSuggestions.length + 1) {
-              print('Enter your own CLI name');
-              return dcli.ask('> ').toLowerCase();
-            } else {
-              return acronymSuggestions[answer.toInt() - 1].toLowerCase();
-            }
+            'Enter your own'
+          }.toList();
+          final String answer = dcli.menu(
+            options: acronymSuggestions,
+            prompt:
+                'Type the number of the fitting acronym or choose Enter your own',
+          );
+          if (answer == 'Enter your own') {
+            return dcli.ask('Enter your CLI name').toLowerCase();
           } else {
-            throw 'Please provide a valid number';
+            return answer.toLowerCase();
           }
         }();
     print("Generating ${cliName}_sidekick");
