@@ -1,12 +1,12 @@
 import 'dart:io';
 
-import 'package:acronym/acronym.dart';
 import 'package:args/command_runner.dart';
 import 'package:dartx/dartx_io.dart';
 import 'package:dcli/dcli.dart' as dcli;
 import 'package:http/http.dart' as http;
 import 'package:mason/mason.dart';
 import 'package:path/path.dart';
+import 'package:sidekick/src/init/name_suggester.dart';
 import 'package:sidekick/src/init/project_structure_detector.dart';
 import 'package:sidekick/src/templates/entrypoint_bundle.g.dart';
 import 'package:sidekick/src/templates/package_bundle.g.dart';
@@ -29,6 +29,10 @@ class InitCommand extends Command {
 
   @override
   Future<void> run() async {
+    print(
+      "Welcome to sidekick. You're about to initialize a sidekick project\n",
+    );
+
     final cwd = Directory.current;
     // TODO make package location and entrypoint location configurable
     final Directory projectDir = () {
@@ -47,28 +51,16 @@ class InitCommand extends Command {
     }();
     final cliName = argResults!['cliName'] as String? ??
         () {
-          final List<String> pathParts =
-              projectDir.path.split(Platform.pathSeparator);
-          final String lastPart = pathParts.last;
-          final String parentLastPart =
-              '${pathParts[pathParts.length - 2]}/$lastPart';
-          final List<String> acronymSuggestions = {
-            lastPart.toAcronym(),
-            lastPart.toAcronym(splitSyllables: true),
-            parentLastPart.toAcronym(),
-            parentLastPart.toAcronym(splitSyllables: true),
-            'Enter your own'
-          }.toList();
-          final String answer = dcli.menu(
-            options: acronymSuggestions,
-            prompt:
-                'Type the number of the fitting acronym or choose Enter your own',
+          print(
+            '${dcli.green('Please select a name for your sidekick CLI.')}\n'
+            'We know, selecting a name is hard. Here are some suggestions:',
           );
-          if (answer == 'Enter your own') {
-            return dcli.ask('Enter your CLI name').toLowerCase();
-          } else {
-            return answer.toLowerCase();
+          final suggester = NameSuggester(projectDir: projectDir);
+          final name = suggester.askUserForName();
+          if (name == null) {
+            throw 'No cliName provided. Call `sidekick init --cliName <your-name>`';
           }
+          return name;
         }();
     print("Generating ${cliName}_sidekick");
 
