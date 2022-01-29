@@ -2,9 +2,11 @@ import 'dart:io';
 
 import 'package:args/command_runner.dart';
 import 'package:dartx/dartx_io.dart';
+import 'package:dcli/dcli.dart' as dcli;
 import 'package:http/http.dart' as http;
 import 'package:mason/mason.dart';
 import 'package:path/path.dart';
+import 'package:sidekick/src/init/name_suggester.dart';
 import 'package:sidekick/src/init/project_structure_detector.dart';
 import 'package:sidekick/src/templates/entrypoint_bundle.g.dart';
 import 'package:sidekick/src/templates/package_bundle.g.dart';
@@ -27,6 +29,10 @@ class InitCommand extends Command {
 
   @override
   Future<void> run() async {
+    print(
+      "Welcome to sidekick. You're about to initialize a sidekick project\n",
+    );
+
     final cwd = Directory.current;
     // TODO make package location and entrypoint location configurable
     final Directory projectDir = () {
@@ -43,10 +49,19 @@ class InitCommand extends Command {
       // fallback to cwd
       return cwd;
     }();
-    final cliName = argResults!['cliName'] as String?;
-    if (cliName == null) {
-      throw 'No cliName provided. Call `sidekick init --cliName <your-name>`';
-    }
+    final cliName = argResults!['cliName'] as String? ??
+        () {
+          print(
+            '${dcli.green('Please select a name for your sidekick CLI.')}\n'
+            'We know, selecting a name is hard. Here are some suggestions:',
+          );
+          final suggester = NameSuggester(projectDir: projectDir);
+          final name = suggester.askUserForName();
+          if (name == null) {
+            throw 'No cliName provided. Call `sidekick init --cliName <your-name>`';
+          }
+          return name;
+        }();
     print("Generating ${cliName}_sidekick");
 
     final detector = ProjectStructureDetector();
