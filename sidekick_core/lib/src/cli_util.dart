@@ -44,12 +44,29 @@ dcli.Progress writeAndRunShellScript(
   dcli.Progress? progress,
 }) {
   final script = tempExecutableScriptFile(scriptContent);
-  final process = dcli.start(
-    script.absolute.path,
-    workingDirectory:
-        workingDirectory?.absolute.path ?? entryWorkingDirectory.path,
-    progress: progress,
-  );
-  script.deleteSync(recursive: true);
-  return process;
+  final Progress _progress =
+      progress ?? Progress(print, stderr: printerr, captureStderr: true);
+
+  try {
+    return dcli.start(
+      script.absolute.path,
+      workingDirectory:
+          workingDirectory?.absolute.path ?? entryWorkingDirectory.path,
+      progress: _progress,
+    );
+  } catch (e) {
+    print(
+      "\nError executing script:\n\n"
+      "$scriptContent",
+    );
+    if (progress == null) {
+      print(
+        "The captured error of running the script is:\n"
+        "${_progress.toList().join('\n')}\n",
+      );
+    }
+    rethrow;
+  } finally {
+    script.deleteSync(recursive: true);
+  }
 }
