@@ -2,7 +2,6 @@
 
 A place to store project secrets within a git repository, encrypted with GPG
 
-
 # Create the Vault
 
 1. Create a `vault` directory in your project

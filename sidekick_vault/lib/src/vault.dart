@@ -32,7 +32,7 @@ class SidekickVault {
       throw 'expect file to end with .gpg';
     }
     unlock();
-    return gpgDecrypt(location.file(filename), _passphrase!);
+    return location.file(filename).decryptToTemp(_passphrase!);
   }
 
   // caches secrets to prevent multiple decryptions
