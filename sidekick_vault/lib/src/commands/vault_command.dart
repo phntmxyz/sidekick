@@ -1,4 +1,3 @@
-import 'package:dcli/dcli.dart' as dcli;
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_vault/src/gpg.dart';
 
@@ -25,7 +24,7 @@ class _EncryptCommand extends Command {
   @override
   Future<void> run() async {
     final file = _validateInput(argResults, example: 'noa vault encrypt file.csv');
-    final password = dcli.ask('Enter password:', hidden: true);
+    final password = ask('Enter password:', hidden: true);
     file.encrypt(password);
     print(green('Successfully encrypted $file'));
   }
@@ -41,7 +40,7 @@ class _DecryptCommand extends Command {
   @override
   Future<void> run() async {
     final file = _validateInput(argResults, example: 'noa vault decrypt file.csv.gpg');
-    final password = dcli.ask('Enter password:', hidden: true);
+    final password = ask('Enter password:', hidden: true);
     file.decrypt(password);
     print(green('Successfully decrypted $file'));
   }
@@ -54,7 +53,7 @@ File _validateInput(ArgResults? input, {required String example}) {
   if (input!.arguments.length > 1) {
     _throw('Enter one file only', example);
   }
-  if (!dcli.isFile(input.arguments.first)) {
+  if (!isFile(input.arguments.first)) {
     _throw('No valid file', example);
   }
   return File(input.arguments.first);
