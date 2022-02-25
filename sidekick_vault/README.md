@@ -19,13 +19,13 @@ A place to store project secrets within a git repository, encrypted with GPG
     ## Encrypt secrets
     
     ```
-    gpg --symmetric --cipher-algo AES256 --batch --passphrase=$password <file>
+    sidekick vault encrypt <file.csv>
     ```
     
     ## Decrypt secrets
     
-    ```sdfg
-    gpg --quiet --batch --yes --decrypt --passphrase=$password --output=<file> <file.gpg>
+    ```
+    sidekick vault decrypt <file.csv.gpg>
     ```
     ````
 
