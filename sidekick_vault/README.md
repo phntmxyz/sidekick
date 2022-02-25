@@ -19,13 +19,13 @@ A place to store project secrets within a git repository, encrypted with GPG
     ## Encrypt secrets
     
     ```
-    sidekick vault encrypt <file.csv>
+    <your_project> vault encrypt <file.csv>
     ```
     
     ## Decrypt secrets
     
     ```
-    sidekick vault decrypt <file.csv.gpg>
+    <your_project> vault decrypt <file.csv.gpg>
     ```
     ````
 
