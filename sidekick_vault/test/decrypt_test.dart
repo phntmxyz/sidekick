@@ -21,7 +21,12 @@ void main() {
     test('more than one file', () {
       final runner = CommandRunner('', '')..addCommand(VaultCommand());
       expect(
-        () => runner.run(['vault', 'decrypt', 'test/vault/encrypted.txt.gpg', 'test/vault/encrypted.txt.gpg']),
+        () => runner.run([
+          'vault',
+          'decrypt',
+          'test/vault/encrypted.txt.gpg',
+          'test/vault/encrypted.txt.gpg',
+        ]),
         throwsA(isA<String>()),
       );
     });

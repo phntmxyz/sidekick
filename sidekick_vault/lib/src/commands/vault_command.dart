@@ -23,7 +23,10 @@ class _EncryptCommand extends Command {
 
   @override
   Future<void> run() async {
-    final file = _validateInput(argResults, example: 'noa vault encrypt file.csv');
+    final file = _validateInput(
+      argResults,
+      example: 'noa vault encrypt file.csv',
+    );
     final password = ask('Enter password:', hidden: true);
     file.encrypt(password);
     print(green('Successfully encrypted $file'));
@@ -39,7 +42,10 @@ class _DecryptCommand extends Command {
 
   @override
   Future<void> run() async {
-    final file = _validateInput(argResults, example: 'noa vault decrypt file.csv.gpg');
+    final file = _validateInput(
+      argResults,
+      example: 'noa vault decrypt file.csv.gpg',
+    );
     final password = ask('Enter password:', hidden: true);
     file.decrypt(password);
     print(green('Successfully decrypted $file'));
