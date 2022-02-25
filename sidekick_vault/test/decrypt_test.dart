@@ -8,14 +8,32 @@ void main() {
       final runner = CommandRunner('', '')..addCommand(VaultCommand());
       expect(
         () => runner.run(['vault', 'decrypt']),
-        throwsA(isA<String>()),
+        throwsA(
+          isA<String>().having(
+            (it) => it,
+            'error',
+            'Missing file'
+                '\n'
+                'Example:\n'
+                'noa vault decrypt file.csv.gpg',
+          ),
+        ),
       );
     });
     test('not a file', () {
       final runner = CommandRunner('', '')..addCommand(VaultCommand());
       expect(
         () => runner.run(['vault', 'decrypt', '.']),
-        throwsA(isA<String>()),
+        throwsA(
+          isA<String>().having(
+            (it) => it,
+            'error',
+            'No valid file'
+                '\n'
+                'Example:\n'
+                'noa vault decrypt file.csv.gpg',
+          ),
+        ),
       );
     });
     test('more than one file', () {
@@ -27,7 +45,16 @@ void main() {
           'test/vault/encrypted.txt.gpg',
           'test/vault/encrypted.txt.gpg',
         ]),
-        throwsA(isA<String>()),
+        throwsA(
+          isA<String>().having(
+            (it) => it,
+            'error',
+            'Enter one file only'
+                '\n'
+                'Example:\n'
+                'noa vault decrypt file.csv.gpg',
+          ),
+        ),
       );
     });
   });

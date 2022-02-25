@@ -8,14 +8,32 @@ void main() {
       final runner = CommandRunner('', '')..addCommand(VaultCommand());
       expect(
         () => runner.run(['vault', 'encrypt']),
-        throwsA(isA<String>()),
+        throwsA(
+          isA<String>().having(
+            (it) => it,
+            'error',
+            'Missing file'
+                '\n'
+                'Example:\n'
+                'noa vault encrypt file.csv',
+          ),
+        ),
       );
     });
     test('not a file', () {
       final runner = CommandRunner('', '')..addCommand(VaultCommand());
       expect(
         () => runner.run(['vault', 'encrypt', '.']),
-        throwsA(isA<String>()),
+        throwsA(
+          isA<String>().having(
+            (it) => it,
+            'error',
+            'No valid file'
+                '\n'
+                'Example:\n'
+                'noa vault encrypt file.csv',
+          ),
+        ),
       );
     });
     test('more than one file', () {
@@ -23,11 +41,20 @@ void main() {
       expect(
         () => runner.run([
           'vault',
-          'decrypt',
+          'encrypt',
           'test/vault/decrypted.txt',
           'test/vault/decrypted.txt',
         ]),
-        throwsA(isA<String>()),
+        throwsA(
+          isA<String>().having(
+            (it) => it,
+            'error',
+            'Enter one file only'
+                '\n'
+                'Example:\n'
+                'noa vault encrypt file.csv',
+          ),
+        ),
       );
     });
   });
