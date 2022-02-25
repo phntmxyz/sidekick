@@ -11,7 +11,7 @@ Stay tuned for our public announcement while we're working hard on getting this 
 ## Install
 
 ```bash
-pub global activate sidekick
+dart pub global activate sidekick
 ```
 
 ```bash
