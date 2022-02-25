@@ -19,13 +19,13 @@ A place to store project secrets within a git repository, encrypted with GPG
     ## Encrypt secrets
     
     ```
-    <your_project> vault encrypt <file.csv>
+    <project_name> vault encrypt <file.csv>
     ```
     
     ## Decrypt secrets
     
     ```
-    <your_project> vault decrypt <file.csv.gpg>
+    <project_name> vault decrypt <file.csv.gpg>
     ```
     ````
 
@@ -43,11 +43,11 @@ A place to store project secrets within a git repository, encrypted with GPG
 
 ## Add secrets
 
-1. Generate a secure password in your preferred password manager
+1. Generate a secure password in your preferred password manager.
 
-2. Place the first secret in your vault. I.e. `secret.txt` and encrypt it with
-   
-   `gpg --symmetric --cipher-algo AES256 --batch --passphrase=Y0UR-P4$$W0RD vault/secret.txt`
+2. Place your secret, e.g. `secret.csv`, in the vault and encrypt it with:
+
+   `<project_name> vault encrypt vault/secret.csv`
 
 ## Read secrets in code
 
