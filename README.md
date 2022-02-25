@@ -24,7 +24,36 @@ sidekick init <path-to-repo>
 
 ## Writing custom tasks
 
-### Creating sub commands
+## Creating sub commands
+
+```dart
+import 'package:sidekick_core/sidekick_core.dart';
+
+class YourCommand extends Command {
+  YourCommand() {
+    addSubcommand(_YourSubCommand());
+  }
+
+  @override
+  String get description => 'does foo';
+
+  @override
+  String get name => 'foo';
+}
+
+class _YourSubCommand extends Command {
+  @override
+  String get description => 'does bar';
+
+  @override
+  String get name => 'bar';
+
+  @override
+  Future<void> run() async {
+     print('does sth');
+  }
+}
+```
 
 ## Development
 
