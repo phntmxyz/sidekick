@@ -10,7 +10,7 @@ void main() {
       // Env.mock = null;
     });
     final vault = SidekickVault(
-      location: Directory('test/testvault'),
+      location: Directory('test/vault'),
       environmentVariableName: 'VAULT_PASSPHRASE',
     );
     expect(vault.loadText('encrypted.txt.gpg'), '42');
@@ -23,7 +23,7 @@ void main() {
       // Env.mock = null;
     });
     final vault = SidekickVault(
-      location: Directory('test/testvault'),
+      location: Directory('test/vault'),
       environmentVariableName: 'VAULT_PASSPHRASE',
     );
     expect(
@@ -48,7 +48,7 @@ void main() {
       // Env.mock = null;
     });
     final vault = SidekickVault(
-      location: Directory('test/testvault'),
+      location: Directory('test/vault'),
       environmentVariableName: 'VAULT_PASSPHRASE',
     );
     expect(

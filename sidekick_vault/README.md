@@ -2,7 +2,6 @@
 
 A place to store project secrets within a git repository, encrypted with GPG
 
-
 # Create the Vault
 
 1. Create a `vault` directory in your project
@@ -20,13 +19,13 @@ A place to store project secrets within a git repository, encrypted with GPG
     ## Encrypt secrets
     
     ```
-    gpg --symmetric --cipher-algo AES256 --batch --passphrase=$password <file>
+    <cli-name> vault encrypt file.csv
     ```
     
     ## Decrypt secrets
     
-    ```sdfg
-    gpg --quiet --batch --yes --decrypt --passphrase=$password --output=<file> <file.gpg>
+    ```
+    <cli-name> vault decrypt file.csv.gpg
     ```
     ````
 
@@ -42,13 +41,71 @@ A place to store project secrets within a git repository, encrypted with GPG
     !.gitignore
     ```
 
-## Add secrets
-
-1. Generate a secure password in your preferred password manager
-
-2. Place the first secret in your vault. I.e. `secret.txt` and encrypt it with
+4. Register the `VaultCommand` in your sidekick CLI
+   ```dart
+   import 'package:sidekick_vault/sidekick_vault.dart';
    
-   `gpg --symmetric --cipher-algo AES256 --batch --passphrase=Y0UR-P4$$W0RD vault/secret.txt`
+   final vault = SidekickVault(
+     location: FlgProject.root.directory('vault'),
+     environmentVariableName: 'FLG_VAULT_PASSPHRASE',
+   );
+   
+   final runner = FlgCommandRunner()
+       ..addCommand(FlutterCommand())
+       ..addCommand(InstallGlobalCommand())
+       // more commands
+       ..addCommand(VaultCommand(vault: vault)); // <-- Add the VaultCommand
+   ```
+
+## Manage vault with VaultCommand
+
+### Add file to vault
+
+```bash
+<cli-name> vault encrypt path/to/secret.csv
+```
+
+```bash
+<cli-name> vault encrypt --passpharse="****" --vault-location="secret.txt.gpg" path/to/secret.txt
+```
+
+The `passpharse` is optional. 
+It will be retrieved from the environment variables or asked via `stdin`.
+
+The file will be saved at `vault-location` (optional) inside the vault directory. 
+The filename (`secret.txt`) will be used as fallback.
+
+
+### Decrypt file from vault
+
+```bash
+<cli-name> vault encrypt secret.csv.gpg
+```
+
+```bash
+<cli-name> vault decrypt --passpharse="****" --output="write/to/decrypted.txt" secret.txt.gpg';
+```
+
+The `passpharse` is optional.
+It will be retrieved from the environment variables or asked via `stdin`.
+
+`output` is optional.
+The decrypted file will be saved in the vault next to the encrypted one (without `.gpg` ending).
+
+
+## Manually add/read items in vault via gpg
+
+### Add file to vault
+
+```bash
+gpg --symmetric --cipher-algo AES256 --batch --passphrase=$password <file>
+```
+
+### Decrypt file from vault
+
+```bash
+gpg --quiet --batch --yes --decrypt --passphrase=$password --output=<file> <file.gpg>
+```
 
 ## Read secrets in code
 
@@ -59,15 +116,14 @@ import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_vault/sidekick_vault.dart';
 
 void main() {
-  final vault = SidekickVault(
-    location: repository.root.directory('vault'),
-    // environment variable where CIs can inject the vault password
-    environmentVariableName: 'FLT_VAULT_PASSPHRASE',
-  );
+   final vault = SidekickVault(
+      location: repository.root.directory('vault'),
+      // environment variable where CIs can inject the vault password
+      environmentVariableName: 'FLT_VAULT_PASSPHRASE',
+   );
 
-  final secret = vault.loadText('secret.txt');
-  
-  // Use secret on your CI to do magic things
+   final secret = vault.loadText('secret.txt');
+
+   // Use secret on your CI to do magic things
 }
-
 ```

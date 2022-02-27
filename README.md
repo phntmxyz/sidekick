@@ -11,7 +11,7 @@ Stay tuned for our public announcement while we're working hard on getting this 
 ## Install
 
 ```bash
-pub global activate sidekick
+dart pub global activate sidekick
 ```
 
 ```bash
@@ -24,7 +24,41 @@ sidekick init <path-to-repo>
 
 ## Writing custom tasks
 
-### Creating sub commands
+## Creating sub commands
+
+```dart
+import 'package:sidekick_core/sidekick_core.dart';
+
+class YourCommand extends Command {
+  @override
+  String get description => 'does foo';
+
+  @override
+  String get name => 'foo';
+  
+  @override
+  Future<void> run() {
+    // .. your code here
+  }
+}
+```
+
+```dart
+class FlgSidekick {
+  /// Parses args and executes commands
+  Future<void> runWithArgs(List<String> args) async {
+    initializeSidekick(name: 'flg', mainProjectPath: '.');
+
+    nhProject = FlgProject(mainProject.root);
+
+    final runner = FlgCommandRunner()
+      ..addCommand(FlutterCommand())
+      // more commands
+      ..addCommand(InstallGlobalCommand())
+      ..addCommand(VaultCommand()); // <-- Add the VaultCommand
+
+    //...
+```
 
 ## Development
 

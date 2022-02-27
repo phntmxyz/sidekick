@@ -1,8 +1,8 @@
-import 'package:dcli/dcli.dart' as dcli;
+import 'package:dcli/dcli.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 
-/// Checks that gpg is installed
-void requireGpg() {
+/// Checks if gpg is installed.
+void _requireGpg() {
   if (!isProgramInstalled('gpg')) {
     print('Attempt to install required program "gpg"');
     if (Platform.isMacOS) {
@@ -13,21 +13,50 @@ void requireGpg() {
   }
 }
 
-/// Returns the decrypted file located in a temp directory
-File gpgDecrypt(File file, String password) {
-  requireGpg();
-  final outDir = Directory.systemTemp.createTempSync();
-  final outFile = outDir.file(file.nameWithoutExtension);
+/// Encrypts the file using gpg.
+File gpgEncrypt(File file, String password, {File? output}) {
+  _requireGpg();
 
-  dcli.startFromArgs('gpg', [
+  final outputFile = output ??
+      () {
+        final outDir = Directory.systemTemp.createTempSync();
+        return outDir.file(file.nameWithoutExtension);
+      }();
+
+  startFromArgs('gpg', [
+    '--symmetric',
+    '--cipher-algo',
+    'AES256',
+    '--batch',
+    '--passphrase=$password',
+    '--output=${outputFile.absolute.path}',
+    file.absolute.path,
+  ]);
+
+  assert(outputFile.existsSync());
+  return outputFile;
+}
+
+/// Decrypts the file using gpg.
+File gpgDecrypt(File file, String password, {File? output}) {
+  _requireGpg();
+
+  final outputFile = output ??
+      () {
+        final outDir = Directory.systemTemp.createTempSync();
+        return outDir.file(file.nameWithoutExtension);
+      }();
+
+  startFromArgs('gpg', [
     '--quiet',
     '--batch',
     '--yes',
     '--decrypt',
     '--passphrase=$password',
-    '--output=${outFile.absolute.path}',
+    '--output=${outputFile.absolute.path}',
     file.absolute.path,
   ]);
-  assert(outFile.existsSync());
-  return outFile;
+
+  assert(outputFile.existsSync());
+  return outputFile;
 }

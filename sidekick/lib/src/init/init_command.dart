@@ -23,7 +23,7 @@ class InitCommand extends Command {
       'cliName',
       abbr: 'n',
       help:
-          'The name of the CLI to be created \nThe `_cli` prefix, will be define automatically',
+          'The name of the CLI to be created \nThe `_cli` prefix will be defined automatically',
     );
   }
 
