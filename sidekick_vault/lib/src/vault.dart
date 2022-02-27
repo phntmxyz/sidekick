@@ -42,6 +42,9 @@ class SidekickVault {
     }
     unlock();
     final path = location.file(filename);
+    if (!path.existsSync()) {
+      throw "${path.path} does not exist in vault";
+    }
     return gpgDecrypt(path, _passphrase!, output: to);
   }
 
@@ -54,6 +57,9 @@ class SidekickVault {
     if (!outFile.path.endsWith('.gpg')) {
       throw 'Files in vault are required to end with ".gpg". '
           '"$filename" does not';
+    }
+    if (!file.existsSync()) {
+      throw "${file.path} does not exist in vault";
     }
     return gpgEncrypt(file, _passphrase!, output: outFile);
   }

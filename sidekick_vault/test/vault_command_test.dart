@@ -5,6 +5,7 @@ import 'package:test/test.dart';
 void main() {
   late CommandRunner runner;
   setUp(() {
+    Env.mock = Env.forScope({'FLG_VAULT_PASSPHRASE': 'asdfasdf'});
     initializeSidekick(name: 'flg');
     addTearDown(() {
       deinitializeSidekick();
@@ -12,34 +13,35 @@ void main() {
 
     final vault = SidekickVault(
       location: Directory('test/vault'),
-      environmentVariableName: 'FLT_VAULT_PASSPHRASE',
+      environmentVariableName: 'FLG_VAULT_PASSPHRASE',
     );
 
     runner = CommandRunner('', '')..addCommand(VaultCommand(vault: vault));
   });
 
   test('encrypt/decrypt a file', () {
+    final secretFile = File('test/vault/secret.txt.gpg');
     final tempDir = Directory.systemTemp.createTempSync();
+
     final clearTextFile = tempDir.file('cleartext.txt')
       ..writeAsStringSync('Dash is cool');
     addTearDown(() {
-      clearTextFile.deleteSync();
+      if (secretFile.existsSync()) {
+        secretFile.deleteSync();
+      }
+      tempDir.deleteSync(recursive: true);
     });
-    final encryptedFile = tempDir.file('encrypted.gpg.txt');
-
+    final decryptedFile = tempDir.file('decrypted.txt');
     runner.run([
       'vault',
       'encrypt',
       '--passphrase',
       'dartlang',
-      '--output',
-      encryptedFile.absolute.path,
+      '--vault-location',
+      'secret.txt.gpg',
       clearTextFile.absolute.path,
     ]);
 
-    expect(encryptedFile.existsSync(), isTrue);
-
-    final decryptedFile = tempDir.file('decrypted.txt');
     runner.run([
       'vault',
       'decrypt',
@@ -47,7 +49,7 @@ void main() {
       'dartlang',
       '--output',
       decryptedFile.absolute.path,
-      encryptedFile.absolute.path,
+      'secret.txt.gpg',
     ]);
     expect(decryptedFile.readAsStringSync(), 'Dash is cool');
   });
@@ -66,26 +68,20 @@ void main() {
               .having(
                 (it) => it,
                 'example',
-                contains('flg vault decrypt file.csv.gpg'),
+                contains('flg vault decrypt secret.txt.gpg'),
               ),
         ),
       );
     });
     test('throws for non-files', () {
       expect(
-        () => runner.run(['vault', 'decrypt', '.']),
+        () => runner.run(['vault', 'decrypt', 'unknown.gpg']),
         throwsA(
-          isA<String>()
-              .having(
-                (it) => it,
-                'error',
-                contains('No valid file'),
-              )
-              .having(
-                (it) => it,
-                'example',
-                contains('flg vault decrypt file.csv.gpg'),
-              ),
+          isA<String>().having(
+            (it) => it,
+            'error',
+            contains('unknown.gpg does not exist in vault'),
+          ),
         ),
       );
     });
@@ -107,7 +103,7 @@ void main() {
               .having(
                 (it) => it,
                 'example',
-                contains('flg vault decrypt file.csv.gpg'),
+                contains('flg vault decrypt secret.txt.gpg'),
               ),
         ),
       );
@@ -127,26 +123,20 @@ void main() {
               .having(
                 (it) => it,
                 'example',
-                contains('flg vault encrypt file.csv'),
+                contains('flg vault encrypt secret.txt'),
               ),
         ),
       );
     });
     test('throws for non-files', () {
       expect(
-        () => runner.run(['vault', 'encrypt', '.']),
+        () => runner.run(['vault', 'encrypt', 'unknown.gpg']),
         throwsA(
-          isA<String>()
-              .having(
-                (it) => it,
-                'error',
-                contains('No valid file'),
-              )
-              .having(
-                (it) => it,
-                'example',
-                contains('flg vault encrypt file.csv'),
-              ),
+          isA<String>().having(
+            (it) => it,
+            'error',
+            contains('unknown.gpg does not exist'),
+          ),
         ),
       );
     });
@@ -168,7 +158,7 @@ void main() {
               .having(
                 (it) => it,
                 'example',
-                contains('flg vault encrypt file.csv'),
+                contains('flg vault encrypt secret.txt.gpg'),
               ),
         ),
       );
