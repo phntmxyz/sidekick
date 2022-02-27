@@ -22,13 +22,23 @@ class _EncryptCommand extends Command {
   String get name => 'encrypt';
 
   @override
-  Future<void> run() async {
-    final file = _validateInput(
-      argResults,
-      example: 'flg vault encrypt file.csv',
+  String? get usageFooter => '\n${green('Example usage:')}\n'
+      '> $cliName vault encrypt file.csv';
+
+  _EncryptCommand() {
+    argParser.addOption(
+      'output',
+      abbr: 'o',
+      help: 'writes the file to this location',
     );
+  }
+
+  @override
+  Future<void> run() async {
+    final file = _parseFileFromRest();
+    final outFile = _parseOutFile();
     final password = ask('Enter password:', hidden: true);
-    file.encrypt(password);
+    gpgEncrypt(file, password, output: outFile);
     print(green('Successfully encrypted $file'));
   }
 }
@@ -41,35 +51,55 @@ class _DecryptCommand extends Command {
   String get name => 'decrypt';
 
   @override
-  Future<void> run() async {
-    final file = _validateInput(
-      argResults,
-      example: 'flg vault decrypt file.csv.gpg',
+  String? get usageFooter => '\n${green('Example usage:')}\n'
+      '> $cliName vault decrypt file.csv.gpg';
+
+  _DecryptCommand() {
+    argParser.addOption(
+      'output',
+      abbr: 'o',
+      help: 'writes the file to this location',
     );
+  }
+
+  @override
+  Future<void> run() async {
+    final file = _parseFileFromRest();
+    final outFile = _parseOutFile();
     final password = ask('Enter password:', hidden: true);
-    file.decrypt(password);
+    gpgDecrypt(file, password, output: outFile);
     print(green('Successfully decrypted $file'));
   }
 }
 
-File _validateInput(ArgResults? input, {required String example}) {
-  if (input?.arguments.isEmpty ?? false) {
-    _throw('Missing file', example);
+extension on Command {
+  File _parseFileFromRest() {
+    if (argResults!.rest.isEmpty) {
+      _throwWithUsage('Missing file', usageFooter!);
+    }
+    if (argResults!.rest.length > 1) {
+      _throwWithUsage('Enter one file only', usageFooter!);
+    }
+    final restArg = argResults!.rest.first;
+    if (!isFile(restArg)) {
+      _throwWithUsage('No valid file', usageFooter!);
+    }
+    return File(restArg);
   }
-  if (input!.arguments.length > 1) {
-    _throw('Enter one file only', example);
+
+  File? _parseOutFile() {
+    final result = argResults!['output'];
+    if (result == null) {
+      return null;
+    }
+    return File(result as String);
   }
-  if (!isFile(input.arguments.first)) {
-    _throw('No valid file', example);
-  }
-  return File(input.arguments.first);
 }
 
-void _throw(String message, String example) {
+void _throwWithUsage(String message, String usage) {
   error(
     '$message'
     '\n'
-    'Example:\n'
-    '$example',
+    '$usage',
   );
 }

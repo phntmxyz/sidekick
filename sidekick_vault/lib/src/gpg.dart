@@ -13,44 +13,50 @@ void _requireGpg() {
   }
 }
 
-extension GpgEncrypt on File {
-  /// Encrypts the file using gpg.
-  void encrypt(String password) {
-    _requireGpg();
-    startFromArgs('gpg', [
-      '--symmetric',
-      '--cipher-algo',
-      'AES256',
-      '--batch',
-      '--passphrase=$password',
-      this.absolute.path,
-    ]);
-  }
+/// Encrypts the file using gpg.
+File gpgEncrypt(File file, String password, {File? output}) {
+  _requireGpg();
+
+  final outputFile = output ??
+      () {
+        final outDir = Directory.systemTemp.createTempSync();
+        return outDir.file(file.nameWithoutExtension);
+      }();
+
+  startFromArgs('gpg', [
+    '--symmetric',
+    '--cipher-algo',
+    'AES256',
+    '--batch',
+    '--passphrase=$password',
+    '--output=${outputFile.absolute.path}',
+    file.absolute.path,
+  ]);
+
+  assert(outputFile.existsSync());
+  return outputFile;
 }
 
-extension GpgDecrypt on File {
-  /// Decrypts the file using gpg.
-  void decrypt(String password, [String? output]) {
-    _requireGpg();
-    startFromArgs('gpg', [
-      '--quiet',
-      '--batch',
-      '--yes',
-      '--decrypt',
-      '--passphrase=$password',
-      '--output=${output ?? nameWithoutExtension}',
-      this.absolute.path,
-    ]);
-  }
+/// Decrypts the file using gpg.
+File gpgDecrypt(File file, String password, {File? output}) {
+  _requireGpg();
 
-  /// Returns the decrypted file located in a temp directory.
-  File decryptToTemp(String password) {
-    final outDir = Directory.systemTemp.createTempSync();
-    final outFile = outDir.file(nameWithoutExtension);
+  final outputFile = output ??
+      () {
+        final outDir = Directory.systemTemp.createTempSync();
+        return outDir.file(file.nameWithoutExtension);
+      }();
 
-    decrypt(password, outFile.absolute.path);
+  startFromArgs('gpg', [
+    '--quiet',
+    '--batch',
+    '--yes',
+    '--decrypt',
+    '--passphrase=$password',
+    '--output=${outputFile.absolute.path}',
+    file.absolute.path,
+  ]);
 
-    assert(outFile.existsSync());
-    return outFile;
-  }
+  assert(outputFile.existsSync());
+  return outputFile;
 }
