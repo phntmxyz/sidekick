@@ -30,29 +30,34 @@ sidekick init <path-to-repo>
 import 'package:sidekick_core/sidekick_core.dart';
 
 class YourCommand extends Command {
-  YourCommand() {
-    addSubcommand(_YourSubCommand());
-  }
-
   @override
   String get description => 'does foo';
 
   @override
   String get name => 'foo';
-}
-
-class _YourSubCommand extends Command {
+  
   @override
-  String get description => 'does bar';
-
-  @override
-  String get name => 'bar';
-
-  @override
-  Future<void> run() async {
-     print('does sth');
+  Future<void> run() {
+    // .. your code here
   }
 }
+```
+
+```dart
+class FlgSidekick {
+  /// Parses args and executes commands
+  Future<void> runWithArgs(List<String> args) async {
+    initializeSidekick(name: 'flg', mainProjectPath: '.');
+
+    nhProject = FlgProject(mainProject.root);
+
+    final runner = FlgCommandRunner()
+      ..addCommand(FlutterCommand())
+      // more commands
+      ..addCommand(InstallGlobalCommand())
+      ..addCommand(VaultCommand()); // <-- Add the VaultCommand
+
+    //...
 ```
 
 ## Development

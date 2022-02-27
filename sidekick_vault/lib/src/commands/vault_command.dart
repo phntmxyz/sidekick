@@ -9,7 +9,7 @@ class VaultCommand extends Command {
   }
 
   @override
-  String get description => 'Manages sidekick vault';
+  String get description => 'Manages sidekick vault from the cli';
 
   @override
   String get name => 'vault';
