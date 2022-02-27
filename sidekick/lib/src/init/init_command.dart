@@ -143,7 +143,14 @@ class InitCommand extends Command {
 
     // For now, we install the flutter wrapper to get a dart runtime.
     // TODO Add dart runtime so that dart packages can use sidekick without flutter
-    await installFlutterWrapper(entrypointDir);
+    final flutterw = await installFlutterWrapper(entrypointDir);
+
+    // make sure sidekick_core is up-to-date
+    upgradeSidekickDependencies(
+      flutterw,
+      cliPackage,
+      packages: ['sidekick_core'],
+    );
   }
 }
 
@@ -164,7 +171,7 @@ Future<void> gitInit(Directory directory) async {
 
 /// Installs the [flutter_wrapper](https://github.com/passsy/flutter_wrapper) in
 /// [directory] using the provided install script
-Future<void> installFlutterWrapper(Directory directory) async {
+Future<File> installFlutterWrapper(Directory directory) async {
   const installUri =
       'https://raw.githubusercontent.com/passsy/flutter_wrapper/master/install.sh';
   final content = (await http.get(Uri.parse(installUri))).body;
@@ -176,6 +183,21 @@ Future<void> installFlutterWrapper(Directory directory) async {
   stdout.addStream(process.stdout);
   stderr.addStream(process.stderr);
   await process.exitCode;
+
+  return directory.file('flutterw');
+}
+
+/// Upgrade dependencies of a sidekick cli
+void upgradeSidekickDependencies(
+  File flutterw,
+  Directory sidekickCliPackage, {
+  List<String> packages = const [],
+}) {
+  final relFlutterw = relative(flutterw.path, from: sidekickCliPackage.path);
+  dcli.run(
+    'sh $relFlutterw pub upgrade ${packages.join(' ')}',
+    workingDirectory: sidekickCliPackage.path,
+  );
 }
 
 /// Makes a file executable 'rwxr-xr-x' (755)
