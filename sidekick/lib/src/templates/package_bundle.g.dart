@@ -6,6 +6,12 @@ import 'package:mason/mason.dart';
 final packageBundle = MasonBundle.fromJson(<String, dynamic>{
   "files": [
     {
+      "path": ".gitignore",
+      "data":
+          "IyBGaWxlcyBhbmQgZGlyZWN0b3JpZXMgY3JlYXRlZCBieSBwdWIKLmRhcnRfdG9vbC8KLnBhY2thZ2VzCgojIENvbnZlbnRpb25hbCBkaXJlY3RvcnkgZm9yIGJ1aWxkIG91dHB1dHMKYnVpbGQvCgojIERpcmVjdG9yeSBjcmVhdGVkIGJ5IGRhcnRkb2MKZG9jL2FwaS8K",
+      "type": "text"
+    },
+    {
       "path": "analysis_options.yaml",
       "data":
           "aW5jbHVkZTogcGFja2FnZTpsaW50L2FuYWx5c2lzX29wdGlvbnMueWFtbAoKbGludGVyOgogIHJ1bGVzOgogICAgYXZvaWRfcHJpbnQ6IGZhbHNl",
