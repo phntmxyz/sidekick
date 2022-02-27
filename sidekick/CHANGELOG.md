@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.0
+
+- Naming is hard, we're now suggesting cli names
+- Update `sidekick_core` dependency on init
+- Generate `.gitignore`
+
 ## 0.4.0
 
 - Automatic recompile when cli code changes

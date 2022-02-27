@@ -22,3 +22,9 @@ To generate the template run this command from the `sidekick` package root
 ```bash
 ./tool/generateTemplate.sh
 ```
+
+Activate the sidekick cli locally. (Run it from package root)
+
+```bash
+dart pub global activate -s path sidekick
+```
