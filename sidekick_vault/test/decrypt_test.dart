@@ -4,19 +4,28 @@ import 'package:test/test.dart';
 
 void main() {
   group('decrypt:', () {
+    setUp(() {
+      initializeSidekick(name: 'flg');
+      addTearDown(() {
+        deinitializeSidekick();
+      });
+    });
     test('no file', () {
       final runner = CommandRunner('', '')..addCommand(VaultCommand());
       expect(
         () => runner.run(['vault', 'decrypt']),
         throwsA(
-          isA<String>().having(
-            (it) => it,
-            'error',
-            'Missing file'
-                '\n'
-                'Example:\n'
-                'flg vault decrypt file.csv.gpg',
-          ),
+          isA<String>()
+              .having(
+                (it) => it,
+                'error',
+                contains('Missing file'),
+              )
+              .having(
+                (it) => it,
+                'example',
+                contains('flg vault decrypt file.csv.gpg'),
+              ),
         ),
       );
     });
@@ -25,14 +34,17 @@ void main() {
       expect(
         () => runner.run(['vault', 'decrypt', '.']),
         throwsA(
-          isA<String>().having(
-            (it) => it,
-            'error',
-            'No valid file'
-                '\n'
-                'Example:\n'
-                'flg vault decrypt file.csv.gpg',
-          ),
+          isA<String>()
+              .having(
+                (it) => it,
+                'error',
+                contains('No valid file'),
+              )
+              .having(
+                (it) => it,
+                'example',
+                contains('flg vault decrypt file.csv.gpg'),
+              ),
         ),
       );
     });
@@ -46,14 +58,17 @@ void main() {
           'test/vault/encrypted.txt.gpg',
         ]),
         throwsA(
-          isA<String>().having(
-            (it) => it,
-            'error',
-            'Enter one file only'
-                '\n'
-                'Example:\n'
-                'flg vault decrypt file.csv.gpg',
-          ),
+          isA<String>()
+              .having(
+                (it) => it,
+                'error',
+                contains('Enter one file only'),
+              )
+              .having(
+                (it) => it,
+                'example',
+                contains('flg vault decrypt file.csv.gpg'),
+              ),
         ),
       );
     });
