@@ -31,15 +31,27 @@ class _EncryptCommand extends Command {
       abbr: 'o',
       help: 'writes the file to this location',
     );
+    argParser.addOption(
+      'passphrase',
+      abbr: 'p',
+      help: 'the password for encryption. '
+          'If not provided it will be asked via stdin',
+    );
   }
 
   @override
   Future<void> run() async {
     final file = _parseFileFromRest();
-    final outFile = _parseOutFile();
-    final password = ask('Enter password:', hidden: true);
-    gpgEncrypt(file, password, output: outFile);
-    print(green('Successfully encrypted $file'));
+    final outFile = _parseOutFileOption();
+    final password =
+        _parsePassphraseOption() ?? ask('Enter password:', hidden: true);
+    final encrypted = gpgEncrypt(file, password, output: outFile);
+    print(
+      green(
+        'Successfully encrypted ${file.path} '
+        'to ${encrypted.path}',
+      ),
+    );
   }
 }
 
@@ -60,15 +72,27 @@ class _DecryptCommand extends Command {
       abbr: 'o',
       help: 'writes the file to this location',
     );
+    argParser.addOption(
+      'passphrase',
+      abbr: 'p',
+      help: 'the password for decryption. '
+          'If not provided it will be asked via stdin',
+    );
   }
 
   @override
   Future<void> run() async {
     final file = _parseFileFromRest();
-    final outFile = _parseOutFile();
-    final password = ask('Enter password:', hidden: true);
-    gpgDecrypt(file, password, output: outFile);
-    print(green('Successfully decrypted $file'));
+    final outFile = _parseOutFileOption();
+    final password =
+        _parsePassphraseOption() ?? ask('Enter password:', hidden: true);
+    final decrypted = gpgDecrypt(file, password, output: outFile);
+    print(
+      green(
+        'Successfully decrypted ${file.path} '
+        'to ${decrypted.path}',
+      ),
+    );
   }
 }
 
@@ -87,12 +111,16 @@ extension on Command {
     return File(restArg);
   }
 
-  File? _parseOutFile() {
+  File? _parseOutFileOption() {
     final result = argResults!['output'];
     if (result == null) {
       return null;
     }
     return File(result as String);
+  }
+
+  String? _parsePassphraseOption() {
+    return argResults!['passphrase'] as String;
   }
 }
 
