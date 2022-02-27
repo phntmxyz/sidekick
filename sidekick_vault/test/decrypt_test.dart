@@ -15,7 +15,7 @@ void main() {
             'Missing file'
                 '\n'
                 'Example:\n'
-                'noa vault decrypt file.csv.gpg',
+                'flg vault decrypt file.csv.gpg',
           ),
         ),
       );
@@ -31,7 +31,7 @@ void main() {
             'No valid file'
                 '\n'
                 'Example:\n'
-                'noa vault decrypt file.csv.gpg',
+                'flg vault decrypt file.csv.gpg',
           ),
         ),
       );
@@ -52,7 +52,7 @@ void main() {
             'Enter one file only'
                 '\n'
                 'Example:\n'
-                'noa vault decrypt file.csv.gpg',
+                'flg vault decrypt file.csv.gpg',
           ),
         ),
       );

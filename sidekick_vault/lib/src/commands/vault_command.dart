@@ -25,7 +25,7 @@ class _EncryptCommand extends Command {
   Future<void> run() async {
     final file = _validateInput(
       argResults,
-      example: 'noa vault encrypt file.csv',
+      example: 'flg vault encrypt file.csv',
     );
     final password = ask('Enter password:', hidden: true);
     file.encrypt(password);
@@ -44,7 +44,7 @@ class _DecryptCommand extends Command {
   Future<void> run() async {
     final file = _validateInput(
       argResults,
-      example: 'noa vault decrypt file.csv.gpg',
+      example: 'flg vault decrypt file.csv.gpg',
     );
     final password = ask('Enter password:', hidden: true);
     file.decrypt(password);
