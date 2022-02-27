@@ -1,10 +1,11 @@
 import 'package:sidekick_core/sidekick_core.dart';
-import 'package:sidekick_vault/src/gpg.dart';
+import 'package:sidekick_vault/sidekick_vault.dart';
 
 class VaultCommand extends Command {
-  VaultCommand() {
-    addSubcommand(_EncryptCommand());
-    addSubcommand(_DecryptCommand());
+  VaultCommand({required SidekickVault vault}) {
+    addSubcommand(_EncryptCommand(vault));
+    addSubcommand(_DecryptCommand(vault));
+    addSubcommand(_ListCommand(vault));
   }
 
   @override
@@ -12,6 +13,26 @@ class VaultCommand extends Command {
 
   @override
   String get name => 'vault';
+}
+
+class _ListCommand extends Command {
+  @override
+  String get description => 'lists the secrets in vault';
+
+  @override
+  String get name => 'list';
+
+  final SidekickVault vault;
+
+  _ListCommand(this.vault);
+
+  @override
+  Future<void> run() async {
+    final files = vault
+        .listEntries()
+        .map((file) => relative(file.path, from: vault.location.path));
+    print(files.joinToString(separator: '\n'));
+  }
 }
 
 class _EncryptCommand extends Command {
@@ -23,13 +44,16 @@ class _EncryptCommand extends Command {
 
   @override
   String? get usageFooter => '\n${green('Example usage:')}\n'
-      '> $cliName vault encrypt file.csv';
+      '> $cliName vault encrypt --passpharse="****" --vault-location="secret.gpg.txt" path/to/secret.txt';
 
-  _EncryptCommand() {
+  final SidekickVault vault;
+
+  _EncryptCommand(this.vault) {
     argParser.addOption(
-      'output',
-      abbr: 'o',
-      help: 'writes the file to this location',
+      'vault-location',
+      abbr: 'l',
+      help: 'writes the file to this location in vault. '
+          'Defaults to "<file>.gpg" in root of the vault',
     );
     argParser.addOption(
       'passphrase',
@@ -41,11 +65,13 @@ class _EncryptCommand extends Command {
 
   @override
   Future<void> run() async {
-    final file = _parseFileFromRest();
-    final outFile = _parseOutFileOption();
-    final password =
-        _parsePassphraseOption() ?? ask('Enter password:', hidden: true);
-    final encrypted = gpgEncrypt(file, password, output: outFile);
+    final file = File(_parseFileFromRest());
+    final location = _parseVaultLocation();
+    final password = _parsePassphraseOption();
+    vault.unlock(password);
+
+    final encrypted = vault.saveFile(file, filename: location);
+
     print(
       green(
         'Successfully encrypted ${file.path} '
@@ -64,9 +90,12 @@ class _DecryptCommand extends Command {
 
   @override
   String? get usageFooter => '\n${green('Example usage:')}\n'
-      '> $cliName vault decrypt file.csv.gpg';
+      '> $cliName vault decrypt secret.gpg.txt\n'
+      '> $cliName vault decrypt --passpharse="****" --output="write/to/decrypted.txt" secret.gpg.txt';
 
-  _DecryptCommand() {
+  final SidekickVault vault;
+
+  _DecryptCommand(this.vault) {
     argParser.addOption(
       'output',
       abbr: 'o',
@@ -82,14 +111,16 @@ class _DecryptCommand extends Command {
 
   @override
   Future<void> run() async {
-    final file = _parseFileFromRest();
-    final outFile = _parseOutFileOption();
-    final password =
-        _parsePassphraseOption() ?? ask('Enter password:', hidden: true);
-    final decrypted = gpgDecrypt(file, password, output: outFile);
+    final vaultLocation = _parseFileFromRest();
+    final outFile = _parseOutFileOption() ??
+        vault.location.file(vaultLocation.replaceFirst('.gpg', ''));
+    final password = _parsePassphraseOption();
+    vault.unlock(password);
+
+    final decrypted = vault.loadFile(vaultLocation, to: outFile);
     print(
       green(
-        'Successfully decrypted ${file.path} '
+        'Successfully decrypted $vaultLocation '
         'to ${decrypted.path}',
       ),
     );
@@ -97,7 +128,7 @@ class _DecryptCommand extends Command {
 }
 
 extension on Command {
-  File _parseFileFromRest() {
+  String _parseFileFromRest() {
     if (argResults!.rest.isEmpty) {
       _throwWithUsage('Missing file', usageFooter!);
     }
@@ -105,10 +136,7 @@ extension on Command {
       _throwWithUsage('Enter one file only', usageFooter!);
     }
     final restArg = argResults!.rest.first;
-    if (!isFile(restArg)) {
-      _throwWithUsage('No valid file', usageFooter!);
-    }
-    return File(restArg);
+    return restArg;
   }
 
   File? _parseOutFileOption() {
@@ -119,8 +147,12 @@ extension on Command {
     return File(result as String);
   }
 
+  String? _parseVaultLocation() {
+    return argResults!['vault-location'] as String?;
+  }
+
   String? _parsePassphraseOption() {
-    return argResults!['passphrase'] as String;
+    return argResults!['passphrase'] as String?;
   }
 }
 

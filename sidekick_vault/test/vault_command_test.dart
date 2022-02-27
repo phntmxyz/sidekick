@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_vault/sidekick_vault.dart';
 import 'package:test/test.dart';
@@ -12,7 +10,12 @@ void main() {
       deinitializeSidekick();
     });
 
-    runner = CommandRunner('', '')..addCommand(VaultCommand());
+    final vault = SidekickVault(
+      location: Directory('test/vault'),
+      environmentVariableName: 'FLT_VAULT_PASSPHRASE',
+    );
+
+    runner = CommandRunner('', '')..addCommand(VaultCommand(vault: vault));
   });
 
   test('encrypt/decrypt a file', () {

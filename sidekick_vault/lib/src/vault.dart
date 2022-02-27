@@ -19,20 +19,43 @@ class SidekickVault {
 
   String? _passphrase;
 
-  void unlock() {
-    if (_passphrase != null) {
-      return;
+  void unlock([String? passphrase]) {
+    if (passphrase != null) {
+      _passphrase = passphrase;
+    } else {
+      if (_passphrase != null) {
+        return;
+      }
+      _passphrase = getEnvPassword(environmentVariableName);
     }
-    _passphrase = getEnvPassword(environmentVariableName);
     assert(_passphrase != null);
   }
 
-  File loadFile(String filename) {
+  /// Loads a file form the secure vault with [filename] to location [to] where
+  /// it will be stored unencrypted. It is then returned.
+  ///
+  /// When [to] is null, the file returned is located in a temp directory
+  File loadFile(String filename, {File? to}) {
     if (!filename.endsWith('.gpg')) {
-      throw 'expect file to end with .gpg';
+      throw 'Files in vault always end with ".gpg". '
+          '"$filename" does not';
     }
     unlock();
-    return gpgDecrypt(location.file(filename), _passphrase!);
+    final path = location.file(filename);
+    return gpgDecrypt(path, _passphrase!, output: to);
+  }
+
+  /// Saves the file in the vault.
+  File saveFile(File file, {String? filename}) {
+    unlock();
+    final outFile = filename != null
+        ? location.file(filename)
+        : location.file('${file.name}.gpg');
+    if (!outFile.path.endsWith('.gpg')) {
+      throw 'Files in vault are required to end with ".gpg". '
+          '"$filename" does not';
+    }
+    return gpgEncrypt(file, _passphrase!, output: outFile);
   }
 
   // caches secrets to prevent multiple decryptions
@@ -46,6 +69,17 @@ class SidekickVault {
     final secret = file.readAsStringSync();
     _cache[filename] = secret;
     return secret;
+  }
+
+  List<File> listEntries() {
+    final files = location.listSync().whereType<File>();
+
+    final fileList = files
+        .where((file) => file.name.endsWith('.gpg'))
+        .sortedBy((file) => file.path)
+        .toList();
+
+    return fileList;
   }
 }
 
