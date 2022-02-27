@@ -1,3 +1,7 @@
+## 0.5.1
+
+- Print script + stderr when execution of an inline script (`writeAndRunShellScript(script)`) fails
+
 ## 0.5.0
 
 **Breaking** This update requires the sidekick project to be initialized again with `sidekick: 0.4.0`
