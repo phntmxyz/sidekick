@@ -1,3 +1,45 @@
+## 0.4.0
+
+- Throw on CI when no passphrase is provided via stdin
+- Adds `VaultCommand`, allowing adding and reading secrets via a sidekick cli
+    ```dart
+    // Add command to your CLI
+    ..addCommand(VaultCommand(vault: vault)) 
+    ```
+    
+    ### Add file to vault
+    
+    ```bash
+    <cli-name> vault encrypt path/to/secret.csv
+    ```
+    
+    ```bash
+    <cli-name> vault encrypt --passpharse="****" --vault-location="secret.txt.gpg" path/to/secret.txt
+    ```
+    
+    The `passpharse` is optional.
+    It will be retrieved from the environment variables or asked via `stdin`.
+    
+    The file will be saved at `vault-location` (optional) inside the vault directory.
+    The filename (`secret.txt`) will be used as fallback.
+
+    ### Decrypt file in vault
+    
+    ```bash
+    <cli-name> vault encrypt secret.csv.gpg
+    ```
+    
+    ```bash
+    <cli-name> vault decrypt --passpharse="****" --output="write/to/decrypted.txt" secret.txt.gpg';
+    ```
+    
+    The `passpharse` is optional.
+    It will be retrieved from the environment variables or asked via `stdin`.
+    
+    `output` is optional.
+    The decrypted file will be saved in the vault next to the encrypted one (without `.gpg` ending).
+    
+
 ## 0.3.0
 
 - Requires Dart 2.14

@@ -76,7 +76,7 @@ The file will be saved at `vault-location` (optional) inside the vault directory
 The filename (`secret.txt`) will be used as fallback.
 
 
-### Decrypt file from vault
+### Decrypt file in vault
 
 ```bash
 <cli-name> vault encrypt secret.csv.gpg
