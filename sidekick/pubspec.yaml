@@ -14,6 +14,7 @@ dependencies:
   http: ^0.13.3
   mason: 0.1.0-dev.4
   path: ^1.8.0
+  sidekick_core: ^0.5.1
 
 dev_dependencies:
   lint: ^1.5.0

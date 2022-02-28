@@ -10,6 +10,7 @@ import 'package:sidekick/src/init/name_suggester.dart';
 import 'package:sidekick/src/init/project_structure_detector.dart';
 import 'package:sidekick/src/templates/entrypoint_bundle.g.dart';
 import 'package:sidekick/src/templates/package_bundle.g.dart';
+import 'package:sidekick_core/sidekick_core.dart';
 
 class InitCommand extends Command {
   @override
@@ -172,18 +173,9 @@ Future<void> gitInit(Directory directory) async {
 /// Installs the [flutter_wrapper](https://github.com/passsy/flutter_wrapper) in
 /// [directory] using the provided install script
 Future<File> installFlutterWrapper(Directory directory) async {
-  const installUri =
-      'https://raw.githubusercontent.com/passsy/flutter_wrapper/master/install.sh';
-  final content = (await http.get(Uri.parse(installUri))).body;
-  final Process process = await Process.start(
-    'sh',
-    ['-c', content],
-    workingDirectory: directory.absolute.path,
+  writeAndRunShellScript(
+    r'sh -c "$(curl -fsSL https://raw.githubusercontent.com/passsy/flutter_wrapper/master/install.sh)"',
   );
-  stdout.addStream(process.stdout);
-  stderr.addStream(process.stderr);
-  await process.exitCode;
-
   return directory.file('flutterw');
 }
 
