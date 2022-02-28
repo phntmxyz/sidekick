@@ -1,11 +1,5 @@
-import 'dart:io';
-
-import 'package:args/command_runner.dart';
-import 'package:dartx/dartx_io.dart';
 import 'package:dcli/dcli.dart' as dcli;
-import 'package:http/http.dart' as http;
 import 'package:mason/mason.dart';
-import 'package:path/path.dart';
 import 'package:sidekick/src/init/name_suggester.dart';
 import 'package:sidekick/src/init/project_structure_detector.dart';
 import 'package:sidekick/src/templates/entrypoint_bundle.g.dart';
