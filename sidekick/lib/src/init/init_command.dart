@@ -175,6 +175,7 @@ Future<void> gitInit(Directory directory) async {
 Future<File> installFlutterWrapper(Directory directory) async {
   writeAndRunShellScript(
     r'sh -c "$(curl -fsSL https://raw.githubusercontent.com/passsy/flutter_wrapper/master/install.sh)"',
+    workingDirectory: directory,
   );
   return directory.file('flutterw');
 }
