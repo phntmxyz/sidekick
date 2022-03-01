@@ -31,7 +31,7 @@ DART="$DART_SDK/bin/dart"
 
 HASH_PROGRAM='sha1sum'
 OS="$(uname -s)"
-if [[ $OS =~ DARWIN.* ]]; then
+if [[ $OS =~ Darwin.* ]]; then
   HASH_PROGRAM="shasum"
 fi
 
