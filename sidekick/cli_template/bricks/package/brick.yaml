@@ -4,3 +4,5 @@ version: 1.0.0
 vars:
   name:
     type: string
+  mainProjectPath:
+    type: string

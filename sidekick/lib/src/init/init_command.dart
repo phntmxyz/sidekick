@@ -69,10 +69,35 @@ class InitCommand extends Command {
           repoRoot: projectDir,
           packageDir: projectDir.directory('packages'),
           entrypointDir: projectDir,
+          mainProjectDir: '.',
         );
         break;
       case ProjectStructure.multiPackage:
-        throw 'The multi package project layout is not yet supported';
+        // TODO: Iterate through the packages,
+        // TODO: List them and ask the user to select one
+        // TODO: use selected Package Path as repoRoot
+        final List<String> packages = projectDir
+            .directory('packages')
+            .listSync()
+            .map((e) => e.nameWithoutExtension)
+            .toList();
+        String? mainProjectDir = dcli.menu(
+          prompt: 'Which of the following package is your primary app?',
+          options: [...packages, 'none'],
+        );
+        if (mainProjectDir == 'none') {
+          mainProjectDir = null;
+        } else {
+          mainProjectDir = 'packages/$mainProjectDir';
+        }
+        await createSidekickPackage(
+          cliName: cliName,
+          repoRoot: projectDir,
+          packageDir: projectDir.directory('packages'),
+          entrypointDir: projectDir,
+          mainProjectDir: mainProjectDir,
+        );
+        break;
       case ProjectStructure.rootWithPackages:
         print('Detected a Dart/Flutter project with a /packages dictionary');
         await createSidekickPackage(
@@ -80,6 +105,7 @@ class InitCommand extends Command {
           repoRoot: projectDir,
           packageDir: projectDir.directory('packages'),
           entrypointDir: projectDir,
+          mainProjectDir: '.',
         );
         break;
       case ProjectStructure.unknown:
@@ -96,6 +122,7 @@ class InitCommand extends Command {
     required Directory repoRoot,
     required Directory packageDir,
     required Directory entrypointDir,
+    String? mainProjectDir,
   }) async {
     // init git, required for flutterw
     await gitInit(repoRoot);
@@ -107,7 +134,7 @@ class InitCommand extends Command {
       final generatorTarget = DirectoryGeneratorTarget(cliPackage);
       await generator.generate(
         generatorTarget,
-        vars: {'name': cliName},
+        vars: {'name': cliName, 'mainProjectPath': mainProjectDir},
         logger: Logger(),
         fileConflictResolution: FileConflictResolution.overwrite,
       );
