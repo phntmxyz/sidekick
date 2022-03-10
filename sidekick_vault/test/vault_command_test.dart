@@ -5,7 +5,6 @@ import 'package:test/test.dart';
 void main() {
   late CommandRunner runner;
   setUp(() {
-    Env.mock = Env.forScope({'FLG_VAULT_PASSPHRASE': 'asdfasdf'});
     initializeSidekick(name: 'flg');
     addTearDown(() {
       deinitializeSidekick();
@@ -32,25 +31,30 @@ void main() {
       tempDir.deleteSync(recursive: true);
     });
     final decryptedFile = tempDir.file('decrypted.txt');
-    runner.run([
-      'vault',
-      'encrypt',
-      '--passphrase',
-      'dartlang',
-      '--vault-location',
-      'secret.txt.gpg',
-      clearTextFile.absolute.path,
-    ]);
+    withEnvironment(
+      () {
+        runner.run([
+          'vault',
+          'encrypt',
+          '--passphrase',
+          'dartlang',
+          '--vault-location',
+          'secret.txt.gpg',
+          clearTextFile.absolute.path,
+        ]);
 
-    runner.run([
-      'vault',
-      'decrypt',
-      '--passphrase',
-      'dartlang',
-      '--output',
-      decryptedFile.absolute.path,
-      'secret.txt.gpg',
-    ]);
+        runner.run([
+          'vault',
+          'decrypt',
+          '--passphrase',
+          'dartlang',
+          '--output',
+          decryptedFile.absolute.path,
+          'secret.txt.gpg',
+        ]);
+      },
+      environment: {'FLG_VAULT_PASSPHRASE': 'asdfasdf'},
+    );
     expect(decryptedFile.readAsStringSync(), 'Dash is cool');
   });
 
@@ -75,7 +79,10 @@ void main() {
     });
     test('throws for non-files', () {
       expect(
-        () => runner.run(['vault', 'decrypt', 'unknown.gpg']),
+        () => withEnvironment(
+          () => runner.run(['vault', 'decrypt', 'unknown.gpg']),
+          environment: {'FLG_VAULT_PASSPHRASE': 'asdfasdf'},
+        ),
         throwsA(
           isA<String>().having(
             (it) => it,
@@ -130,7 +137,10 @@ void main() {
     });
     test('throws for non-files', () {
       expect(
-        () => runner.run(['vault', 'encrypt', 'unknown.gpg']),
+        () => withEnvironment(
+          () => runner.run(['vault', 'encrypt', 'unknown.gpg']),
+          environment: {'FLG_VAULT_PASSPHRASE': 'asdfasdf'},
+        ),
         throwsA(
           isA<String>().having(
             (it) => it,
