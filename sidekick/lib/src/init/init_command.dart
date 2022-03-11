@@ -203,7 +203,7 @@ Future<void> makeExecutable(FileSystemEntity file) async {
     );
     final exitCode = await p.exitCode;
     if (exitCode != 0) {
-      throw 'Cloud not set git file permission for unix systems for file ${file.path}';
+      throw 'Could not set git file permission for unix systems for file ${file.path}';
     }
     return;
   }
