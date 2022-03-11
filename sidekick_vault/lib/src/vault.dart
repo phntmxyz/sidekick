@@ -1,6 +1,7 @@
 import 'package:dcli/dcli.dart' as dcli;
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_vault/src/gpg.dart';
+import 'package:sidekick_vault/src/logging.dart';
 
 /// Grants access to project secrets stored gpg encrypted in this repository
 class SidekickVault {
@@ -64,7 +65,7 @@ class SidekickVault {
     return gpgEncrypt(file, _passphrase!, output: outFile);
   }
 
-  // caches secrets to prevent multiple decryptions
+  // caches secrets to prevent multiple decryption
   final Map<String, String> _cache = {};
 
   String loadText(String filename) {
@@ -73,6 +74,7 @@ class SidekickVault {
     }
     final file = loadFile(filename);
     final secret = file.readAsStringSync();
+    hideSecret(secret);
     _cache[filename] = secret;
     return secret;
   }
