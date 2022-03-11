@@ -6,6 +6,7 @@ class VaultCommand extends Command {
     addSubcommand(_EncryptCommand(vault));
     addSubcommand(_DecryptCommand(vault));
     addSubcommand(_ListCommand(vault));
+    addSubcommand(_ChangePasswordCommand(vault));
   }
 
   @override
@@ -128,6 +129,80 @@ class _DecryptCommand extends Command {
   }
 }
 
+class _ChangePasswordCommand extends Command {
+  @override
+  String get description => 'Changes the password of the vault';
+
+  @override
+  String get name => 'change-password';
+
+  final SidekickVault vault;
+
+  _ChangePasswordCommand(this.vault) {
+    argParser.addOption(
+      'old',
+      help: 'old passphrase',
+    );
+    argParser.addOption(
+      'new',
+      help: 'new passphrase',
+    );
+  }
+
+  @override
+  Future<void> run() async {
+    final vaultPath =
+        relative(vault.location.path, from: entryWorkingDirectory.path);
+    print('Changing password for vault $vaultPath:');
+    final oldPassword = _parseOldOption() ??
+        ask(
+          'Old Password:',
+          validator: Ask.lengthMin(1),
+          hidden: true,
+        );
+    final newPassword = _parseNewOption() ??
+        ask(
+          'New Password:',
+          validator: Ask.lengthMin(1),
+          hidden: true,
+        );
+    if (oldPassword == newPassword) {
+      throw "Password is identical";
+    }
+    vault.unlock(oldPassword);
+    final encryptedFiles = vault.listEntries().map((file) {
+      final filename = relative(file.path, from: vault.location.path);
+      final decrypted = vault.loadFile(filename);
+      return MigrationEntry(
+        vaultKey: filename,
+        oldVaultFile: file,
+        decryptedFile: decrypted,
+      );
+    }).toList();
+
+    vault.unlock(newPassword);
+    for (final entry in encryptedFiles) {
+      entry.oldVaultFile.deleteSync();
+      vault.saveFile(entry.decryptedFile, filename: entry.vaultKey);
+      print('✓ ${entry.vaultKey}');
+    }
+
+    print(green("Password for vault $vaultPath changed"));
+  }
+}
+
+class MigrationEntry {
+  String vaultKey;
+  File oldVaultFile;
+  File decryptedFile;
+
+  MigrationEntry({
+    required this.vaultKey,
+    required this.oldVaultFile,
+    required this.decryptedFile,
+  });
+}
+
 extension on Command {
   String _parseFileFromRest() {
     if (argResults!.rest.isEmpty) {
@@ -154,6 +229,14 @@ extension on Command {
 
   String? _parsePassphraseOption() {
     return argResults!['passphrase'] as String?;
+  }
+
+  String? _parseOldOption() {
+    return argResults!['old'] as String?;
+  }
+
+  String? _parseNewOption() {
+    return argResults!['new'] as String?;
   }
 }
 
