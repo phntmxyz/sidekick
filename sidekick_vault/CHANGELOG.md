@@ -1,3 +1,7 @@
+## 0.5.2
+
+- Makes `maskSecret` public to hide secrets in the github actions log
+
 ## 0.5.1
 
 - Secrets read via `vault.loadText()` will be hidden on GitHub Actions.   
