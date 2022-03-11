@@ -4,21 +4,24 @@ import 'package:test/test.dart';
 
 void main() {
   late CommandRunner runner;
-  setUp(() {
+  late SidekickVault vault;
+  setUp(() async {
     initializeSidekick(name: 'flg');
     addTearDown(() {
       deinitializeSidekick();
     });
 
-    final vault = SidekickVault(
-      location: Directory('test/vault'),
+    final tempVault = Directory.systemTemp.createTempSync();
+    await Directory('test/vault').copyRecursively(tempVault);
+    vault = SidekickVault(
+      location: tempVault,
       environmentVariableName: 'FLG_VAULT_PASSPHRASE',
     );
 
     runner = CommandRunner('', '')..addCommand(VaultCommand(vault: vault));
   });
 
-  test('encrypt/decrypt a file', () {
+  test('encrypt/decrypt a file', () async {
     final secretFile = File('test/vault/secret.txt.gpg');
     final tempDir = Directory.systemTemp.createTempSync();
 
@@ -31,9 +34,9 @@ void main() {
       tempDir.deleteSync(recursive: true);
     });
     final decryptedFile = tempDir.file('decrypted.txt');
-    withEnvironment(
-      () {
-        runner.run([
+    await withEnvironment(
+      () async {
+        await runner.run([
           'vault',
           'encrypt',
           '--passphrase',
@@ -43,7 +46,7 @@ void main() {
           clearTextFile.absolute.path,
         ]);
 
-        runner.run([
+        await runner.run([
           'vault',
           'decrypt',
           '--passphrase',
@@ -116,6 +119,7 @@ void main() {
       );
     });
   });
+
   group('encrypt args validation', () {
     test('throws without file', () {
       expect(
@@ -173,5 +177,33 @@ void main() {
         ),
       );
     });
+  });
+
+  test('Change password', () async {
+    await runner.run([
+      'vault',
+      'change-password',
+      '--old',
+      'asdfasdf',
+      '--new',
+      'newpw',
+    ]);
+
+    final tempDir = Directory.systemTemp.createTempSync();
+    addTearDown(() {
+      tempDir.deleteSync(recursive: true);
+    });
+    final decryptedFile = tempDir.file('decrypted.txt');
+    await runner.run([
+      'vault',
+      'decrypt',
+      '--passphrase',
+      'newpw',
+      '--output',
+      decryptedFile.absolute.path,
+      'encrypted.txt.gpg',
+    ]);
+
+    expect(decryptedFile.readAsStringSync(), '42');
   });
 }
