@@ -1,3 +1,7 @@
+## 0.5.0
+
+- Add `<cli-name> vault change-password` command to change the vault password
+
 ## 0.4.0
 
 - Throw on CI when no passphrase is provided via stdin
