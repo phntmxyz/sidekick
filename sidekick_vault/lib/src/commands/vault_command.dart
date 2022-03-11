@@ -153,7 +153,7 @@ class _ChangePasswordCommand extends Command {
   Future<void> run() async {
     final vaultPath =
         relative(vault.location.path, from: entryWorkingDirectory.path);
-    print('Changing password for vault $vaultPath:');
+    print('Changing password for vault "$vaultPath":');
     final oldPassword = _parseOldOption() ??
         ask(
           'Old Password:',
@@ -187,7 +187,7 @@ class _ChangePasswordCommand extends Command {
       print('✓ ${entry.vaultKey}');
     }
 
-    print(green("Password for vault $vaultPath changed"));
+    print(green('Password for vault "$vaultPath" changed'));
   }
 }
 
