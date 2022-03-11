@@ -74,7 +74,7 @@ class SidekickVault {
     }
     final file = loadFile(filename);
     final secret = file.readAsStringSync();
-    hideSecret(secret);
+    maskSecret(secret);
     _cache[filename] = secret;
     return secret;
   }
