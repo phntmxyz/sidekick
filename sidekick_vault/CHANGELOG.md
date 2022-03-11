@@ -1,3 +1,7 @@
+## 0.5.1
+
+- Secrets read via `vault.loadText()` will be hidden on GitHub Actions.   
+
 ## 0.5.0
 
 - Add `<cli-name> vault change-password` command to change the vault password
