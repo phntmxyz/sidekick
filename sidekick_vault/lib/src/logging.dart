@@ -5,6 +5,6 @@ import 'package:sidekick_core/sidekick_core.dart';
 void maskSecret(String secret) {
   if (env['GITHUB_ACTIONS'] == 'true') {
     // hide secret on github actions
-    gha.setSecret(secret: secret);
+    gha.setSecret(secret);
   }
 }
