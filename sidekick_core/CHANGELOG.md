@@ -29,7 +29,7 @@
 
 ## 0.3.1
 
-- `AnalayzeCommand` now fails with correct exit code
+- `AnalyzeCommand` now fails with correct exit code
 
 ## 0.3.0
 
