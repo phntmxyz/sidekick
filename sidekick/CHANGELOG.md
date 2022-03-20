@@ -23,7 +23,7 @@
 
 - Rename `update_sidekick` task to `recompile`
 - Update `sidekick-core`
-- Udpate `mason`
+- Update `mason`
 - Support for dart 2.12
 
 ## 0.1.1
