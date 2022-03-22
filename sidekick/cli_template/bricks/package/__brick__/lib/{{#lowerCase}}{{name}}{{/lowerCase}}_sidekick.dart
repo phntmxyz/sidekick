@@ -13,14 +13,14 @@ late {{#titleCase}}{{name}}{{/titleCase}}Project {{#lowerCase}}{{name}}{{/lowerC
 class {{#titleCase}}{{name}}{{/titleCase}}Sidekick {
   /// Parses args and executes commands
   Future<void> runWithArgs(List<String> args) async {
-    initializeSidekick(
+    final runner = initializeSidekick(
       name: '{{name}}',
       mainProjectPath: '.',
     );
 
     {{#lowerCase}}{{name}}{{/lowerCase}}Project = {{#titleCase}}{{name}}{{/titleCase}}Project(mainProject.root);
 
-    final runner = {{#titleCase}}{{name}}{{/titleCase}}CommandRunner()
+    runner
       ..addCommand(RecompileCommand())
       ..addCommand(FlutterCommand())
       ..addCommand(DartCommand())
@@ -34,7 +34,7 @@ class {{#titleCase}}{{name}}{{/titleCase}}Sidekick {
     }
 
     try {
-      await runner.run(args);
+      return await runner.run(args);
     } on UsageException catch (e) {
       print(e.usage);
       exit(1);
