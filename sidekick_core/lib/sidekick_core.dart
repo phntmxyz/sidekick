@@ -48,29 +48,29 @@ SidekickCommandRunner initializeSidekick({
   }
 
   final runner = SidekickCommandRunner._(
-    executableName: name,
+    cliName: name,
     description: description ??
         'A sidekick CLI to equip Dart/Flutter projects with custom tasks',
-    repo: repo,
-    mainApp: mainProject,
+    repository: repo,
+    mainProject: mainProject,
     workingDirectory: Directory.current,
   );
   return runner;
 }
 
-/// A CommandRunner that mounts the sidekick globals like
+/// A CommandRunner that mounts the sidekick globals
 /// [entryWorkingDirectory], [cliName], [repository], [mainProject].
 class SidekickCommandRunner<T> extends CommandRunner<T> {
   SidekickCommandRunner._({
-    required String executableName,
+    required String cliName,
     required String description,
-    required this.repo,
-    this.mainApp,
+    required this.repository,
+    this.mainProject,
     required this.workingDirectory,
-  }) : super(executableName, description);
+  }) : super(cliName, description);
 
-  final Repository repo;
-  final DartPackage? mainApp;
+  final Repository repository;
+  final DartPackage? mainProject;
   final Directory workingDirectory;
 
   /// Mounts the sidekick related globals, returns a function to unmount them
@@ -129,7 +129,7 @@ Repository get repository {
       'outside of a Command executed with SidekickCommandRunner.',
     );
   }
-  return _activeRunner!.repo;
+  return _activeRunner!.repository;
 }
 
 /// The main package which should be executed by default
@@ -142,7 +142,7 @@ DartPackage get mainProject {
       'outside of a Command executed with SidekickCommandRunner.',
     );
   }
-  final project = _activeRunner?.mainApp;
+  final project = _activeRunner?.mainProject;
   if (project == null) {
     error(
       'mainProject is not initialized. '
