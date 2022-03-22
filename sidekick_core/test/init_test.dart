@@ -5,36 +5,51 @@ import 'package:test/test.dart';
 
 void main() {
   group('mainProject', () {
-    test('mainProject requires initialization', () {
+    test('mainProject only works in SidekickCommandRunner scope', () {
       expect(
         () => mainProject,
         throwsA(
           isA<String>()
-              .having((it) => it, 'String', contains('initializeSidekick()')),
+              .having((it) => it, 'String', contains('SidekickCommandRunner')),
         ),
       );
     });
 
-    test('mainProject throw when not set', () {
-      insideFakeSidekickProject((dir) {
-        initializeSidekick(name: 'dash');
-        expect(
-          () => mainProject,
-          throwsA(
-            isA<String>().having(
-              (it) => it,
-              'String',
-              stringContainsInOrder(
-                ['mainProjectPath', 'initializeSidekick()'],
-              ),
-            ),
+    test('mainProject throws when not set', () async {
+      await insideFakeSidekickProject((dir) async {
+        final runner = initializeSidekick(
+          name: 'dash',
+          // ignore: avoid_redundant_argument_values
+          mainProjectPath: null, // explicitly null
+        );
+        bool called = false;
+        runner.addCommand(
+          DelegatedCommand(
+            name: 'inside',
+            block: () {
+              called = true;
+              expect(
+                () => mainProject,
+                throwsA(
+                  isA<String>().having(
+                    (it) => it,
+                    'String',
+                    stringContainsInOrder(
+                      ['mainProjectPath', 'initializeSidekick()'],
+                    ),
+                  ),
+                ),
+              );
+            },
           ),
         );
+        await runner.run(['inside']);
+        expect(called, isTrue);
       });
     });
 
-    test('mainProject returns while running run', () {
-      insideFakeSidekickProject((dir) {
+    test('mainProject returns while running run', () async {
+      await insideFakeSidekickProject((dir) async {
         final runner = initializeSidekick(name: 'dash', mainProjectPath: '.');
         bool called = false;
         runner.addCommand(
@@ -47,7 +62,7 @@ void main() {
             },
           ),
         );
-        runner.run(['inside']);
+        await runner.run(['inside']);
         expect(called, isTrue);
       });
     });
@@ -59,7 +74,7 @@ void main() {
         () => repository,
         throwsA(
           isA<String>()
-              .having((it) => it, 'String', contains('initializeSidekick()')),
+              .having((it) => it, 'String', contains('SidekickCommandRunner')),
         ),
       );
     });
@@ -89,7 +104,7 @@ void main() {
         () => cliName,
         throwsA(
           isA<String>()
-              .having((it) => it, 'String', contains('initializeSidekick()')),
+              .having((it) => it, 'String', contains('SidekickCommandRunner')),
         ),
       );
     });

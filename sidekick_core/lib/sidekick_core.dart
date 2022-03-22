@@ -27,19 +27,13 @@ export 'package:sidekick_core/src/forward_command.dart';
 export 'package:sidekick_core/src/git.dart';
 export 'package:sidekick_core/src/repository.dart';
 
-/// The working directory (cwd) from which the cli was started
-Directory get entryWorkingDirectory =>
-    _entryWorkingDirectory ??= Directory.current;
-Directory? _entryWorkingDirectory;
-
 /// Initializes sidekick, call this at the very start of your CLI program
 ///
 /// Set [name] to the name of your CLI entrypoint
 ///
 /// [mainProjectPath], when set, links to the main package. For a flutter apps
-/// it is the package that actually builds the flutter app. The
-/// [mainProjectPath] is relative to the entrypoint, the bash executable for
-/// your sidekick CLI.
+/// it is the package that actually builds the flutter app.
+/// Set [mainProjectPath] relative to the git repository root
 SidekickCommandRunner initializeSidekick({
   required String name,
   String? description,
@@ -47,10 +41,7 @@ SidekickCommandRunner initializeSidekick({
 }) {
   DartPackage? mainProject;
 
-  final cwd = Directory.current;
-  _entryWorkingDirectory = cwd;
   final repo = findRepository();
-
   if (mainProjectPath != null) {
     mainProject =
         DartPackage.fromDirectory(repo.root.directory(mainProjectPath));
@@ -60,25 +51,26 @@ SidekickCommandRunner initializeSidekick({
     executableName: name,
     description: description ??
         'A sidekick CLI to equip Dart/Flutter projects with custom tasks',
-    repository: repo,
-    mainProject: mainProject,
-    workingDirectory: cwd,
+    repo: repo,
+    mainApp: mainProject,
+    workingDirectory: Directory.current,
   );
   return runner;
 }
 
-/// A CommandRunner that mounts
+/// A CommandRunner that mounts the sidekick globals like
+/// [entryWorkingDirectory], [cliName], [repository], [mainProject].
 class SidekickCommandRunner<T> extends CommandRunner<T> {
   SidekickCommandRunner._({
     required String executableName,
     required String description,
-    required this.repository,
-    this.mainProject,
+    required this.repo,
+    this.mainApp,
     required this.workingDirectory,
   }) : super(executableName, description);
 
-  final Repository repository;
-  final DartPackage? mainProject;
+  final Repository repo;
+  final DartPackage? mainApp;
   final Directory workingDirectory;
 
   /// Mounts the sidekick related globals, returns a function to unmount them
@@ -108,14 +100,23 @@ typedef Unmount = void Function();
 @Deprecated('noop')
 void deinitializeSidekick() {}
 
+/// The runner that is currently executing, used for nesting
 SidekickCommandRunner? _activeRunner;
+
+/// The working directory (cwd) from which the cli was started
+Directory get entryWorkingDirectory =>
+    _entryWorkingDirectory ?? Directory.current;
+Directory? _entryWorkingDirectory;
 
 /// Name of the cli program
 ///
 /// Usually a short acronym, like 3 characters
 String get cliName {
   if (_activeRunner == null) {
-    error('cliName not initialized, call initializeSidekick() first');
+    error(
+      'You cannot access cliName '
+      'outside of a Command executed with SidekickCommandRunner.',
+    );
   }
   return _activeRunner!.executableName;
 }
@@ -123,19 +124,29 @@ String get cliName {
 /// The root of the repository which contains all projects
 Repository get repository {
   if (_activeRunner == null) {
-    error('repository not initialized, call initializeSidekick() first');
+    error(
+      'You cannot access repository '
+      'outside of a Command executed with SidekickCommandRunner.',
+    );
   }
-  return _activeRunner!.repository;
+  return _activeRunner!.repo;
 }
 
 /// The main package which should be executed by default
 ///
 /// This has to be set by the
 DartPackage get mainProject {
-  final project = _activeRunner?.mainProject;
+  if (_activeRunner == null) {
+    error(
+      'You cannot access mainProject '
+      'outside of a Command executed with SidekickCommandRunner.',
+    );
+  }
+  final project = _activeRunner?.mainApp;
   if (project == null) {
     error(
-      'mainProject is not initialized. Set mainProjectPath when calling initializeSidekick();',
+      'mainProject is not initialized. '
+      'Set "mainProjectPath" when calling initializeSidekick();',
     );
   }
   return project;
