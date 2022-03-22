@@ -15,7 +15,7 @@ class {{#titleCase}}{{name}}{{/titleCase}}Sidekick {
   Future<void> runWithArgs(List<String> args) async {
     initializeSidekick(
       name: '{{name}}',
-      {{#mainProjectPath}} mainProjectPath: '{{mainProjectPath}}',{{/mainProjectPath}}
+      {{#mainProjectPath}}mainProjectPath: '{{{mainProjectPath}}}',{{/mainProjectPath}}
     );
 
     {{#lowerCase}}{{name}}{{/lowerCase}}Project = {{#titleCase}}{{name}}{{/titleCase}}Project(mainProject.root);
