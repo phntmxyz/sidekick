@@ -1,10 +1,10 @@
-import 'dart:io';
-
+import 'package:sidekick_core/sidekick_core.dart';
 import 'package:test/test.dart';
 import 'package:test_process/test_process.dart';
 
 import 'templates/templates.dart';
 import 'util/cli_runner.dart';
+import 'util/local_testing.dart';
 
 void main() {
   group('project type detection', () {
@@ -43,7 +43,7 @@ void main() {
     );
 
     test(
-      'entrypoint executes fine after sidekick init',
+      'entrypoint executes fine after sidekick init $localOrPubDepsLabel',
       () async {
         final project =
             setupTemplateProject('test/templates/root_with_packages');
@@ -54,6 +54,12 @@ void main() {
         await process.shouldExit(0);
         final entrypoint = File("${project.path}/dash");
         expect(entrypoint.existsSync(), isTrue);
+
+        if (shouldUseLocalDevs) {
+          overrideSidekickCoreWithLocalPath(
+            project.directory('packages/dash_sidekick'),
+          );
+        }
 
         final dashProcess = await TestProcess.start(
           entrypoint.path,
@@ -68,7 +74,7 @@ void main() {
     );
 
     test(
-      'init with path (absolute)',
+      'init with path (absolute) $localOrPubDepsLabel',
       () async {
         final project =
             setupTemplateProject('test/templates/root_with_packages');
@@ -90,6 +96,12 @@ void main() {
         // check flutterw exists
         final flutterw = File("${project.path}/flutterw");
         expect(flutterw.existsSync(), isTrue);
+
+        if (shouldUseLocalDevs) {
+          overrideSidekickCoreWithLocalPath(
+            project.directory('packages/dash_sidekick'),
+          );
+        }
 
         final dashProcess = await TestProcess.start(
           entrypoint.path,

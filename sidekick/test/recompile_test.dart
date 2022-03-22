@@ -1,15 +1,15 @@
-import 'dart:io';
-
+import 'package:sidekick_core/sidekick_core.dart';
 import 'package:test/test.dart';
 import 'package:test_process/test_process.dart';
 
 import 'templates/templates.dart';
 import 'util/cli_runner.dart';
+import 'util/local_testing.dart';
 
 void main() {
   group('project type detection', () {
     test(
-      'init generates cli files',
+      'init generates cli files $localOrPubDepsLabel',
       () async {
         final project =
             setupTemplateProject('test/templates/root_with_packages');
@@ -36,6 +36,12 @@ void main() {
             File("${project.path}/packages/dash_sidekick/tool/install.sh");
         expect(installSh.existsSync(), isTrue);
         expect(installSh.statSync().modeString(), 'rwxr-xr-x');
+
+        if (shouldUseLocalDevs) {
+          overrideSidekickCoreWithLocalPath(
+            project.directory('packages/dash_sidekick'),
+          );
+        }
 
         // runs the main executable fine
         final dashProcess = await TestProcess.start(
