@@ -37,8 +37,10 @@ Directory? _entryWorkingDirectory;
 /// Set [name] to the name of your CLI entrypoint
 ///
 /// [mainProjectPath], when set, links to the main package. For a flutter apps
-/// it is the package that actually builds the flutter app.
-CommandRunner initializeSidekick({
+/// it is the package that actually builds the flutter app. The
+/// [mainProjectPath] is relative to the entrypoint, the bash executable for
+/// your sidekick CLI.
+SidekickCommandRunner initializeSidekick({
   required String name,
   String? description,
   String? mainProjectPath,
@@ -54,7 +56,7 @@ CommandRunner initializeSidekick({
         DartPackage.fromDirectory(repo.root.directory(mainProjectPath));
   }
 
-  final runner = _SidekickCommandRunner(
+  final runner = SidekickCommandRunner(
     executableName: name,
     description: description ??
         'A sidekick CLI to equip Dart/Flutter projects with custom tasks',
@@ -65,8 +67,9 @@ CommandRunner initializeSidekick({
   return runner;
 }
 
-class _SidekickCommandRunner<T> extends CommandRunner<T> {
-  _SidekickCommandRunner({
+/// A CommandRunner that mounts
+class SidekickCommandRunner<T> extends CommandRunner<T> {
+  SidekickCommandRunner({
     required String executableName,
     required String description,
     required this.repository,
@@ -78,27 +81,34 @@ class _SidekickCommandRunner<T> extends CommandRunner<T> {
   final DartPackage? mainProject;
   final Directory workingDirectory;
 
-  @override
-  Future<T?> run(Iterable<String> args) async {
-    // mount
-    final _SidekickCommandRunner? oldRunner = _activeRunner;
+  /// Mounts the sidekick related globals, returns a function to unmount them
+  /// and restore the previous globals
+  Unmount mount() {
+    final SidekickCommandRunner? oldRunner = _activeRunner;
     _activeRunner = this;
     _entryWorkingDirectory = workingDirectory;
 
+    return () {
+      _activeRunner = oldRunner;
+      _entryWorkingDirectory = _activeRunner?.workingDirectory;
+    };
+  }
+
+  @override
+  Future<T?> run(Iterable<String> args) async {
+    final unmount = mount();
     final result = await super.run(args);
-
-    // unmount
-    _activeRunner = oldRunner;
-    _entryWorkingDirectory = _activeRunner?.workingDirectory;
-
+    unmount();
     return result;
   }
 }
 
+typedef Unmount = void Function();
+
 @Deprecated('noop')
 void deinitializeSidekick() {}
 
-_SidekickCommandRunner? _activeRunner;
+SidekickCommandRunner? _activeRunner;
 
 /// Name of the cli program
 ///
