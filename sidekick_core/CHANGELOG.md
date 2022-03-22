@@ -1,5 +1,7 @@
-## 0.5.1
+## 0.5.2
+- constrain `dcli`, new versions are not compatible with Dart 2.15 and below
 
+## 0.5.1
 - Print script + stderr when execution of an inline script (`writeAndRunShellScript(script)`) fails
 
 ## 0.5.0
