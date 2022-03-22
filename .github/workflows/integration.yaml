@@ -17,7 +17,7 @@ jobs:
       matrix:
         # Always keep support to at least 2 stable versions
         version: ["2.14", "2.15", "dev"]
-        dependencies: ['local', 'hosted']
+        local-deps: ["true", "false"]
 
     container:
       image: google/dart:${{ matrix.version }}
@@ -32,7 +32,7 @@ jobs:
       - name: Run tests
         run: cd sidekick && dart test
         env:
-          SIDEKICK_LOCAL_DEPS: ${{ matrix.dependencies == "local" }}
+          SIDEKICK_LOCAL_DEPS: ${{ matrix.local-deps }}
 
   integration_tests_windows:
     runs-on: windows-2022
