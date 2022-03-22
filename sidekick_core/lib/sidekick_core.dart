@@ -56,7 +56,7 @@ SidekickCommandRunner initializeSidekick({
         DartPackage.fromDirectory(repo.root.directory(mainProjectPath));
   }
 
-  final runner = SidekickCommandRunner(
+  final runner = SidekickCommandRunner._(
     executableName: name,
     description: description ??
         'A sidekick CLI to equip Dart/Flutter projects with custom tasks',
@@ -69,7 +69,7 @@ SidekickCommandRunner initializeSidekick({
 
 /// A CommandRunner that mounts
 class SidekickCommandRunner<T> extends CommandRunner<T> {
-  SidekickCommandRunner({
+  SidekickCommandRunner._({
     required String executableName,
     required String description,
     required this.repository,
