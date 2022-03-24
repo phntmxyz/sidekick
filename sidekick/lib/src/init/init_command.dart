@@ -1,5 +1,6 @@
 import 'package:dcli/dcli.dart' as dcli;
 import 'package:mason/mason.dart';
+import 'package:recase/recase.dart';
 import 'package:sidekick/src/init/name_suggester.dart';
 import 'package:sidekick/src/init/project_structure_detector.dart';
 import 'package:sidekick/src/templates/entrypoint_bundle.g.dart';
@@ -44,19 +45,20 @@ class InitCommand extends Command {
       // fallback to cwd
       return cwd;
     }();
-    final cliName = argResults!['cliName'] as String? ??
-        () {
-          print(
-            '${dcli.green('Please select a name for your sidekick CLI.')}\n'
-            'We know, selecting a name is hard. Here are some suggestions:',
-          );
-          final suggester = NameSuggester(projectDir: projectDir);
-          final name = suggester.askUserForName();
-          if (name == null) {
-            throw 'No cliName provided. Call `sidekick init --cliName <your-name>`';
-          }
-          return name;
-        }();
+    final cliName = (argResults!['cliName'] as String? ??
+            () {
+              print(
+                '${dcli.green('Please select a name for your sidekick CLI.')}\n'
+                'We know, selecting a name is hard. Here are some suggestions:',
+              );
+              final suggester = NameSuggester(projectDir: projectDir);
+              final name = suggester.askUserForName();
+              if (name == null) {
+                throw 'No cliName provided. Call `sidekick init --cliName <your-name>`';
+              }
+              return name;
+            }())
+        .toLowerCase();
     print("Generating ${cliName}_sidekick");
 
     final detector = ProjectStructureDetector();
@@ -69,33 +71,38 @@ class InitCommand extends Command {
           repoRoot: projectDir,
           packageDir: projectDir.directory('packages'),
           entrypointDir: projectDir,
-          mainProjectDir: '.',
+          mainProject: DartPackage.fromDirectory(projectDir),
         );
         break;
       case ProjectStructure.multiPackage:
-        // TODO: Iterate through the packages,
-        // TODO: List them and ask the user to select one
-        // TODO: use selected Package Path as repoRoot
-        final List<String> packages = projectDir
+        final List<DartPackage> packages = projectDir
             .directory('packages')
             .listSync()
-            .map((e) => e.nameWithoutExtension)
+            .whereType<Directory>()
+            .map((it) => DartPackage.fromDirectory(it))
+            .filterNotNull()
+            .sortedBy((it) => it.name)
             .toList();
-        String? mainProjectDir = dcli.menu(
+
+        const none = 'None of the above';
+        final userSelection = dcli.menu(
           prompt: 'Which of the following package is your primary app?',
-          options: [...packages, 'none'],
+          options: [...packages.map((it) => it.name), none],
+          defaultOption: none,
         );
-        if (mainProjectDir == 'none') {
-          mainProjectDir = null;
+        DartPackage? mainProject;
+        if (userSelection == none) {
+          mainProject = null;
         } else {
-          mainProjectDir = 'packages/$mainProjectDir';
+          mainProject = packages.firstWhere((it) => it.name == userSelection);
         }
         await createSidekickPackage(
           cliName: cliName,
           repoRoot: projectDir,
           packageDir: projectDir.directory('packages'),
           entrypointDir: projectDir,
-          mainProjectDir: mainProjectDir,
+          mainProject: mainProject,
+          packages: packages,
         );
         break;
       case ProjectStructure.rootWithPackages:
@@ -105,7 +112,7 @@ class InitCommand extends Command {
           repoRoot: projectDir,
           packageDir: projectDir.directory('packages'),
           entrypointDir: projectDir,
-          mainProjectDir: '.',
+          mainProject: DartPackage.fromDirectory(projectDir),
         );
         break;
       case ProjectStructure.unknown:
@@ -122,7 +129,8 @@ class InitCommand extends Command {
     required Directory repoRoot,
     required Directory packageDir,
     required Directory entrypointDir,
-    String? mainProjectDir,
+    DartPackage? mainProject,
+    List<DartPackage> packages = const [],
   }) async {
     // init git, required for flutterw
     await gitInit(repoRoot);
@@ -134,10 +142,18 @@ class InitCommand extends Command {
       final generatorTarget = DirectoryGeneratorTarget(cliPackage);
       await generator.generate(
         generatorTarget,
-        vars: {'name': cliName, 'mainProjectPath': mainProjectDir},
+        vars: {
+          'name': cliName,
+          if (mainProject != null)
+            'mainProjectPath':
+                relative(mainProject.root.path, from: repoRoot.absolute.path),
+        },
         logger: Logger(),
         fileConflictResolution: FileConflictResolution.overwrite,
       );
+
+      // mason doesn't support lists, so we have to add them manually
+      _addPackagesToProjectClass(repoRoot, cliPackage, cliName, packages);
 
       // Make install script executable
       await makeExecutable(cliPackage.file('tool/install.sh'));
@@ -173,6 +189,33 @@ class InitCommand extends Command {
       cliPackage,
       packages: ['sidekick_core'],
     );
+  }
+
+  void _addPackagesToProjectClass(
+    Directory repoRoot,
+    Directory cliPackage,
+    String cliName,
+    List<DartPackage> packages,
+  ) {
+    final projectClassFile = cliPackage.file('lib/src/${cliName}_project.dart');
+
+    final packageCode = packages.map((package) {
+      final path = relative(package.root.path, from: repoRoot.absolute.path);
+      final packageName = ReCase(package.name);
+      return "DartPackage get ${packageName.camelCase}Package => DartPackage.fromDirectory(root.directory('$path'))!;";
+    }).toList();
+
+    final code = '''
+  
+  ${packageCode.join('\n\n  ')}
+    ''';
+
+    projectClassFile.replaceSectionWith(
+      startTag: '/// packages',
+      endTag: '\n',
+      content: code,
+    );
+    projectClassFile.replaceFirst('/// packages', '');
   }
 }
 

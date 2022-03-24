@@ -1,14 +1,18 @@
 import 'package:sidekick_core/sidekick_core.dart';
 
-class {{#titleCase}}{{name}}{{/titleCase}}Project extends DartPackage {
+{{^mainProjectPath}}class {{#titleCase}}{{name}}{{/titleCase}}Project extends DartPackage {
   factory {{#titleCase}}{{name}}{{/titleCase}}Project(Directory root) {
     final package = DartPackage.fromDirectory(root)!;
     return {{#titleCase}}{{name}}{{/titleCase}}Project._(package.root, package.name);
   }
 
   {{#titleCase}}{{name}}{{/titleCase}}Project._(Directory root, String name) : super.flutter(root, name);
+{{/mainProjectPath}}{{#mainProjectPath}}
+class {{#titleCase}}{{name}}{{/titleCase}}Project {
+  {{#titleCase}}{{name}}{{/titleCase}}Project(this.root);
 
-  DartPackage get {{#lowerCase}}{{name}}{{/lowerCase}}SidekickPackage => DartPackage.fromDirectory(root.directory('packages/{{#lowerCase}}{{name}}{{/lowerCase}}_sidekick'))!;
+  final Directory root;{{/mainProjectPath}}
+  /// packages
 
   File get flutterw => root.file('flutterw');
 
@@ -19,7 +23,7 @@ class {{#titleCase}}{{name}}{{/titleCase}}Project extends DartPackage {
         .listSync()
         .whereType<Directory>()
         .mapNotNull((it) => DartPackage.fromDirectory(it))
-        .toList()
-      ..add(this);
+        .toList(){{#mainProjectPath}};{{/mainProjectPath}}
+      {{^mainProjectPath}}..add(this);{{/mainProjectPath}}
   }
 }

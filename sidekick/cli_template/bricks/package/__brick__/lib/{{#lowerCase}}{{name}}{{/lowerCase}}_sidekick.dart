@@ -13,8 +13,8 @@ Future<void> run{{#titleCase}}{{name}}{{/titleCase}}(List<String> args) async {
     {{#mainProjectPath}}mainProjectPath: '{{{mainProjectPath}}}',{{/mainProjectPath}}
   );
 
-  {{#lowerCase}}{{name}}{{/lowerCase}}Project = {{#titleCase}}{{name}}{{/titleCase}}Project(runner.mainProject!.root);
-
+  {{^mainProjectPath}}{{#lowerCase}}{{name}}{{/lowerCase}}Project = {{#titleCase}}{{name}}{{/titleCase}}Project(runner.mainProject!.root);{{/mainProjectPath}}
+  {{#mainProjectPath}}{{#lowerCase}}{{name}}{{/lowerCase}}Project = {{#titleCase}}{{name}}{{/titleCase}}Project(runner.repository.root);{{/mainProjectPath}}
   runner
     ..addCommand(RecompileCommand())
     ..addCommand(FlutterCommand())
@@ -35,4 +35,3 @@ Future<void> run{{#titleCase}}{{name}}{{/titleCase}}(List<String> args) async {
     exit(64); // usage error
   }
 }
-
