@@ -92,6 +92,19 @@ It will be retrieved from the environment variables or asked via `stdin`.
 `output` is optional.
 The decrypted file will be saved in the vault next to the encrypted one (without `.gpg` ending).
 
+### Change vault password
+
+```bash
+<cli-name> vault change-password
+```
+
+```bash
+<cli-name> vault change-password --old ***** --new *****
+```
+
+Use the `old` and `new` arguments to pass the old and new password.
+Without the arguments, you can enter the passwords via `stdin`.
+
 
 ## Manually add/read items in vault via gpg
 

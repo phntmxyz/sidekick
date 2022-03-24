@@ -1,3 +1,15 @@
+## 0.5.2
+
+- Makes `maskSecret` public to hide secrets in the github actions log
+
+## 0.5.1
+
+- Secrets read via `vault.loadText()` will be hidden on GitHub Actions.   
+
+## 0.5.0
+
+- Add `<cli-name> vault change-password` command to change the vault password
+
 ## 0.4.0
 
 - Throw on CI when no passphrase is provided via stdin
