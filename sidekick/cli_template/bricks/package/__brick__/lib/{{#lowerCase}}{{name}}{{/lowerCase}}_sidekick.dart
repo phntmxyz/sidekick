@@ -10,11 +10,11 @@ late {{#titleCase}}{{name}}{{/titleCase}}Project {{#lowerCase}}{{name}}{{/lowerC
 Future<void> run{{#titleCase}}{{name}}{{/titleCase}}(List<String> args) async {
   final runner = initializeSidekick(
     name: '{{name}}',
-    {{#mainProjectPath}}mainProjectPath: '{{{mainProjectPath}}}',{{/mainProjectPath}}
+    {{#hasMainProject}}mainProjectPath: '{{{mainProjectPath}}}',{{/hasMainProject}}
   );
 
-  {{^mainProjectPath}}{{#lowerCase}}{{name}}{{/lowerCase}}Project = {{#titleCase}}{{name}}{{/titleCase}}Project(runner.mainProject!.root);{{/mainProjectPath}}
-  {{#mainProjectPath}}{{#lowerCase}}{{name}}{{/lowerCase}}Project = {{#titleCase}}{{name}}{{/titleCase}}Project(runner.repository.root);{{/mainProjectPath}}
+  {{^hasMainProject}}{{#lowerCase}}{{name}}{{/lowerCase}}Project = {{#titleCase}}{{name}}{{/titleCase}}Project(runner.mainProject!.root);{{/hasMainProject}}
+  {{#hasMainProject}}{{#lowerCase}}{{name}}{{/lowerCase}}Project = {{#titleCase}}{{name}}{{/titleCase}}Project(runner.repository.root);{{/hasMainProject}}
   runner
     ..addCommand(RecompileCommand())
     ..addCommand(FlutterCommand())

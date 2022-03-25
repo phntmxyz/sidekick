@@ -12,7 +12,7 @@ dependencies:
   dartx: ^1.0.0
   dcli: ^1.16.2
   http: ^0.13.3
-  mason: 0.1.0-dev.4
+  mason: ^0.1.0-dev.13
   path: ^1.8.0
   recase: ^4.0.0
   sidekick_core: ^0.5.1

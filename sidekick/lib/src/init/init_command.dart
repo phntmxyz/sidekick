@@ -140,13 +140,15 @@ class InitCommand extends Command {
       // Generate the package code
       final generator = await MasonGenerator.fromBundle(packageBundle);
       final generatorTarget = DirectoryGeneratorTarget(cliPackage);
+
       await generator.generate(
         generatorTarget,
         vars: {
           'name': cliName,
-          if (mainProject != null)
-            'mainProjectPath':
-                relative(mainProject.root.path, from: repoRoot.absolute.path),
+          'hasMainProject': mainProject != null,
+          'mainProjectPath': mainProject != null
+              ? relative(mainProject.root.path, from: repoRoot.absolute.path)
+              : 'ERROR:no-main-project-path-defined',
         },
         logger: Logger(),
         fileConflictResolution: FileConflictResolution.overwrite,
