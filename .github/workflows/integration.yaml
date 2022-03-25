@@ -16,11 +16,11 @@ jobs:
       fail-fast: false
       matrix:
         # Always keep support to at least 2 stable versions
-        version: ["2.14", "2.15", "dev"]
+        version: ["2.14", "2.15", "2.16", "dev"]
         dependencies: ["local", "pub"]
 
     container:
-      image: google/dart:${{ matrix.version }}
+      image: dart:${{ matrix.version }}
 
     steps:
       - run: |
@@ -46,4 +46,3 @@ jobs:
         run: cd sidekick && dart pub get --no-precompile
       - name: Run tests
         run: cd sidekick && dart test
-
