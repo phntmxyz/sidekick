@@ -13,7 +13,7 @@ dependencies:
   dcli: ^1.16.2
   http: ^0.13.3
   # use old version to be compatible with Dart 2.14
-  mason: 0.1.0-dev.8
+  mason: 0.1.0-dev.4
   path: ^1.8.0
   recase: ^4.0.0
   sidekick_core: ^0.5.1
