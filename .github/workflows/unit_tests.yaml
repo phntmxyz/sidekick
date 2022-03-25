@@ -17,23 +17,20 @@ jobs:
       - uses: actions/checkout@v1
       - name: Install dependencies sidekick_core
         run: cd sidekick_core && dart pub get --no-precompile
-      - name: Install dependencies sidekick_vault
-        run: cd sidekick_vault && dart pub get --no-precompile
-      - name: Install gpg
-        run: apt-get update && apt-get install -y gpg
       - name: Run tests sidekick_core
         run: cd sidekick_core && dart test
-      - name: Run tests sidekick_vault
-        run: cd sidekick_vault && dart test
+
   vault_test:
     runs-on: ubuntu-latest
 
     container:
-      image: google/dart:dev
+      image: dart:2.16.1
 
     steps:
       - uses: actions/checkout@v1
       - name: Install dependencies sidekick_vault
         run: cd sidekick_vault && dart pub get --no-precompile
+      - name: Install gpg
+        run: apt-get update && apt-get install -y gpg
       - name: Run tests sidekick_vault
         run: cd sidekick_vault && dart test
