@@ -16,7 +16,6 @@ final entrypointBundle = MasonBundle.fromJson(<String, dynamic>{
   "name": "entrypoint",
   "description": "Creates the sidekick entrypoint",
   "version": "1.0.0",
-  "environment": {"mason": "any"},
   "vars": {
     "name": {"type": "string"},
     "packagePath": {"type": "string"}

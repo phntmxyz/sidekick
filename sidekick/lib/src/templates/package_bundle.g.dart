@@ -70,7 +70,6 @@ final packageBundle = MasonBundle.fromJson(<String, dynamic>{
   "name": "package",
   "description": "Creates the sidekick cli package",
   "version": "1.0.0",
-  "environment": {"mason": "any"},
   "vars": {
     "name": {"type": "string"},
     "hasMainProject": {"type": "boolean"},
