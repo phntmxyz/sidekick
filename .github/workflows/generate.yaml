@@ -17,6 +17,8 @@ jobs:
       - run: |
          apt-get update
       - uses: actions/checkout@v1
+      - name: Intall deps
+        run: cd sidekick && dart pub get --no-precompile
       - name: Install Mason and export path in the Github CI and pull the updated path
         run: |
           set -e
