@@ -7,7 +7,7 @@ import 'util/cli_runner.dart';
 import 'util/local_testing.dart';
 
 void main() {
-  group('project type detection', () {
+  group('sidekick init - packages layout', () {
     test(
       'init generates cli files',
       () async {
@@ -116,7 +116,7 @@ void main() {
     );
   });
 
-  group('multi package type detection', () {
+  group('sidekick init - multi package layout', () {
     test(
       'init generates cli files',
       () async {
@@ -151,7 +151,7 @@ void main() {
     );
 
     test(
-      'entrypoint executes fine after sidekick init',
+      'entrypoint executes fine after sidekick init $localOrPubDepsLabel',
       () async {
         final project = setupTemplateProject('test/templates/multi_package');
         final process = await sidekickCli(
@@ -161,6 +161,12 @@ void main() {
         await process.shouldExit(0);
         final entrypoint = File("${project.path}/dash");
         expect(entrypoint.existsSync(), isTrue);
+
+        if (shouldUseLocalDevs) {
+          overrideSidekickCoreWithLocalPath(
+            project.directory('packages/dash_sidekick'),
+          );
+        }
 
         final dashProcess = await TestProcess.start(
           entrypoint.path,
@@ -196,6 +202,12 @@ void main() {
         // check flutterw exists
         final flutterw = File("${project.path}/flutterw");
         expect(flutterw.existsSync(), isTrue);
+
+        if (shouldUseLocalDevs) {
+          overrideSidekickCoreWithLocalPath(
+            project.directory('packages/dash_sidekick'),
+          );
+        }
 
         final dashProcess = await TestProcess.start(
           entrypoint.path,
