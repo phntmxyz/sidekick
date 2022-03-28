@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     container:
-      image: google/dart:2.15.1
+      image: dart:2.16.1
 
     steps:
       - run: |

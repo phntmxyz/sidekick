@@ -266,7 +266,7 @@ packages:
       name: lint
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.8.2"
+    version: "1.7.2"
   logging:
     dependency: transitive
     description:
@@ -415,7 +415,7 @@ packages:
     source: hosted
     version: "2.3.1"
   recase:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: recase
       url: "https://pub.dartlang.org"
@@ -653,4 +653,4 @@ packages:
     source: hosted
     version: "3.1.0"
 sdks:
-  dart: ">=2.15.0-7.0.dev <3.0.0"
+  dart: ">=2.14.4 <3.0.0"
