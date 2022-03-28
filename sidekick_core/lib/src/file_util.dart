@@ -49,6 +49,7 @@ extension FileModifier on File {
   void replaceAll(String text, String replacement) {
     String content = readAsStringSync();
     int index = 0;
+    // ignore: literal_only_boolean_expressions
     while (true) {
       index = content.indexOf(text, index);
       if (index == -1) {
