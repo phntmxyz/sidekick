@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.6.0
+
+- We now support the "multiple packages" repository layout where all packages are located in `/packages`
+- For multi package layouts, use the `--mainProjectPath` option to specify the path to the `mainProject`
+- Fix macos detection in `run.sh` script
+- The entrypoint is now executable on Unix systems when sidekick was generated on Windows [#23](https://github.com/phntmxyz/sidekick/pull/23)
+- the mason cli is now pinned in the project to be used in `/tools`
+
 ## 0.5.0
 
 - Naming is hard, we're now suggesting cli names
