@@ -6,7 +6,7 @@ void main() {
   late CommandRunner runner;
   late SidekickVault vault;
   setUp(() async {
-    initializeSidekick(name: 'flg');
+    runner = initializeSidekick(name: 'flg');
     addTearDown(() {
       deinitializeSidekick();
     });
@@ -18,7 +18,7 @@ void main() {
       environmentVariableName: 'FLG_VAULT_PASSPHRASE',
     );
 
-    runner = CommandRunner('', '')..addCommand(VaultCommand(vault: vault));
+    runner.addCommand(VaultCommand(vault: vault));
   });
 
   test('encrypt/decrypt a file', () async {
