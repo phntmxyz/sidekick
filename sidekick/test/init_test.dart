@@ -9,7 +9,7 @@ import 'util/local_testing.dart';
 void main() {
   group('sidekick init - packages layout', () {
     test(
-      'init generates cli files',
+      'init generates sidekick package + entrypoint',
       () async {
         final project =
             setupTemplateProject('test/templates/root_with_packages');
@@ -38,6 +38,33 @@ void main() {
         // check flutterw exists
         final flutterw = File("${project.path}/flutterw");
         expect(flutterw.existsSync(), isTrue);
+
+        // root is mainProjectPath
+        final runFunctionFile = File(
+          "${project.path}/packages/dash_sidekick/lib/dash_sidekick.dart",
+        );
+        expect(
+          runFunctionFile.readAsStringSync(),
+          isNot(contains("mainProjectPath: 'packages/dash_sidekick'")),
+        );
+
+        final projectFile = File(
+          "${project.path}/packages/dash_sidekick/lib/src/dash_project.dart",
+        );
+        // The project itself is a DartPackage
+        expect(
+          projectFile.readAsStringSync(),
+          contains('class DashProject extends DartPackage'),
+        );
+
+        // contains references to all packages of template
+        expect(
+          projectFile.readAsStringSync(),
+          allOf(
+            contains('packages/package_a'),
+            contains('packages/package_b'),
+          ),
+        );
       },
       timeout: const Timeout(Duration(minutes: 5)),
     );
@@ -118,7 +145,7 @@ void main() {
 
   group('sidekick init - multi package layout', () {
     test(
-      'init generates cli files',
+      'init generates sidekick package + entrypoint',
       () async {
         final project = setupTemplateProject('test/templates/multi_package');
         final process = await sidekickCli(
@@ -146,6 +173,27 @@ void main() {
         // check flutterw exists
         final flutterw = File("${project.path}/flutterw");
         expect(flutterw.existsSync(), isTrue);
+
+        // no mainProjectPath defined, nothing is set
+        final runFunctionFile = File(
+          "${project.path}/packages/dash_sidekick/lib/dash_sidekick.dart",
+        );
+        expect(
+          runFunctionFile.readAsStringSync(),
+          isNot(contains('mainProjectPath')),
+        );
+
+        // contains references to all packages of template
+        final projectFile = File(
+          "${project.path}/packages/dash_sidekick/lib/src/dash_project.dart",
+        );
+        expect(
+          projectFile.readAsStringSync(),
+          allOf(
+            contains('packages/package_a'),
+            contains('packages/package_b'),
+          ),
+        );
       },
       timeout: const Timeout(Duration(minutes: 5)),
     );
@@ -181,7 +229,7 @@ void main() {
     );
 
     test(
-      'init with path (absolute)',
+      'init with path (absolute) $localOrPubDepsLabel',
       () async {
         final project = setupTemplateProject('test/templates/multi_package');
         final process = await sidekickCli(
@@ -202,6 +250,75 @@ void main() {
         // check flutterw exists
         final flutterw = File("${project.path}/flutterw");
         expect(flutterw.existsSync(), isTrue);
+
+        if (shouldUseLocalDevs) {
+          overrideSidekickCoreWithLocalPath(
+            project.directory('packages/dash_sidekick'),
+          );
+        }
+
+        final dashProcess = await TestProcess.start(
+          entrypoint.path,
+          [],
+          workingDirectory: project.path,
+        );
+        printOnFailure(await dashProcess.stdoutStream().join('\n'));
+        printOnFailure(await dashProcess.stderrStream().join('\n'));
+        dashProcess.shouldExit(0);
+      },
+      timeout: const Timeout(Duration(minutes: 5)),
+    );
+
+    test(
+      'with mainProject $localOrPubDepsLabel',
+      () async {
+        final project = setupTemplateProject('test/templates/multi_package');
+        final process = await sidekickCli(
+          [
+            'init',
+            '-n',
+            'dash',
+            '--mainProjectPath',
+            'packages/package_a',
+            project.absolute.path
+          ],
+          workingDirectory: project.parent,
+        );
+        await process.shouldExit(0);
+
+        // check git is initialized
+        final git = Directory("${project.path}/.git");
+        expect(git.existsSync(), isTrue);
+
+        // check entrypoint is executable
+        final entrypoint = File("${project.path}/dash");
+        expect(entrypoint.existsSync(), isTrue);
+        expect(entrypoint.statSync().modeString(), 'rwxr-xr-x');
+
+        // check flutterw exists
+        final flutterw = File("${project.path}/flutterw");
+        expect(flutterw.existsSync(), isTrue);
+
+        final runFunctionFile = File(
+          "${project.path}/packages/dash_sidekick/lib/dash_sidekick.dart",
+        );
+        expect(
+          runFunctionFile.readAsStringSync(),
+          contains("mainProjectPath: 'packages/package_a'"),
+        );
+
+        final projectFile = File(
+          "${project.path}/packages/dash_sidekick/lib/src/dash_project.dart",
+        );
+        expect(
+          projectFile.readAsStringSync(),
+          contains(
+            allOf(
+              'packages/package_a',
+              'packages/package_b',
+            ),
+          ),
+        );
 
         if (shouldUseLocalDevs) {
           overrideSidekickCoreWithLocalPath(
