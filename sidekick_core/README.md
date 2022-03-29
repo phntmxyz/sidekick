@@ -8,8 +8,8 @@ This project is the base for all sidekick CLIs
 import 'package:sidekick_core/sidekick_core.dart';
 
 Future<void> main(List<String> args) async {
-  initializeSidekick(name: 'flg', mainProjectPath: 'dev/integration_tests/flutter_gallery');
-  
-  // Use args
+  final runner = initializeSidekick(name: 'flg', mainProjectPath: 'dev/integration_tests/flutter_gallery');
+  runner.addCommand(YourCommand());
+  return await runner.run(args);
 }
 ```
