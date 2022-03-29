@@ -8,3 +8,5 @@ vars:
     type: boolean
   mainProjectPath:
     type: string
+  mainProjectIsRoot:
+    type: boolean

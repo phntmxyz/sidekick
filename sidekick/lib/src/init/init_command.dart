@@ -21,6 +21,12 @@ class InitCommand extends Command {
       help:
           'The name of the CLI to be created \nThe `_cli` prefix will be defined automatically',
     );
+    argParser.addOption(
+      'mainProjectPath',
+      help:
+          'Multi package layout only: Sets the mainProject, the package that ultimately builds your app. '
+          '(relative to repository root, i.e. "packages/my_app")',
+    );
   }
 
   @override
@@ -31,7 +37,7 @@ class InitCommand extends Command {
 
     final cwd = Directory.current;
     // TODO make package location and entrypoint location configurable
-    final Directory projectDir = () {
+    final Directory initDir = () {
       if (argResults?.rest != null && argResults?.rest.length == 1) {
         final path = argResults?.rest[0];
         if (path != null) {
@@ -51,7 +57,7 @@ class InitCommand extends Command {
                 '${dcli.green('Please select a name for your sidekick CLI.')}\n'
                 'We know, selecting a name is hard. Here are some suggestions:',
               );
-              final suggester = NameSuggester(projectDir: projectDir);
+              final suggester = NameSuggester(projectDir: initDir);
               final name = suggester.askUserForName();
               if (name == null) {
                 throw 'No cliName provided. Call `sidekick init --cliName <your-name>`';
@@ -62,20 +68,24 @@ class InitCommand extends Command {
     print("Generating ${cliName}_sidekick");
 
     final detector = ProjectStructureDetector();
-    final type = detector.detectProjectType(projectDir);
+    final type = detector.detectProjectType(initDir);
 
     switch (type) {
       case ProjectStructure.simple:
         await createSidekickPackage(
           cliName: cliName,
-          repoRoot: projectDir,
-          packageDir: projectDir.directory('packages'),
-          entrypointDir: projectDir,
-          mainProject: DartPackage.fromDirectory(projectDir),
+          repoRoot: initDir,
+          packageDir: initDir.directory('packages'),
+          entrypointDir: initDir,
+          mainProject: DartPackage.fromDirectory(initDir),
         );
         break;
       case ProjectStructure.multiPackage:
-        final List<DartPackage> packages = projectDir
+        final mainProjectPath = argResults!['mainProjectPath'] as String?;
+        DartPackage? mainProject = mainProjectPath != null
+            ? DartPackage.fromDirectory(initDir.directory(mainProjectPath))
+            : null;
+        final List<DartPackage> packages = initDir
             .directory('packages')
             .listSync()
             .whereType<Directory>()
@@ -84,35 +94,46 @@ class InitCommand extends Command {
             .sortedBy((it) => it.name)
             .toList();
 
-        const none = 'None of the above';
-        final userSelection = dcli.menu(
-          prompt: 'Which of the following package is your primary app?',
-          options: [...packages.map((it) => it.name), none],
-          defaultOption: none,
-        );
-        DartPackage? mainProject;
-        if (userSelection == none) {
-          mainProject = null;
-        } else {
-          mainProject = packages.firstWhere((it) => it.name == userSelection);
+        if (mainProject == null) {
+          // Ask user for a main project (optional)
+          const none = 'None of the above';
+          final userSelection = dcli.menu(
+            prompt: 'Which of the following package is your primary app?',
+            options: [...packages.map((it) => it.name), none],
+            defaultOption: none,
+          );
+          if (userSelection != none) {
+            mainProject = packages.firstWhere((it) => it.name == userSelection);
+          }
         }
+
         await createSidekickPackage(
           cliName: cliName,
-          repoRoot: projectDir,
-          packageDir: projectDir.directory('packages'),
-          entrypointDir: projectDir,
+          repoRoot: initDir,
+          packageDir: initDir.directory('packages'),
+          entrypointDir: initDir,
           mainProject: mainProject,
           packages: packages,
         );
         break;
       case ProjectStructure.rootWithPackages:
         print('Detected a Dart/Flutter project with a /packages dictionary');
+        final List<DartPackage> packages = initDir
+            .directory('packages')
+            .listSync()
+            .whereType<Directory>()
+            .map((it) => DartPackage.fromDirectory(it))
+            .filterNotNull()
+            .sortedBy((it) => it.name)
+            .toList();
+
         await createSidekickPackage(
           cliName: cliName,
-          repoRoot: projectDir,
-          packageDir: projectDir.directory('packages'),
-          entrypointDir: projectDir,
-          mainProject: DartPackage.fromDirectory(projectDir),
+          repoRoot: initDir,
+          packageDir: initDir.directory('packages'),
+          entrypointDir: initDir,
+          mainProject: DartPackage.fromDirectory(initDir),
+          packages: packages,
         );
         break;
       case ProjectStructure.unknown:
@@ -149,6 +170,8 @@ class InitCommand extends Command {
           'mainProjectPath': mainProject != null
               ? relative(mainProject.root.path, from: repoRoot.absolute.path)
               : 'ERROR:no-main-project-path-defined',
+          'mainProjectIsRoot':
+              mainProject?.root.absolute.path == repoRoot.absolute.path,
         },
         logger: Logger(),
         fileConflictResolution: FileConflictResolution.overwrite,
