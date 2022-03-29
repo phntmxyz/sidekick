@@ -312,11 +312,9 @@ void main() {
         );
         expect(
           projectFile.readAsStringSync(),
-          contains(
-            allOf(
-              'packages/package_a',
-              'packages/package_b',
-            ),
+          allOf(
+            contains('packages/package_a'),
+            contains('packages/package_b'),
           ),
         );
 
