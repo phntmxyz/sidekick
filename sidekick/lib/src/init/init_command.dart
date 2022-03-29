@@ -149,6 +149,8 @@ class InitCommand extends Command {
           'mainProjectPath': mainProject != null
               ? relative(mainProject.root.path, from: repoRoot.absolute.path)
               : 'ERROR:no-main-project-path-defined',
+          'mainProjectIsRoot':
+              mainProject?.root.absolute.path == repoRoot.absolute.path,
         },
         logger: Logger(),
         fileConflictResolution: FileConflictResolution.overwrite,
