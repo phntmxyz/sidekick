@@ -6,11 +6,7 @@ void main() {
   late CommandRunner runner;
   late SidekickVault vault;
   setUp(() async {
-    initializeSidekick(name: 'flg');
-    addTearDown(() {
-      deinitializeSidekick();
-    });
-
+    runner = initializeSidekick(name: 'flg');
     final tempVault = Directory.systemTemp.createTempSync();
     await Directory('test/vault').copyRecursively(tempVault);
     vault = SidekickVault(
@@ -18,7 +14,7 @@ void main() {
       environmentVariableName: 'FLG_VAULT_PASSPHRASE',
     );
 
-    runner = CommandRunner('', '')..addCommand(VaultCommand(vault: vault));
+    runner.addCommand(VaultCommand(vault: vault));
   });
 
   test('encrypt/decrypt a file', () async {
