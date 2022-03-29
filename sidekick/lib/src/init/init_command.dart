@@ -107,12 +107,22 @@ class InitCommand extends Command {
         break;
       case ProjectStructure.rootWithPackages:
         print('Detected a Dart/Flutter project with a /packages dictionary');
+        final List<DartPackage> packages = projectDir
+            .directory('packages')
+            .listSync()
+            .whereType<Directory>()
+            .map((it) => DartPackage.fromDirectory(it))
+            .filterNotNull()
+            .sortedBy((it) => it.name)
+            .toList();
+
         await createSidekickPackage(
           cliName: cliName,
           repoRoot: projectDir,
           packageDir: projectDir.directory('packages'),
           entrypointDir: projectDir,
           mainProject: DartPackage.fromDirectory(projectDir),
+          packages: packages,
         );
         break;
       case ProjectStructure.unknown:
