@@ -1,3 +1,8 @@
+## 0.6.0
+
+- **Breaking** `initializeSidekick()` now returns a `SidekickCommandRunner` instance (was `void`). You have to use this runner to access the global sidekick variables `cliName`, `mainProject`,`repository`
+- Regenerate your cli with `sidekick: 0.6.0` to migrate
+
 ## 0.5.2
 - constrain `dcli`, new versions are not compatible with Dart 2.15 and below
 
