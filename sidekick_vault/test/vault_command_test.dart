@@ -7,10 +7,6 @@ void main() {
   late SidekickVault vault;
   setUp(() async {
     runner = initializeSidekick(name: 'flg');
-    addTearDown(() {
-      deinitializeSidekick();
-    });
-
     final tempVault = Directory.systemTemp.createTempSync();
     await Directory('test/vault').copyRecursively(tempVault);
     vault = SidekickVault(
