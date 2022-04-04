@@ -89,6 +89,18 @@ class SidekickVault {
 
     return fileList;
   }
+
+  /// Deletes the file with [filename] from the vault.
+  ///
+  /// Does not require the vault to be unlocked.
+  void deleteFile(String filename) {
+    final file = location.file(filename);
+    if (!file.existsSync()) {
+      throw '${file.path} does not exist in vault';
+    }
+    file.deleteSync();
+    _cache.remove(filename);
+  }
 }
 
 /// Read a password from [env], asks user via stdin when not available
