@@ -51,7 +51,7 @@ class FlgSidekick {
 
     nhProject = FlgProject(mainProject.root);
 
-    final runner = FlgCommandRunner()
+    final runner = SidekickCommandRunner()
       ..addCommand(FlutterCommand())
       // more commands
       ..addCommand(InstallGlobalCommand())
