@@ -44,20 +44,19 @@ class YourCommand extends Command {
 ```
 
 ```dart
-class FlgSidekick {
-  /// Parses args and executes commands
-  Future<void> runWithArgs(List<String> args) async {
-    initializeSidekick(name: 'flg', mainProjectPath: '.');
+Future<void> runFlg(List<String> args) async {
+  final runner = initializeSidekick(name: 'flg', mainProjectPath: '.');
 
-    nhProject = FlgProject(mainProject.root);
+  nhProject = FlgProject(mainProject.root);
 
-    final runner = SidekickCommandRunner()
-      ..addCommand(FlutterCommand())
-      // more commands
-      ..addCommand(InstallGlobalCommand())
-      ..addCommand(VaultCommand()); // <-- Add the VaultCommand
+  runner
+    ..addCommand(FlutterCommand())
+    // more commands
+    ..addCommand(InstallGlobalCommand())
+    ..addCommand(YourCommand())
+    ..addCommand(VaultCommand()); // <-- Add the VaultCommand
 
-    //...
+  //...
 ```
 
 ## Development
