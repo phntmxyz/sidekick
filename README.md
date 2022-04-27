@@ -38,13 +38,12 @@ class YourCommand extends Command {
   
   @override
   Future<void> run() {
-    // .. your code here
+    // your custom code here
   }
 }
 ```
 
 ```diff
-/** In your generated sidekick run method **/
 Future<void> runFlg(List<String> args) async {
   final runner = initializeSidekick(name: 'flg', mainProjectPath: '.');
 
@@ -54,7 +53,7 @@ Future<void> runFlg(List<String> args) async {
     ..addCommand(FlutterCommand())
     // more commands
     ..addCommand(InstallGlobalCommand())
-+    ..addCommand(YourCommand()); // <-- Register your own command
++   ..addCommand(YourCommand()); // <-- Register your own command
 
   //...
 ```
