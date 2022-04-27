@@ -40,7 +40,7 @@ class YourCommand extends Command {
   
   @override
   Future<void> run() {
-    // .. your code here
+    // your custom code here
   }
 }
 ```
@@ -58,8 +58,7 @@ Future<void> runFlg(List<String> args) async {
     ..addCommand(FlutterCommand())
     // more commands
     ..addCommand(InstallGlobalCommand())
-    ..addCommand(YourCommand())
-    ..addCommand(VaultCommand()); // <-- Add the VaultCommand
++   ..addCommand(YourCommand()); // <-- Register your own command
 
   //...
 ```
