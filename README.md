@@ -43,7 +43,8 @@ class YourCommand extends Command {
 }
 ```
 
-```dart
+```diff
+/** In your generated sidekick run method **/
 Future<void> runFlg(List<String> args) async {
   final runner = initializeSidekick(name: 'flg', mainProjectPath: '.');
 
@@ -53,8 +54,7 @@ Future<void> runFlg(List<String> args) async {
     ..addCommand(FlutterCommand())
     // more commands
     ..addCommand(InstallGlobalCommand())
-    ..addCommand(YourCommand())
-    ..addCommand(VaultCommand()); // <-- Add the VaultCommand
++    ..addCommand(YourCommand()); // <-- Register your own command
 
   //...
 ```
