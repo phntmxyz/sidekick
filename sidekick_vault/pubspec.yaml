@@ -1,6 +1,6 @@
 name: sidekick_vault
 description: Reads project secrets stored encrypted on the local filesystem
-version: 0.5.2
+version: 0.5.3
 repository: https://github.com/phntmxyz/sidekick
 
 environment:
