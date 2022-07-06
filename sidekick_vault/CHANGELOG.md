@@ -1,3 +1,7 @@
+## 0.5.3
+
+- Updates dependency `actions_toolkit_dart`
+
 ## 0.5.2
 
 - Makes `maskSecret` public to hide secrets in the github actions log
