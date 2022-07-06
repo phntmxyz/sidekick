@@ -1,6 +1,7 @@
 ## 0.5.3
 
 - Updates dependency `actions_toolkit_dart`
+- Add `vault.deleteFile(File)`
 
 ## 0.5.2
 
