@@ -202,4 +202,39 @@ void main() {
 
     expect(decryptedFile.readAsStringSync(), '42');
   });
+
+  test('encrypt overwrites existing files', () async {
+    final tempDir = Directory.systemTemp.createTempSync();
+    final clearTextFile = tempDir.file('cleartext.txt')
+      ..writeAsStringSync('Dash is cool');
+    addTearDown(() {
+      tempDir.deleteSync(recursive: true);
+    });
+
+    await withEnvironment(
+      () async {
+        await runner.run([
+          'vault',
+          'encrypt',
+          '--passphrase',
+          'dartlang',
+          '--vault-location',
+          'secret.txt.gpg',
+          clearTextFile.absolute.path,
+        ]);
+
+        // writing it a second time works just fine
+        await runner.run([
+          'vault',
+          'encrypt',
+          '--passphrase',
+          'dartlang',
+          '--vault-location',
+          'secret.txt.gpg',
+          clearTextFile.absolute.path,
+        ]);
+      },
+      environment: {'FLG_VAULT_PASSPHRASE': 'asdfasdf'},
+    );
+  });
 }

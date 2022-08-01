@@ -23,6 +23,10 @@ File gpgEncrypt(File file, String password, {File? output}) {
         return outDir.file(file.nameWithoutExtension);
       }();
 
+  if (outputFile.existsSync()) {
+    outputFile.deleteSync();
+  }
+
   startFromArgs('gpg', [
     '--symmetric',
     '--cipher-algo',
