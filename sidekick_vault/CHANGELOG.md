@@ -1,6 +1,11 @@
+## 0.5.4
+
+- Updates dependency `actions_toolkit_dart` to `^0.5.0`
+- `vault encrypt` now overwrites existing files
+
 ## 0.5.3
 
-- Updates dependency `actions_toolkit_dart`
+- Updates dependency `actions_toolkit_dart` to `^0.4.1`
 - Add `vault.deleteFile(File)`
 
 ## 0.5.2
