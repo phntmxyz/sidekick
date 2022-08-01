@@ -27,10 +27,8 @@ bool isProgramInstalled(String name) {
 ///
 /// The file name is the md5 hash of the content, therefore doesn't create a new file when called with the same content
 io.File tempExecutableScriptFile(String content, {Directory? tempDir}) {
-  final io.Directory _tempDir =
-      tempDir ?? Directory.systemTemp.createTempSync();
-  final script = _tempDir.file('${content.md5}.sh')
-    ..createSync(recursive: true);
+  final io.Directory dir = tempDir ?? Directory.systemTemp.createTempSync();
+  final script = dir.file('${content.md5}.sh')..createSync(recursive: true);
   script.writeAsStringSync(content);
   posix.chmod(script.path, permission: '755');
   return script;
@@ -44,7 +42,7 @@ dcli.Progress writeAndRunShellScript(
   dcli.Progress? progress,
 }) {
   final script = tempExecutableScriptFile(scriptContent);
-  final Progress _progress =
+  final Progress scriptProgress =
       progress ?? Progress(print, stderr: printerr, captureStderr: true);
 
   try {
@@ -52,7 +50,7 @@ dcli.Progress writeAndRunShellScript(
       script.absolute.path,
       workingDirectory:
           workingDirectory?.absolute.path ?? entryWorkingDirectory.path,
-      progress: _progress,
+      progress: scriptProgress,
     );
   } catch (e) {
     print(
@@ -62,7 +60,7 @@ dcli.Progress writeAndRunShellScript(
     if (progress == null) {
       print(
         "The captured error of running the script is:\n"
-        "${_progress.toList().join('\n')}\n",
+        "${scriptProgress.toList().join('\n')}\n",
       );
     }
     rethrow;

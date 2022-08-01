@@ -2,7 +2,7 @@ import 'package:path/path.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 
 /// True when dependencies should be linked to local sidekick dependencies
-late bool shouldUseLocalDevs = env['SIDEKICK_LOCAL_DEPS'] == 'true';
+bool shouldUseLocalDevs = env['SIDEKICK_LOCAL_DEPS'] == 'true';
 
 /// Add this to the test name
 String localOrPubDepsLabel = shouldUseLocalDevs ? "(local)" : "(pub)";
