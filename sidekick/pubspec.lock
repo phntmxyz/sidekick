@@ -289,12 +289,12 @@ packages:
     source: hosted
     version: "0.1.0-dev.6"
   mason_logger:
-    dependency: transitive
+    dependency: "direct dev"
     description:
       name: mason_logger
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.1.1"
+    version: "0.1.0-dev.4"
   matcher:
     dependency: transitive
     description:
@@ -378,7 +378,7 @@ packages:
       name: process
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "4.2.4"
+    version: "4.2.3"
   pub_semver:
     dependency: transitive
     description:
