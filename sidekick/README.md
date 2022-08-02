@@ -1,6 +1,6 @@
 # Sidekick CLI
 
-Generates a sidekick for Flutter projects, a command line app for custom tasks and automation 
+Generates a sidekick for Flutter projects, a command line app for custom tasks and automation
 
 ## Installation
 
@@ -13,7 +13,6 @@ dart pub global activate sidekick
 ```bash
 sidekick init <path/to/flutter/app>
 ```
-
 
 ## Developer guide
 
