@@ -11,7 +11,7 @@ dart pub global activate sidekick
 ## Usage
 
 ```bash
-sidekick create <path/to/flutter/app>
+sidekick init <path/to/flutter/app>
 ```
 
 
