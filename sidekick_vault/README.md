@@ -42,6 +42,7 @@ A place to store project secrets within a git repository, encrypted with GPG
     ```
 
 4. Register the `VaultCommand` in your sidekick CLI
+
    ```dart
    import 'package:sidekick_vault/sidekick_vault.dart';
    
@@ -69,12 +70,11 @@ A place to store project secrets within a git repository, encrypted with GPG
 <cli-name> vault encrypt --passpharse="****" --vault-location="secret.txt.gpg" path/to/secret.txt
 ```
 
-The `passpharse` is optional. 
+The `passpharse` is optional.
 It will be retrieved from the environment variables or asked via `stdin`.
 
-The file will be saved at `vault-location` (optional) inside the vault directory. 
+The file will be saved at `vault-location` (optional) inside the vault directory.
 The filename (`secret.txt`) will be used as fallback.
-
 
 ### Decrypt file in vault
 
@@ -104,7 +104,6 @@ The decrypted file will be saved in the vault next to the encrypted one (without
 
 Use the `old` and `new` arguments to pass the old and new password.
 Without the arguments, you can enter the passwords via `stdin`.
-
 
 ## Manually add/read items in vault via gpg
 
