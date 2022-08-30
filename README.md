@@ -2,44 +2,23 @@
 
 Dart CLI generator for Flutter and Dart apps - extend your project with custom tasks, add a sidekick to your app.
 
-## Motivation
+Write your automation scripts in Dart - a language all your coworkers are comfortable with - while fully supporting debugging and testing without losing the simplicity of executing shell scripts.
 
-Once you start automating your development workflow, you rather soon hit the limits of Bash.
-Not only is it hard to learn for newcomers, but also hard to understand for experienced developers.
-The lack of dependency management and JSON parsing are only a [few reasons](https://mywiki.wooledge.org/BashWeaknesses) that rule it out as a usable scripting language.
+Awesome examples
 
-Build systems like [Gradle](https://gradle.org/) allow you to write your tasks.
-But Dart and Flutter projects are not compatible with Gradle and don't offer an easy way to add custom tasks.
+- Deployment scripts with multi-dimension build flavors
+- Bump the version of your packages at once
+- Generate release notes by combining merged PRs and completed JIRA issues
+- Fix broken generated build_runner code while waiting for a fix to be merged
+- Update GraphQL schemas
+- Create init scripts for coworkers to set up their environment
 
-While you can place your dart scripts in `/tool` and add `dev_dependencies` to your `pubspec.yaml` you might rather soon run into version conflicts between your app and your scripts.
-
-Let's face it, you need a standalone dart project for your custom CLI, and sidekick does the heavy lifting for you.
-
-## Principals
-
-The sidekick CLI is **self-executable**
-
-- Executing the CLI requires no extra dependencies. The entrypoint can be executed as shell script. That makes it easy to use on CI/CD servers.
-- By calling the `entrypoint` shell script, it automatically downloads a (pinned) Dart runtime and compiles the CLI project.
-- Self-executable and self-contained. Dependencies are not shared with the app.
-
-Full control of the source code
-
-- Changing existing code doesn't require a PR to the sidekick project. You can **customize the generated commands** to your liking.
-- There is no program between your CLI and the Dart compiler that reads, alters, wraps or breaks your code.
-- You don't like how the CLI handles errors or prints the help page? You can change that, you have full control
-
-Being able to use all the benefits of a modern language
-
-- Like any pure Dart program, the sidekick CLI can be executed with a **debugger**. No need for print statements!
-- Full **IDE support** and syntax highlighting
-- Full **testing** support. Who doesn't want unit tests for their custom tasks?
-
-## Getting Started 
+## Getting Started
 
 ### Create your first CLI
 
 Install the CLI generator `sidekick`. This is only required for generation, not for the execution of the CLI.
+
 ```bash
 dart pub global activate sidekick
 ```
@@ -194,6 +173,39 @@ class EchoTextCommand extends Command {
 $ flg echo-text --text="Hello World"
 Hello World
 ```
+
+## Motivation
+
+Once you start automating your development workflow, you rather soon hit the limits of Bash.
+Not only is it hard to learn for newcomers, but also hard to understand for experienced developers.
+The lack of dependency management and JSON parsing are only a [few reasons](https://mywiki.wooledge.org/BashWeaknesses) that rule it out as a usable scripting language.
+
+Build systems like [Gradle](https://gradle.org/) allow you to write your tasks.
+But Dart and Flutter projects are not compatible with Gradle and don't offer an easy way to add custom tasks.
+
+While you can place your dart scripts in `/tool` and add `dev_dependencies` to your `pubspec.yaml` you might rather soon run into version conflicts between your app and your scripts.
+
+Let's face it, you need a standalone dart project for your custom CLI, and sidekick does the heavy lifting for you.
+
+## Principals
+
+The sidekick CLI is **self-executable**
+
+- Executing the CLI requires no extra dependencies. The entrypoint can be executed as shell script. That makes it easy to use on CI/CD servers.
+- By calling the `entrypoint` shell script, it automatically downloads a (pinned) Dart runtime and compiles the CLI project.
+- Self-executable and self-contained. Dependencies are not shared with the app.
+
+Full control of the source code
+
+- Changing existing code doesn't require a PR to the sidekick project. You can **customize the generated commands** to your liking.
+- There is no program between your CLI and the Dart compiler that reads, alters, wraps or breaks your code.
+- You don't like how the CLI handles errors or prints the help page? You can change that, you have full control
+
+Being able to use all the benefits of a modern language
+
+- Like any pure Dart program, the sidekick CLI can be executed with a **debugger**. No need for print statements!
+- Full **IDE support** and syntax highlighting
+- Full **testing** support. Who doesn't want unit tests for their custom tasks?
 
 ## Development
 
