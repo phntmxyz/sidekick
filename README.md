@@ -120,7 +120,7 @@ Writing your own commands is done in two steps.
     String get name => 'foo';
     
     @override
-    Future<void> run() {
+    Future<void> run() async {
       // your custom code here
     }
   }
