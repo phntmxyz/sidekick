@@ -10,6 +10,8 @@ dependencies:
   actions_toolkit_dart: ^0.5.0
   dcli: # provided by sidekick_core
   sidekick_core: '>=0.6.0 <1.0.0'
+  sidekick_plugin_installer:
+    path: ../sidekick_plugin_installer
 
 #dependency_overrides:
 #  sidekick_core:
