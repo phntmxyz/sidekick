@@ -10,8 +10,9 @@ void main() {
   group('sidekick init - simple layout', () {
     test(
       'entrypoint executes fine after sidekick init $localOrPubDepsLabel',
-          () async {
-        final projectRoot = setupTemplateProject('test/templates/nested_package');
+      () async {
+        final projectRoot =
+            setupTemplateProject('test/templates/nested_package');
         final nestedPackage = projectRoot.directory('foo/bar/nested');
         final process = await sidekickCli(
           ['init', '-n', 'dash'],
