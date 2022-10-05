@@ -4,7 +4,7 @@ import 'package:sidekick_core/src/global_sidekick_root.dart';
 
 class InstallGlobalCommand extends Command {
   @override
-  final String description = 'Installs the sidekick CLI globally';
+  final String description = 'Installs this custom sidekick CLI globally';
 
   @override
   final String name = 'install-global';

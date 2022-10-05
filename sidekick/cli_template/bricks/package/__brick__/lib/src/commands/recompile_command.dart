@@ -7,7 +7,7 @@ import 'package:sidekick_core/sidekick_core.dart';
 
 class RecompileCommand extends Command {
   @override
-  final String description = 'Recompiles the {{#lowerCase}}{{name}}{{/lowerCase}} sidekick';
+  final String description = 'Recompiles the {{#lowerCase}}{{name}}{{/lowerCase}} sidekick CLI';
 
   @override
   final String name = 'recompile';

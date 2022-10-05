@@ -5,7 +5,7 @@ class DartPackage {
   DartPackage(this.root, this.name) : isFlutterPackage = false;
   DartPackage.flutter(this.root, this.name) : isFlutterPackage = true;
 
-  /// Returns [DartPackage] if a dictionary fulfils the requirements of a Dart/Flutter package
+  /// Returns [DartPackage] if a directory fulfils the requirements of a Dart/Flutter package
   /// - pubspec.yaml
   /// - lib directory
   /// - name in pubspec.yaml

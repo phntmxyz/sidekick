@@ -98,7 +98,7 @@ class InitCommand extends Command {
           // Ask user for a main project (optional)
           const none = 'None of the above';
           final userSelection = dcli.menu(
-            prompt: 'Which of the following package is your primary app?',
+            prompt: 'Which of the following packages is your primary app?',
             options: [...packages.map((it) => it.name), none],
             defaultOption: none,
           );
@@ -117,7 +117,7 @@ class InitCommand extends Command {
         );
         break;
       case ProjectStructure.rootWithPackages:
-        print('Detected a Dart/Flutter project with a /packages dictionary');
+        print('Detected a Dart/Flutter project with a /packages directory');
         final List<DartPackage> packages = initDir
             .directory('packages')
             .listSync()
@@ -145,6 +145,18 @@ class InitCommand extends Command {
     }
   }
 
+  /// Generates a custom sidekick CLI
+  ///
+  /// Required parameters:
+  ///   [repoRoot] - parent of the .git directory
+  ///   [packageDir] - directory in which the sidekick cli package will be created
+  ///   [entrypointDir] - directory in which entrypoint.sh will be created
+  ///
+  /// Optional parameters:
+  /// if the structure is [ProjectStructure.multiPackage]
+  ///   [mainProject] - primary project directory (usually an app which depends on all other packages)
+  /// if the structure is [ProjectStructure.multiPackage] or [ProjectStructure.rootWithPackages]
+  ///   [packages] - list of all packages in the /packages directory
   Future<void> createSidekickPackage({
     required String cliName,
     required Directory repoRoot,
