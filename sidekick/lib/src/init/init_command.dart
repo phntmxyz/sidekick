@@ -187,6 +187,9 @@ class InitCommand extends Command {
               : 'ERROR:no-main-project-path-defined',
           'mainProjectIsRoot':
               mainProject?.root.absolute.path == repoRoot.absolute.path,
+          'hasNestedPackagesPath': mainProject != null &&
+              !relative(mainProject.root.path, from: repoRoot.absolute.path)
+                  .startsWith('packages'),
         },
         logger: Logger(),
         fileConflictResolution: FileConflictResolution.overwrite,
