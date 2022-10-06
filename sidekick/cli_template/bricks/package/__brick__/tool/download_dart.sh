@@ -86,6 +86,7 @@ if [ ! -f "$DART_VERSION_STAMP" ] || [ "$DART_VERSION" != `cat "$DART_VERSION_ST
     esac
   fi
 
+  case "$OS" in
     Darwin)
       DART_ZIP_NAME="dartsdk-macos-${ARCH}-release.zip"
       IS_USER_EXECUTABLE="-perm +100"

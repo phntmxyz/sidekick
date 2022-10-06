@@ -21,7 +21,7 @@ cd "${CLI_PACKAGE_DIR}" || exit
   # Download Dart runtime
   if [ ! -d "$DART_SDK" ]; then
     echo 'missing flutter sdk'
-    sh "${CLI_PACKAGE_DIR}/tool/install.sh"
+    sh "${CLI_PACKAGE_DIR}/tool/download_dart.sh"
   fi
 
   # build

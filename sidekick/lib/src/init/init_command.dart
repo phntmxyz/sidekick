@@ -198,6 +198,8 @@ class InitCommand extends Command {
       // mason doesn't support lists, so we have to add them manually
       _addPackagesToProjectClass(repoRoot, cliPackage, cliName, packages);
 
+      // Make runtime downloader executable
+      await makeExecutable(cliPackage.file('tool/download_dart.sh'));
       // Make install script executable
       await makeExecutable(cliPackage.file('tool/install.sh'));
       // Make run script executable
@@ -222,13 +224,11 @@ class InitCommand extends Command {
       await makeExecutable(entrypoint);
     }
 
-    // For now, we install the flutter wrapper to get a dart runtime.
-    // TODO Add dart runtime so that dart packages can use sidekick without flutter
-    final flutterw = await installFlutterWrapper(entrypointDir);
+    // TODO ask to optionally install flutterw
+    // final flutterw = await installFlutterWrapper(entrypointDir);
 
     // make sure sidekick_core is up-to-date
     upgradeSidekickDependencies(
-      flutterw,
       cliPackage,
       packages: ['sidekick_core'],
     );
@@ -289,13 +289,12 @@ Future<File> installFlutterWrapper(Directory directory) async {
 
 /// Upgrade dependencies of a sidekick cli
 void upgradeSidekickDependencies(
-  File flutterw,
   Directory sidekickCliPackage, {
   List<String> packages = const [],
 }) {
-  final relFlutterw = relative(flutterw.path, from: sidekickCliPackage.path);
+  final dart = sidekickCliPackage.file('build/cache/dart-sdk/bin/dart');
   dcli.run(
-    'sh $relFlutterw pub upgrade ${packages.join(' ')}',
+    '$dart pub upgrade ${packages.join(' ')}',
     workingDirectory: sidekickCliPackage.path,
   );
 }
