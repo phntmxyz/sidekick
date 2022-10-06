@@ -67,6 +67,9 @@ class InitCommand extends Command {
         .toLowerCase();
     print("Generating ${cliName}_sidekick");
 
+    bool isGitDir(Directory dir) => dir.directory('.git').existsSync();
+    final repoRoot = initDir.findParent(isGitDir) ?? initDir;
+
     final detector = ProjectStructureDetector();
     final type = detector.detectProjectType(initDir);
 
@@ -74,7 +77,7 @@ class InitCommand extends Command {
       case ProjectStructure.simple:
         await createSidekickPackage(
           cliName: cliName,
-          repoRoot: initDir,
+          repoRoot: repoRoot,
           packageDir: initDir.directory('packages'),
           entrypointDir: initDir,
           mainProject: DartPackage.fromDirectory(initDir),
@@ -109,7 +112,7 @@ class InitCommand extends Command {
 
         await createSidekickPackage(
           cliName: cliName,
-          repoRoot: initDir,
+          repoRoot: repoRoot,
           packageDir: initDir.directory('packages'),
           entrypointDir: initDir,
           mainProject: mainProject,
@@ -129,7 +132,7 @@ class InitCommand extends Command {
 
         await createSidekickPackage(
           cliName: cliName,
-          repoRoot: initDir,
+          repoRoot: repoRoot,
           packageDir: initDir.directory('packages'),
           entrypointDir: initDir,
           mainProject: DartPackage.fromDirectory(initDir),
@@ -184,6 +187,9 @@ class InitCommand extends Command {
               : 'ERROR:no-main-project-path-defined',
           'mainProjectIsRoot':
               mainProject?.root.absolute.path == repoRoot.absolute.path,
+          'hasNestedPackagesPath': mainProject != null &&
+              !relative(mainProject.root.path, from: repoRoot.absolute.path)
+                  .startsWith('packages'),
         },
         logger: Logger(),
         fileConflictResolution: FileConflictResolution.overwrite,

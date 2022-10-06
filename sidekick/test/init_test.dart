@@ -7,6 +7,40 @@ import 'util/cli_runner.dart';
 import 'util/local_testing.dart';
 
 void main() {
+  group('sidekick init - simple layout', () {
+    test(
+      'entrypoint executes fine after sidekick init $localOrPubDepsLabel',
+      () async {
+        final projectRoot =
+            setupTemplateProject('test/templates/nested_package');
+        final nestedPackage = projectRoot.directory('foo/bar/nested');
+        final process = await sidekickCli(
+          ['init', '-n', 'dash'],
+          workingDirectory: nestedPackage,
+        );
+        await process.shouldExit(0);
+        final entrypoint = File("${nestedPackage.path}/dash");
+        expect(entrypoint.existsSync(), isTrue);
+
+        if (shouldUseLocalDevs) {
+          overrideSidekickCoreWithLocalPath(
+            nestedPackage.directory('packages/dash_sidekick'),
+          );
+        }
+
+        final dashProcess = await TestProcess.start(
+          entrypoint.path,
+          [],
+          workingDirectory: nestedPackage.path,
+        );
+        printOnFailure(await dashProcess.stdoutStream().join('\n'));
+        printOnFailure(await dashProcess.stderrStream().join('\n'));
+        dashProcess.shouldExit(0);
+      },
+      timeout: const Timeout(Duration(minutes: 5)),
+    );
+  });
+
   group('sidekick init - packages layout', () {
     test(
       'init generates sidekick package + entrypoint',
