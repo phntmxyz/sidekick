@@ -18,8 +18,8 @@ class {{#titleCase}}{{name}}{{/titleCase}}Project {
 
   List<DartPackage>? _packages;
   List<DartPackage> get allPackages {
-    return _packages ??= root
-{{^mainProjectIsRoot}}        .directory('{{{mainProjectPath}}}'){{/mainProjectIsRoot}}
+    return _packages ??= root{{#hasMainProject}}
+        .directory('{{{mainProjectPath}}}'){{/hasMainProject}}
         .directory('packages')
         .listSync()
         .whereType<Directory>()
