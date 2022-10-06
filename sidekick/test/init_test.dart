@@ -69,10 +69,6 @@ void main() {
         expect(entrypoint.existsSync(), isTrue);
         expect(entrypoint.statSync().modeString(), 'rwxr-xr-x');
 
-        // check flutterw exists
-        final flutterw = File("${project.path}/flutterw");
-        expect(flutterw.existsSync(), isTrue);
-
         // root is mainProjectPath
         final runFunctionFile = File(
           "${project.path}/packages/dash_sidekick/lib/dash_sidekick.dart",
@@ -154,10 +150,6 @@ void main() {
         expect(entrypoint.existsSync(), isTrue);
         expect(entrypoint.statSync().modeString(), 'rwxr-xr-x');
 
-        // check flutterw exists
-        final flutterw = File("${project.path}/flutterw");
-        expect(flutterw.existsSync(), isTrue);
-
         if (shouldUseLocalDevs) {
           overrideSidekickCoreWithLocalPath(
             project.directory('packages/dash_sidekick'),
@@ -203,10 +195,6 @@ void main() {
         final entrypoint = File("${project.path}/dash");
         expect(entrypoint.existsSync(), isTrue);
         expect(entrypoint.statSync().modeString(), 'rwxr-xr-x');
-
-        // check flutterw exists
-        final flutterw = File("${project.path}/flutterw");
-        expect(flutterw.existsSync(), isTrue);
 
         // no mainProjectPath defined, nothing is set
         final runFunctionFile = File(
@@ -281,10 +269,6 @@ void main() {
         expect(entrypoint.existsSync(), isTrue);
         expect(entrypoint.statSync().modeString(), 'rwxr-xr-x');
 
-        // check flutterw exists
-        final flutterw = File("${project.path}/flutterw");
-        expect(flutterw.existsSync(), isTrue);
-
         if (shouldUseLocalDevs) {
           overrideSidekickCoreWithLocalPath(
             project.directory('packages/dash_sidekick'),
@@ -328,10 +312,6 @@ void main() {
         final entrypoint = File("${project.path}/dash");
         expect(entrypoint.existsSync(), isTrue);
         expect(entrypoint.statSync().modeString(), 'rwxr-xr-x');
-
-        // check flutterw exists
-        final flutterw = File("${project.path}/flutterw");
-        expect(flutterw.existsSync(), isTrue);
 
         final runFunctionFile = File(
           "${project.path}/packages/dash_sidekick/lib/dash_sidekick.dart",

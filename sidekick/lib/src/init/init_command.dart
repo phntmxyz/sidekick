@@ -227,7 +227,9 @@ class InitCommand extends Command {
     // TODO ask to optionally install flutterw
     // final flutterw = await installFlutterWrapper(entrypointDir);
 
+    // TODO add --offline flag that does not upgrade anything
     // make sure sidekick_core is up-to-date
+    downloadDartRuntime(cliPackage);
     upgradeSidekickDependencies(
       cliPackage,
       packages: ['sidekick_core'],
@@ -287,6 +289,18 @@ Future<File> installFlutterWrapper(Directory directory) async {
   return directory.file('flutterw');
 }
 
+void downloadDartRuntime(Directory sidekickCliPackage) {
+  dcli.run(
+    'sh tool/download_dart.sh',
+    workingDirectory: sidekickCliPackage.path,
+  );
+  final downloadPath = sidekickCliPackage.directory('build/cache/dart-sdk/');
+  while (!downloadPath.existsSync()) {
+    print("Waiting for ${downloadPath.path}");
+    dcli.sleep(1);
+  }
+}
+
 /// Upgrade dependencies of a sidekick cli
 void upgradeSidekickDependencies(
   Directory sidekickCliPackage, {
@@ -294,7 +308,7 @@ void upgradeSidekickDependencies(
 }) {
   final dart = sidekickCliPackage.file('build/cache/dart-sdk/bin/dart');
   dcli.run(
-    '$dart pub upgrade ${packages.join(' ')}',
+    '${dart.path} pub upgrade ${packages.join(' ')}',
     workingDirectory: sidekickCliPackage.path,
   );
 }
