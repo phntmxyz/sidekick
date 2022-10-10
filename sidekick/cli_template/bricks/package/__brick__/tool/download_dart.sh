@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-# Downloads the dart sdk
+# Downloads the dart sdk into the sidekick build folder.
+# Handles caching to minimize network traffic
 
 # Highly inspired by https://github.com/flutter/flutter/blob/b7b8b759bc3ab7a80d2576d52f7b05bc1e6e23bd/bin/internal/update_dart_sdk.sh
 
@@ -9,8 +10,8 @@ set -e
 
 SIDEKICK_PACKAGE_ROOT="$(dirname "$(dirname "$(dirname "${BASH_SOURCE[0]}")")")"
 
-DART_SDK_PATH="$SIDEKICK_PACKAGE_ROOT/build/cache/dart-sdk"
-DART_SDK_PATH_OLD="$DART_SDK_PATH.old"
+SIDEKICK_DART_SDK_PATH="$SIDEKICK_PACKAGE_ROOT/build/cache/dart-sdk"
+DART_SDK_ZIP_FOLDER="$HOME/.dart/sdk/cache"
 DART_VERSION="2.18.1"
 DART_VERSION_STAMP="$SIDEKICK_PACKAGE_ROOT/build/cache/dartsdk.stamp"
 OS="$(uname -s)"
@@ -105,8 +106,6 @@ if [ ! -f "$DART_VERSION_STAMP" ] || [ "$DART_VERSION" != `cat "$DART_VERSION_ST
       ;;
   esac
 
-  >&2 echo "Downloading $OS $ARCH Dart SDK $DART_VERSION..."
-
   # Use the default find if possible.
   if [ -e /usr/bin/find ]; then
     FIND=/usr/bin/find
@@ -117,43 +116,46 @@ if [ ! -f "$DART_VERSION_STAMP" ] || [ "$DART_VERSION" != `cat "$DART_VERSION_ST
   DART_SDK_BASE_URL="${GOOGLE_STORAGE_BASE_URL:-https://storage.googleapis.com}"
   DART_SDK_URL="$DART_SDK_BASE_URL/dart-archive/channels/stable/release/$DART_VERSION/sdk/$DART_ZIP_NAME"
 
-  # if the sdk path exists, copy it to a temporary location
-  if [ -d "$DART_SDK_PATH" ]; then
-    rm -rf "$DART_SDK_PATH_OLD"
-    mv "$DART_SDK_PATH" "$DART_SDK_PATH_OLD"
-  fi
-
   # install the new sdk
-  rm -rf -- "$DART_SDK_PATH"
-  mkdir -m 755 -p -- "$DART_SDK_PATH"
-  DART_SDK_ZIP_FOLDER="$SIDEKICK_PACKAGE_ROOT/build/cache"
+  rm -rf -- "$SIDEKICK_DART_SDK_PATH"
+  mkdir -m 755 -p -- "$SIDEKICK_DART_SDK_PATH"
   DART_SDK_ZIP="$DART_SDK_ZIP_FOLDER/$DART_ZIP_NAME"
 
   # Create cache folder when it doesn't exits
   mkdir -p "$DART_SDK_ZIP_FOLDER"
 
-  curl --retry 3 --continue-at - --location --output "$DART_SDK_ZIP" "$DART_SDK_URL" 2>&1 || {
-    curlExitCode=$?
-    # Handle range errors specially: retry again with disabled ranges (`--continue-at -` argument)
-    # When this could happen:
-    # - missing support of ranges in proxy servers
-    # - curl with broken handling of completed downloads
-    #   This is not a proper fix, but doesn't require any user input
-    # - mirror of flutter storage without support of ranges
-    #
-    # 33  HTTP range error. The range "command" didn't work.
-    # https://man7.org/linux/man-pages/man1/curl.1.html#EXIT_CODES
-    if [ $curlExitCode != 33 ]; then
-      return $curlExitCode
-    fi
-    curl --retry 3 --location --output "$DART_SDK_ZIP" "$DART_SDK_URL" 2>&1
-  } || {
-    >&2 echo
-    >&2 echo "Failed to retrieve the Dart SDK from: $DART_SDK_URL"
-    >&2 echo
-    rm -f -- "$DART_SDK_ZIP"
-    exit 1
-  }
+  if [ ! -f "$DART_SDK_ZIP" ]; then
+
+    >&2 echo "Downloading $OS $ARCH Dart SDK $DART_VERSION..."
+
+    # Download zip when it's not in cache
+    curl --retry 3 --continue-at - --location --output "$DART_SDK_ZIP" "$DART_SDK_URL" 2>&1 || {
+      curlExitCode=$?
+      # Handle range errors specially: retry again with disabled ranges (`--continue-at -` argument)
+      # When this could happen:
+      # - missing support of ranges in proxy servers
+      # - curl with broken handling of completed downloads
+      #   This is not a proper fix, but doesn't require any user input
+      # - mirror of flutter storage without support of ranges
+      #
+      # 33  HTTP range error. The range "command" didn't work.
+      # https://man7.org/linux/man-pages/man1/curl.1.html#EXIT_CODES
+      if [ $curlExitCode != 33 ]; then
+        return $curlExitCode
+      fi
+      curl --retry 3 --location --output "$DART_SDK_ZIP" "$DART_SDK_URL" 2>&1
+    } || {
+      >&2 echo
+      >&2 echo "Failed to retrieve the Dart SDK from: $DART_SDK_URL"
+      >&2 echo
+      rm -f -- "$DART_SDK_ZIP"
+      exit 1
+    }
+  else
+    >&2 echo "Using cached Dart SDK $DART_VERSION from $DART_SDK_ZIP..."
+  fi
+
+  # Extract sdk to build folder
   unzip -o -q "$DART_SDK_ZIP" -d "$SIDEKICK_PACKAGE_ROOT/build/cache" || {
     >&2 echo
     >&2 echo "It appears that the downloaded file is corrupt; please try again."
@@ -161,13 +163,8 @@ if [ ! -f "$DART_VERSION_STAMP" ] || [ "$DART_VERSION" != `cat "$DART_VERSION_ST
     rm -f -- "$DART_SDK_ZIP"
     exit 1
   }
-  rm -f -- "$DART_SDK_ZIP"
-  $FIND "$DART_SDK_PATH" -type d -exec chmod 755 {} \;
-  $FIND "$DART_SDK_PATH" -type f $IS_USER_EXECUTABLE -exec chmod a+x,a+r {} \;
-  echo "$DART_VERSION" > "$DART_VERSION_STAMP"
 
-  # delete any temporary sdk path
-  if [ -d "$DART_SDK_PATH_OLD" ]; then
-    rm -rf "$DART_SDK_PATH_OLD"
-  fi
+  $FIND "$SIDEKICK_DART_SDK_PATH" -type d -exec chmod 755 {} \;
+  $FIND "$SIDEKICK_DART_SDK_PATH" -type f $IS_USER_EXECUTABLE -exec chmod a+x,a+r {} \;
+  echo "$DART_VERSION" > "$DART_VERSION_STAMP"
 fi
