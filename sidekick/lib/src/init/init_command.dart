@@ -228,7 +228,6 @@ class InitCommand extends Command {
     final flutterPackages = [if (mainProject != null) mainProject, ...packages]
         .filter((package) => package.isFlutterPackage);
 
-    print("Checking for flutterw ${flutterPackages}");
     if (flutterPackages.isNotEmpty) {
       print('We detected Flutter packages in your project:');
       for (final package in flutterPackages) {
@@ -242,7 +241,7 @@ class InitCommand extends Command {
         defaultValue: false,
       );
       if (confirmFlutterwInstall) {
-        final flutterw = await installFlutterWrapper(entrypointDir);
+        await installFlutterWrapper(entrypointDir);
       }
     }
 
@@ -305,7 +304,9 @@ Future<File> installFlutterWrapper(Directory directory) async {
     r'sh -c "$(curl -fsSL https://raw.githubusercontent.com/passsy/flutter_wrapper/master/install.sh)"',
     workingDirectory: directory,
   );
-  return directory.file('flutterw');
+  final exe = directory.file('flutterw');
+  assert(exe.existsSync());
+  return exe;
 }
 
 void downloadDartRuntime(Directory sidekickCliPackage) {
