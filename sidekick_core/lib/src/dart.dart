@@ -2,6 +2,7 @@ import 'package:dcli/dcli.dart' as dcli;
 import 'package:sidekick_core/sidekick_core.dart';
 
 /// Executes the dart cli associated with the project via flutterw
+/// https://github.com/passsy/flutter_wrapper
 ///
 /// Makes sure flutterw is executed beforehand to download the dart-sdk
 int dart(
@@ -9,6 +10,7 @@ int dart(
   Directory? workingDirectory,
   dcli.Progress? progress,
 }) {
+  // TODO find pinned fvm flutter version
   final binDir = repository.root.directory('.flutter/bin/cache/dart-sdk/bin/');
   final dart = () {
     if (Platform.isWindows) {
