@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/sidekick.iml" filepath="$PROJECT_DIR$/sidekick.iml" />
+      <module fileurl="file://$PROJECT_DIR$/sidekick/sidekick-cli.iml" filepath="$PROJECT_DIR$/sidekick/sidekick-cli.iml" />
+      <module fileurl="file://$PROJECT_DIR$/sidekick_core/sidekick_core.iml" filepath="$PROJECT_DIR$/sidekick_core/sidekick_core.iml" />
+      <module fileurl="file://$PROJECT_DIR$/sidekick_vault/sidekick_vault.iml" filepath="$PROJECT_DIR$/sidekick_vault/sidekick_vault.iml" />
+    </modules>
+  </component>
+</project>
