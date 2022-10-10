@@ -224,8 +224,27 @@ class InitCommand extends Command {
       await makeExecutable(entrypoint);
     }
 
-    // TODO ask to optionally install flutterw
-    // final flutterw = await installFlutterWrapper(entrypointDir);
+    // Install flutterw when a Flutter project is detected
+    final flutterPackages = [if (mainProject != null) mainProject, ...packages]
+        .filter((package) => package.isFlutterPackage);
+
+    print("Checking for flutterw ${flutterPackages}");
+    if (flutterPackages.isNotEmpty) {
+      print('We detected Flutter packages in your project:');
+      for (final package in flutterPackages) {
+        print('  - ${package.name} '
+            'at ${relative(package.root.path, from: repoRoot.absolute.path)}');
+      }
+      final confirmFlutterwInstall = dcli.confirm(
+        dcli.green(
+          'Do you want pin the Flutter version of this project with flutterw?',
+        ),
+        defaultValue: false,
+      );
+      if (confirmFlutterwInstall) {
+        final flutterw = await installFlutterWrapper(entrypointDir);
+      }
+    }
 
     // TODO add --offline flag that does not upgrade anything
     // make sure sidekick_core is up-to-date
