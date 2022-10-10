@@ -15,7 +15,7 @@ void main() {
       );
     });
 
-    test('mainProject throws when not set', () async {
+    test('mainProject returns null when not set', () async {
       await insideFakeSidekickProject((dir) async {
         final runner = initializeSidekick(
           name: 'dash',
@@ -28,18 +28,7 @@ void main() {
             name: 'inside',
             block: () {
               called = true;
-              expect(
-                () => mainProject,
-                throwsA(
-                  isA<String>().having(
-                    (it) => it,
-                    'String',
-                    stringContainsInOrder(
-                      ['mainProjectPath', 'initializeSidekick()'],
-                    ),
-                  ),
-                ),
-              );
+              expect(mainProject, isNull);
             },
           ),
         );
@@ -57,8 +46,8 @@ void main() {
             name: 'inside',
             block: () {
               called = true;
-              expect(mainProject.root.path, dir.path);
-              expect(mainProject.name, 'dash_sdk');
+              expect(mainProject!.root.path, dir.path);
+              expect(mainProject!.name, 'dash_sdk');
             },
           ),
         );
@@ -142,8 +131,8 @@ void main() {
             final outerRepository = repository;
             void verifyOuter(Directory dir) {
               expect(cliName, 'dash');
-              expect(mainProject.root.path, dir.path);
-              expect(mainProject.name, 'dash_sdk');
+              expect(mainProject!.root.path, dir.path);
+              expect(mainProject!.name, 'dash_sdk');
               expect(repository.root.path, dir.path);
             }
 
@@ -157,16 +146,7 @@ void main() {
                   innerCalled = true;
                   // inner values are set
                   expect(cliName, 'innerdash');
-                  expect(
-                    () => mainProject,
-                    throwsA(
-                      isA<String>().having(
-                        (it) => it,
-                        'errorMessage',
-                        contains('mainProject is not initialized'),
-                      ),
-                    ),
-                  );
+                  expect(mainProject, isNull);
                   expect(repository, isNot(outerRepository));
                 },
               ),

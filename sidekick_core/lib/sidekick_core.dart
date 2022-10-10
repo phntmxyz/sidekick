@@ -134,20 +134,15 @@ Repository get repository {
 
 /// The main package which should be executed by default
 ///
-/// This has to be set by the
-DartPackage get mainProject {
+/// The mainProjectPath has to be set by the user in [initializeSidekick].
+/// It's optional, not every project has a mainProject, there are repositories
+/// with zero or multiple projects.
+DartPackage? get mainProject {
   if (_activeRunner == null) {
     error(
       'You cannot access mainProject '
       'outside of a Command executed with SidekickCommandRunner.',
     );
   }
-  final project = _activeRunner?.mainProject;
-  if (project == null) {
-    error(
-      'mainProject is not initialized. '
-      'Set "mainProjectPath" when calling initializeSidekick();',
-    );
-  }
-  return project;
+  return _activeRunner?.mainProject;
 }

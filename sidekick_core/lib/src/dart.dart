@@ -21,7 +21,7 @@ int dart(
   if (!dart.existsSync()) {
     // run a flutterw command forcing flutter_tool to download the dart sdk
     print("running flutterw to download dart");
-    flutterw([], workingDirectory: mainProject.root);
+    flutterw([], workingDirectory: mainProject!.root);
   }
   final process = dcli.startFromArgs(
     dart.path,
