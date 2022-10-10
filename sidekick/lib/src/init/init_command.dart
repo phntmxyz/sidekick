@@ -65,7 +65,7 @@ class InitCommand extends Command {
               return name;
             }())
         .toLowerCase();
-    print("Generating ${cliName}_sidekick");
+    print("\nGenerating ${cliName}_sidekick");
 
     bool isGitDir(Directory dir) => dir.directory('.git').existsSync();
     final repoRoot = initDir.findParent(isGitDir) ?? initDir;
@@ -234,10 +234,13 @@ class InitCommand extends Command {
         print('  - ${package.name} '
             'at ${relative(package.root.path, from: repoRoot.absolute.path)}');
       }
+
+      print('\n\n'
+          '${dcli.green('Do you want pin the Flutter version of this project with flutterw?\n')}'
+          'https://github.com/passsy/flutter_wrapper\n\n'
+          'This allows you to use the `$cliName dart` and `$cliName flutter` commands\n');
       final confirmFlutterwInstall = dcli.confirm(
-        dcli.green(
-          'Do you want pin the Flutter version of this project with flutterw?',
-        ),
+        'Install flutterw?',
         defaultValue: false,
       );
       if (confirmFlutterwInstall) {
