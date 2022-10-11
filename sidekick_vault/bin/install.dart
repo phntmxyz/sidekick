@@ -8,6 +8,8 @@ Future<void> main(List<String> args) async {
   const cliName = 'nh'; // TODO get from package manifest
 
   addPubDependency(cliPackage, 'sidekick_vault');
+  // TODO?
+  runPubGetOnCli();
 
   registerPlugin(
     sidekickCli: cliPackage,

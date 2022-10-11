@@ -18,6 +18,10 @@ dependencies:
   path: ^1.8.0
   recase: ^4.0.0
   sidekick_core: ^0.6.0
+  # TODO remove git dependency, copy needed code from pub instead
+  pub:
+    git: https://github.com/Giuspepe/pub
+  pub_semver: ^2.1.1
 
 dev_dependencies:
   lint: ^1.5.0
