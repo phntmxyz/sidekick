@@ -51,20 +51,22 @@ class InitCommand extends Command {
       // fallback to cwd
       return cwd;
     }();
-    final cliName = (argResults!['cliName'] as String? ??
-            () {
-              print(
-                '${dcli.green('Please select a name for your sidekick CLI.')}\n'
-                'We know, selecting a name is hard. Here are some suggestions:',
-              );
-              final suggester = NameSuggester(projectDir: initDir);
-              final name = suggester.askUserForName();
-              if (name == null) {
-                throw 'No cliName provided. Call `sidekick init --cliName <your-name>`';
-              }
-              return name;
-            }())
-        .toLowerCase();
+    final cliName = argResults!['cliName'] as String? ??
+        () {
+          print(
+            '${dcli.green('Please select a name for your sidekick CLI.')}\n'
+            'We know, selecting a name is hard. Here are some suggestions:',
+          );
+          final suggester = NameSuggester(projectDir: initDir);
+          final name = suggester.askUserForName();
+          if (name == null) {
+            throw 'No cliName provided. Call `sidekick init --cliName <your-name>`';
+          }
+          return name;
+        }();
+    if (!isValidCliName(cliName)) {
+      throw invalidCliNameErrorMessage;
+    }
     print("Generating ${cliName}_sidekick");
 
     bool isGitDir(Directory dir) => dir.directory('.git').existsSync();
