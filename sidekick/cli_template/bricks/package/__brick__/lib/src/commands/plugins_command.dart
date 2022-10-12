@@ -31,11 +31,11 @@ class AddPluginsCommand extends Command {
 
   AddPluginsCommand() {
     argParser.addOption(
-      'origin',
-      abbr: 'o',
-      help: 'The origin used to find the package.',
-      allowed: ['git-url', 'pub-server', 'local-path'],
-      defaultsTo: 'pub-server',
+      'source',
+      abbr: 's',
+      help: 'The source used to find the package.',
+      allowed: ['git', 'hosted', 'path'],
+      defaultsTo: 'hosted',
     );
 
     argParser.addOption(
@@ -49,10 +49,10 @@ class AddPluginsCommand extends Command {
     );
 
     argParser.addOption(
-      'pub-server-url',
+      'hosted-url',
       abbr: 'u',
       help:
-          'A custom pub server URL for the package. Only applies when using the `pub-server` origin.',
+          'A custom pub server URL for the package. Only applies when using the `hosted` source.',
     );
   }
 
@@ -60,11 +60,10 @@ class AddPluginsCommand extends Command {
   Future<void> run() async {
     final args = argResults!;
 
-    Uri? pubServerUrl;
-    if (args.wasParsed('pub-server-url')) {
+    Uri? hostedUrl;
+    if (args.wasParsed('hosted-url')) {
       try {
-        pubServerUrl =
-            validateAndNormalizeHostedUrl(args['pub-server-url'] as String);
+        hostedUrl = validateAndNormalizeHostedUrl(args['hosted-url'] as String);
       } on FormatException catch (e) {
         usageException('Invalid hosted-url: $e');
       }
@@ -85,68 +84,52 @@ class AddPluginsCommand extends Command {
       usageException('Unexpected argument(s): $unexpectedArguments');
     }
 
-    if (args['origin'] != 'git-url' &&
+    if (args['source'] != 'git' &&
         (args['git-path'] != null || args['git-ref'] != null)) {
       usageException(
-          'Options `--git-path` and `--git-ref` can only be used with --origin=git-url.');
+        'Options `--git-path` and `--git-ref` can only be used with --source=git.',
+      );
     }
 
-    final globals = GlobalPackages(SystemCache());
+    final source = args['source'] as String;
+    final gitPath = args['git-path'] as String?;
+    final gitRef = args['git-ref'] as String?;
 
-    late final Entrypoint entrypoint;
-    final origin = args['origin'] as String;
-    switch (origin) {
-      case 'git-url':
-        var repo = readArg('No Git repository given.');
-        validateNoExtraArgs();
-        entrypoint = await globals.activateGit(
-          repo,
-          [],
-          overwriteBinStubs: false,
-          path: args['git-path'] as String?,
-          ref: args['git-ref'] as String?,
-        );
+    /// depends on args['source']:
+    /// 'hosted' -> package name; 'git' -> git repository; 'path' -> path
+    final packageNameOrGitRepoOrPath =
+        readArg('No package name/git repository/path to activate given.');
+    final pubGlobalActivateArgs = [
+      'pub',
+      'global',
+      'activate',
+      '--no-executables',
+      '--source',
+      source,
+      if (gitPath != null) ...['--git-path', gitPath],
+      if (gitRef != null) ...['--git-ref', gitRef],
+      packageNameOrGitRepoOrPath,
+      // optional version constraint (only valid for hosted source)
+      if (source == 'hosted' && argsRest.isNotEmpty) readArg(),
+    ];
+    validateNoExtraArgs();
+    dart(pubGlobalActivateArgs);
+    // TODO: danach wieder deactivate; package bleibt noch im cache
+
+    late final String packageRootDir;
+    switch (source) {
+      case 'git':
         break;
-
-      case 'pub-server':
-        var package = readArg('No package to activate given.');
-
-        // Parse the version constraint, if there is one.
-        var constraint = VersionConstraint.any;
-        if (argsRest.isNotEmpty) {
-          try {
-            constraint = VersionConstraint.parse(readArg());
-          } on FormatException catch (error) {
-            usageException(error.message);
-          }
-        }
-
-        validateNoExtraArgs();
-        entrypoint = await globals.activateHosted(
-          package,
-          constraint,
-          [],
-          overwriteBinStubs: false,
-          url: pubServerUrl?.toString(),
-        );
+      case 'hosted':
         break;
-
-      case 'local-path':
-        final path = normalize(readArg('No package to activate given.'));
-        validateNoExtraArgs();
-        entrypoint = await globals.activatePath(
-          path,
-          [],
-          overwriteBinStubs: false,
-          analytics: null,
-        );
+      case 'path':
+        packageRootDir = packageNameOrGitRepoOrPath;
         break;
       default:
-        usageException(
-          'Invalid value "$origin" for "--origin". '
-          'Allowed values are "git-url", "pub-server", "local-path".',
-        );
+        throw StateError('unreachable');
     }
+
+    // TODO: Entrypoint[^ ] in global_packages.dart von pub die ersten 3 Results -> schauen wo der Path herkommt, das ist entrypoint.root.dir das weiter unten verwendet wird; dasselbe konstruieren und nutzen
 
     // TODO
     // Run plugin installer
@@ -159,6 +142,8 @@ class AddPluginsCommand extends Command {
     // https://github.com/dart-lang/pub/blob/610ce7f280189f39ec411eb0a8592a191940d8d2/lib/src/solver/result.dart
     // TODO use entrypoint to run dart pub get && bin/install.dart
     // run dart pub get on plugin (with own dart runtime)
+
+    /*
     final Process pubGetProcess = await Process.start(
       'dart',
       ['pub', 'get'],
@@ -190,5 +175,7 @@ class AddPluginsCommand extends Command {
     // Run dart pub get on sidekick cli
 
     // Show errors warning, further instructions
+
+     */
   }
 }
