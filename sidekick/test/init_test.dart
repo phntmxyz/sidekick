@@ -1,3 +1,4 @@
+import 'package:sidekick/src/init/name_suggester.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:test/test.dart';
 import 'package:test_process/test_process.dart';
@@ -38,6 +39,24 @@ void main() {
         dashProcess.shouldExit(0);
       },
       timeout: const Timeout(Duration(minutes: 5)),
+    );
+
+    test(
+      'throws error when cli name is invalid',
+      () async {
+        final projectRoot =
+            setupTemplateProject('test/templates/minimal_dart_package');
+        final process = await sidekickCli(
+          ['init', '-n', '-42invalidName'],
+          workingDirectory: projectRoot,
+        );
+
+        await process.shouldExit(255);
+        expect(
+          await process.stderr.rest.contains(invalidCliNameErrorMessage),
+          isTrue,
+        );
+      },
     );
   });
 
