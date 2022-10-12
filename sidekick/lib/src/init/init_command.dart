@@ -319,10 +319,7 @@ void downloadDartRuntime(Directory sidekickCliPackage) {
     workingDirectory: sidekickCliPackage.path,
   );
   final downloadPath = sidekickCliPackage.directory('build/cache/dart-sdk/');
-  while (!downloadPath.existsSync()) {
-    print("Waiting for ${downloadPath.path}");
-    dcli.sleep(1);
-  }
+  assert(downloadPath.existsSync());
 }
 
 /// Upgrade dependencies of a sidekick cli
