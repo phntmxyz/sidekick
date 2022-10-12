@@ -17,7 +17,7 @@ jobs:
         package: [ "sidekick", "sidekick_core", "sidekick_vault" ]
 
     container:
-      image: dart:2.16.1
+      image: dart:2.18.2
 
     steps:
       - uses: actions/checkout@v1

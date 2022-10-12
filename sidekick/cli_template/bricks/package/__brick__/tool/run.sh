@@ -22,7 +22,7 @@ cd "$SAVED" >/dev/null
 export SIDEKICK_PACKAGE_HOME=$(dirname "$TOOL_HOME")
 
 REPO_ROOT=$(git -C "$TOOL_HOME" rev-parse --show-cdup)
-DART_SDK="${REPO_ROOT}.flutter/bin/cache/dart-sdk"
+DART_SDK="${SIDEKICK_PACKAGE_HOME}/build/cache/dart-sdk"
 DART="$DART_SDK/bin/dart"
 
 

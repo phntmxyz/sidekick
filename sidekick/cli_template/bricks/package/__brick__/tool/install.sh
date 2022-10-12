@@ -9,8 +9,8 @@ cd "${CLI_PACKAGE_DIR}" || exit
 
   # export pub from .flutter dir
   REPO_ROOT=$(git rev-parse --show-cdup)
-  DART_SDK="${REPO_ROOT}.flutter/bin/cache/dart-sdk"
-  DART="$DART_SDK/bin/dart"
+  DART_SDK="${CLI_PACKAGE_DIR}/build/cache/dart-sdk"
+  DART="$DART_SDK/bin/dart" 
 
   # If we're on Windows, invoke the batch script instead
   OS="$(uname -s)"
@@ -18,9 +18,10 @@ cd "${CLI_PACKAGE_DIR}" || exit
     DART="$DART_SDK/bin/dart.exe"
   fi
 
+  # Download Dart runtime
   if [ ! -d "$DART_SDK" ]; then
     echo 'missing flutter sdk'
-    sh "${REPO_ROOT}flutterw"
+    sh "${CLI_PACKAGE_DIR}/tool/download_dart.sh"
   fi
 
   # build
