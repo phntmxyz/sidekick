@@ -131,8 +131,8 @@ class AddPluginsCommand extends Command {
         );
         break;
 
-      case 'path':
-        var path = readArg('No package to activate given.');
+      case 'local-path':
+        final path = normalize(readArg('No package to activate given.'));
         validateNoExtraArgs();
         entrypoint = await globals.activatePath(
           path,
