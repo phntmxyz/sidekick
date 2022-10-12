@@ -1,3 +1,4 @@
+import 'package:sidekick/src/init/name_suggester.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:test/test.dart';
 import 'package:test_process/test_process.dart';
@@ -39,6 +40,24 @@ void main() {
       },
       timeout: const Timeout(Duration(minutes: 5)),
     );
+
+    test(
+      'throws error when cli name is invalid',
+      () async {
+        final projectRoot =
+            setupTemplateProject('test/templates/minimal_dart_package');
+        final process = await sidekickCli(
+          ['init', '-n', '-42invalidName'],
+          workingDirectory: projectRoot,
+        );
+
+        await process.shouldExit(255);
+        expect(
+          await process.stderr.rest.contains(invalidCliNameErrorMessage),
+          isTrue,
+        );
+      },
+    );
   });
 
   group('sidekick init - packages layout', () {
@@ -68,10 +87,6 @@ void main() {
         final entrypoint = File("${project.path}/dash");
         expect(entrypoint.existsSync(), isTrue);
         expect(entrypoint.statSync().modeString(), 'rwxr-xr-x');
-
-        // check flutterw exists
-        final flutterw = File("${project.path}/flutterw");
-        expect(flutterw.existsSync(), isTrue);
 
         // root is mainProjectPath
         final runFunctionFile = File(
@@ -154,10 +169,6 @@ void main() {
         expect(entrypoint.existsSync(), isTrue);
         expect(entrypoint.statSync().modeString(), 'rwxr-xr-x');
 
-        // check flutterw exists
-        final flutterw = File("${project.path}/flutterw");
-        expect(flutterw.existsSync(), isTrue);
-
         if (shouldUseLocalDevs) {
           overrideSidekickCoreWithLocalPath(
             project.directory('packages/dash_sidekick'),
@@ -203,10 +214,6 @@ void main() {
         final entrypoint = File("${project.path}/dash");
         expect(entrypoint.existsSync(), isTrue);
         expect(entrypoint.statSync().modeString(), 'rwxr-xr-x');
-
-        // check flutterw exists
-        final flutterw = File("${project.path}/flutterw");
-        expect(flutterw.existsSync(), isTrue);
 
         // no mainProjectPath defined, nothing is set
         final runFunctionFile = File(
@@ -281,10 +288,6 @@ void main() {
         expect(entrypoint.existsSync(), isTrue);
         expect(entrypoint.statSync().modeString(), 'rwxr-xr-x');
 
-        // check flutterw exists
-        final flutterw = File("${project.path}/flutterw");
-        expect(flutterw.existsSync(), isTrue);
-
         if (shouldUseLocalDevs) {
           overrideSidekickCoreWithLocalPath(
             project.directory('packages/dash_sidekick'),
@@ -328,10 +331,6 @@ void main() {
         final entrypoint = File("${project.path}/dash");
         expect(entrypoint.existsSync(), isTrue);
         expect(entrypoint.statSync().modeString(), 'rwxr-xr-x');
-
-        // check flutterw exists
-        final flutterw = File("${project.path}/flutterw");
-        expect(flutterw.existsSync(), isTrue);
 
         final runFunctionFile = File(
           "${project.path}/packages/dash_sidekick/lib/dash_sidekick.dart",

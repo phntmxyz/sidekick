@@ -51,21 +51,23 @@ class InitCommand extends Command {
       // fallback to cwd
       return cwd;
     }();
-    final cliName = (argResults!['cliName'] as String? ??
-            () {
-              print(
-                '${dcli.green('Please select a name for your sidekick CLI.')}\n'
-                'We know, selecting a name is hard. Here are some suggestions:',
-              );
-              final suggester = NameSuggester(projectDir: initDir);
-              final name = suggester.askUserForName();
-              if (name == null) {
-                throw 'No cliName provided. Call `sidekick init --cliName <your-name>`';
-              }
-              return name;
-            }())
-        .toLowerCase();
-    print("Generating ${cliName}_sidekick");
+    final cliName = argResults!['cliName'] as String? ??
+        () {
+          print(
+            '${dcli.green('Please select a name for your sidekick CLI.')}\n'
+            'We know, selecting a name is hard. Here are some suggestions:',
+          );
+          final suggester = NameSuggester(projectDir: initDir);
+          final name = suggester.askUserForName();
+          if (name == null) {
+            throw 'No cliName provided. Call `sidekick init --cliName <your-name>`';
+          }
+          return name;
+        }();
+    if (!isValidCliName(cliName)) {
+      throw invalidCliNameErrorMessage;
+    }
+    print("\nGenerating ${cliName}_sidekick");
 
     bool isGitDir(Directory dir) => dir.directory('.git').existsSync();
     final repoRoot = initDir.findParent(isGitDir) ?? initDir;
@@ -198,6 +200,8 @@ class InitCommand extends Command {
       // mason doesn't support lists, so we have to add them manually
       _addPackagesToProjectClass(repoRoot, cliPackage, cliName, packages);
 
+      // Make runtime downloader executable
+      await makeExecutable(cliPackage.file('tool/download_dart.sh'));
       // Make install script executable
       await makeExecutable(cliPackage.file('tool/install.sh'));
       // Make run script executable
@@ -222,13 +226,34 @@ class InitCommand extends Command {
       await makeExecutable(entrypoint);
     }
 
-    // For now, we install the flutter wrapper to get a dart runtime.
-    // TODO Add dart runtime so that dart packages can use sidekick without flutter
-    final flutterw = await installFlutterWrapper(entrypointDir);
+    // Install flutterw when a Flutter project is detected
+    final flutterPackages = [if (mainProject != null) mainProject, ...packages]
+        .filter((package) => package.isFlutterPackage);
 
+    if (flutterPackages.isNotEmpty) {
+      print('We detected Flutter packages in your project:');
+      for (final package in flutterPackages) {
+        print('  - ${package.name} '
+            'at ${relative(package.root.path, from: repoRoot.absolute.path)}');
+      }
+
+      print('\n\n'
+          '${dcli.green('Do you want pin the Flutter version of this project with flutterw?\n')}'
+          'https://github.com/passsy/flutter_wrapper\n\n'
+          'This allows you to use the `$cliName dart` and `$cliName flutter` commands\n');
+      final confirmFlutterwInstall = dcli.confirm(
+        'Install flutterw?',
+        defaultValue: false,
+      );
+      if (confirmFlutterwInstall) {
+        await installFlutterWrapper(entrypointDir);
+      }
+    }
+
+    // TODO add --offline flag that does not upgrade anything
     // make sure sidekick_core is up-to-date
+    downloadDartRuntime(cliPackage);
     upgradeSidekickDependencies(
-      flutterw,
       cliPackage,
       packages: ['sidekick_core'],
     );
@@ -284,18 +309,29 @@ Future<File> installFlutterWrapper(Directory directory) async {
     r'sh -c "$(curl -fsSL https://raw.githubusercontent.com/passsy/flutter_wrapper/master/install.sh)"',
     workingDirectory: directory,
   );
-  return directory.file('flutterw');
+  final exe = directory.file('flutterw');
+  assert(exe.existsSync());
+  return exe;
+}
+
+/// Downloads the bundled dart runtime for the CLI
+void downloadDartRuntime(Directory sidekickCliPackage) {
+  dcli.run(
+    'sh tool/download_dart.sh',
+    workingDirectory: sidekickCliPackage.path,
+  );
+  final downloadPath = sidekickCliPackage.directory('build/cache/dart-sdk/');
+  assert(downloadPath.existsSync());
 }
 
 /// Upgrade dependencies of a sidekick cli
 void upgradeSidekickDependencies(
-  File flutterw,
   Directory sidekickCliPackage, {
   List<String> packages = const [],
 }) {
-  final relFlutterw = relative(flutterw.path, from: sidekickCliPackage.path);
+  final dart = sidekickCliPackage.file('build/cache/dart-sdk/bin/dart');
   dcli.run(
-    'sh $relFlutterw pub upgrade ${packages.join(' ')}',
+    '${dart.path} pub upgrade ${packages.join(' ')}',
     workingDirectory: sidekickCliPackage.path,
   );
 }
