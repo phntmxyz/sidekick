@@ -3,7 +3,7 @@ import 'package:sidekick_plugin_installer/sidekick_plugin_installer.dart';
 
 Future<void> main(List<String> args) async {
   final cliPackage = DartPackage.fromDirectory(Directory(args[0]))!;
-  print('installing vault in ${cliPackage}');
+  print('installing vault in $cliPackage');
 
   const cliName = 'nh'; // TODO get from package manifest
 
