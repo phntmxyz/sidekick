@@ -120,9 +120,6 @@ class AddPluginsCommand extends Command {
     }
     assert(packageRootDir.existsSync(), "Package directory doesn't exist");
 
-    // Run dart pub get on downloaded plugin
-    _dartThrowing(['pub', 'get'], workingDirectory: packageRootDir);
-
     // Execute their bin/install.dart file
     final installScript = packageRootDir.directory('bin').file('install.dart');
     if (installScript.existsSync()) {
@@ -274,7 +271,7 @@ void _dartThrowing(
 
   if (exitCode != 0) {
     throw Exception(
-      "Unexpected exit code $exitCode when running 'dart $args'"
+      "Unexpected exit code $exitCode when running 'dart ${args.join(' ')}'"
       "${workingDirectory != null ? " from directory '${workingDirectory.path}'" : ""}"
       ".",
     );
