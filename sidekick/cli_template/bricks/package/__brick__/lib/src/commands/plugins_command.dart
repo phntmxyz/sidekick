@@ -123,14 +123,14 @@ class AddPluginsCommand extends Command {
     // Execute their bin/install.dart file
     final installScript = packageRootDir.directory('bin').file('install.dart');
     if (installScript.existsSync()) {
-      _dartThrowing(
+      sidekickDart(
         [installScript.path],
         workingDirectory: Repository.requiredCliPackage,
       );
     }
 
     // Run dart pub get on sidekick cli
-    _dartThrowing(
+    sidekickDart(
       ['pub', 'get'],
       workingDirectory: Repository.requiredCliPackage,
     );
@@ -139,6 +139,7 @@ class AddPluginsCommand extends Command {
     // TODO shouldn't the bin/install.dart script do this?
   }
 
+  // Welcome to the world of magic
   Directory _getPackageRootDirForHostedOrGitSource({
     required String source,
     required String hostedPackageNameOrGitRepoUrl,
@@ -179,8 +180,14 @@ class AddPluginsCommand extends Command {
       '-v'
     ];
 
-    final progress = dcli.Progress.capture(captureStderr: false);
-    _dartThrowing(pubGlobalActivateArgs, progress: progress);
+    final progress = dcli.Progress(
+      dcli.devNull,
+      stderr: print,
+      // this parameter has a typo in dcli and actually is captureStdOut
+      captureStdin: true,
+      captureStderr: true,
+    );
+    sidekickDart(pubGlobalActivateArgs, progress: progress);
 
     // TODO We should definitely do this in a less hacky way
     // Our goal is to get the cache directory of the package.
@@ -192,8 +199,15 @@ class AddPluginsCommand extends Command {
     // <pub cache>/hosted/<transformed pub server url>/<package name>-<version>
     // E.g. /Users/pepe/.pub-cache/hosted/pub.dartlang.org/umbra-0.1.0-dev.4
     //
-    // For source == 'git': <pub cache>/git/<package name>-<git SHA>
+    // For source == 'git':
+    // <pub cache>/git/<package repository name>-<git SHA>/<if not null: git-path>
     // E.g. /Users/pepe/.pub-cache/git/mason-0184b2b833053731878a7f408dd3ed03765a70e8
+    // Note that <package repository name> isn't necessarily equal to the package name.
+    // E.g. for `dart pub global activate --no-executables --source git --git-path packages/umbra_cli https://github.com/wolfenrain/umbra`
+    // The name of the activated package is 'umbra_cli', however the package repository name is 'umbra'.
+    // The git-path is packages/umbra_cli and thus the cache directory is
+    // /Users/pepe/.pub-cache/git/umbra-2d41bb5e233a61fb251cbb1e4cb3acda4e240bd2/packages/umbra_cli
+    //
     //
     // It would be great if the pub tool offered a way to directly get
     // the cache directory instead of using this hacky workaround, maybe we
@@ -223,7 +237,7 @@ class AddPluginsCommand extends Command {
     final packageVersion = activationInfo.group(2)!;
 
     // The package was only activated to cache it and can be deactivated now
-    _dartThrowing([
+    sidekickDart([
       'pub',
       'global',
       'deactivate',
@@ -249,31 +263,71 @@ class AddPluginsCommand extends Command {
             .single
             .group(1)!;
 
-        return Directory(join(pubCacheDir, 'git', '$packageName-$gitSHA'));
+        // The name of the activated package and the name of the cache directory aren't necessarily equal.
+        // E.g. for `dart pub global activate --no-executables --source git --git-path packages/umbra_cli https://github.com/wolfenrain/umbra -v`
+        // The name of the activated package is 'umbra_cli', however the package repository name is 'umbra'
+        // The git-path is packages/umbra_cli and thus the cache directory is
+        // /Users/pepe/.pub-cache/git/umbra-2d41bb5e233a61fb251cbb1e4cb3acda4e240bd2/packages/umbra_cli
+        //
+        // Thus join(pubCacheDir, 'git', '$packageName-$gitSHA') isn't always right.
+        //
+        // However, the verbose activate command writes this output to stderr which contains the correct path under the key "rootUri"
+        //      |     {
+        //      |       "name": "umbra_cli",
+        //      |       "rootUri": "file:///Users/pepe/.pub-cache/git/umbra-2d41bb5e233a61fb251cbb1e4cb3acda4e240bd2/packages/umbra_cli",
+        //      |       "packageUri": "lib/",
+        //      |       "languageVersion": "2.17"
+        //      |     },
+        //
+        // Since we know the full git SHA which is always part of the cache directory,
+        // as well as the location of the cache directory, we can search the line
+        // with the key "rootUri" to get the correct cache path of the directory
+        //
+        // This approach to get the package repository name should be safer
+        // than parsing the package repository name from the git url.
+        // A naive approach would be to split the git url on '/' and get the last element
+        // (e.g. https://github.com/wolfenrain/umbra -> umbra),
+        // however this would fail with an equivalent url (e.g. https://github.com/wolfenrain/umbra.git -> umbra.git)
+        // and one would also have to test this with all other possible git hosting solutions as well.
+
+        final gitCachePackagePathRegExp = RegExp(
+          '.*"rootUri": ".*(${join(pubCacheDir, 'git')}.*-$gitSHA\\b.*)"',
+        );
+        final packageRootDir = progress.lines
+            .map(gitCachePackagePathRegExp.matchAsPrefix)
+            .whereNotNull()
+            .single
+            .group(1)!;
+
+        return Directory(packageRootDir);
       default:
         throw StateError('unreachable');
     }
   }
 }
 
-/// Wrapper around [dart] which throws when exit code is non-zero
-/// TODO when dart exposes nothrow parameter, replace usages of this wrapper with dart(..., nothrow: true)
-void _dartThrowing(
+/// TODO move to sidekick_core
+/// Runs custom sidekick's own Dart runtime and throws when exit code is non-zero
+void sidekickDart(
   List<String> args, {
   Directory? workingDirectory,
   dcli.Progress? progress,
 }) {
-  final exitCode = dart(
-    args,
-    workingDirectory: workingDirectory,
-    progress: progress,
-  );
+  final binDir =
+      Repository.requiredCliPackage.directory('build/cache/dart-sdk/bin/');
+  final dart = () {
+    if (Platform.isWindows) {
+      return binDir.file('dart.exe');
+    } else {
+      return binDir.file('dart');
+    }
+  }();
 
-  if (exitCode != 0) {
-    throw Exception(
-      "Unexpected exit code $exitCode when running 'dart ${args.join(' ')}'"
-      "${workingDirectory != null ? " from directory '${workingDirectory.path}'" : ""}"
-      ".",
-    );
-  }
+  dcli.startFromArgs(
+    dart.path,
+    args,
+    workingDirectory: workingDirectory?.path ?? entryWorkingDirectory.path,
+    progress: progress,
+    terminal: progress == null,
+  );
 }

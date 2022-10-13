@@ -1,2 +1,2 @@
 // TODO
-void runPubGetOnCli(){}
+void runPubGetOnCli() {}
