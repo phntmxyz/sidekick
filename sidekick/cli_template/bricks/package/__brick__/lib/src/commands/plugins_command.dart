@@ -124,7 +124,7 @@ class AddPluginsCommand extends Command {
     final installScript = packageRootDir.directory('bin').file('install.dart');
     if (installScript.existsSync()) {
       sidekickDart(
-        [installScript.path],
+        [installScript.path, Repository.requiredCliPackage.path],
         workingDirectory: Repository.requiredCliPackage,
       );
     }
