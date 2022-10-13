@@ -85,13 +85,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.10.0"
-  cli_util:
-    dependency: transitive
-    description:
-      name: cli_util
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "0.3.5"
   clock:
     dependency: transitive
     description:
@@ -112,7 +105,7 @@ packages:
       name: convert
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "3.0.2"
+    version: "3.1.1"
   coverage:
     dependency: transitive
     description:
@@ -337,13 +330,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.1"
-  oauth2:
-    dependency: transitive
-    description:
-      name: oauth2
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "2.0.0"
   package_config:
     dependency: transitive
     description:
@@ -393,15 +379,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "4.2.4"
-  pub:
-    dependency: "direct main"
-    description:
-      path: "."
-      ref: HEAD
-      resolved-ref: "5a35cc919e1b330499444c416a14e1dd1817a87f"
-      url: "https://github.com/Giuspepe/pub"
-    source: git
-    version: "0.0.0"
   pub_semver:
     dependency: "direct main"
     description:
@@ -612,13 +589,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.0.0"
-  usage:
-    dependency: transitive
-    description:
-      name: usage
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "4.1.0"
   uuid:
     dependency: transitive
     description:
@@ -682,12 +652,5 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "3.1.1"
-  yaml_edit:
-    dependency: transitive
-    description:
-      name: yaml_edit
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "2.0.3"
 sdks:
   dart: ">=2.18.0 <3.0.0"
