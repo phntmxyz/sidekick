@@ -1,3 +1,9 @@
+## 0.7.0
+
+- New: `PluginsCommand` to automatically install plugins to easily extend sidekick CLIs
+- New: `SidekickDartRuntime sidekickDartRuntime` that points to the dart sdk bundled with the CLI
+- New: `Repository.sidekickPackage` which returns `Repository.cliPackageDir` as  `SidekickPackage` object.
+
 ## 0.6.0
 
 - **Breaking** `initializeSidekick()` now returns a `SidekickCommandRunner` instance (was `void`). You have to use this runner to access the global sidekick variables `cliName`, `mainProject`,`repository`
