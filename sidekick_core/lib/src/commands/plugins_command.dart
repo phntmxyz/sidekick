@@ -106,7 +106,10 @@ class InstallPluginCommand extends Command {
       workingDirectory: Repository.requiredCliPackage,
     );
 
-    print(green('Installed $installer'));
+    print(
+      green('Installed $installer for '
+          '${Repository.sidekickPackage!.cliName}'),
+    );
   }
 }
 
