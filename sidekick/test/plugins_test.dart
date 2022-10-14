@@ -34,70 +34,74 @@ void main() {
     }
   });
 
-  group('plugins install executes fine', () {
-    test(
-      'with default hosted source',
-      () async {
-        final dashProcess =
-            await startDashProcess(['plugins', 'install', 'sidekick_vault']);
-        printOnFailure(await dashProcess.stdoutStream().join('\n'));
-        printOnFailure(await dashProcess.stderrStream().join('\n'));
-        dashProcess.shouldExit(0);
-      },
-      timeout: const Timeout(Duration(minutes: 5)),
-    );
+  group(
+    'plugins install executes fine',
+    () {
+      test(
+        'with default hosted source',
+        () async {
+          final dashProcess =
+              await startDashProcess(['plugins', 'install', 'sidekick_vault']);
+          printOnFailure(await dashProcess.stdoutStream().join('\n'));
+          printOnFailure(await dashProcess.stderrStream().join('\n'));
+          dashProcess.shouldExit(0);
+        },
+        timeout: const Timeout(Duration(minutes: 5)),
+      );
 
-    test(
-      'with custom hosted source',
-      () async {
-        final dashProcess = await startDashProcess([
-          'plugins',
-          'install',
-          '--hosted-url',
-          'https://pub.flutter-io.cn/',
-          'sidekick_vault',
-        ]);
-        printOnFailure(await dashProcess.stdoutStream().join('\n'));
-        printOnFailure(await dashProcess.stderrStream().join('\n'));
-        dashProcess.shouldExit(0);
-      },
-      timeout: const Timeout(Duration(minutes: 5)),
-    );
+      test(
+        'with custom hosted source',
+        () async {
+          final dashProcess = await startDashProcess([
+            'plugins',
+            'install',
+            '--hosted-url',
+            'https://pub.flutter-io.cn/',
+            'sidekick_vault',
+          ]);
+          printOnFailure(await dashProcess.stdoutStream().join('\n'));
+          printOnFailure(await dashProcess.stderrStream().join('\n'));
+          dashProcess.shouldExit(0);
+        },
+        timeout: const Timeout(Duration(minutes: 5)),
+      );
 
-    test(
-      'with git source',
-      () async {
-        final dashProcess = await startDashProcess([
-          'plugins',
-          'install',
-          '--source',
-          'git',
-          '--git-path',
-          'packages/umbra_cli',
-          'https://github.com/wolfenrain/umbra',
-        ]);
-        printOnFailure(await dashProcess.stdoutStream().join('\n'));
-        printOnFailure(await dashProcess.stderrStream().join('\n'));
-        dashProcess.shouldExit(0);
-      },
-      timeout: const Timeout(Duration(minutes: 5)),
-    );
+      test(
+        'with git source',
+        () async {
+          final dashProcess = await startDashProcess([
+            'plugins',
+            'install',
+            '--source',
+            'git',
+            '--git-path',
+            'packages/umbra_cli',
+            'https://github.com/wolfenrain/umbra',
+          ]);
+          printOnFailure(await dashProcess.stdoutStream().join('\n'));
+          printOnFailure(await dashProcess.stderrStream().join('\n'));
+          dashProcess.shouldExit(0);
+        },
+        timeout: const Timeout(Duration(minutes: 5)),
+      );
 
-    test(
-      'with local source',
-      () async {
-        final dashProcess = await startDashProcess([
-          'plugins',
-          'install',
-          '--source',
-          'path',
-          projectRoot.directory('packages/package_a').path,
-        ]);
-        printOnFailure(await dashProcess.stdoutStream().join('\n'));
-        printOnFailure(await dashProcess.stderrStream().join('\n'));
-        dashProcess.shouldExit(0);
-      },
-      timeout: const Timeout(Duration(minutes: 5)),
-    );
-  });
+      test(
+        'with local source',
+        () async {
+          final dashProcess = await startDashProcess([
+            'plugins',
+            'install',
+            '--source',
+            'path',
+            projectRoot.directory('packages/package_a').path,
+          ]);
+          printOnFailure(await dashProcess.stdoutStream().join('\n'));
+          printOnFailure(await dashProcess.stderrStream().join('\n'));
+          dashProcess.shouldExit(0);
+        },
+        timeout: const Timeout(Duration(minutes: 5)),
+      );
+    },
+    skip: 'Wait for first plugin to be published',
+  );
 }
