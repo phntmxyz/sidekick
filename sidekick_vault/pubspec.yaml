@@ -3,9 +3,6 @@ description: Reads project secrets stored encrypted on the local filesystem
 version: 0.5.4
 repository: https://github.com/phntmxyz/sidekick
 
-# TODO remove when sidekick_plugin_installer is published and path dependency is changed to hosted dependency
-publish_to: none
-
 environment:
   sdk: '>=2.14.0 <3.0.0'
 
@@ -13,9 +10,8 @@ dependencies:
   actions_toolkit_dart: ^0.5.0
   dcli: # provided by sidekick_core
   sidekick_core: '>=0.6.0 <1.0.0'
-  sidekick_plugin_installer:
-    path: ../sidekick_plugin_installer
 
 dev_dependencies:
   lint: ^1.5.0
   test: ^1.20.0
+  sidekick_plugin_installer: ^0.1.0
