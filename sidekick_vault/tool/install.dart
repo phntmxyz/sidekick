@@ -1,4 +1,5 @@
-import 'package:sidekick_core/sidekick_core.dart';
+import 'package:sidekick_core/sidekick_core.dart'
+    hide cliName, repository, mainProject;
 import 'package:sidekick_plugin_installer/sidekick_plugin_installer.dart';
 
 Future<void> main(List<String> args) async {
@@ -18,7 +19,7 @@ Future<void> main(List<String> args) async {
 
 void _writeVaultFile(SidekickPackage package) {
   final vaultFile = package.root.file('lib/src/vault.dart');
-  // final cliName = package.cliName;
+  final cliName = package.cliName;
   vaultFile.writeAsStringSync('''
 import 'package:sidekick_vault/sidekick_vault.dart';
 
