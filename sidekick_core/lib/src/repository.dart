@@ -26,9 +26,9 @@ Repository findRepository() {
   return Repository(root: gitRoot);
 }
 
-/// The repository of the project
+/// The Git repository of the project
 ///
-/// Might be a single dart project or multiple packages, or even non dart packages
+/// Might contain a single dart project or multiple packages, or even non dart packages
 class Repository {
   Repository({
     required this.root,
@@ -36,9 +36,13 @@ class Repository {
 
   final Directory root;
 
-  /// The location of the package
+  /// The location of the sidekick package
   ///
   /// Usually injected from the tool/run.sh script itself via `env.SIDEKICK_PACKAGE_HOME`
+  ///
+  /// `null` when not executed with [entrypoint]
+  ///
+  /// Usually you want to use [sidekickPackage]
   static Directory? get cliPackageDir {
     final injectedEntryPointPath = env['SIDEKICK_PACKAGE_HOME'];
     if (injectedEntryPointPath == null || injectedEntryPointPath.isBlank) {
@@ -53,12 +57,37 @@ class Repository {
     return packageHome;
   }
 
+  /// The location of the sidekick package
+  ///
+  /// Throws when not executed with [entrypoint]
   static Directory get requiredCliPackage {
     final dir = cliPackageDir;
     if (dir == null) {
       throw "env.SIDEKICK_PACKAGE_HOME is not set";
     }
     return dir;
+  }
+
+  /// The sidekick package inside the repository
+  ///
+  /// `null` when not executed with [entrypoint]
+  static SidekickPackage? get sidekickPackage {
+    final dir = cliPackageDir;
+    if (dir == null) {
+      return null;
+    }
+    return SidekickPackage.fromDirectory(dir);
+  }
+
+  /// The sidekick package inside the repository
+  ///
+  /// Throws when not executed with [entrypoint]
+  static SidekickPackage get requiredSidekickPackage {
+    final package = sidekickPackage;
+    if (package == null) {
+      throw "env.SIDEKICK_PACKAGE_HOME is not set";
+    }
+    return package;
   }
 
   /// The location of the entrypoint
@@ -76,6 +105,9 @@ class Repository {
     return entrypoint;
   }
 
+  /// The location of the entrypoint
+  ///
+  /// Throws when not executed with [entrypoint]
   static File get requiredEntryPoint {
     final file = entryPoint;
     if (file == null) {
