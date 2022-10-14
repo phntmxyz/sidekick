@@ -218,6 +218,7 @@ class AddPluginsCommand extends Command {
         final gitSHA = progress.lines
             .map(gitSHARegExp.matchAsPrefix)
             .whereNotNull()
+            .toSet()
             .single
             .group(1)!;
 

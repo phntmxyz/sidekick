@@ -3,6 +3,9 @@ description: Reads project secrets stored encrypted on the local filesystem
 version: 0.5.4
 repository: https://github.com/phntmxyz/sidekick
 
+# TODO remove when sidekick_plugin_installer is published and path dependency is changed to hosted dependency
+publish_to: none
+
 environment:
   sdk: '>=2.14.0 <3.0.0'
 
