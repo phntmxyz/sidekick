@@ -63,29 +63,7 @@ class AddPluginsCommand extends Command {
       return arg;
     }
 
-    void validateNoExtraArgs() {
-      if (argsRest.isEmpty) return;
-      final unexpectedArguments = argsRest.map((e) => '"$e"').join(', ');
-      usageException('Unexpected argument(s): $unexpectedArguments');
-    }
-
     final source = args['source'] as String;
-
-    if (source != 'git' &&
-        (args['git-path'] != null || args['git-ref'] != null)) {
-      usageException(
-        'Options `--git-path` and `--git-ref` can only be used with --source=git.',
-      );
-    }
-
-    Uri? hostedUrl;
-    if (source == 'hosted' && args.wasParsed('hosted-url')) {
-      try {
-        hostedUrl = validateAndNormalizeHostedUrl(args['hosted-url'] as String);
-      } on FormatException catch (e) {
-        usageException('Invalid hosted-url: $e');
-      }
-    }
 
     /// depends on [source]
     /// 'hosted' -> package name on pub server; 'git' -> git repository url; 'path' -> local path
@@ -99,21 +77,7 @@ class AddPluginsCommand extends Command {
         break;
       case 'hosted':
       case 'git':
-        final gitPath = args['git-path'] as String?;
-        final gitRef = args['git-ref'] as String?;
-        final hostedVersionConstraint =
-            source == 'hosted' && argsRest.isNotEmpty ? readArg() : null;
-        validateNoExtraArgs();
-
-        packageRootDir = _getPackageRootDirForHostedOrGitSource(
-          source: source,
-          hostedPackageNameOrGitRepoUrl:
-              hostedPackageNameOrGitRepoUrlOrLocalPath,
-          gitPath: gitPath,
-          gitRef: gitRef,
-          hostedUrl: hostedUrl,
-          hostedVersionConstraint: hostedVersionConstraint,
-        );
+        packageRootDir = _getPackageRootDirForHostedOrGitSource(args);
         break;
       default:
         throw StateError('unreachable');
@@ -140,14 +104,7 @@ class AddPluginsCommand extends Command {
   }
 
   // Welcome to the world of magic
-  Directory _getPackageRootDirForHostedOrGitSource({
-    required String source,
-    required String hostedPackageNameOrGitRepoUrl,
-    String? gitPath,
-    String? gitRef,
-    Uri? hostedUrl,
-    String? hostedVersionConstraint,
-  }) {
+  Directory _getPackageRootDirForHostedOrGitSource(ArgResults args) {
     // TODO Maybe we should do a `dart pub global list` first to check if
     // the package is already activated. If it is already activated,
     // we should at least print a warning because we are altering the
@@ -166,18 +123,12 @@ class AddPluginsCommand extends Command {
       'pub',
       'global',
       'activate',
+      // don't make bin folder of package globally available
       '--no-executables',
-      '--source',
-      source,
-      if (hostedUrl != null) ...['--hosted-url',hostedUrl.toString()],
-      if (gitPath != null) ...['--git-path', gitPath],
-      if (gitRef != null) ...['--git-ref', gitRef],
-      hostedPackageNameOrGitRepoUrl,
-      // optional version constraint (only valid for hosted source)
-      if (hostedVersionConstraint != null) hostedVersionConstraint,
       // verbose output so we can parse the git SHA which is a part of
       // the cache directory for packages downloaded with the git source
-      '-v'
+      '-v',
+      ...args.arguments,
     ];
 
     final progress = dcli.Progress(
@@ -244,18 +195,25 @@ class AddPluginsCommand extends Command {
       packageName,
     ]);
 
+    final source = args['source'] as String;
     switch (source) {
       case 'hosted':
+        final String hostedUrl = args.wasParsed('hosted-url')
+            ? validateAndNormalizeHostedUrl(args['hosted-url'] as String)
+                .toString()
+            : defaultUrl;
+
         return Directory(
           join(
             pubCacheDir,
             'hosted',
-            _urlToDirectory(hostedUrl?.toString() ?? defaultUrl),
+            _urlToDirectory(hostedUrl),
             '$packageName-$packageVersion',
           ),
         );
       case 'git':
         final gitSHARegExp =
+            // either git show or git checkout is executed depending on whether the package is already cached
             RegExp(r'.*git (?:show|checkout) ([a-f0-9]{40})\b');
         final gitSHA = progress.lines
             .map(gitSHARegExp.matchAsPrefix)

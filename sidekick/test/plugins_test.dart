@@ -36,10 +36,27 @@ void main() {
 
   group('plugins add executes fine', () {
     test(
-      'with hosted source',
+      'with default hosted source',
       () async {
         final dashProcess =
             await startDashProcess(['plugins', 'add', 'sidekick_vault']);
+        printOnFailure(await dashProcess.stdoutStream().join('\n'));
+        printOnFailure(await dashProcess.stderrStream().join('\n'));
+        dashProcess.shouldExit(0);
+      },
+      timeout: const Timeout(Duration(minutes: 5)),
+    );
+
+    test(
+      'with custom hosted source',
+      () async {
+        final dashProcess = await startDashProcess([
+          'plugins',
+          'add',
+          '--hosted-url',
+          'https://pub.flutter-io.cn/',
+          'sidekick_vault',
+        ]);
         printOnFailure(await dashProcess.stdoutStream().join('\n'));
         printOnFailure(await dashProcess.stderrStream().join('\n'));
         dashProcess.shouldExit(0);
