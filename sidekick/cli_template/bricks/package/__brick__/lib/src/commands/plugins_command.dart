@@ -13,18 +13,18 @@ class PluginsCommand extends Command {
   final String name = 'plugins';
 
   PluginsCommand() {
-    addSubcommand(AddPluginsCommand());
+    addSubcommand(InstallPluginCommand());
   }
 }
 
-class AddPluginsCommand extends Command {
+class InstallPluginCommand extends Command {
   @override
   final String description = 'Adds a new command to this sidekick cli';
 
   @override
-  final String name = 'add';
+  final String name = 'install';
 
-  AddPluginsCommand() {
+  InstallPluginCommand() {
     argParser.addOption(
       'source',
       abbr: 's',

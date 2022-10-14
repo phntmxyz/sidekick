@@ -34,12 +34,12 @@ void main() {
     }
   });
 
-  group('plugins add executes fine', () {
+  group('plugins install executes fine', () {
     test(
       'with default hosted source',
       () async {
         final dashProcess =
-            await startDashProcess(['plugins', 'add', 'sidekick_vault']);
+            await startDashProcess(['plugins', 'install', 'sidekick_vault']);
         printOnFailure(await dashProcess.stdoutStream().join('\n'));
         printOnFailure(await dashProcess.stderrStream().join('\n'));
         dashProcess.shouldExit(0);
@@ -52,7 +52,7 @@ void main() {
       () async {
         final dashProcess = await startDashProcess([
           'plugins',
-          'add',
+          'install',
           '--hosted-url',
           'https://pub.flutter-io.cn/',
           'sidekick_vault',
@@ -69,7 +69,7 @@ void main() {
       () async {
         final dashProcess = await startDashProcess([
           'plugins',
-          'add',
+          'install',
           '--source',
           'git',
           '--git-path',
@@ -88,7 +88,7 @@ void main() {
       () async {
         final dashProcess = await startDashProcess([
           'plugins',
-          'add',
+          'install',
           '--source',
           'path',
           projectRoot.directory('packages/package_a').path,
