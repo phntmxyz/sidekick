@@ -1,4 +1,3 @@
-import 'package:dcli/dcli.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 
 /// Adds the dependency to [package]

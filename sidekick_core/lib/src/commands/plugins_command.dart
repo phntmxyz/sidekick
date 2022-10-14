@@ -58,7 +58,8 @@ class InstallPluginCommand extends Command {
 
     if (args.rest.isEmpty) {
       usageException(
-          'No package name/git repository url/path to activate given.');
+        'No package name/git repository url/path to activate given.',
+      );
     }
 
     final installer = args.rest.first;
@@ -97,7 +98,8 @@ class InstallPluginCommand extends Command {
     final installScript = installerPackageRootDir.file('tool/install.dart');
     if (!installScript.existsSync()) {
       error(
-          'No ${installScript.path} script found in package at $installerPackageRootDir');
+        'No ${installScript.path} script found in package at $installerPackageRootDir',
+      );
     }
     sidekickDartRuntime.dart(
       [installScript.path, Repository.requiredCliPackage.path],
