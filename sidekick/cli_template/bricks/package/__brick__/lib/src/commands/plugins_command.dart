@@ -84,8 +84,8 @@ class AddPluginsCommand extends Command {
     }
     assert(packageRootDir.existsSync(), "Package directory doesn't exist");
 
-    // Execute their bin/install.dart file
-    final installScript = packageRootDir.directory('bin').file('install.dart');
+    // Execute their tool/install.dart file
+    final installScript = packageRootDir.directory('tool').file('install.dart');
     if (installScript.existsSync()) {
       sidekickDart(
         [installScript.path, Repository.requiredCliPackage.path],
