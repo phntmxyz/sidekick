@@ -54,53 +54,57 @@ class InstallPluginCommand extends Command {
   @override
   Future<void> run() async {
     final args = argResults!;
-    Iterable<String> argsRest = args.rest;
-
-    String readArg([String error = '']) {
-      if (argsRest.isEmpty) usageException(error);
-      final arg = argsRest.first;
-      argsRest = argsRest.skip(1);
-      return arg;
-    }
-
     final source = args['source'] as String;
 
-    /// depends on [source]
-    /// 'hosted' -> package name on pub server; 'git' -> git repository url; 'path' -> local path
-    final hostedPackageNameOrGitRepoUrlOrLocalPath =
-        readArg('No package name/git repository url/path to activate given.');
-
-    late final Directory packageRootDir;
-    switch (source) {
-      case 'path':
-        packageRootDir = Directory(hostedPackageNameOrGitRepoUrlOrLocalPath);
-        break;
-      case 'hosted':
-      case 'git':
-        packageRootDir = _getPackageRootDirForHostedOrGitSource(args);
-        break;
-      default:
-        throw StateError('unreachable');
-    }
-    assert(packageRootDir.existsSync(), "Package directory doesn't exist");
-
-    // Execute their tool/install.dart file
-    final installScript = packageRootDir.directory('tool').file('install.dart');
-    if (installScript.existsSync()) {
-      sidekickDart(
-        [installScript.path, Repository.requiredCliPackage.path],
-        workingDirectory: Repository.requiredCliPackage,
-      );
+    if (args.rest.isEmpty) {
+      usageException(
+          'No package name/git repository url/path to activate given.');
     }
 
-    // Run dart pub get on sidekick cli
+    final installer = args.rest.first;
+    print(green('Installing $installer'));
+    final Directory installerPackageRootDir = () {
+      switch (source) {
+        case 'path':
+          return Directory(installer);
+        case 'hosted':
+          print('Downloading from pub $installer...');
+          return _getPackageRootDirForHostedOrGitSource(args);
+        case 'git':
+          print('Downloading from git $installer...');
+          return _getPackageRootDirForHostedOrGitSource(args);
+        default:
+          throw StateError('unreachable');
+      }
+    }();
+
+    print('Installer downloaded');
+
+    if (!installerPackageRootDir.existsSync()) {
+      error("Package directory doesn't exist");
+    }
+
+    // get installer dependencies
+    print('Installing dependencies...');
     sidekickDart(
       ['pub', 'get'],
+      workingDirectory: installerPackageRootDir,
+      progress: Progress.printStdErr(),
+    );
+
+    print(green('Running Installer $installer'));
+    // Execute installer. Requires a tool/install.dart file to execute
+    final installScript = installerPackageRootDir.file('tool/install.dart');
+    if (!installScript.existsSync()) {
+      error(
+          'No ${installScript.path} script found in package at $installerPackageRootDir');
+    }
+    sidekickDart(
+      [installScript.path, Repository.requiredCliPackage.path],
       workingDirectory: Repository.requiredCliPackage,
     );
 
-    // Show errors warning, further instructions
-    // TODO shouldn't the bin/install.dart script do this?
+    print(green('Installed $installer'));
   }
 
   // Welcome to the world of magic
@@ -188,12 +192,15 @@ class InstallPluginCommand extends Command {
     final packageVersion = activationInfo.group(2)!;
 
     // The package was only activated to cache it and can be deactivated now
-    sidekickDart([
-      'pub',
-      'global',
-      'deactivate',
-      packageName,
-    ]);
+    sidekickDart(
+      [
+        'pub',
+        'global',
+        'deactivate',
+        packageName,
+      ],
+      progress: Progress.printStdErr(),
+    );
 
     final source = args['source'] as String;
     switch (source) {
