@@ -1,7 +1,21 @@
-import 'dart:io';
+/// Package that exposes some copy-pasted APIs from https://github.com/dart-lang/pub that isn't on pub.dev
+/// Needed by plugins_command.dart to install plugins.
+///
+/// The pub package is not published on the official package repository pub.dev and only available on GitHub.
+///
+/// However, https://dart.dev/tools/pub/custom-package-repositories states:
+/// To ensure that public packages are usable to everyone, the official package repository, pub.dev,
+/// doesn’t allow publication of packages with git-dependencies or hosted-dependencies from custom package repositories.
+///
+/// Therefore, the needed code needs can't be added as a pub.dev dependency or git dependency and is copied here instead.
+///
+/// Alternatives:
+/// - open a PR for pub to expose the information needed by plugin_command.dart directly (so internal code isn't needed anymore)
+/// - publish a sidekick_pub package containing the required modified pub code and depend on it
+library pub;
 
-import 'package:sidekick_core/src/pub/io.dart';
-import 'package:sidekick_core/src/pub/utils.dart';
+import 'dart:io';
+import 'package:dcli/dcli.dart';
 
 /// Copied from https://github.com/dart-lang/pub/blob/master/lib/src/source/hosted.dart#L54
 /// This is needed to normalize a given pub server url.
@@ -149,9 +163,69 @@ String urlToDirectory(String hostedUrl) {
         match[1] == 'https://' || localhost.isNotEmpty ? '' : match[1];
     return '$scheme$localhost';
   });
-  return replace(
+  return _replace(
     url,
     RegExp(r'[<>:"\\/|?*%]'),
     (match) => '%${match[0]!.codeUnitAt(0)}',
   );
 }
+
+/// Copied from https://github.com/dart-lang/pub/blob/master/lib/src/utils.dart#L315
+/// Needed by [_urlToDirectory]
+///
+/// Replace each instance of [matcher] in [source] with the return value of
+/// [fn].
+String _replace(String source, Pattern matcher, String Function(Match) fn) {
+  final buffer = StringBuffer();
+  var start = 0;
+  for (final match in matcher.allMatches(source)) {
+    buffer.write(source.substring(start, match.start));
+    start = match.end;
+    buffer.write(fn(match));
+  }
+  buffer.write(source.substring(start));
+  return buffer.toString();
+}
+
+/// Copied from https://github.com/dart-lang/pub/blob/master/lib/src/io.dart#L558
+/// Needed by [defaultUrl]
+///
+/// Whether the current process is a pub subprocess being run from a test.
+///
+/// The "_PUB_TESTING" variable is automatically set for all the test code's
+/// invocations of pub.
+final bool runningFromTest =
+    Platform.environment.containsKey('_PUB_TESTING') && _assertionsEnabled;
+
+final bool _assertionsEnabled = () {
+  try {
+    assert(false);
+    // ignore: avoid_catching_errors
+  } on AssertionError {
+    return true;
+  }
+  return false;
+}();
+
+/// Copied from https://github.com/dart-lang/pub/blob/master/lib/src/system_cache.dart#L40
+final String pubCacheDir = () {
+  if (Platform.environment.containsKey('PUB_CACHE')) {
+    return Platform.environment['PUB_CACHE']!;
+  } else if (Platform.isWindows) {
+    // %LOCALAPPDATA% is preferred as the cache location over %APPDATA%, because the latter is synchronised between
+    // devices when the user roams between them, whereas the former is not.
+    // The default cache dir used to be in %APPDATA%, so to avoid breaking old installs,
+    // we use the old dir in %APPDATA% if it exists. Else, we use the new default location
+    // in %LOCALAPPDATA%.
+    //  TODO(sigurdm): handle missing APPDATA.
+    final appData = Platform.environment['APPDATA']!;
+    final appDataCacheDir = join(appData, 'Pub', 'Cache');
+    if (Directory(appDataCacheDir).existsSync()) {
+      return appDataCacheDir;
+    }
+    final localAppData = Platform.environment['LOCALAPPDATA']!;
+    return join(localAppData, 'Pub', 'Cache');
+  } else {
+    return '${Platform.environment['HOME']}/.pub-cache';
+  }
+}();
