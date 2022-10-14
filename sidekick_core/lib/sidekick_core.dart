@@ -19,13 +19,16 @@ export 'package:sidekick_core/src/commands/analyze_command.dart';
 export 'package:sidekick_core/src/commands/dart_command.dart';
 export 'package:sidekick_core/src/commands/flutter_command.dart';
 export 'package:sidekick_core/src/commands/install_global_command.dart';
+export 'package:sidekick_core/src/commands/plugins_command.dart';
 export 'package:sidekick_core/src/dart.dart';
 export 'package:sidekick_core/src/dart_package.dart';
+export 'package:sidekick_core/src/dart_runtime.dart';
 export 'package:sidekick_core/src/file_util.dart';
 export 'package:sidekick_core/src/flutterw.dart';
 export 'package:sidekick_core/src/forward_command.dart';
 export 'package:sidekick_core/src/git.dart';
 export 'package:sidekick_core/src/repository.dart';
+export 'package:sidekick_core/src/sidekick_package.dart';
 
 /// Initializes sidekick, call this at the very start of your CLI program
 ///
