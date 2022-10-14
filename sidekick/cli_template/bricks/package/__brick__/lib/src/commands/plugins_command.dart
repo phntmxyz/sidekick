@@ -218,9 +218,9 @@ class AddPluginsCommand extends Command {
         final gitSHA = progress.lines
             .map(gitSHARegExp.matchAsPrefix)
             .whereNotNull()
+            .map((e) => e.group(1)!)
             .toSet()
-            .single
-            .group(1)!;
+            .single;
 
         // The name of the activated package and the name of the cache directory aren't necessarily equal.
         // E.g. for `dart pub global activate --no-executables --source git --git-path packages/umbra_cli https://github.com/wolfenrain/umbra -v`
