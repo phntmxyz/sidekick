@@ -169,7 +169,7 @@ class AddPluginsCommand extends Command {
       '--no-executables',
       '--source',
       source,
-      if (hostedUrl != null) hostedUrl.toString(),
+      if (hostedUrl != null) ...['--hosted-url',hostedUrl.toString()],
       if (gitPath != null) ...['--git-path', gitPath],
       if (gitRef != null) ...['--git-ref', gitRef],
       hostedPackageNameOrGitRepoUrl,
