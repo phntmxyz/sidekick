@@ -1,13 +1,13 @@
 name: sidekick_plugin_installer
 description: Helpers for plugin installers to easily install themselves into a sidekick cli
-version: 0.1.0
+version: 0.1.1
 repository: https://github.com/phntmxyz/sidekick
 
 environment:
   sdk: '>=2.14.0 <3.0.0'
 
 dependencies:
-  analyzer: ^5.0.0
+  analyzer: '>=4.0.0 <6.0.0'
   dcli: # version provided by sidekick_core
   sidekick_core: '>=0.7.0 <1.0.0'
 
