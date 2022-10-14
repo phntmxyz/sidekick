@@ -2,24 +2,23 @@ import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_plugin_installer/sidekick_plugin_installer.dart';
 
 Future<void> main(List<String> args) async {
-  final cliPackage = DartPackage.fromDirectory(Directory(args[0]))!;
-  print('installing vault in $cliPackage');
+  // The installer injects the path to the sidekick project as first argument
+  final package = SidekickPackage.fromDirectory(Directory(args[0]))!;
 
-  const cliName = 'nh'; // TODO get from package manifest
+  pubAddDependency(package, 'sidekick_vault');
+  pubGet(package);
 
-  pubAddDependency(cliPackage, 'sidekick_vault');
   registerPlugin(
-    sidekickCli: cliPackage,
+    sidekickCli: package,
     import: "import 'package:sidekick_vault/sidekick_vault.dart';",
     command: 'VaultCommand(vault: vault)',
   );
-  _writeVaultFile(cliPackage, cliName);
-
-  pubGet(cliPackage);
+  _writeVaultFile(package);
 }
 
-void _writeVaultFile(DartPackage package, String cliName) {
+void _writeVaultFile(SidekickPackage package) {
   final vaultFile = package.root.file('lib/src/vault.dart');
+  // final cliName = package.cliName;
   vaultFile.writeAsStringSync('''
 import 'package:sidekick_vault/sidekick_vault.dart';
 

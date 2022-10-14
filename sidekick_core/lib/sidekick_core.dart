@@ -28,6 +28,7 @@ export 'package:sidekick_core/src/flutterw.dart';
 export 'package:sidekick_core/src/forward_command.dart';
 export 'package:sidekick_core/src/git.dart';
 export 'package:sidekick_core/src/repository.dart';
+export 'package:sidekick_core/src/sidekick_package.dart';
 
 /// Initializes sidekick, call this at the very start of your CLI program
 ///
