@@ -9,10 +9,12 @@ void pubAddDependency(
   sidekickDartRuntime.dart(
     ['pub', 'remove', dependency],
     workingDirectory: package.root,
+    progress: Progress.devNull(),
   );
 
   sidekickDartRuntime.dart(
     ['pub', 'add', dependency, if (version != null) version],
     workingDirectory: package.root,
+    progress: Progress.printStdErr(),
   );
 }

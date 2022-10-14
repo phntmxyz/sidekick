@@ -63,7 +63,10 @@ class InstallPluginCommand extends Command {
     }
 
     final installer = args.rest.first;
-    print(green('Installing $installer'));
+    print(
+      white('Installing $installer for '
+          '${Repository.sidekickPackage!.cliName}'),
+    );
     final Directory installerPackageRootDir = () {
       switch (source) {
         case 'path':
@@ -93,7 +96,7 @@ class InstallPluginCommand extends Command {
       progress: Progress.printStdErr(),
     );
 
-    print(green('Running Installer $installer'));
+    print(white('Running Installer $installer'));
     // Execute installer. Requires a tool/install.dart file to execute
     final installScript = installerPackageRootDir.file('tool/install.dart');
     if (!installScript.existsSync()) {
