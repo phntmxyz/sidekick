@@ -1,5 +1,4 @@
 import 'package:sidekick_core/sidekick_core.dart';
-import 'package:sidekick_core/src/sidekick_package.dart';
 
 /// Finds the root of the repo
 Repository findRepository() {
