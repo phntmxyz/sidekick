@@ -2,20 +2,18 @@ import 'package:dcli/dcli.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 
 /// Adds the dependency to [package]
-void addPubDependency(
+void pubAddDependency(
   DartPackage package,
   String dependency, {
   String? version,
 }) {
-  startFromArgs(
-    'dart',
+  sidekickDartRuntime.dart(
     ['pub', 'remove', dependency],
-    workingDirectory: package.root.path,
+    workingDirectory: package.root,
   );
 
-  startFromArgs(
-    'dart',
+  sidekickDartRuntime.dart(
     ['pub', 'add', dependency, if (version != null) version],
-    workingDirectory: package.root.path,
+    workingDirectory: package.root,
   );
 }

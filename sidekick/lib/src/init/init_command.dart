@@ -316,6 +316,7 @@ Future<File> installFlutterWrapper(Directory directory) async {
 
 /// Downloads the bundled dart runtime for the CLI
 void downloadDartRuntime(Directory sidekickCliPackage) {
+  // TODO replace with DartRuntime(cliPackage).download(); when released
   dcli.run(
     'sh tool/download_dart.sh',
     workingDirectory: sidekickCliPackage.path,

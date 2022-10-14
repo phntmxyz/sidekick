@@ -7,18 +7,19 @@ Future<void> main(List<String> args) async {
 
   const cliName = 'nh'; // TODO get from package manifest
 
-  addPubDependency(cliPackage, 'sidekick_vault');
-  // TODO?
-  runPubGetOnCli();
-
+  pubAddDependency(cliPackage, 'sidekick_vault');
   registerPlugin(
     sidekickCli: cliPackage,
     import: "import 'package:sidekick_vault/sidekick_vault.dart';",
     command: 'VaultCommand(vault: vault)',
   );
+  _writeVaultFile(cliPackage, cliName);
 
-  // create vault file
-  final vaultFile = cliPackage.root.file('lib/src/vault.dart');
+  pubGet(cliPackage);
+}
+
+void _writeVaultFile(DartPackage package, String cliName) {
+  final vaultFile = package.root.file('lib/src/vault.dart');
   vaultFile.writeAsStringSync('''
 import 'package:sidekick_vault/sidekick_vault.dart';
 
@@ -31,5 +32,4 @@ final SidekickVault vault = SidekickVault(
   environmentVariableName: '${cliName.toUpperCase()}_VAULT_PASSPHRASE',
 );
   ''');
-  print('Wrote vault file');
 }
