@@ -16,14 +16,6 @@ class DartPackage {
     if (!pubspec.existsSync()) {
       return null;
     }
-    final lib = normalizedDir.directory('lib');
-    if (!lib.existsSync()) {
-      printerr(
-        'Detected a pubspec.yaml in ${normalizedDir.absolute.path} but the /lib directory is missing. '
-        'The directory will not be interpreted as valid Dart package.',
-      );
-      return null;
-    }
     final pubspecYamlContent = pubspec.readAsStringSync();
     try {
       // Check for valid package name
