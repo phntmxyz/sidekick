@@ -8,6 +8,13 @@ Future<void> main(List<String> args) async {
   final runner = _SidekickCommandRunner()
     ..addCommand(InitCommand())
     ..addCommand(PluginsCommand());
+
+  try {
+    await runner.run(args);
+  } on UsageException catch (e) {
+    print(e.usage);
+    exit(64); // usage error
+  }
 }
 
 class _SidekickCommandRunner extends CommandRunner {
