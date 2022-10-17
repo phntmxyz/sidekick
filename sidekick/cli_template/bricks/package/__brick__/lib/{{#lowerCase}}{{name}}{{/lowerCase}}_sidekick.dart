@@ -20,6 +20,7 @@ Future<void> run{{#titleCase}}{{name}}{{/titleCase}}(List<String> args) async {
     ..addCommand(FlutterCommand())
     ..addCommand(DartCommand())
     ..addCommand(DepsCommand())
+    ..addCommand(PluginsCommand())
     ..addCommand(InstallGlobalCommand())
     ..addCommand(DartAnalyzeCommand());
 

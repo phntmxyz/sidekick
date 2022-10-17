@@ -5,5 +5,6 @@ void pubGet(DartPackage package) {
   sidekickDartRuntime.dart(
     ['pub', 'get'],
     workingDirectory: package.root,
+    progress: Progress.printStdErr(),
   );
 }

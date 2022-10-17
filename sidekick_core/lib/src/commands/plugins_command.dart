@@ -63,8 +63,11 @@ class InstallPluginCommand extends Command {
     }
 
     final installer = args.rest.first;
-    print(green('Installing $installer'));
-    final Directory installerPackageRootDir = () {
+    print(
+      white('Installing $installer for '
+          '${Repository.sidekickPackage!.cliName}'),
+    );
+    final Directory pluginInstallerDir = () {
       switch (source) {
         case 'path':
           return Directory(installer);
@@ -81,32 +84,55 @@ class InstallPluginCommand extends Command {
 
     print('Installer downloaded');
 
-    if (!installerPackageRootDir.existsSync()) {
+    if (!pluginInstallerDir.existsSync()) {
       error("Package directory doesn't exist");
     }
 
+    final pluginInstallerCode = DartPackage.fromDirectory(pluginInstallerDir);
+    if (pluginInstallerCode == null) {
+      error('installer package at $pluginInstallerDir is '
+          'not a valid dart package');
+    }
+    final pluginName = pluginInstallerCode.name;
+
+    // The target where to install the plugin
+    final target = Repository.requiredSidekickPackage;
+    final workingDir = target.root.directory('build/plugins/$pluginName');
+
+    print('Preparing $pluginName installer...');
+    // copy installer from cache into build dir. We should not manipulate anything in the cache
+    if (workingDir.existsSync()) {
+      workingDir.deleteSync(recursive: true);
+    }
+    workingDir.createSync(recursive: true);
+    pluginInstallerDir.copyRecursively(workingDir);
+
     // get installer dependencies
-    print('Installing dependencies...');
     sidekickDartRuntime.dart(
       ['pub', 'get'],
-      workingDirectory: installerPackageRootDir,
+      workingDirectory: workingDir,
       progress: Progress.printStdErr(),
     );
 
-    print(green('Running Installer $installer'));
+    print(white('Executing installer $pluginName...'));
     // Execute installer. Requires a tool/install.dart file to execute
-    final installScript = installerPackageRootDir.file('tool/install.dart');
+    final installScript = workingDir.file('tool/install.dart');
     if (!installScript.existsSync()) {
       error(
-        'No ${installScript.path} script found in package at $installerPackageRootDir',
+        'No ${installScript.path} script found in package at $pluginInstallerDir',
       );
     }
     sidekickDartRuntime.dart(
-      [installScript.path, Repository.requiredCliPackage.path],
-      workingDirectory: Repository.requiredCliPackage,
+      [installScript.path, target.root.path],
+      workingDirectory: target.root,
     );
 
-    print(green('Installed $installer'));
+    print(
+      green('Installed $pluginName for ${target.cliName}'),
+    );
+
+    // Cleanup
+    workingDir.deleteSync(recursive: true);
   }
 }
 

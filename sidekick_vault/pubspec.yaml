@@ -9,12 +9,9 @@ environment:
 dependencies:
   actions_toolkit_dart: ^0.5.0
   dcli: # provided by sidekick_core
-  sidekick_core: '>=0.6.0 <1.0.0'
-
-#dependency_overrides:
-#  sidekick_core:
-#    path: ../sidekick_core
+  sidekick_core: '>=0.7.0 <1.0.0'
 
 dev_dependencies:
   lint: ^1.5.0
+  sidekick_plugin_installer: ^0.1.1
   test: ^1.20.0

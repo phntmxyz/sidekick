@@ -15,6 +15,12 @@ A place to store project secrets within a git repository, encrypted with GPG
     
     To get the password to the vault ask one of the administrators.
     This password is available on CI as environment variable `FLT_VAULT_PASSPHRASE`
+   
+   ## List existing secrets
+
+   ```
+   <cli-name> vault list
+   ```
     
     ## Encrypt secrets
     

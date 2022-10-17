@@ -12,7 +12,7 @@ executables:
 dependencies:
   csv: ^5.0.0
   intl: ^0.17.0
-  sidekick_core: ^0.6.0
+  sidekick_core: '>=0.7.0 <1.0.0'
   timeago: ^3.0.2
 
 dev_dependencies:
