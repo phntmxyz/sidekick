@@ -22,7 +22,6 @@ class CreatePluginCommand extends Command {
       'name',
       abbr: 'n',
       help: 'The plugin name',
-      mandatory: true,
     );
 
     argParser.addOption(
@@ -30,7 +29,6 @@ class CreatePluginCommand extends Command {
       abbr: 't',
       help: 'Specify the type of plugin to create',
       allowed: _templates.keys,
-      mandatory: true,
     );
   }
 
@@ -44,13 +42,19 @@ class CreatePluginCommand extends Command {
   Future<void> run() async {
     final args = argResults!;
 
-    final name = args['name'] as String;
+    final name = args['name'] as String?;
+    if (name == null) {
+      throw UsageException('--name is required', usage);
+    }
     if (!isValidPubPackageName(name)) {
       usageException('name: $name is not a valid package name '
           'https://dart.dev/tools/pub/pubspec#name');
     }
 
-    final template = args['template'] as String;
+    final template = args['template'] as String?;
+    if (template == null) {
+      throw UsageException('--template is required', usage);
+    }
 
     final path = args.rest.firstOrNull ?? Directory.current.path;
 
