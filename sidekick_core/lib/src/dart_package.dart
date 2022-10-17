@@ -95,3 +95,91 @@ class DartPackage {
   @override
   String toString() => "DartPackage '$name'";
 }
+
+/// Returns true when the name is a valid pub package name according to
+/// https://dart.dev/tools/pub/pubspec#name
+///
+/// The name should be all lowercase, with underscores to separate words,
+/// just_like_this.
+/// Use only basic Latin letters and Arabic digits: [a-z0-9_].
+/// Also, make sure the name is a valid Dart identifier—that it doesn’t
+/// start with digits and isn’t a reserved word (keyword).
+bool isValidPubPackageName(String name) {
+  return _cliNameRegExp.hasMatch(name) && !_keywords.contains(name);
+}
+
+/// https://github.com/dart-lang/sdk/blob/8d262e294400d2f7e41f05579c088a6409a7b2bb/pkg/dartdev/lib/src/utils.dart#L95
+final RegExp _cliNameRegExp = RegExp(r'^[a-z_][a-z\d_]*$');
+
+/// https://github.com/dart-lang/sdk/blob/8d262e294400d2f7e41f05579c088a6409a7b2bb/pkg/dartdev/lib/src/utils.dart#L99
+const Set<String> _keywords = <String>{
+  'abstract',
+  'as',
+  'assert',
+  'async',
+  'await',
+  'break',
+  'case',
+  'catch',
+  'class',
+  'const',
+  'continue',
+  'covariant',
+  'default',
+  'deferred',
+  'do',
+  'dynamic',
+  'else',
+  'enum',
+  'export',
+  'extends',
+  'extension',
+  'external',
+  'factory',
+  'false',
+  'final',
+  'finally',
+  'for',
+  'function',
+  'get',
+  'hide',
+  'if',
+  'implements',
+  'import',
+  'in',
+  'inout',
+  'interface',
+  'is',
+  'late',
+  'library',
+  'mixin',
+  'native',
+  'new',
+  'null',
+  'of',
+  'on',
+  'operator',
+  'out',
+  'part',
+  'patch',
+  'required',
+  'rethrow',
+  'return',
+  'set',
+  'show',
+  'source',
+  'static',
+  'super',
+  'switch',
+  'sync',
+  'this',
+  'throw',
+  'true',
+  'try',
+  'typedef',
+  'var',
+  'void',
+  'while',
+  'with',
+  'yield',
+};
