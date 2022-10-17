@@ -1,17 +1,15 @@
-import 'dart:io';
-
-import 'package:args/command_runner.dart';
-import 'package:recase/recase.dart';
 import 'package:sidekick_core/sidekick_core.dart';
-import 'package:sidekick_core/src/commands/plugins/create_templates/generation_properties.dart';
+import 'package:sidekick_core/src/commands/plugins/create_templates/install_only.dart';
+import 'package:sidekick_core/src/commands/plugins/create_templates/shared_code.dart';
+import 'package:sidekick_core/src/commands/plugins/create_templates/shared_command.dart';
+import 'package:sidekick_core/src/commands/plugins/create_templates/template_generator.dart';
 
-import 'package:sidekick_core/src/commands/plugins/create_templates/shared_code.dart'
-    as sharedCode;
-import 'package:sidekick_core/src/commands/plugins/create_templates/shared_command.dart'
-    as sharedCommand;
-import 'package:sidekick_core/src/commands/plugins/create_templates/install_only.dart'
-    as installOnly;
-
+/// Generates a new sidekick plugin that can be installed with a sidekick CLI]
+///
+/// Available templates:
+/// - [InstallOnlyTemplate]
+/// - [SharedCodeTemplate]
+/// - [SharedCommandTemplate]
 class CreatePluginCommand extends Command {
   @override
   final String description = 'Create a new sidekick plugin from a template';
@@ -31,21 +29,16 @@ class CreatePluginCommand extends Command {
       'template',
       abbr: 't',
       help: 'Specify the type of plugin to create',
-      allowed: [
-        // only has a tool/install.dart file
-        'install-only',
-
-        // the whole command is shared in the package
-        // sidekick users are not able to change code, only input parameters
-        'shared-command',
-
-        // some shared code, but the command itself is copied into the
-        // user's sidekick CLI. This makes it easy to modify
-        'shared-code',
-      ],
+      allowed: _templates.keys,
       mandatory: true,
     );
   }
+
+  static const _templates = {
+    'install-only': InstallOnlyTemplate(),
+    'shared-command': SharedCommandTemplate(),
+    'shared-code': SharedCodeTemplate(),
+  };
 
   @override
   Future<void> run() async {
@@ -76,18 +69,7 @@ class CreatePluginCommand extends Command {
       pluginDirectory: pluginDirectory,
     );
 
-    switch (template) {
-      case 'install-only':
-        installOnly.generate(templateProperties);
-        break;
-      case 'shared-command':
-        sharedCommand.generate(templateProperties);
-        break;
-      case 'shared-code':
-        sharedCode.generate(templateProperties);
-        break;
-      default:
-        throw StateError('unreachable');
-    }
+    final TemplateGenerator generator = _templates[template]!;
+    generator.generate(templateProperties);
   }
 }

@@ -1,27 +1,34 @@
 import 'package:recase/recase.dart';
 import 'package:sidekick_core/sidekick_core.dart';
-import 'package:sidekick_core/src/commands/plugins/create_templates/generation_properties.dart';
+import 'package:sidekick_core/src/commands/plugins/create_templates/template_generator.dart';
 
-void generate(
-  TemplateProperties props,
-) {
-  final pluginDirectory = props.pluginDirectory;
+/// This template is the very minimum, featuring just a tool/install.dart file
+/// that writes all code to be installed into the users sidekick CLI.
+///
+/// It doesn't add a pub dependency with shared code. All code is generated in
+/// the users sidekick CLI, being fully adjustable.
+class InstallOnlyTemplate extends TemplateGenerator {
+  const InstallOnlyTemplate();
+  @override
+  void generate(TemplateProperties props) {
+    final pluginDirectory = props.pluginDirectory;
+    pluginDirectory
+        .file('pubspec.yaml')
+        .writeAsStringSync(props.pubspecTemplate);
 
-  pluginDirectory
-      .file('pubspec.yaml')
-      .writeAsStringSync(props._pubspecTemplate);
+    final toolDirectory = pluginDirectory.directory('tool')..createSync();
+    toolDirectory.file('install.dart').writeAsStringSync(props.installTemplate);
 
-  final toolDirectory = pluginDirectory.directory('tool')..createSync();
-  toolDirectory.file('install.dart').writeAsStringSync(props._installTemplate);
-
-  final libDirectory = pluginDirectory.directory('lib')..createSync();
-  libDirectory
-      .file('${props.pluginName.snakeCase}.dart')
-      .writeAsStringSync('library ${props.pluginName.snakeCase};\n');
+    // TODO remove lib dir when https://github.com/phntmxyz/sidekick/pull/63 is merged
+    final libDirectory = pluginDirectory.directory('lib')..createSync();
+    libDirectory
+        .file('${props.pluginName.snakeCase}.dart')
+        .writeAsStringSync('library ${props.pluginName.snakeCase};\n');
+  }
 }
 
 extension on TemplateProperties {
-  String get _pubspecTemplate => '''
+  String get pubspecTemplate => '''
 name: $pluginName
 description: Generated sidekick plugin (template install-only)
 version: 0.0.1
@@ -35,7 +42,7 @@ dev_dependencies:
   sidekick_plugin_installer:
 ''';
 
-  String get _installTemplate => '''
+  String get installTemplate => '''
 import 'package:sidekick_core/sidekick_core.dart'
     hide cliName, repository, mainProject;
 import 'package:sidekick_plugin_installer/sidekick_plugin_installer.dart';
