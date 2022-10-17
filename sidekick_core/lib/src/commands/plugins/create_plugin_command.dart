@@ -45,10 +45,10 @@ class CreatePluginCommand extends Command {
     final args = argResults!;
 
     final name = args['name'] as String;
-
-    // TODO if(!isValidCliName(name)){usageException...}
-
-    // TODO validate: name must be valid dart package name
+    if (!isValidPubPackageName(name)) {
+      usageException('name: $name is not a valid package name '
+          'https://dart.dev/tools/pub/pubspec#name');
+    }
 
     final template = args['template'] as String;
 
