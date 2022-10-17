@@ -27,6 +27,7 @@ Future<void> main(List<String> args) async {
 
 void _writeVaultFile(SidekickPackage package) {
   final vaultFile = package.root.file('lib/src/vault.dart');
+
   final cliName = package.cliName;
   vaultFile.writeAsStringSync('''
 import 'package:sidekick_vault/sidekick_vault.dart';

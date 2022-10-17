@@ -3,19 +3,6 @@ import 'package:dcli/dcli.dart' as dcli;
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_core/src/pub/pub.dart' as pub;
 
-/// Plugins are extensions for sidekick CLIs that can be installed from pub.dev
-class PluginsCommand extends Command {
-  @override
-  final String description = 'Manages plugins for external commands';
-
-  @override
-  final String name = 'plugins';
-
-  PluginsCommand() {
-    addSubcommand(InstallPluginCommand());
-  }
-}
-
 /// Installs a sidekick plugin
 class InstallPluginCommand extends Command {
   @override
@@ -70,7 +57,9 @@ class InstallPluginCommand extends Command {
     final Directory pluginInstallerDir = () {
       switch (source) {
         case 'path':
-          return Directory(installer);
+          final dir = Directory(installer);
+          env['SIDEKICK_LOCAL_PLUGIN_PATH'] = dir.absolute.path;
+          return dir;
         case 'hosted':
           print('Downloading from pub $installer...');
           return _getPackageRootDirForHostedOrGitSource(args);
@@ -105,7 +94,7 @@ class InstallPluginCommand extends Command {
       workingDir.deleteSync(recursive: true);
     }
     workingDir.createSync(recursive: true);
-    pluginInstallerDir.copyRecursively(workingDir);
+    await pluginInstallerDir.copyRecursively(workingDir);
 
     // get installer dependencies
     sidekickDartRuntime.dart(
