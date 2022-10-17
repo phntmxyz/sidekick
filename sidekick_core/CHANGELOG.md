@@ -1,3 +1,9 @@
+## 0.7.1
+
+- New: `plugins create` now generates plugins from templates
+- Fix: `plugins install` now uses a temp working directory instead of manipulating the pub cache during install
+- New: `isValidPubPackageName(String name)` returns `true` when the name is a valid pub package name according to <https://dart.dev/tools/pub/pubspec#name>
+
 ## 0.7.0
 
 - New: `PluginsCommand` to automatically install plugins to easily extend sidekick CLIs
