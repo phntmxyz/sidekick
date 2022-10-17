@@ -380,7 +380,7 @@ packages:
     source: hosted
     version: "4.2.4"
   pub_semver:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: pub_semver
       url: "https://pub.dartlang.org"

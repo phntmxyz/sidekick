@@ -16,7 +16,6 @@ dependencies:
   # Pin an old outdated version, the latest that works with Dart 2.14
   mason: 0.1.0-dev.4
   path: ^1.8.0
-  pub_semver: ^2.1.1
   recase: ^4.0.0
   sidekick_core: '>=0.7.0 <1.0.0'
 
