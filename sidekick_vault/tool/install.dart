@@ -15,8 +15,6 @@ Future<void> main(List<String> args) async {
     "import 'package:${package.name}/src/vault.dart';",
   );
 
-
-
   registerPlugin(
     sidekickCli: package,
     import: "import 'package:sidekick_vault/sidekick_vault.dart';",
