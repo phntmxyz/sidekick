@@ -57,7 +57,9 @@ class InstallPluginCommand extends Command {
     final Directory pluginInstallerDir = () {
       switch (source) {
         case 'path':
-          return Directory(installer);
+          final dir = Directory(installer);
+          env['SIDEKICK_LOCAL_PLUGIN_PATH'] = dir.absolute.path;
+          return dir;
         case 'hosted':
           print('Downloading from pub $installer...');
           return _getPackageRootDirForHostedOrGitSource(args);
@@ -92,7 +94,7 @@ class InstallPluginCommand extends Command {
       workingDir.deleteSync(recursive: true);
     }
     workingDir.createSync(recursive: true);
-    pluginInstallerDir.copyRecursively(workingDir);
+    await pluginInstallerDir.copyRecursively(workingDir);
 
     // get installer dependencies
     sidekickDartRuntime.dart(

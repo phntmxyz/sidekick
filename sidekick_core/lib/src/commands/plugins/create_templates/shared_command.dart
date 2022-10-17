@@ -7,12 +7,17 @@ void generate(
 ) {
   final pluginDirectory = props.pluginDirectory;
 
-  final pubspecFile = pluginDirectory
+  pluginDirectory
       .file('pubspec.yaml')
       .writeAsStringSync(props._pubspecTemplate);
 
   final toolDirectory = pluginDirectory.directory('tool')..createSync();
   toolDirectory.file('install.dart').writeAsStringSync(props._installTemplate);
+
+  final libDirectory = pluginDirectory.directory('lib')..createSync();
+  libDirectory
+      .file('${props.pluginName.snakeCase}_command.dart')
+      .writeAsStringSync(props.exampleCommand);
 }
 
 extension on TemplateProperties {
@@ -39,14 +44,40 @@ Future<void> main(List<String> args) async {
   // The installer injects the path to the sidekick project as first argument
   final package = SidekickPackage.fromDirectory(Directory(args[0]))!;
   
-  pubAddDependency(package, '$pluginName');
+  // If your plugin is hosted on pub.dev, use this line
+  // pubAddDependency(package, '$pluginName');
+  // For local development, use this line instead
+  pubAddLocalDependency(package, env['SIDEKICK_LOCAL_PLUGIN_PATH']!);
+  
   pubGet(package);
 
   registerPlugin(
     sidekickCli: package,
-    import: "import 'package:$pluginName/$pluginName.dart';",
+    import: "import 'package:$pluginName/${pluginName.snakeCase}_command.dart';",
     command: '${pluginName.pascalCase}Command()',
   );
+}
+''';
+
+  String get exampleCommand => '''
+import 'package:sidekick_core/sidekick_core.dart';
+
+class ${pluginName.pascalCase}Command extends Command {
+  @override
+  final String description = 'Sample command';
+
+  @override
+  final String name = 'hello-world';
+
+  CreatePluginCommand() {
+    // add parameters here with argParser.addOption
+  }
+
+  @override
+  Future<void> run() async {
+    // please implement me
+    print('Greetings from PHNTM!');
+  }
 }
 ''';
 }
