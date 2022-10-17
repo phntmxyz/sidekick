@@ -108,6 +108,8 @@ const invalidCliNameErrorMessage = 'The CLI name must be valid: '
     'at least one lower case letter or underscore '
     'followed by zero or more lower case letters, digits, or underscores.';
 
+// TODO replace with sidekick_core isValidPubPackageName once published
+// https://github.com/phntmxyz/sidekick/pull/62
 bool isValidCliName(String name) => _cliNameRegExp.hasMatch(name);
 
 // See https://dart.dev/tools/pub/pubspec#name and https://github.com/dart-lang/sdk/blob/8d262e294400d2f7e41f05579c088a6409a7b2bb/pkg/dartdev/lib/src/utils.dart#L95
