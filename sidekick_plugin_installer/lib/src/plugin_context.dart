@@ -32,7 +32,7 @@ class PluginContext {
   /// to link the plugin dependency to a local path, instead of pub.dev where
   /// the plugin is not yet published. (See [pubAddLocalDependency])
   ///
-  /// Returns `null` when the plugin is not installed form local source, but
+  /// Returns `null` when the plugin is not installed from local source, but
   /// from a remote source (pub or git)
   static DartPackage? get localPlugin {
     if (_localPlugin == null) {
