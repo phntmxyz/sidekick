@@ -38,9 +38,10 @@ environment:
   sdk: '>=2.14.0 <3.0.0'
 
 dependencies:
+  sidekick_core: '>=0.7.1 <1.0.0'
 
 dev_dependencies:
-  sidekick_plugin_installer:
+  sidekick_plugin_installer: ^0.1.3
 ''';
 
   String get installTemplate => '''
