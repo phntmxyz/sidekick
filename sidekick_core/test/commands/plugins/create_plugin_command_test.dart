@@ -1,7 +1,7 @@
+import 'package:dcli/dcli.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_core/src/commands/plugins/create_plugin_command.dart';
 import 'package:test/test.dart';
-import 'package:dcli/dcli.dart';
 
 void main() {
   group('generates valid plugin code', () {
