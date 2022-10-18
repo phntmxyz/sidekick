@@ -22,8 +22,14 @@ void main() {
       final runner = initializeSidekick(name: 'dash');
       runner.addCommand(CreatePluginCommand());
 
-      await runner.run(
-          ['create', '-t', template, '-n', 'generated_plugin', tempDir.path]);
+      await runner.run([
+        'create',
+        '-t',
+        template,
+        '-n',
+        'generated_plugin',
+        tempDir.path,
+      ]);
       return tempDir.directory('generated_plugin').path;
     }
 
