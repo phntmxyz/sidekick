@@ -4,4 +4,4 @@ environment:
   sdk: '>=2.12.0 <3.0.0'
 
 dev_dependencies:
-  sidekick_plugin_installer: ^0.1.2
+  sidekick_plugin_installer: ^0.1.3
