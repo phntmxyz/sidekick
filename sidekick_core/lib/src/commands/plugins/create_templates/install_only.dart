@@ -47,9 +47,8 @@ import 'package:sidekick_core/sidekick_core.dart'
     hide cliName, repository, mainProject;
 import 'package:sidekick_plugin_installer/sidekick_plugin_installer.dart';
 
-Future<void> main(List<String> args) async {
-  // The installer injects the path to the sidekick project as first argument
-  final package = SidekickPackage.fromDirectory(Directory(args[0]))!;
+Future<void> main() async {
+  final SidekickPackage package = PluginContext.sidekickPackage;
 
   final commandFile = package.root.file('lib/src/${pluginName.snakeCase}.dart');
   commandFile.writeAsStringSync("""
