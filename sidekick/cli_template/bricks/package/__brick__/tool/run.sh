@@ -43,7 +43,7 @@ HASH=$(find \
   "${SIDEKICK_PACKAGE_HOME}/pubspec.yaml" \
   "${SIDEKICK_PACKAGE_HOME}/pubspec.lock" \
   -type f -print0 | xargs -0 "$HASH_PROGRAM")
-EXISTING_HASH=$(cat $STAMP_FILE) || true
+EXISTING_HASH=$(cat $STAMP_FILE 2> /dev/null) || true
 
 if [ "$HASH" != "$EXISTING_HASH" ]; then
   # different hash, recompile
