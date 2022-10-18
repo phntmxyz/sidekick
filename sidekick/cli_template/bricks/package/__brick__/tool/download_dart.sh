@@ -8,7 +8,7 @@
 
 set -e
 
-SIDEKICK_PACKAGE_ROOT="$(dirname "$(dirname "$(dirname "${BASH_SOURCE[0]}")")")"
+SIDEKICK_PACKAGE_ROOT=$(dirname "$(dirname "$0")")
 
 SIDEKICK_DART_SDK_PATH="$SIDEKICK_PACKAGE_ROOT/build/cache/dart-sdk"
 DART_SDK_ZIP_FOLDER="$HOME/.dart/sdk/cache"

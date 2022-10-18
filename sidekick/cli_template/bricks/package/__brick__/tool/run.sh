@@ -43,13 +43,15 @@ HASH=$(find \
   "${SIDEKICK_PACKAGE_HOME}/pubspec.yaml" \
   "${SIDEKICK_PACKAGE_HOME}/pubspec.lock" \
   -type f -print0 | xargs -0 "$HASH_PROGRAM")
-EXISTING_HASH=$(cat $STAMP_FILE) || true
+EXISTING_HASH=$(cat $STAMP_FILE 2> /dev/null) || true
 
-if [ "$HASH" != "$EXISTING_HASH" ]; then
+EXE="${SIDEKICK_PACKAGE_HOME}/build/cli.exe"
+
+# if exe is missing or hash has changed, rebuild
+if [ ! -f "$EXE" ] || [ "$HASH" != "$EXISTING_HASH" ]; then
   # different hash, recompile
   sh "${SIDEKICK_PACKAGE_HOME}/tool/install.sh"
   echo "$HASH" > "$STAMP_FILE"
 fi
 
-EXE="${SIDEKICK_PACKAGE_HOME}/build/cli.exe"
 "${EXE}" "$@"

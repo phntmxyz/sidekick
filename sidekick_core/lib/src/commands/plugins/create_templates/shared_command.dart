@@ -38,9 +38,10 @@ environment:
   sdk: '>=2.14.0 <3.0.0'
 
 dependencies:
+  sidekick_core: '>=0.7.1 <1.0.0'
 
 dev_dependencies:
-  sidekick_plugin_installer:
+  sidekick_plugin_installer: ^0.1.3
 ''';
 
   String get installTemplate => '''
@@ -48,15 +49,15 @@ import 'package:sidekick_core/sidekick_core.dart'
     hide cliName, repository, mainProject;
 import 'package:sidekick_plugin_installer/sidekick_plugin_installer.dart';
 
-Future<void> main(List<String> args) async {
-  // The installer injects the path to the sidekick project as first argument
-  final package = SidekickPackage.fromDirectory(Directory(args[0]))!;
+Future<void> main() async {
+  final SidekickPackage package = PluginContext.sidekickPackage;
 
-  // If your plugin is hosted on pub.dev, use this line
-  // pubAddDependency(package, '$pluginName');
-  // For local development, use this line instead
-  pubAddLocalDependency(package, env['SIDEKICK_LOCAL_PLUGIN_PATH']!);
-
+  if (PluginContext.localPlugin == null) {
+    pubAddDependency(package, 'sidekick_flutter');
+  } else {
+    // For local development
+    pubAddLocalDependency(package, PluginContext.localPlugin!.root.path);
+  }
   pubGet(package);
 
   registerPlugin(
