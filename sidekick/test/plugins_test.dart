@@ -126,6 +126,7 @@ void main() {
   });
 
   group('e2e: plugins create, plugins install, run plugin', () {
+    // TODO use CreatePluginCommand.templates.keys instead when new version of sidekick_core is published
     const templates = ['install-only', 'shared-command', 'shared-code'];
 
     test(

@@ -1,3 +1,4 @@
+import 'package:meta/meta.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_core/src/commands/plugins/create_templates/install_only.dart';
 import 'package:sidekick_core/src/commands/plugins/create_templates/shared_code.dart';
@@ -28,11 +29,12 @@ class CreatePluginCommand extends Command {
       'template',
       abbr: 't',
       help: 'Specify the type of plugin to create',
-      allowed: _templates.keys,
+      allowed: templates.keys,
     );
   }
 
-  static const _templates = {
+  @visibleForTesting
+  static const templates = {
     'install-only': InstallOnlyTemplate(),
     'shared-command': SharedCommandTemplate(),
     'shared-code': SharedCodeTemplate(),
@@ -73,7 +75,7 @@ class CreatePluginCommand extends Command {
       pluginDirectory: pluginDirectory,
     );
 
-    final TemplateGenerator generator = _templates[template]!;
+    final TemplateGenerator generator = templates[template]!;
     generator.generate(templateProperties);
   }
 }

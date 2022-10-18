@@ -12,6 +12,7 @@ dependencies:
   dcli: '>=1.15.0 <1.31.0' # 1.17 requires Dart 2.16 https://github.com/noojee/dcli/pull/192
   recase: ^4.1.0
   yaml: ^3.1.0
+  meta: ^1.8.0
 
 dev_dependencies:
   lint: ^1.5.0

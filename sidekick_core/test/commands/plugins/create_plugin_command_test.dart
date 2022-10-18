@@ -4,9 +4,17 @@ import 'package:sidekick_core/src/commands/plugins/create_plugin_command.dart';
 import 'package:test/test.dart';
 
 void main() {
-  group('generates valid plugin code', () {
-    const templates = ['install-only', 'shared-command', 'shared-code'];
+  test('check available templates', () {
+    final expectedTemplates = [
+      'install-only',
+      'shared-command',
+      'shared-code',
+    ];
 
+    expect(CreatePluginCommand.templates.keys, expectedTemplates);
+  });
+
+  group('generates valid plugin code', () {
     Future<String> generatePlugin(String template) async {
       final tempDir = Directory.systemTemp.createTempSync();
       addTearDown(() => tempDir.deleteSync(recursive: true));
@@ -19,7 +27,7 @@ void main() {
       return tempDir.directory('generated_plugin').path;
     }
 
-    for (final template in templates) {
+    for (final template in CreatePluginCommand.templates.keys) {
       test('for template $template', () async {
         final pluginPath = await generatePlugin(template);
 
