@@ -112,7 +112,7 @@ class InstallPluginCommand extends Command {
       );
     }
     sidekickDartRuntime.dart(
-      [installScript.path, target.root.path],
+      [installScript.path],
       workingDirectory: target.root,
     );
 
@@ -207,6 +207,7 @@ Directory _getPackageRootDirForHostedOrGitSource(ArgResults args) {
   final packageName = activationInfo.group(1)!;
   final packageVersion = activationInfo.group(2)!;
 
+  // TODO Don't deactivate when the package was already activated
   // The package was only activated to cache it and can be deactivated now
   sidekickDartRuntime.dart(
     [
