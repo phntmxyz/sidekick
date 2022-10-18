@@ -77,7 +77,7 @@ class ${pluginName.pascalCase}Command extends Command {
   @override
   final String name = '${pluginName.paramCase}';
 
-  CreatePluginCommand() {
+  ${pluginName.pascalCase}Command() {
     // add parameters here with argParser.addOption
   }
 
