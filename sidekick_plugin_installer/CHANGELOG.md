@@ -1,3 +1,9 @@
+# Changelog
+
+## 0.1.2
+
+- New: `pubAddLocalDependency`
+
 ## 0.1.1
 - Widen analyzer range to support Dart 2.14
 
