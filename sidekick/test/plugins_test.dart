@@ -1,3 +1,4 @@
+import 'package:recase/recase.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:test/test.dart';
 import 'package:test_process/test_process.dart';
@@ -119,6 +120,50 @@ void main() {
         printOnFailure(await pluginProcess.stdoutStream().join('\n'));
         printOnFailure(await pluginProcess.stderrStream().join('\n'));
         pluginProcess.shouldExit(0);
+      },
+      timeout: const Timeout(Duration(minutes: 5)),
+    );
+  });
+
+  group('e2e: plugins create, plugins install, run plugin', () {
+    const templates = ['install-only', 'shared-command', 'shared-code'];
+
+    test(
+      'for all templates',
+      () async {
+        for (final template in templates) {
+          final createProcess = await startDashProcess([
+            'plugins',
+            'create',
+            '-t',
+            template,
+            '-n',
+            template.snakeCase,
+          ]);
+          printOnFailure(await createProcess.stdoutStream().join('\n'));
+          printOnFailure(await createProcess.stderrStream().join('\n'));
+          createProcess.shouldExit(0);
+
+          final installProcess = await startDashProcess(
+            [
+              'plugins',
+              'install',
+              '-s',
+              'path',
+              template.snakeCase,
+            ],
+          );
+          printOnFailure(await installProcess.stdoutStream().join('\n'));
+          printOnFailure(await installProcess.stderrStream().join('\n'));
+          installProcess.shouldExit(0);
+
+          final pluginProcess = await startDashProcess(
+            [template.paramCase],
+          );
+          printOnFailure(await pluginProcess.stdoutStream().join('\n'));
+          printOnFailure(await pluginProcess.stderrStream().join('\n'));
+          pluginProcess.shouldExit(0);
+        }
       },
       timeout: const Timeout(Duration(minutes: 5)),
     );
