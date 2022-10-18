@@ -7,7 +7,6 @@ class DartPackage {
 
   /// Returns [DartPackage] if a directory fulfils the requirements of a Dart/Flutter package
   /// - pubspec.yaml
-  /// - lib directory
   /// - name in pubspec.yaml
   /// (- flutter dependency)
   static DartPackage? fromDirectory(Directory directory) {
