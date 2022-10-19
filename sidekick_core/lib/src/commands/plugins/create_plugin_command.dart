@@ -28,11 +28,11 @@ class CreatePluginCommand extends Command {
       'template',
       abbr: 't',
       help: 'Specify the type of plugin to create',
-      allowed: _templates.keys,
+      allowed: templates.keys,
     );
   }
 
-  static const _templates = {
+  static const templates = {
     'install-only': InstallOnlyTemplate(),
     'shared-command': SharedCommandTemplate(),
     'shared-code': SharedCodeTemplate(),
@@ -73,7 +73,8 @@ class CreatePluginCommand extends Command {
       pluginDirectory: pluginDirectory,
     );
 
-    final TemplateGenerator generator = _templates[template]!;
+    final TemplateGenerator generator = templates[template]!;
     generator.generate(templateProperties);
+    sidekickDartRuntime.dart(['format', pluginDirectory.path]);
   }
 }

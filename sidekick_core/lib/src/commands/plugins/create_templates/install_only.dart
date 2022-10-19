@@ -9,6 +9,7 @@ import 'package:sidekick_core/src/commands/plugins/create_templates/template_gen
 /// the users sidekick CLI, being fully adjustable.
 class InstallOnlyTemplate extends TemplateGenerator {
   const InstallOnlyTemplate();
+
   @override
   void generate(TemplateProperties props) {
     final pluginDirectory = props.pluginDirectory;
@@ -18,12 +19,6 @@ class InstallOnlyTemplate extends TemplateGenerator {
 
     final toolDirectory = pluginDirectory.directory('tool')..createSync();
     toolDirectory.file('install.dart').writeAsStringSync(props.installTemplate);
-
-    // TODO remove lib dir when https://github.com/phntmxyz/sidekick/pull/63 is merged
-    final libDirectory = pluginDirectory.directory('lib')..createSync();
-    libDirectory
-        .file('${props.pluginName.snakeCase}.dart')
-        .writeAsStringSync('library ${props.pluginName.snakeCase};\n');
   }
 }
 

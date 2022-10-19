@@ -32,7 +32,7 @@ cd "${CLI_PACKAGE_DIR}" || exit
   set +e
   printf -- "\033[1A\033[2K✔ Getting dependencies\n"
   printf -- "- Bundling assets\n"
-  rm "${EXE}"
+  rm -f "${EXE}"
   mkdir -p build
   printf -- "\033[1A\033[2K✔ Bundling assets\n"
   printf -- "- Compiling sidekick cli\n"
