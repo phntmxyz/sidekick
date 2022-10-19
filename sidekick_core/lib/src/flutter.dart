@@ -46,4 +46,9 @@ int flutter(
 }
 
 /// The Flutter SDK path is not set in [initializeSidekick] (param [flutterSdk])
-class FlutterSdkNotSetException implements Exception {}
+class FlutterSdkNotSetException implements Exception {
+  @override
+  String toString() {
+    return "FlutterSdkNotSetException{message: No Flutter SDK set. Please set it in `initializeSidekick(flutterSdkPath: 'path/to/sdk')`}";
+  }
+}

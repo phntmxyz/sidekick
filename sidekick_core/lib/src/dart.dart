@@ -35,4 +35,9 @@ int dart(
 }
 
 /// The Dart SDK path is not set in [initializeSidekick] (param [dartSdk])
-class DartSdkNotSetException implements Exception {}
+class DartSdkNotSetException implements Exception {
+  @override
+  String toString() {
+    return "DartSdkNotSetException{message: No Dart SDK set. Please set it in `initializeSidekick(dartSdkPath: 'path/to/sdk')`}.";
+  }
+}
