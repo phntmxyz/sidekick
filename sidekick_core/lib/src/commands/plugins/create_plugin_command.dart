@@ -33,7 +33,6 @@ class CreatePluginCommand extends Command {
     );
   }
 
-  @visibleForTesting
   static const templates = {
     'install-only': InstallOnlyTemplate(),
     'shared-command': SharedCommandTemplate(),
@@ -77,5 +76,6 @@ class CreatePluginCommand extends Command {
 
     final TemplateGenerator generator = templates[template]!;
     generator.generate(templateProperties);
+    sidekickDartRuntime.dart(['format', pluginDirectory.path]);
   }
 }
