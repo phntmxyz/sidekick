@@ -67,6 +67,9 @@ class InitCommand extends Command {
     if (!isValidCliName(cliName)) {
       throw invalidCliNameErrorMessage;
     }
+    if (which(cliName).found) {
+      throw 'The CLI name $cliName is already taken by an executable on your system';
+    }
     print("\nGenerating ${cliName}_sidekick");
 
     bool isGitDir(Directory dir) => dir.directory('.git').existsSync();

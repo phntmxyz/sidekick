@@ -58,6 +58,31 @@ void main() {
         );
       },
     );
+
+    test(
+      'throws error when cli name collides with an system executable',
+      () async {
+        const cliName = 'sudo';
+        final projectRoot =
+            setupTemplateProject('test/templates/minimal_dart_package');
+        final process = await sidekickCli(
+          [
+            'init',
+            '-n',
+            cliName,
+          ],
+          workingDirectory: projectRoot,
+        );
+
+        await process.shouldExit(255);
+        expect(
+          await process.stderr.rest.contains(
+            'The CLI name $cliName is already taken by an executable on your system',
+          ),
+          isTrue,
+        );
+      },
+    );
   });
 
   group('sidekick init - packages layout', () {
