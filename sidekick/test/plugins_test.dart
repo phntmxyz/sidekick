@@ -138,7 +138,8 @@ void main() {
 
       run('dart pub get', workingDirectory: pluginPath);
       run('dart analyze', workingDirectory: pluginPath);
-      run('dart format --set-exit-if-changed $pluginPath');
+      // TODO enable when sidekick_core >0.7.1 is released
+      // run('dart format --set-exit-if-changed $pluginPath');
     });
   }
 
