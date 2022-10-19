@@ -5,8 +5,8 @@ import 'package:test/test.dart';
 import 'init_test.dart';
 
 void main() {
-  final dartSdkPath = systemDartSdkPath()?.path;
-  final flutterSdkPath = systemFlutterSdkPath()?.path;
+  final dartSdkPath = anyDartSdk()?.path;
+  final flutterSdkPath = anyFlutterSdk()?.path;
   test(
     'dart command works when dartSdkPath is set',
     () async {
@@ -55,22 +55,41 @@ void main() {
   );
 }
 
-Directory? systemFlutterSdkPath() {
-  // Get path from "flutter doctor -v" printing the line
-  //     • Flutter version 2.2.0-10.1.pre at /usr/local/Caskroom/flutter/latest/flutter
-  final lines =
-      dcli.start('flutter doctor -v', progress: dcli.Progress.capture()).lines;
-  final flutterRepoPath = lines
-      .firstWhere((line) => line.contains("Flutter version"))
-      .split(" ")
-      .lastOrNull;
-  if (flutterRepoPath == null) {
-    return null;
-  }
-  return Directory(flutterRepoPath);
+Future<File> installFlutterWrapper(Directory directory) async {
+  writeAndRunShellScript(
+    r'sh -c "$(curl -fsSL https://raw.githubusercontent.com/passsy/flutter_wrapper/master/install.sh)"',
+    workingDirectory: directory,
+  );
+  final exe = directory.file('flutterw');
+  assert(exe.existsSync());
+  return exe;
 }
 
-Directory? systemDartSdkPath() {
+Directory? anyFlutterSdk() {
+  try {
+    // Get path from "flutter doctor -v" printing the line
+    //     • Flutter version 2.2.0-10.1.pre at /usr/local/Caskroom/flutter/latest/flutter
+    final lines = dcli
+        .start('flutter doctor -v', progress: dcli.Progress.capture())
+        .lines;
+    final flutterRepoPath = lines
+        .firstWhere((line) => line.contains("Flutter version"))
+        .split(" ")
+        .lastOrNull;
+    if (flutterRepoPath == null) {
+      return null;
+    }
+    return Directory(flutterRepoPath);
+  } catch (e) {
+    // No flutter installed, download it
+    final temp = Directory.systemTemp.createTempSync('sidekick_test');
+    dcli.run('git init', workingDirectory: temp.path);
+    installFlutterWrapper(temp);
+    return temp.directory('.flutter');
+  }
+}
+
+Directory? anyDartSdk() {
   final temp = Directory.systemTemp.createTempSync('sidekick_test');
   final downloadDartSh = temp.file('tool/download_dart.sh')
     ..createSync(recursive: true);

@@ -5,7 +5,7 @@ import 'dart_command_test.dart';
 import 'init_test.dart';
 
 void main() {
-  final flutterSdkPath = systemFlutterSdkPath()?.path;
+  final flutterSdkPath = anyFlutterSdk()?.path;
   test(
     'flutter command works when dartSdkPath is set',
     () async {
