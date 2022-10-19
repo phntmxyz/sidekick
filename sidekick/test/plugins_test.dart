@@ -86,25 +86,14 @@ void main() {
     test(
       'with local source',
       () async {
-        // DartScript.self.pathToScriptDirectory has a bug and returns
-        // /Users/pepe/dev/repos/sidekick/sidekick/async
-        // instead of
-        // /Users/pepe/dev/repos/sidekick/sidekick
-        // so I have to parse the correct path
-        final sidekickPath = RegExp(r'(^.*[/\\]sidekick[/\\]sidekick)')
-            .matchAsPrefix(DartScript.self.pathToScriptDirectory)!
-            .group(1)!;
-
-        final pluginPath = Directory(sidekickPath)
-            .directory('test/templates/minimal_sidekick_plugin')
-            .path;
+        final pluginPath = Directory('test/templates/minimal_sidekick_plugin');
 
         await runDashProcess([
           'plugins',
           'install',
           '--source',
           'path',
-          pluginPath,
+          pluginPath.absolute.path,
         ]);
 
         await runDashProcess(
