@@ -71,5 +71,17 @@ Directory? systemFlutterSdkPath() {
 }
 
 Directory? systemDartSdkPath() {
-  return systemFlutterSdkPath()?.directory('bin/cache/dart-sdk');
+  final temp = Directory.systemTemp.createTempSync('sidekick_test');
+  final downloadDartSh = temp.file('tool/download_dart.sh')
+    ..createSync(recursive: true);
+  final downloadDartShOriginal = File(
+    '../sidekick/cli_template/bricks/package/__brick__/tool/download_dart.sh',
+  );
+  downloadDartShOriginal.copySync(downloadDartSh.path);
+  dcli.run('chmod 755 ${downloadDartSh.path}');
+
+  final dartRuntime = SidekickDartRuntime(temp);
+  dartRuntime.download();
+
+  return dartRuntime.dartSdkPath;
 }
