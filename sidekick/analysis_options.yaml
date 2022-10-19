@@ -4,6 +4,7 @@ analyzer:
   exclude:
     - '**.g.dart'
     - 'cli_template'
+    - 'test/templates'
 
 linter:
   rules:
