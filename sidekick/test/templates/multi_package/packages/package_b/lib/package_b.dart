@@ -1,1 +1,0 @@
-library package_b;
