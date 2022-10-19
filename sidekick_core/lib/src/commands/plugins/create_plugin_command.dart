@@ -1,4 +1,3 @@
-import 'package:meta/meta.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_core/src/commands/plugins/create_templates/install_only.dart';
 import 'package:sidekick_core/src/commands/plugins/create_templates/shared_code.dart';
