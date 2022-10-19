@@ -41,6 +41,8 @@ SidekickCommandRunner initializeSidekick({
   required String name,
   String? description,
   String? mainProjectPath,
+  String? flutterSdkPath,
+  String? dartSdkPath,
 }) {
   DartPackage? mainProject;
 
@@ -70,11 +72,15 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
     required this.repository,
     this.mainProject,
     required this.workingDirectory,
+    this.flutterSdk,
+    this.dartSdk,
   }) : super(cliName, description);
 
   final Repository repository;
   final DartPackage? mainProject;
   final Directory workingDirectory;
+  final Directory? flutterSdk;
+  final Directory? dartSdk;
 
   /// Mounts the sidekick related globals, returns a function to unmount them
   /// and restore the previous globals
@@ -148,4 +154,33 @@ DartPackage? get mainProject {
     );
   }
   return _activeRunner?.mainProject;
+}
+
+/// Returns the path to he Flutter SDK sidekick should use for the [flutter] command
+///
+/// This variable is usually set to a pinned version of the Flutter SDK per project, i.e.
+/// - https://github.com/passsy/flutter_wrapper
+/// - https://github.com/fluttertools/fvm
+Directory? get flutterSdk {
+  if (_activeRunner == null) {
+    error(
+      'You cannot access flutterSdk '
+      'outside of a Command executed with SidekickCommandRunner.',
+    );
+  }
+  return _activeRunner?.flutterSdk;
+}
+
+/// Returns the path to the Dart SDK sidekick should use for the [dart] command
+///
+/// Usually inherited from [flutterSdk] which ships with an embedded Dart SDK
+Directory? get dartSdk {
+  if (_activeRunner == null) {
+    error(
+      'You cannot access dartSdk '
+      'outside of a Command executed with SidekickCommandRunner.',
+    );
+  }
+  return _activeRunner?.dartSdk ??
+      _activeRunner?.flutterSdk?.directory('bin/cache/dart-sdk');
 }
