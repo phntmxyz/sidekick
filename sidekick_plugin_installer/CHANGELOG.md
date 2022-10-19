@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.3
+
+- New: `PluginContext` (#72)
+
 ## 0.1.2
 
 - New: `pubAddLocalDependency`
