@@ -1,3 +1,4 @@
+import 'package:dcli/dcli.dart';
 import 'package:recase/recase.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:test/test.dart';
@@ -11,12 +12,17 @@ void main() {
   late File entrypoint;
   late Directory projectRoot;
 
-  Future<TestProcess> startDashProcess(Iterable<String> arguments) =>
-      TestProcess.start(
-        entrypoint.path,
-        arguments,
-        workingDirectory: projectRoot.path,
-      );
+  Future<void> runDashProcess(Iterable<String> arguments) async {
+    final process = await TestProcess.start(
+      entrypoint.path,
+      arguments,
+      workingDirectory: projectRoot.path,
+    );
+
+    process.stdoutStream().listen(printOnFailure);
+    process.stderrStream().listen(printOnFailure);
+    await process.shouldExit(0);
+  }
 
   setUp(() async {
     projectRoot = setupTemplateProject('test/templates/minimal_dart_package');
@@ -41,11 +47,7 @@ void main() {
       test(
         'with default hosted source',
         () async {
-          final dashProcess =
-              await startDashProcess(['plugins', 'install', 'sidekick_vault']);
-          printOnFailure(await dashProcess.stdoutStream().join('\n'));
-          printOnFailure(await dashProcess.stderrStream().join('\n'));
-          dashProcess.shouldExit(0);
+          await runDashProcess(['plugins', 'install', 'sidekick_vault']);
         },
         timeout: const Timeout(Duration(minutes: 5)),
         skip: 'Wait for first plugin to be published',
@@ -54,16 +56,13 @@ void main() {
       test(
         'with custom hosted source',
         () async {
-          final dashProcess = await startDashProcess([
+          await runDashProcess([
             'plugins',
             'install',
             '--hosted-url',
             'https://pub.flutter-io.cn/',
             'sidekick_vault',
           ]);
-          printOnFailure(await dashProcess.stdoutStream().join('\n'));
-          printOnFailure(await dashProcess.stderrStream().join('\n'));
-          dashProcess.shouldExit(0);
         },
         timeout: const Timeout(Duration(minutes: 5)),
         skip: 'Wait for first plugin to be published',
@@ -72,7 +71,7 @@ void main() {
       test(
         'with git source',
         () async {
-          final dashProcess = await startDashProcess([
+          await runDashProcess([
             'plugins',
             'install',
             '--source',
@@ -81,9 +80,6 @@ void main() {
             'packages/umbra_cli',
             'https://github.com/wolfenrain/umbra',
           ]);
-          printOnFailure(await dashProcess.stdoutStream().join('\n'));
-          printOnFailure(await dashProcess.stderrStream().join('\n'));
-          dashProcess.shouldExit(0);
         },
         timeout: const Timeout(Duration(minutes: 5)),
         skip: 'Wait for first plugin to be published',
@@ -105,28 +101,50 @@ void main() {
               .directory('test/templates/minimal_sidekick_plugin')
               .path;
 
-          final dashProcess = await startDashProcess([
+          await runDashProcess([
             'plugins',
             'install',
             '--source',
             'path',
             pluginPath,
           ]);
-          printOnFailure(await dashProcess.stdoutStream().join('\n'));
-          printOnFailure(await dashProcess.stderrStream().join('\n'));
-          dashProcess.shouldExit(0);
 
-          final pluginProcess = await startDashProcess(
+          await runDashProcess(
             ['minimal-sidekick-plugin'],
           );
-          printOnFailure(await pluginProcess.stdoutStream().join('\n'));
-          printOnFailure(await pluginProcess.stderrStream().join('\n'));
-          pluginProcess.shouldExit(0);
         },
         timeout: const Timeout(Duration(minutes: 5)),
       );
     },
   );
+
+  group('plugins create generates valid plugin code', () {
+    // TODO: use CreatePluginCommand.templates.keys instead (import 'package:sidekick_core/src/commands/plugins/create_plugin_command.dart';)
+    const templates = [
+      'install-only',
+      'shared-command',
+      'shared-code',
+    ];
+    for (final template in templates) {
+      test('for template $template', () async {
+        await runDashProcess([
+          'plugins',
+          'create',
+          '-t',
+          template,
+          '-n',
+          'generated_plugin',
+          projectRoot.path,
+        ]);
+
+        final pluginPath = projectRoot.directory('generated_plugin').path;
+
+        run('dart pub get', workingDirectory: pluginPath);
+        run('dart analyze', workingDirectory: pluginPath);
+        run('dart format --set-exit-if-changed $pluginPath');
+      });
+    }
+  });
 
   group('e2e: plugins create, plugins install, run plugin', () {
     // TODO use CreatePluginCommand.templates.keys instead when new version of sidekick_core is published
@@ -136,7 +154,7 @@ void main() {
       'for all templates',
       () async {
         for (final template in templates) {
-          final createProcess = await startDashProcess([
+          await runDashProcess([
             'plugins',
             'create',
             '-t',
@@ -144,11 +162,8 @@ void main() {
             '-n',
             template.snakeCase,
           ]);
-          printOnFailure(await createProcess.stdoutStream().join('\n'));
-          printOnFailure(await createProcess.stderrStream().join('\n'));
-          createProcess.shouldExit(0);
 
-          final installProcess = await startDashProcess(
+          await runDashProcess(
             [
               'plugins',
               'install',
@@ -157,16 +172,10 @@ void main() {
               template.snakeCase,
             ],
           );
-          printOnFailure(await installProcess.stdoutStream().join('\n'));
-          printOnFailure(await installProcess.stderrStream().join('\n'));
-          installProcess.shouldExit(0);
 
-          final pluginProcess = await startDashProcess(
+          await runDashProcess(
             [template.paramCase],
           );
-          printOnFailure(await pluginProcess.stdoutStream().join('\n'));
-          printOnFailure(await pluginProcess.stderrStream().join('\n'));
-          pluginProcess.shouldExit(0);
         }
       },
       timeout: const Timeout(Duration(minutes: 5)),

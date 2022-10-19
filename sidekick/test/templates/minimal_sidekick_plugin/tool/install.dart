@@ -30,7 +30,8 @@ class MinimalSidekickPluginCommand extends Command {
 
   registerPlugin(
     sidekickCli: package,
-    import: "import 'package:${package.name}/src/minimal_sidekick_plugin.dart';",
+    import:
+        "import 'package:${package.name}/src/minimal_sidekick_plugin.dart';",
     command: 'MinimalSidekickPluginCommand()',
   );
 }
