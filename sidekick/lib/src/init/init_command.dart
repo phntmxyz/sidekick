@@ -74,7 +74,7 @@ class InitCommand extends Command {
     });
 
     if (cliNameCollides) {
-      throw 'The CLI name $cliName is already taken by an executable on your system';
+      throw 'The CLI name $cliName is already taken by an executable on your system see ${which(cliName).paths}';
     }
     print("\nGenerating ${cliName}_sidekick");
 
