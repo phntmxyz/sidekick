@@ -195,6 +195,5 @@ Directory? get dartSdk {
       'outside of a Command executed with SidekickCommandRunner.',
     );
   }
-  return _activeRunner?.dartSdk ??
-      _activeRunner?.flutterSdk?.directory('bin/cache/dart-sdk');
+  return _activeRunner?.dartSdk;
 }

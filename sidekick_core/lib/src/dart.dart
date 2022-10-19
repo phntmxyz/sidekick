@@ -10,16 +10,29 @@ int dart(
   Directory? workingDirectory,
   dcli.Progress? progress,
 }) {
-  final sdk = dartSdk;
+  Directory? sdk = dartSdk;
+  if (sdk == null) {
+    if (flutterSdk != null) {
+      final embeddedSdk = flutterSdk!.directory('bin/cache/dart-sdk');
+      if (!embeddedSdk.existsSync()) {
+        // Flutter SDK is not fully initialized, the Dart SDK not yet downloaded
+        // Execute flutter_tool to download the embedded dart runtime
+        flutter([], workingDirectory: workingDirectory);
+      }
+      if (embeddedSdk.existsSync()) {
+        sdk = embeddedSdk;
+      }
+    }
+  }
   if (sdk == null) {
     throw DartSdkNotSetException();
   }
 
   final dart = () {
     if (Platform.isWindows) {
-      return sdk.file('bin/dart.exe');
+      return sdk!.file('bin/dart.exe');
     } else {
-      return sdk.file('bin/dart');
+      return sdk!.file('bin/dart');
     }
   }();
 
