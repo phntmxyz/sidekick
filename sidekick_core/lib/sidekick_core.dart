@@ -24,6 +24,7 @@ export 'package:sidekick_core/src/dart.dart';
 export 'package:sidekick_core/src/dart_package.dart';
 export 'package:sidekick_core/src/dart_runtime.dart';
 export 'package:sidekick_core/src/file_util.dart';
+export 'package:sidekick_core/src/flutter.dart';
 export 'package:sidekick_core/src/flutterw.dart';
 export 'package:sidekick_core/src/forward_command.dart';
 export 'package:sidekick_core/src/git.dart';
@@ -34,9 +35,17 @@ export 'package:sidekick_core/src/sidekick_package.dart';
 ///
 /// Set [name] to the name of your CLI entrypoint
 ///
-/// [mainProjectPath], when set, links to the main package. For a flutter apps
-/// it is the package that actually builds the flutter app.
-/// Set [mainProjectPath] relative to the git repository root
+/// [mainProjectPath] should be set when you have a package that you
+/// consider the main package of the whole repository.
+/// When your repository contains only one Flutter package in root set
+/// `mainProjectPath = '.'`.
+/// In a multi package repository you might use the same when the main package
+/// is in root, or `mainProjectPath = 'packages/my_app'` when it is in a subfolder.
+///
+/// Set [flutterSdkPath] when you bind a flutter sdk to this project. This SDK
+/// enables the [flutter] and [dart] commands.
+/// [dartSdkPath] is inherited from [flutterSdkPath]. Set it only for pure dart
+/// projects.
 SidekickCommandRunner initializeSidekick({
   required String name,
   String? description,
@@ -59,6 +68,8 @@ SidekickCommandRunner initializeSidekick({
     repository: repo,
     mainProject: mainProject,
     workingDirectory: Directory.current,
+    flutterSdk: flutterSdkPath == null ? null : Directory(flutterSdkPath),
+    dartSdk: dartSdkPath == null ? null : Directory(dartSdkPath),
   );
   return runner;
 }
@@ -97,6 +108,9 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
 
   @override
   Future<T?> run(Iterable<String> args) async {
+    // a new command gets executes, reset whatever exitCode the previous command has set
+    exitCode = 0;
+
     final unmount = mount();
     final result = await super.run(args);
     unmount();

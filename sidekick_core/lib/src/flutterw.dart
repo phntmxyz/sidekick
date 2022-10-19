@@ -4,6 +4,7 @@ import 'package:sidekick_core/sidekick_core.dart';
 /// Executes Flutter CLI (flutter_tool) via flutter_wrapper
 ///
 /// https://github.com/passsy/flutter_wrapper
+@Deprecated('Use flutter() instead')
 int flutterw(
   List<String> args, {
   Directory? workingDirectory,

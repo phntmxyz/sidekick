@@ -10,21 +10,19 @@ int dart(
   Directory? workingDirectory,
   dcli.Progress? progress,
 }) {
-  // TODO find pinned fvm flutter version
-  final binDir = repository.root.directory('.flutter/bin/cache/dart-sdk/bin/');
+  final sdk = dartSdk;
+  if (sdk == null) {
+    throw DartSdkNotSetException();
+  }
+
   final dart = () {
     if (Platform.isWindows) {
-      return binDir.file('dart.exe');
+      return sdk.file('bin/dart.exe');
     } else {
-      return binDir.file('dart');
+      return sdk.file('bin/dart');
     }
   }();
 
-  if (!dart.existsSync()) {
-    // run a flutterw command forcing flutter_tool to download the dart sdk
-    print("running flutterw to download dart");
-    flutterw([], workingDirectory: mainProject!.root);
-  }
   final process = dcli.startFromArgs(
     dart.path,
     args,
@@ -35,3 +33,6 @@ int dart(
   );
   return process.exitCode ?? -1;
 }
+
+/// The Dart SDK path is not set in [initializeSidekick] (param [dartSdk])
+class DartSdkNotSetException implements Exception {}

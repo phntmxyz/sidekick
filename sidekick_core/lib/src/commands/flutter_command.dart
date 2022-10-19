@@ -14,15 +14,6 @@ class FlutterCommand extends ForwardCommand {
 
   @override
   Future<void> run() async {
-    // TODO find pinned fvm flutter version
-    try {
-      final exitCode = flutterw(argResults!.arguments);
-      exit(exitCode);
-    } on FlutterWrapperNotFoundException catch (_) {
-      printerr(
-        'Could not find a pinned flutter version associated with the project.\n'
-        'Please install https://github.com/passsy/flutter_wrapper, to pin a flutter version',
-      );
-    }
+    exitCode = flutter(argResults!.arguments);
   }
 }
