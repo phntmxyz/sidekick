@@ -67,7 +67,13 @@ class InitCommand extends Command {
     if (!isValidCliName(cliName)) {
       throw invalidCliNameErrorMessage;
     }
-    if (which(cliName).found) {
+    bool cliNameCollides = false;
+
+    which(cliName).paths.forEach((element) {
+      cliNameCollides = !element.contains('.sidekick');
+    });
+
+    if (cliNameCollides) {
       throw 'The CLI name $cliName is already taken by an executable on your system';
     }
     print("\nGenerating ${cliName}_sidekick");
