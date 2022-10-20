@@ -10,6 +10,8 @@ int dart(
   Directory? workingDirectory,
   dcli.Progress? progress,
 }) {
+  bool flutterwLegacyMode = false;
+
   Directory? sdk = dartSdk;
   if (sdk == null) {
     if (flutterSdk != null) {
@@ -21,6 +23,23 @@ int dart(
       }
       if (embeddedSdk.existsSync()) {
         sdk = embeddedSdk;
+      }
+    }
+    if (sdk == null) {
+      final flutterWrapperLocation = findFlutterwLocation();
+      if (flutterWrapperLocation != null) {
+        // flutter_wrapper is installed, going into legacy mode for those which have not set the flutterSdkPath
+        final embeddedSdk =
+            repository.root.directory('.flutter/bin/cache/dart-sdk');
+        if (!embeddedSdk.existsSync()) {
+          // Flutter SDK is not fully initialized, the Dart SDK not yet downloaded
+          // Execute flutter_tool to download the embedded dart runtime
+          flutterw([], workingDirectory: workingDirectory);
+        }
+        if (embeddedSdk.existsSync()) {
+          sdk = embeddedSdk;
+          flutterwLegacyMode = true;
+        }
       }
     }
   }
@@ -44,13 +63,19 @@ int dart(
     nothrow: true,
     terminal: progress == null,
   );
+
+  if (flutterwLegacyMode) {
+    printerr("Sidekick Warning: ${DartSdkNotSetException().message}");
+  }
   return process.exitCode ?? -1;
 }
 
-/// The Dart SDK path is not set in [initializeSidekick] (param [dartSdk])
+/// The Dart SDK path is not set in [initializeSidekick] (param [dartSdk], neither is is the [flutterSdk])
 class DartSdkNotSetException implements Exception {
+  final String message =
+      "No Dart SDK set. Please set it in `initializeSidekick(dartSdkPath: 'path/to/sdk')`";
   @override
   String toString() {
-    return "DartSdkNotSetException{message: No Dart SDK set. Please set it in `initializeSidekick(dartSdkPath: 'path/to/sdk')`}.";
+    return "DartSdkNotSetException{message: $message}";
   }
 }

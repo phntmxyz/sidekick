@@ -14,6 +14,20 @@ class FlutterCommand extends ForwardCommand {
 
   @override
   Future<void> run() async {
-    exitCode = flutter(argResults!.arguments);
+    final args = argResults!.arguments;
+    try {
+      exitCode = flutter(args);
+    } on FlutterSdkNotSetException catch (original) {
+      // for backwards compatibility link to the previous required flutter_wrapper location
+      try {
+        exitCode = flutterw(args);
+        printerr("Sidekick Warning: ${original.message}");
+        // success with flutterw, immediately return
+        return;
+      } on FlutterWrapperNotFoundException catch (_) {
+        // rethrow original below
+      }
+      rethrow /* original */;
+    }
   }
 }
