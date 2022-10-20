@@ -69,7 +69,7 @@ class InitCommand extends Command {
     }
 
     final cliNameCollisions = which(cliName).paths
-      // Exluding sidekick executables from the throw so you can regenerate an existing sidekick repo
+      // Excluding sidekick executables from the throw so you can regenerate an existing sidekick repo
       ..removeWhere((element) => element.contains('.sidekick/bin/$cliName'));
     if (cliNameCollisions.isNotEmpty) {
       throw 'The CLI name $cliName is already taken by an executable on your system see $cliNameCollisions';

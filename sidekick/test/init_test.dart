@@ -62,7 +62,7 @@ void main() {
     test(
       'throws error when cli name collides with an system executable',
       () async {
-        const cliName = 'sudo';
+        const cliName = 'rm';
         final projectRoot =
             setupTemplateProject('test/templates/minimal_dart_package');
         final process = await sidekickCli(
