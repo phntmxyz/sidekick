@@ -34,6 +34,7 @@ int dart(
         if (!embeddedSdk.existsSync()) {
           // Flutter SDK is not fully initialized, the Dart SDK not yet downloaded
           // Execute flutter_tool to download the embedded dart runtime
+          // ignore: deprecated_member_use_from_same_package
           flutterw([], workingDirectory: workingDirectory);
         }
         if (embeddedSdk.existsSync()) {
