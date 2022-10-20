@@ -1,24 +1,22 @@
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:test/test.dart';
 
-import 'dart_command_test.dart';
+import 'fake_sdk.dart';
 import 'init_test.dart';
 
 void main() {
-  final flutterSdkPath = anyFlutterSdk()?.path;
   test(
     'flutter command works when dartSdkPath is set',
     () async {
       await insideFakeSidekickProject((dir) async {
         final runner = initializeSidekick(
           name: 'dash',
-          flutterSdkPath: flutterSdkPath,
+          flutterSdkPath: fakeFlutterSdk().path,
         );
         runner.addCommand(FlutterCommand());
         await runner.run(['flutter']);
       });
     },
-    skip: flutterSdkPath != null ? null : 'no Dart SDK found on system',
   );
 
   test('flutter command fails when dartSdkPath is not set', () async {
