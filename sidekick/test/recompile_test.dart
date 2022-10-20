@@ -14,32 +14,32 @@ void main() {
         final project =
             setupTemplateProject('test/templates/root_with_packages');
         final process = await sidekickCli(
-          ['init', '-n', 'dash'],
+          ['init', '-n', 'dashi'],
           workingDirectory: project,
         );
 
         await expectLater(
           process.stdout,
-          emitsThrough('Generating dash_sidekick'),
+          emitsThrough('Generating dashi_sidekick'),
         );
         printOnFailure(await process.stdoutStream().join('\n'));
         printOnFailure(await process.stderrStream().join('\n'));
         await process.shouldExit(0);
 
         // check entrypoint is executable
-        final entrypoint = File("${project.path}/dash");
+        final entrypoint = File("${project.path}/dashi");
         expect(entrypoint.existsSync(), isTrue);
         expect(entrypoint.statSync().modeString(), 'rwxr-xr-x');
 
         // check install.sh is executable
         final installSh =
-            File("${project.path}/packages/dash_sidekick/tool/install.sh");
+            File("${project.path}/packages/dashi_sidekick/tool/install.sh");
         expect(installSh.existsSync(), isTrue);
         expect(installSh.statSync().modeString(), 'rwxr-xr-x');
 
         if (shouldUseLocalDevs) {
           overrideSidekickCoreWithLocalPath(
-            project.directory('packages/dash_sidekick'),
+            project.directory('packages/dashi_sidekick'),
           );
         }
 
@@ -63,7 +63,7 @@ void main() {
         printOnFailure(stdout);
         printOnFailure(await updateProcess.stderrStream().join('\n'));
         updateProcess.shouldExit(0);
-        expect(stdout, contains('Installing dash command line application'));
+        expect(stdout, contains('Installing dashi command line application'));
         expect(stdout, contains('Getting dependencies'));
         expect(stdout, contains('Bundling assets'));
         expect(stdout, contains('Compiling sidekick cli'));

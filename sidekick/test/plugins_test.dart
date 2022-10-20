@@ -20,16 +20,16 @@ void main() {
   setUp(() async {
     projectRoot = setupTemplateProject('test/templates/root_with_packages');
     final process = await sidekickCli(
-      ['init', '-n', 'dash'],
+      ['init', '-n', 'dashi'],
       workingDirectory: projectRoot,
     );
     await process.shouldExit(0);
-    entrypoint = File("${projectRoot.path}/dash");
+    entrypoint = File("${projectRoot.path}/dashi");
     expect(entrypoint.existsSync(), isTrue);
 
     if (shouldUseLocalDevs) {
       overrideSidekickCoreWithLocalPath(
-        projectRoot.directory('packages/dash_sidekick'),
+        projectRoot.directory('packages/dashi_sidekick'),
       );
     }
   });
