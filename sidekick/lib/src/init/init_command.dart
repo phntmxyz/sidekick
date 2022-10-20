@@ -69,6 +69,7 @@ class InitCommand extends Command {
     }
 
     if (!which(cliName).paths.every(
+          // Exluding sidekick executables from the throw so you can regenerate an existing sidekick repo
           (path) => path.contains('.sidekick/bin/$cliName'),
         )) {
       throw 'The CLI name $cliName is already taken by an executable on your system see ${which(cliName).paths}';
