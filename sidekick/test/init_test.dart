@@ -16,16 +16,16 @@ void main() {
             setupTemplateProject('test/templates/nested_package');
         final nestedPackage = projectRoot.directory('foo/bar/nested');
         final process = await sidekickCli(
-          ['init', '-n', 'dash'],
+          ['init', '-n', 'dashi'],
           workingDirectory: nestedPackage,
         );
         await process.shouldExit(0);
-        final entrypoint = File("${nestedPackage.path}/dash");
+        final entrypoint = File("${nestedPackage.path}/dashi");
         expect(entrypoint.existsSync(), isTrue);
 
         if (shouldUseLocalDevs) {
           overrideSidekickCoreWithLocalPath(
-            nestedPackage.directory('packages/dash_sidekick'),
+            nestedPackage.directory('packages/dashi_sidekick'),
           );
         }
 
@@ -58,6 +58,31 @@ void main() {
         );
       },
     );
+
+    test(
+      'throws error when cli name collides with an system executable',
+      () async {
+        final projectRoot =
+            setupTemplateProject('test/templates/minimal_dart_package');
+        final process = await sidekickCli(
+          [
+            'init',
+            '-n',
+            'rm',
+          ],
+          workingDirectory: projectRoot,
+        );
+
+        await process.shouldExit(255);
+        final stderrText = await process.stderr.rest.toList();
+        expect(
+          stderrText,
+          contains(
+            'The CLI name rm is already taken by an executable on your system see [/bin/rm]',
+          ),
+        );
+      },
+    );
   });
 
   group('sidekick init - packages layout', () {
@@ -67,13 +92,13 @@ void main() {
         final project =
             setupTemplateProject('test/templates/root_with_packages');
         final process = await sidekickCli(
-          ['init', '-n', 'dash'],
+          ['init', '-n', 'dashi'],
           workingDirectory: project,
         );
 
         await expectLater(
           process.stdout,
-          emitsThrough('Generating dash_sidekick'),
+          emitsThrough('Generating dashi_sidekick'),
         );
         printOnFailure(await process.stdoutStream().join('\n'));
         printOnFailure(await process.stderrStream().join('\n'));
@@ -84,26 +109,26 @@ void main() {
         expect(git.existsSync(), isTrue);
 
         // check entrypoint is executable
-        final entrypoint = File("${project.path}/dash");
+        final entrypoint = File("${project.path}/dashi");
         expect(entrypoint.existsSync(), isTrue);
         expect(entrypoint.statSync().modeString(), 'rwxr-xr-x');
 
         // root is mainProjectPath
         final runFunctionFile = File(
-          "${project.path}/packages/dash_sidekick/lib/dash_sidekick.dart",
+          "${project.path}/packages/dashi_sidekick/lib/dashi_sidekick.dart",
         );
         expect(
           runFunctionFile.readAsStringSync(),
-          isNot(contains("mainProjectPath: 'packages/dash_sidekick'")),
+          isNot(contains("mainProjectPath: 'packages/dashi_sidekick'")),
         );
 
         final projectFile = File(
-          "${project.path}/packages/dash_sidekick/lib/src/dash_project.dart",
+          "${project.path}/packages/dashi_sidekick/lib/src/dashi_project.dart",
         );
         // The project itself is a DartPackage
         expect(
           projectFile.readAsStringSync(),
-          contains('class DashProject extends DartPackage'),
+          contains('class DashiProject extends DartPackage'),
         );
 
         // contains references to all packages of template
@@ -124,16 +149,16 @@ void main() {
         final project =
             setupTemplateProject('test/templates/root_with_packages');
         final process = await sidekickCli(
-          ['init', '-n', 'dash'],
+          ['init', '-n', 'dashi'],
           workingDirectory: project,
         );
         await process.shouldExit(0);
-        final entrypoint = File("${project.path}/dash");
+        final entrypoint = File("${project.path}/dashi");
         expect(entrypoint.existsSync(), isTrue);
 
         if (shouldUseLocalDevs) {
           overrideSidekickCoreWithLocalPath(
-            project.directory('packages/dash_sidekick'),
+            project.directory('packages/dashi_sidekick'),
           );
         }
 
@@ -155,7 +180,7 @@ void main() {
         final project =
             setupTemplateProject('test/templates/root_with_packages');
         final process = await sidekickCli(
-          ['init', '-n', 'dash', project.absolute.path],
+          ['init', '-n', 'dashi', project.absolute.path],
           workingDirectory: project.parent,
         );
         await process.shouldExit(0);
@@ -165,13 +190,13 @@ void main() {
         expect(git.existsSync(), isTrue);
 
         // check entrypoint is executable
-        final entrypoint = File("${project.path}/dash");
+        final entrypoint = File("${project.path}/dashi");
         expect(entrypoint.existsSync(), isTrue);
         expect(entrypoint.statSync().modeString(), 'rwxr-xr-x');
 
         if (shouldUseLocalDevs) {
           overrideSidekickCoreWithLocalPath(
-            project.directory('packages/dash_sidekick'),
+            project.directory('packages/dashi_sidekick'),
           );
         }
 
@@ -194,13 +219,13 @@ void main() {
       () async {
         final project = setupTemplateProject('test/templates/multi_package');
         final process = await sidekickCli(
-          ['init', '-n', 'dash'],
+          ['init', '-n', 'dashi'],
           workingDirectory: project,
         );
 
         await expectLater(
           process.stdout,
-          emitsThrough('Generating dash_sidekick'),
+          emitsThrough('Generating dashi_sidekick'),
         );
         printOnFailure(await process.stdoutStream().join('\n'));
         printOnFailure(await process.stderrStream().join('\n'));
@@ -211,13 +236,13 @@ void main() {
         expect(git.existsSync(), isTrue);
 
         // check entrypoint is executable
-        final entrypoint = File("${project.path}/dash");
+        final entrypoint = File("${project.path}/dashi");
         expect(entrypoint.existsSync(), isTrue);
         expect(entrypoint.statSync().modeString(), 'rwxr-xr-x');
 
         // no mainProjectPath defined, nothing is set
         final runFunctionFile = File(
-          "${project.path}/packages/dash_sidekick/lib/dash_sidekick.dart",
+          "${project.path}/packages/dashi_sidekick/lib/dashi_sidekick.dart",
         );
         expect(
           runFunctionFile.readAsStringSync(),
@@ -226,7 +251,7 @@ void main() {
 
         // contains references to all packages of template
         final projectFile = File(
-          "${project.path}/packages/dash_sidekick/lib/src/dash_project.dart",
+          "${project.path}/packages/dashi_sidekick/lib/src/dashi_project.dart",
         );
         expect(
           projectFile.readAsStringSync(),
@@ -244,16 +269,16 @@ void main() {
       () async {
         final project = setupTemplateProject('test/templates/multi_package');
         final process = await sidekickCli(
-          ['init', '-n', 'dash'],
+          ['init', '-n', 'dashi'],
           workingDirectory: project,
         );
         await process.shouldExit(0);
-        final entrypoint = File("${project.path}/dash");
+        final entrypoint = File("${project.path}/dashi");
         expect(entrypoint.existsSync(), isTrue);
 
         if (shouldUseLocalDevs) {
           overrideSidekickCoreWithLocalPath(
-            project.directory('packages/dash_sidekick'),
+            project.directory('packages/dashi_sidekick'),
           );
         }
 
@@ -274,7 +299,7 @@ void main() {
       () async {
         final project = setupTemplateProject('test/templates/multi_package');
         final process = await sidekickCli(
-          ['init', '-n', 'dash', project.absolute.path],
+          ['init', '-n', 'dashi', project.absolute.path],
           workingDirectory: project.parent,
         );
         await process.shouldExit(0);
@@ -284,13 +309,13 @@ void main() {
         expect(git.existsSync(), isTrue);
 
         // check entrypoint is executable
-        final entrypoint = File("${project.path}/dash");
+        final entrypoint = File("${project.path}/dashi");
         expect(entrypoint.existsSync(), isTrue);
         expect(entrypoint.statSync().modeString(), 'rwxr-xr-x');
 
         if (shouldUseLocalDevs) {
           overrideSidekickCoreWithLocalPath(
-            project.directory('packages/dash_sidekick'),
+            project.directory('packages/dashi_sidekick'),
           );
         }
 
@@ -314,7 +339,7 @@ void main() {
           [
             'init',
             '-n',
-            'dash',
+            'dashi',
             '--mainProjectPath',
             'packages/package_a',
             project.absolute.path
@@ -328,12 +353,12 @@ void main() {
         expect(git.existsSync(), isTrue);
 
         // check entrypoint is executable
-        final entrypoint = File("${project.path}/dash");
+        final entrypoint = File("${project.path}/dashi");
         expect(entrypoint.existsSync(), isTrue);
         expect(entrypoint.statSync().modeString(), 'rwxr-xr-x');
 
         final runFunctionFile = File(
-          "${project.path}/packages/dash_sidekick/lib/dash_sidekick.dart",
+          "${project.path}/packages/dashi_sidekick/lib/dashi_sidekick.dart",
         );
         expect(
           runFunctionFile.readAsStringSync(),
@@ -341,7 +366,7 @@ void main() {
         );
 
         final projectFile = File(
-          "${project.path}/packages/dash_sidekick/lib/src/dash_project.dart",
+          "${project.path}/packages/dashi_sidekick/lib/src/dashi_project.dart",
         );
         expect(
           projectFile.readAsStringSync(),
@@ -353,7 +378,7 @@ void main() {
 
         if (shouldUseLocalDevs) {
           overrideSidekickCoreWithLocalPath(
-            project.directory('packages/dash_sidekick'),
+            project.directory('packages/dashi_sidekick'),
           );
         }
 

@@ -67,6 +67,14 @@ class InitCommand extends Command {
     if (!isValidCliName(cliName)) {
       throw invalidCliNameErrorMessage;
     }
+
+    final cliNameCollisions = which(cliName).paths
+      // Excluding sidekick executables from the throw so you can regenerate an existing sidekick repo
+      ..removeWhere((element) => element.contains('.sidekick/bin/$cliName'));
+    if (cliNameCollisions.isNotEmpty) {
+      throw 'The CLI name $cliName is already taken by an executable on your system see $cliNameCollisions';
+    }
+
     print("\nGenerating ${cliName}_sidekick");
 
     bool isGitDir(Directory dir) => dir.directory('.git').existsSync();
