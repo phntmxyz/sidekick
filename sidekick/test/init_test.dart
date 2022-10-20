@@ -77,7 +77,7 @@ void main() {
         await process.shouldExit(255);
         expect(
           await process.stderr.rest.contains(
-            'The CLI name $cliName is already taken by an executable on your system',
+            'The CLI name $cliName is already taken by an executable on your system see [/usr/bin/sudo]',
           ),
           isTrue,
         );

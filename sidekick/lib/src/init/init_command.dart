@@ -68,11 +68,11 @@ class InitCommand extends Command {
       throw invalidCliNameErrorMessage;
     }
 
-    which(cliName).paths.forEach((element) {
-      if (!element.contains('.sidekick')) {
-        throw 'The CLI name $cliName is already taken by an executable on your system see ${which(cliName).paths}';
-      }
-    });
+    if (!which(cliName).paths.every(
+          (path) => path.contains('.sidekick/bin/$cliName'),
+        )) {
+      throw 'The CLI name $cliName is already taken by an executable on your system see ${which(cliName).paths}';
+    }
 
     print("\nGenerating ${cliName}_sidekick");
 
