@@ -15,17 +15,10 @@ int flutter(
     throw FlutterSdkNotSetException();
   }
 
-  final flutter = () {
-    if (Platform.isWindows) {
-      return sdk.file('bin/flutter.exe');
-    }
-    return sdk.file('bin/flutter');
-  }();
-
   if (Platform.isWindows) {
     final process = dcli.startFromArgs(
       'bash',
-      [flutter.path, ...args],
+      [sdk.file('bin/flutter.exe').path, ...args],
       workingDirectory: workingDir.path,
       nothrow: true,
       progress: progress,
@@ -34,7 +27,7 @@ int flutter(
     return process.exitCode ?? -1;
   } else {
     final process = dcli.startFromArgs(
-      flutter.path,
+      sdk.file('bin/flutter').path,
       args,
       workingDirectory: workingDir.path,
       nothrow: true,
