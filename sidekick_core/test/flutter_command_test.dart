@@ -6,7 +6,7 @@ import 'init_test.dart';
 
 void main() {
   test(
-    'flutter command works when dartSdkPath is set',
+    'flutter command works when flutterSdkPath is set',
     () async {
       await insideFakeSidekickProject((dir) async {
         final runner = initializeSidekick(
