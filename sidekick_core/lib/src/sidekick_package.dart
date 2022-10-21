@@ -17,4 +17,9 @@ class SidekickPackage extends DartPackage {
   String get cliName => name.replaceAll('_sidekick', '');
 
   SidekickDartRuntime get dartRuntime => SidekickDartRuntime(root);
+
+  /// Main file of the CLI plugins are registered where
+  File get cliMainFile {
+    return libDir.file('$name.dart');
+  }
 }
