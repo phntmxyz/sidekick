@@ -19,7 +19,7 @@ void main() {
     },
   );
 
-  test('flutter command fails when dartSdkPath is not set', () async {
+  test('flutter command fails when flutterSdkPath is not set', () async {
     await insideFakeSidekickProject((dir) async {
       final runner = initializeSidekick(
         name: 'dash',
