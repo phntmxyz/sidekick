@@ -24,7 +24,10 @@ void main() {
         dartSdkPath: null,
       );
       runner.addCommand(DartCommand());
-      expect(() => runner.run(['dart']), throwsA(isA<DartSdkNotSetException>()));
+      expect(
+        () => runner.run(['dart']),
+        throwsA(isA<DartSdkNotSetException>()),
+      );
     });
   });
 
