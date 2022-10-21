@@ -10,21 +10,52 @@ int dart(
   Directory? workingDirectory,
   dcli.Progress? progress,
 }) {
-  // TODO find pinned fvm flutter version
-  final binDir = repository.root.directory('.flutter/bin/cache/dart-sdk/bin/');
+  bool flutterwLegacyMode = false;
+
+  Directory? sdk = dartSdk;
+  if (sdk == null) {
+    if (flutterSdk != null) {
+      final embeddedSdk = flutterSdk!.directory('bin/cache/dart-sdk');
+      if (!embeddedSdk.existsSync()) {
+        // Flutter SDK is not fully initialized, the Dart SDK not yet downloaded
+        // Execute flutter_tool to download the embedded dart runtime
+        flutter([], workingDirectory: workingDirectory);
+      }
+      if (embeddedSdk.existsSync()) {
+        sdk = embeddedSdk;
+      }
+    }
+    if (sdk == null) {
+      final flutterWrapperLocation = findFlutterwLocation();
+      if (flutterWrapperLocation != null) {
+        // flutter_wrapper is installed, going into legacy mode for those which have not set the flutterSdkPath
+        final embeddedSdk =
+            repository.root.directory('.flutter/bin/cache/dart-sdk');
+        if (!embeddedSdk.existsSync()) {
+          // Flutter SDK is not fully initialized, the Dart SDK not yet downloaded
+          // Execute flutter_tool to download the embedded dart runtime
+          // ignore: deprecated_member_use_from_same_package
+          flutterw([], workingDirectory: workingDirectory);
+        }
+        if (embeddedSdk.existsSync()) {
+          sdk = embeddedSdk;
+          flutterwLegacyMode = true;
+        }
+      }
+    }
+  }
+  if (sdk == null) {
+    throw DartSdkNotSetException();
+  }
+
   final dart = () {
     if (Platform.isWindows) {
-      return binDir.file('dart.exe');
+      return sdk!.file('bin/dart.exe');
     } else {
-      return binDir.file('dart');
+      return sdk!.file('bin/dart');
     }
   }();
 
-  if (!dart.existsSync()) {
-    // run a flutterw command forcing flutter_tool to download the dart sdk
-    print("running flutterw to download dart");
-    flutterw([], workingDirectory: mainProject!.root);
-  }
   final process = dcli.startFromArgs(
     dart.path,
     args,
@@ -33,5 +64,19 @@ int dart(
     nothrow: true,
     terminal: progress == null,
   );
+
+  if (flutterwLegacyMode) {
+    printerr("Sidekick Warning: ${DartSdkNotSetException().message}");
+  }
   return process.exitCode ?? -1;
+}
+
+/// The Dart SDK path is not set in [initializeSidekick] (param [dartSdk], neither is is the [flutterSdk])
+class DartSdkNotSetException implements Exception {
+  final String message =
+      "No Dart SDK set. Please set it in `initializeSidekick(dartSdkPath: 'path/to/sdk')`";
+  @override
+  String toString() {
+    return "DartSdkNotSetException{message: $message}";
+  }
 }

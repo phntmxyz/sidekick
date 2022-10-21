@@ -175,8 +175,11 @@ R insideFakeSidekickProject<R>(R Function(Directory projectDir) block) {
     ..writeAsStringSync('name: dash_sdk\n');
   tempDir.directory('lib').createSync();
 
+  env['SIDEKICK_PACKAGE_HOME'] = tempDir.absolute.path;
+
   addTearDown(() {
     tempDir.deleteSync(recursive: true);
+    env['SIDEKICK_PACKAGE_HOME'] = null;
   });
 
   return IOOverrides.runZoned(

@@ -14,15 +14,21 @@ class FlutterCommand extends ForwardCommand {
 
   @override
   Future<void> run() async {
-    // TODO find pinned fvm flutter version
+    final args = argResults!.arguments;
     try {
-      final exitCode = flutterw(argResults!.arguments);
-      exit(exitCode);
-    } on FlutterWrapperNotFoundException catch (_) {
-      printerr(
-        'Could not find a pinned flutter version associated with the project.\n'
-        'Please install https://github.com/passsy/flutter_wrapper, to pin a flutter version',
-      );
+      exitCode = flutter(args);
+    } on FlutterSdkNotSetException catch (original) {
+      // for backwards compatibility link to the previous required flutter_wrapper location
+      try {
+        // ignore: deprecated_member_use_from_same_package
+        exitCode = flutterw(args);
+        printerr("Sidekick Warning: ${original.message}");
+        // success with flutterw, immediately return
+        return;
+      } on FlutterWrapperNotFoundException catch (_) {
+        // rethrow original below
+      }
+      rethrow /* original */;
     }
   }
 }
