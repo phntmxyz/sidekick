@@ -1,7 +1,4 @@
-import 'dart:io';
-
 import 'package:acronym/acronym.dart';
-import 'package:dartx/dartx.dart';
 import 'package:dcli/dcli.dart' as dcli;
 import 'package:path/path.dart' as p;
 import 'package:sidekick_core/sidekick_core.dart';
