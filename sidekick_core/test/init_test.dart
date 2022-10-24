@@ -244,7 +244,7 @@ R insideFakeProjectWithSidekick<R>(R Function(Directory projectDir) block) {
   env['SIDEKICK_PACKAGE_HOME'] = fakeSidekickDir.absolute.path;
 
   addTearDown(() {
-    //   tempDir.deleteSync(recursive: true);
+    tempDir.deleteSync(recursive: true);
     env['SIDEKICK_PACKAGE_HOME'] = null;
   });
 
