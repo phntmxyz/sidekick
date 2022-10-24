@@ -19,6 +19,8 @@ class InstallOnlyTemplate extends TemplateGenerator {
 
     final toolDirectory = pluginDirectory.directory('tool')..createSync();
     toolDirectory.file('install.dart').writeAsStringSync(props.installTemplate);
+
+    super.generate(props);
   }
 }
 
@@ -36,6 +38,7 @@ dependencies:
 
 dev_dependencies:
   sidekick_plugin_installer: ^0.1.3
+  lint: ^1.5.0
 ''';
 
   String get installTemplate => '''

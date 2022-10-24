@@ -3,7 +3,7 @@ import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_core/src/commands/plugins/create_templates/template_generator.dart';
 
 /// This template adds a pub dependency and writes the code of a [Command] into
-/// the user's sidekick CLI
+/// the user's sidekick CLI as well as registers it there.
 ///
 /// The [Command] code is not shared, thus is highly customizable. But it uses
 /// shared code from the plugin package that is registered added as dependency.
@@ -26,6 +26,8 @@ class SharedCodeTemplate extends TemplateGenerator {
     libDirectory
         .file('${props.pluginName.snakeCase}.dart')
         .writeAsStringSync(props.helpers);
+
+    super.generate(props);
   }
 }
 
@@ -43,6 +45,7 @@ dependencies:
 
 dev_dependencies:
   sidekick_plugin_installer: ^0.1.3
+  lint: ^1.5.0
 ''';
 
   String get installTemplate => '''
@@ -54,7 +57,7 @@ Future<void> main() async {
   final SidekickPackage package = PluginContext.sidekickPackage;
 
   if (PluginContext.localPlugin == null) {
-    pubAddDependency(package, 'sidekick_flutter');
+    pubAddDependency(package, ${pluginName.snakeCase});
   } else {
     // For local development
     pubAddLocalDependency(package, PluginContext.localPlugin!.root.path);
