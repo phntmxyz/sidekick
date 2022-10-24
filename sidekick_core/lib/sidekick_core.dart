@@ -117,9 +117,12 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
     exitCode = 0;
 
     final unmount = mount();
-    final result = await super.run(args);
-    unmount();
-    return result;
+    try {
+      final result = await super.run(args);
+      return result;
+    } finally {
+      unmount();
+    }
   }
 }
 
