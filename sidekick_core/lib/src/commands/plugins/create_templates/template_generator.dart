@@ -85,7 +85,7 @@ the [pub tool](https://dart.dev/tools/pub/cmd/pub-global#activating-a-package).
 ### Installing a plugin from a pub server
 
 ```bash
-${pluginName.snakeCase} plugins install <plugin name on pub server, e.g. sidekick_vault>
+$cliName plugins install <plugin name on pub server, e.g. sidekick_vault>
 ```
 
 By default, [pub.dev](https://pub.dev) is used as pub server. A custom pub server can be used with the `--hosted-url`
