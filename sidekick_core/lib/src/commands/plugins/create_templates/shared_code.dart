@@ -57,7 +57,7 @@ Future<void> main() async {
   final SidekickPackage package = PluginContext.sidekickPackage;
 
   if (PluginContext.localPlugin == null) {
-    pubAddDependency(package, ${pluginName.snakeCase});
+    pubAddDependency(package, '${pluginName.snakeCase}');
   } else {
     // For local development
     pubAddLocalDependency(package, PluginContext.localPlugin!.root.path);
