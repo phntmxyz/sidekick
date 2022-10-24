@@ -64,7 +64,7 @@ class InitCommand extends Command {
           }
           return name;
         }();
-    if (!isValidCliName(cliName)) {
+    if (!isValidPubPackageName(cliName)) {
       throw invalidCliNameErrorMessage;
     }
 

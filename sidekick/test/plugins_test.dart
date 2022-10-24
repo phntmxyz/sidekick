@@ -1,6 +1,7 @@
 import 'package:dcli/dcli.dart';
 import 'package:recase/recase.dart';
 import 'package:sidekick_core/sidekick_core.dart';
+import 'package:sidekick_core/src/commands/plugins/create_plugin_command.dart';
 import 'package:test/test.dart';
 import 'package:test_process/test_process.dart';
 
@@ -104,14 +105,7 @@ void main() {
     );
   });
 
-  // TODO: use CreatePluginCommand.templates.keys instead (import 'package:sidekick_core/src/commands/plugins/create_plugin_command.dart';)
-  const templates = [
-    'install-only',
-    'shared-command',
-    'shared-code',
-  ];
-
-  for (final template in templates) {
+  for (final template in CreatePluginCommand.templates.keys) {
     test('plugin template $template generates valid plugin code', () async {
       await runDashProcess([
         'plugins',
@@ -127,12 +121,11 @@ void main() {
 
       run('dart pub get', workingDirectory: pluginPath);
       run('dart analyze', workingDirectory: pluginPath);
-      // TODO enable when sidekick_core >0.7.1 is released
-      // run('dart format --set-exit-if-changed $pluginPath');
+      run('dart format --set-exit-if-changed $pluginPath');
     });
   }
 
-  for (final template in templates) {
+  for (final template in CreatePluginCommand.templates.keys) {
     test(
       'plugin e2e $template: create, install, run',
       () async {
