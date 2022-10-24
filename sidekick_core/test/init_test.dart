@@ -163,6 +163,65 @@ void main() {
       expect(innerCalled, isTrue);
     });
   });
+
+  group('sdk paths are set correctly given a', () {
+    test('absolute sdk path', () {
+      insideFakeProjectWithSidekick((dir) {
+        final fakeDartSdk = dir.directory('my-dart-sdk')..createSync();
+        final fakeFlutterSdk = dir.directory('my-flutter-sdk')..createSync();
+
+        final runner = initializeSidekick(
+          name: 'dash',
+          dartSdkPath: fakeDartSdk.absolute.path,
+          flutterSdkPath: fakeFlutterSdk.absolute.path,
+        );
+
+        expect(runner.flutterSdk?.path, fakeFlutterSdk.absolute.path);
+        expect(runner.dartSdk?.path, fakeDartSdk.absolute.path);
+      });
+    });
+
+    test('relative sdk path when initializing inside of project', () {
+      insideFakeProjectWithSidekick((dir) {
+        final fakeDartSdk = dir.directory('my-dart-sdk')..createSync();
+        final fakeFlutterSdk = dir.directory('my-flutter-sdk')..createSync();
+
+        final runner = initializeSidekick(
+          name: 'dash',
+          dartSdkPath: 'my-dart-sdk',
+          flutterSdkPath: 'my-flutter-sdk',
+        );
+
+        expect(runner.flutterSdk?.path, fakeFlutterSdk.absolute.path);
+        expect(runner.dartSdk?.path, fakeDartSdk.absolute.path);
+      });
+    });
+
+    test('relative sdk path when initializing outside of project', () {
+      void outsideProject(void Function() callback) {
+        final tempDir = Directory.systemTemp.createTempSync();
+        addTearDown(() => tempDir.deleteSync(recursive: true));
+
+        IOOverrides.runZoned(callback, getCurrentDirectory: () => tempDir);
+      }
+
+      insideFakeProjectWithSidekick((dir) {
+        outsideProject(() {
+          final fakeDartSdk = dir.directory('my-dart-sdk')..createSync();
+          final fakeFlutterSdk = dir.directory('my-flutter-sdk')..createSync();
+
+          final runner = initializeSidekick(
+            name: 'dash',
+            dartSdkPath: 'my-dart-sdk',
+            flutterSdkPath: 'my-flutter-sdk',
+          );
+
+          expect(runner.flutterSdk?.path, fakeFlutterSdk.absolute.path);
+          expect(runner.dartSdk?.path, fakeDartSdk.absolute.path);
+        });
+      });
+    });
+  });
 }
 
 R insideFakeProjectWithSidekick<R>(R Function(Directory projectDir) block) {
