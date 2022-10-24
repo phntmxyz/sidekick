@@ -31,6 +31,8 @@ export 'package:sidekick_core/src/git.dart';
 export 'package:sidekick_core/src/repository.dart';
 export 'package:sidekick_core/src/sidekick_package.dart';
 
+part 'src/resolve_sdk_path.dart';
+
 /// Initializes sidekick, call this at the very start of your CLI program
 ///
 /// Set [name] to the name of your CLI entrypoint
@@ -46,6 +48,9 @@ export 'package:sidekick_core/src/sidekick_package.dart';
 /// enables the [flutter] and [dart] commands.
 /// [dartSdkPath] is inherited from [flutterSdkPath]. Set it only for pure dart
 /// projects.
+/// The paths can either be absolute or relative to the project root. (E.g. if
+/// the custom sidekick CLI is at /Users/foo/project-x/packages/custom_sidekick,
+/// relative paths are resolved relative from /Users/foo/project-x)
 SidekickCommandRunner initializeSidekick({
   required String name,
   String? description,
@@ -68,8 +73,8 @@ SidekickCommandRunner initializeSidekick({
     repository: repo,
     mainProject: mainProject,
     workingDirectory: Directory.current,
-    flutterSdk: flutterSdkPath == null ? null : Directory(flutterSdkPath),
-    dartSdk: dartSdkPath == null ? null : Directory(dartSdkPath),
+    flutterSdk: _resolveSdkPath(flutterSdkPath),
+    dartSdk: _resolveSdkPath(dartSdkPath),
   );
   return runner;
 }
