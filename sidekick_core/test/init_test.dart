@@ -16,7 +16,7 @@ void main() {
     });
 
     test('mainProject returns null when not set', () async {
-      await insideFakeSidekickProject((dir) async {
+      await insideFakeProjectWithSidekick((dir) async {
         final runner = initializeSidekick(
           name: 'dash',
           // ignore: avoid_redundant_argument_values
@@ -38,7 +38,7 @@ void main() {
     });
 
     test('mainProject returns while running run', () async {
-      await insideFakeSidekickProject((dir) async {
+      await insideFakeProjectWithSidekick((dir) async {
         final runner = initializeSidekick(name: 'dash', mainProjectPath: '.');
         bool called = false;
         runner.addCommand(
@@ -47,7 +47,7 @@ void main() {
             block: () {
               called = true;
               expect(mainProject!.root.path, dir.path);
-              expect(mainProject!.name, 'dash_sdk');
+              expect(mainProject!.name, 'main_project');
             },
           ),
         );
@@ -69,7 +69,7 @@ void main() {
     });
 
     test('repository returns while running run', () {
-      insideFakeSidekickProject((dir) {
+      insideFakeProjectWithSidekick((dir) {
         final runner = initializeSidekick(name: 'dash');
         bool called = false;
         runner.addCommand(
@@ -98,7 +98,7 @@ void main() {
       );
     });
     test('cliName returns while running run', () {
-      insideFakeSidekickProject((dir) {
+      insideFakeProjectWithSidekick((dir) {
         final runner = initializeSidekick(name: 'dash');
         bool called = false;
         runner.addCommand(
@@ -117,7 +117,7 @@ void main() {
   });
 
   test('nested initializeSidekick() restores old static members', () async {
-    await insideFakeSidekickProject((dir) async {
+    await insideFakeProjectWithSidekick((dir) async {
       final outerRunner =
           initializeSidekick(name: 'dash', mainProjectPath: '.');
       bool outerCalled = false;
@@ -132,7 +132,7 @@ void main() {
             void verifyOuter(Directory dir) {
               expect(cliName, 'dash');
               expect(mainProject!.root.path, dir.path);
-              expect(mainProject!.name, 'dash_sdk');
+              expect(mainProject!.name, 'main_project');
               expect(repository.root.path, dir.path);
             }
 
@@ -165,20 +165,27 @@ void main() {
   });
 }
 
-R insideFakeSidekickProject<R>(R Function(Directory projectDir) block) {
+R insideFakeProjectWithSidekick<R>(R Function(Directory projectDir) block) {
   final tempDir = Directory.systemTemp.createTempSync();
   'git init ${tempDir.path}'.run;
 
-  tempDir.file('dash').createSync();
   tempDir.file('pubspec.yaml')
     ..createSync()
-    ..writeAsStringSync('name: dash_sdk\n');
-  tempDir.directory('lib').createSync();
+    ..writeAsStringSync('name: main_project\n');
+  tempDir.file('dash').createSync();
 
-  env['SIDEKICK_PACKAGE_HOME'] = tempDir.absolute.path;
+  final fakeSidekickDir = tempDir.directory('packages/dash_sdk')
+    ..createSync(recursive: true);
+
+  fakeSidekickDir.file('pubspec.yaml')
+    ..createSync()
+    ..writeAsStringSync('name: dash_sdk\n');
+  fakeSidekickDir.directory('lib').createSync();
+
+  env['SIDEKICK_PACKAGE_HOME'] = fakeSidekickDir.absolute.path;
 
   addTearDown(() {
-    tempDir.deleteSync(recursive: true);
+    //   tempDir.deleteSync(recursive: true);
     env['SIDEKICK_PACKAGE_HOME'] = null;
   });
 

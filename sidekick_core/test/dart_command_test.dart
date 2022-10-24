@@ -6,7 +6,7 @@ import 'init_test.dart';
 
 void main() {
   test('dart command works when dartSdkPath is set', () async {
-    await insideFakeSidekickProject((dir) async {
+    await insideFakeProjectWithSidekick((dir) async {
       final runner = initializeSidekick(
         name: 'dash',
         dartSdkPath: fakeDartSdk().path,
@@ -17,7 +17,7 @@ void main() {
   });
 
   test('dart command fails when dartSdkPath is not set', () async {
-    await insideFakeSidekickProject((dir) async {
+    await insideFakeProjectWithSidekick((dir) async {
       final runner = initializeSidekick(
         name: 'dash',
         // ignore: avoid_redundant_argument_values
@@ -32,7 +32,7 @@ void main() {
   });
 
   test('dart command links to embedded Dart SDK in Flutter SDK', () async {
-    await insideFakeSidekickProject((dir) async {
+    await insideFakeProjectWithSidekick((dir) async {
       final runner = initializeSidekick(
         name: 'dash',
         flutterSdkPath: fakeFlutterSdk().path,
