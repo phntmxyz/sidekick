@@ -2,12 +2,13 @@ import 'package:recase/recase.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_core/src/commands/plugins/create_templates/template_generator.dart';
 
-/// This template adds pub dependency and registers a shared cli [Command] that pub package
+/// This template adds a pub dependency to a shared CLI [Command] and registers
+/// it in the user's sidekick CLI.
 ///
 /// This method is designed for cases where the command might be configurable
 /// with parameters but doesn't allow users to actually change the code.
 ///
-/// It allows updates (via pub upgrade) without users having to touch their code.
+/// It allows updates (via `pub upgrade`) without users having to touch their code.
 class SharedCommandTemplate extends TemplateGenerator {
   const SharedCommandTemplate();
 
@@ -25,6 +26,8 @@ class SharedCommandTemplate extends TemplateGenerator {
     libDirectory
         .file('${props.pluginName.snakeCase}_command.dart')
         .writeAsStringSync(props.exampleCommand);
+
+    super.generate(props);
   }
 }
 
@@ -42,6 +45,7 @@ dependencies:
 
 dev_dependencies:
   sidekick_plugin_installer: ^0.1.3
+  lint: ^1.5.0
 ''';
 
   String get installTemplate => '''
@@ -53,7 +57,7 @@ Future<void> main() async {
   final SidekickPackage package = PluginContext.sidekickPackage;
 
   if (PluginContext.localPlugin == null) {
-    pubAddDependency(package, 'sidekick_flutter');
+    pubAddDependency(package, '${pluginName.snakeCase}');
   } else {
     // For local development
     pubAddLocalDependency(package, PluginContext.localPlugin!.root.path);

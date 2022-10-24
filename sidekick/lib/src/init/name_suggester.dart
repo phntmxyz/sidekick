@@ -1,9 +1,7 @@
-import 'dart:io';
-
 import 'package:acronym/acronym.dart';
-import 'package:dartx/dartx.dart';
 import 'package:dcli/dcli.dart' as dcli;
 import 'package:path/path.dart' as p;
+import 'package:sidekick_core/sidekick_core.dart';
 
 /// Helps users to find a short, pregnant name for their CLI
 class NameSuggester {
@@ -86,7 +84,7 @@ class NameSuggester {
 
     return suggestions
         .map((e) => e.toLowerCase())
-        .where(isValidCliName)
+        .where(isValidPubPackageName)
         .toSet();
   }
 }
@@ -96,7 +94,7 @@ class CliNameValidator extends dcli.AskValidator {
 
   @override
   String validate(String line) {
-    if (!isValidCliName(line)) {
+    if (!isValidPubPackageName(line)) {
       throw dcli.AskValidatorException(dcli.red(invalidCliNameErrorMessage));
     }
 
@@ -106,11 +104,6 @@ class CliNameValidator extends dcli.AskValidator {
 
 const invalidCliNameErrorMessage = 'The CLI name must be valid: '
     'at least one lower case letter or underscore '
-    'followed by zero or more lower case letters, digits, or underscores.';
-
-// TODO replace with sidekick_core isValidPubPackageName once published
-// https://github.com/phntmxyz/sidekick/pull/62
-bool isValidCliName(String name) => _cliNameRegExp.hasMatch(name);
-
-// See https://dart.dev/tools/pub/pubspec#name and https://github.com/dart-lang/sdk/blob/8d262e294400d2f7e41f05579c088a6409a7b2bb/pkg/dartdev/lib/src/utils.dart#L95
-final RegExp _cliNameRegExp = RegExp(r'^[a-z_][a-z\d_]*$');
+    'followed by zero or more lower case letters, digits, or underscores. '
+    "Furthermore, make sure that it isn't a reserved word. "
+    'For details, see https://dart.dev/tools/pub/pubspec#name';

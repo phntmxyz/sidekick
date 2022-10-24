@@ -71,6 +71,7 @@ class CreatePluginCommand extends Command {
     final templateProperties = TemplateProperties(
       pluginName: name,
       pluginDirectory: pluginDirectory,
+      templateType: template,
     );
 
     final TemplateGenerator generator = templates[template]!;
