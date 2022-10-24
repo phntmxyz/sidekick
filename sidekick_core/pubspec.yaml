@@ -1,6 +1,6 @@
 name: sidekick_core
 description: Reusable code pieces for sidekick CLIs. Provides a project and useful helper methods when working with files
-version: 0.7.1
+version: 0.8.0
 repository: https://github.com/phntmxyz/sidekick
 
 environment:

@@ -1,3 +1,10 @@
+## 0.8.0
+
+- `DartCommand` and `FlutterCommand` now require the SDKs to be set in `initializeSidekick(flutterSdkPath: ..., dartSdkPath: ...)`.)`. This is a non-breaking change, falling back to `flutter_wrapper`.
+- Breaking: Plugins now use a zero argument main function. All information during install is injected via env, accessible with `PluginContext` #72
+- New: `DartPackage` doesn't require a `lib` directory anymore #63
+- Add: `SidekickPackage.cliMainFile` location where plugins are registered
+
 ## 0.7.1
 
 - New: `plugins create` now generates plugins from templates
