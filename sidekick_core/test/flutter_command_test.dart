@@ -8,7 +8,7 @@ void main() {
   test(
     'flutter command works when flutterSdkPath is set',
     () async {
-      await insideFakeSidekickProject((dir) async {
+      await insideFakeProjectWithSidekick((dir) async {
         final runner = initializeSidekick(
           name: 'dash',
           flutterSdkPath: fakeFlutterSdk().path,
@@ -20,7 +20,7 @@ void main() {
   );
 
   test('flutter command fails when flutterSdkPath is not set', () async {
-    await insideFakeSidekickProject((dir) async {
+    await insideFakeProjectWithSidekick((dir) async {
       final runner = initializeSidekick(
         name: 'dash',
         // ignore: avoid_redundant_argument_values
