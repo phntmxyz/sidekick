@@ -18,6 +18,7 @@ export 'package:dcli/dcli.dart' hide run, start, startFromArgs, absolute;
 export 'package:sidekick_core/src/cli_util.dart';
 export 'package:sidekick_core/src/commands/analyze_command.dart';
 export 'package:sidekick_core/src/commands/dart_command.dart';
+export 'package:sidekick_core/src/commands/deps_command.dart';
 export 'package:sidekick_core/src/commands/flutter_command.dart';
 export 'package:sidekick_core/src/commands/install_global_command.dart';
 export 'package:sidekick_core/src/commands/plugins/plugins_command.dart';
