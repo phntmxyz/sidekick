@@ -80,3 +80,22 @@ class DartSdkNotSetException implements Exception {
     return "DartSdkNotSetException{message: $message}";
   }
 }
+
+/// Returns the Dart SDK of the `dart` executable on `PATH`
+Directory? systemDartSdk() {
+  // /opt/homebrew/bin/dart
+  final path = dcli.start('which dart', progress: Progress.capture()).firstLine;
+  if (path == null) {
+    // dart not on path
+    return null;
+  }
+  final file = File(path);
+  // /opt/homebrew/Cellar/dart/2.18.1/libexec/bin/dart
+  final realpath = file.resolveSymbolicLinksSync();
+
+  final libexec = File(realpath).parent.parent;
+  return libexec;
+}
+
+/// Returns the path to Dart SDK of the `dart` executable on `PATH`
+String? systemDartSdkPath() => systemDartSdk()?.path;
