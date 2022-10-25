@@ -76,6 +76,14 @@ class CreatePluginCommand extends Command {
 
     final TemplateGenerator generator = templates[template]!;
     generator.generate(templateProperties);
-    systemDart(['format', pluginDirectory.path]);
+
+    final formatArgs = ['format', pluginDirectory.path];
+    if (dartSdk == null) {
+      // command is run from global sidekick CLI
+      systemDart(formatArgs);
+    } else {
+      // command is run from generated sidekick CLI which has its own Dart SDK
+      dart(formatArgs);
+    }
   }
 }
