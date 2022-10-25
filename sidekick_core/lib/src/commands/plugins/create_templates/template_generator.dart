@@ -27,6 +27,11 @@ class TemplateProperties {
   /// The name of the to be generated plugin
   final String pluginName;
 
+  /// The name of the command that will be generated
+  String get commandName {
+    return pluginName.replaceAll('_sidekick_plugin', '').paramCase;
+  }
+
   /// Where the files should be written to. This is considered as root directory
   final Directory pluginDirectory;
 

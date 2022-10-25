@@ -105,6 +105,8 @@ class ${pluginName.pascalCase}Command extends Command {
 ''';
 
   String get helpers => '''
+library ${pluginName.snakeCase};
+
 List<String> getGreetings() => [
       'Moin',
       'Servus',

@@ -21,7 +21,7 @@ class CreatePluginCommand extends Command {
     argParser.addOption(
       'name',
       abbr: 'n',
-      help: 'The plugin name',
+      help: 'The plugin name (should end with _sidekick_plugin)',
     );
 
     argParser.addOption(
