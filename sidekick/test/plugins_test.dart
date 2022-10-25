@@ -208,7 +208,6 @@ include: package:lint/analysis_options.yaml
 linter:
   rules:
     avoid_print: false
-
 ''';
 
 const _expectedGitignore = '''
