@@ -5,7 +5,6 @@ import 'dart:io';
 import 'package:args/command_runner.dart';
 import 'package:dartx/dartx_io.dart';
 import 'package:dcli/dcli.dart';
-import 'package:sidekick_core/src/cli_util.dart';
 import 'package:sidekick_core/src/dart_package.dart';
 import 'package:sidekick_core/src/repository.dart';
 
