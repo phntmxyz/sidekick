@@ -10,14 +10,37 @@ on:
     - cron: '0 3 * * *'
 
 jobs:
-  integration_tests_linux:
+  integration_tests_linux_local:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         # Always keep support to at least 2 stable versions
-        version: ["2.14", "2.15", "2.16", "2.17","latest"]
-        dependencies: ["local", "pub"]
+        version: [ "2.14", "2.15", "2.16", "2.17", "2.18", "latest" ]
+
+    container:
+      image: dart:${{ matrix.version }}
+
+    steps:
+      - run: |
+          apt-get update
+          apt-get install unzip
+      - uses: actions/checkout@v1
+      - name: Install dependencies
+        run: cd sidekick && dart pub get --no-precompile
+      - name: Run tests
+        run: cd sidekick && dart test
+        env:
+          SIDEKICK_LOCAL_DEPS: "true"
+
+  integration_tests_linux_pub:
+    runs-on: ubuntu-latest
+    if: ${{ !github.event.pull_request }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # Always keep support to at least 2 stable versions
+        version: ["2.14", "2.15", "2.16", "2.17", "2.18", "latest"]
 
     container:
       image: dart:${{ matrix.version }}
@@ -32,7 +55,7 @@ jobs:
       - name: Run tests
         run: cd sidekick && dart test
         env:
-          SIDEKICK_LOCAL_DEPS: "${{ matrix.dependencies == 'local' }}"
+          SIDEKICK_LOCAL_DEPS: "false"
 
   integration_tests_windows:
     runs-on: windows-2022
