@@ -32,6 +32,7 @@ jobs:
         run: cd sidekick && dart test
         env:
           SIDEKICK_LOCAL_DEPS: "true"
+          SIDEKICK_ANALYZE: "${{ matrix.version == '2.18' }}"
 
   integration_tests_linux_pub:
     runs-on: ubuntu-latest
@@ -56,6 +57,7 @@ jobs:
         run: cd sidekick && dart test
         env:
           SIDEKICK_LOCAL_DEPS: "false"
+          SIDEKICK_ANALYZE: "${{ matrix.version == '2.18' }}"
 
   integration_tests_windows:
     runs-on: windows-2022

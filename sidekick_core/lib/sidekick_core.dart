@@ -5,7 +5,6 @@ import 'dart:io';
 import 'package:args/command_runner.dart';
 import 'package:dartx/dartx_io.dart';
 import 'package:dcli/dcli.dart';
-import 'package:sidekick_core/src/cli_util.dart';
 import 'package:sidekick_core/src/dart_package.dart';
 import 'package:sidekick_core/src/repository.dart';
 
@@ -151,21 +150,21 @@ Directory? _entryWorkingDirectory;
 /// Usually a short acronym, like 3 characters
 String get cliName {
   if (_activeRunner == null) {
-    error(
-      'You cannot access cliName '
-      'outside of a Command executed with SidekickCommandRunner.',
-    );
+    throw 'You cannot access cliName '
+        'outside of a Command executed with SidekickCommandRunner.';
   }
   return _activeRunner!.executableName;
 }
 
+/// Name of the cli program (if running a generated sidekick CLI)
+/// or null (if running the global sidekick CLI)
+String? get cliNameOrNull => _activeRunner?.executableName;
+
 /// The root of the repository which contains all projects
 Repository get repository {
   if (_activeRunner == null) {
-    error(
-      'You cannot access repository '
-      'outside of a Command executed with SidekickCommandRunner.',
-    );
+    throw 'You cannot access repository '
+        'outside of a Command executed with SidekickCommandRunner.';
   }
   return _activeRunner!.repository;
 }
@@ -177,10 +176,8 @@ Repository get repository {
 /// with zero or multiple projects.
 DartPackage? get mainProject {
   if (_activeRunner == null) {
-    error(
-      'You cannot access mainProject '
-      'outside of a Command executed with SidekickCommandRunner.',
-    );
+    throw 'You cannot access mainProject '
+        'outside of a Command executed with SidekickCommandRunner.';
   }
   return _activeRunner?.mainProject;
 }
@@ -192,10 +189,8 @@ DartPackage? get mainProject {
 /// - https://github.com/fluttertools/fvm
 Directory? get flutterSdk {
   if (_activeRunner == null) {
-    error(
-      'You cannot access flutterSdk '
-      'outside of a Command executed with SidekickCommandRunner.',
-    );
+    throw 'You cannot access flutterSdk '
+        'outside of a Command executed with SidekickCommandRunner.';
   }
   return _activeRunner?.flutterSdk;
 }
@@ -205,10 +200,8 @@ Directory? get flutterSdk {
 /// Usually inherited from [flutterSdk] which ships with an embedded Dart SDK
 Directory? get dartSdk {
   if (_activeRunner == null) {
-    error(
-      'You cannot access dartSdk '
-      'outside of a Command executed with SidekickCommandRunner.',
-    );
+    throw 'You cannot access dartSdk '
+        'outside of a Command executed with SidekickCommandRunner.';
   }
   return _activeRunner?.dartSdk;
 }

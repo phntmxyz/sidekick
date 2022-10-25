@@ -82,12 +82,38 @@ class DartSdkNotSetException implements Exception {
   }
 }
 
+/// Executes the system dart cli which is globally available on PATH
+int systemDart(
+  List<String> args, {
+  Directory? workingDirectory,
+  dcli.Progress? progress,
+}) {
+  final systemDartExecutablePath = systemDartExecutable();
+  if (systemDartExecutablePath == null) {
+    throw "Couldn't find dart executable on PATH.";
+  }
+
+  final process = dcli.startFromArgs(
+    systemDartExecutablePath,
+    args,
+    workingDirectory: workingDirectory?.path ?? entryWorkingDirectory.path,
+    progress: progress,
+    terminal: progress == null,
+  );
+
+  return process.exitCode ?? -1;
+}
+
+String? systemDartExecutable() =>
+    // /opt/homebrew/bin/dart
+    dcli
+        .start('which dart', progress: Progress.capture(), nothrow: true)
+        .firstLine;
+
 /// Returns the Dart SDK of the `dart` executable on `PATH`
 Directory? systemDartSdk() {
   // /opt/homebrew/bin/dart
-  final path = dcli
-      .start('which dart', progress: Progress.capture(), nothrow: true)
-      .firstLine;
+  final path = systemDartExecutable();
   if (path == null) {
     // dart not on path
     return null;
