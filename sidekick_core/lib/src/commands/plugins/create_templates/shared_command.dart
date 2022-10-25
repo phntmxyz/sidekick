@@ -24,7 +24,12 @@ class SharedCommandTemplate extends TemplateGenerator {
 
     final libDirectory = pluginDirectory.directory('lib')..createSync();
     libDirectory
-        .file('${props.pluginName.snakeCase}_command.dart')
+        .file('${props.pluginName.snakeCase}.dart')
+        .writeAsStringSync(props.library);
+
+    final srcDir = libDirectory.directory('src')..createSync();
+    srcDir
+        .file('${props.commandName.snakeCase}_command.dart')
         .writeAsStringSync(props.exampleCommand);
 
     super.generate(props);
@@ -66,23 +71,29 @@ Future<void> main() async {
 
   registerPlugin(
     sidekickCli: package,
-    import: "import 'package:$pluginName/${pluginName.snakeCase}_command.dart';",
+    import: "import 'package:$pluginName/${pluginName.snakeCase}.dart';",
     command: '${pluginName.pascalCase}Command()',
   );
 }
 ''';
 
+  String get library => '''
+library ${pluginName.snakeCase};
+
+export 'package:${pluginName.snakeCase}/src/${commandName.snakeCase}_command.dart';
+''';
+
   String get exampleCommand => '''
 import 'package:sidekick_core/sidekick_core.dart';
 
-class ${pluginName.pascalCase}Command extends Command {
+class ${commandName.pascalCase}Command extends Command {
   @override
   final String description = 'Sample command';
 
   @override
-  final String name = '${pluginName.paramCase}';
+  final String name = '$commandName';
 
-  ${pluginName.pascalCase}Command() {
+  ${commandName.pascalCase}Command() {
     // add parameters here with argParser.addOption
   }
 
