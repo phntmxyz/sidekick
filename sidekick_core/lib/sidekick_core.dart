@@ -150,8 +150,7 @@ Directory? _entryWorkingDirectory;
 /// Usually a short acronym, like 3 characters
 String get cliName {
   if (_activeRunner == null) {
-    throw 'You cannot access cliName '
-        'outside of a Command executed with SidekickCommandRunner.';
+    throw OutOfCommandRunnerScopeException('cliName');
   }
   return _activeRunner!.executableName;
 }
@@ -163,8 +162,7 @@ String? get cliNameOrNull => _activeRunner?.executableName;
 /// The root of the repository which contains all projects
 Repository get repository {
   if (_activeRunner == null) {
-    throw 'You cannot access repository '
-        'outside of a Command executed with SidekickCommandRunner.';
+    throw OutOfCommandRunnerScopeException('repository');
   }
   return _activeRunner!.repository;
 }
@@ -176,8 +174,7 @@ Repository get repository {
 /// with zero or multiple projects.
 DartPackage? get mainProject {
   if (_activeRunner == null) {
-    throw 'You cannot access mainProject '
-        'outside of a Command executed with SidekickCommandRunner.';
+    throw OutOfCommandRunnerScopeException('mainProject');
   }
   return _activeRunner?.mainProject;
 }
@@ -189,8 +186,7 @@ DartPackage? get mainProject {
 /// - https://github.com/fluttertools/fvm
 Directory? get flutterSdk {
   if (_activeRunner == null) {
-    throw 'You cannot access flutterSdk '
-        'outside of a Command executed with SidekickCommandRunner.';
+    throw OutOfCommandRunnerScopeException('flutterSdk');
   }
   return _activeRunner?.flutterSdk;
 }
@@ -200,8 +196,7 @@ Directory? get flutterSdk {
 /// Usually inherited from [flutterSdk] which ships with an embedded Dart SDK
 Directory? get dartSdk {
   if (_activeRunner == null) {
-    throw 'You cannot access dartSdk '
-        'outside of a Command executed with SidekickCommandRunner.';
+    throw OutOfCommandRunnerScopeException('dartSdk');
   }
   return _activeRunner?.dartSdk;
 }
@@ -252,4 +247,20 @@ Directory? _resolveSdkPath(String? sdkPath, Directory repoRoot) {
   }
 
   return resolvedDir;
+}
+
+/// Called when properties of [SidekickCommandRunner] are accessed outside of
+/// the execution of a command
+class OutOfCommandRunnerScopeException implements Exception {
+  String get message => "Can't access SidekickCommandRunner.$property "
+      "when no command is executed.";
+
+  final String property;
+
+  OutOfCommandRunnerScopeException(this.property);
+
+  @override
+  String toString() {
+    return "OutOfCommandRunnerScopeException{message: $message}";
+  }
 }
