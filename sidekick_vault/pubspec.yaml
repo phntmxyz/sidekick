@@ -2,6 +2,7 @@ name: sidekick_vault
 description: Reads project secrets stored encrypted on the local filesystem
 version: 0.5.4
 repository: https://github.com/phntmxyz/sidekick
+issue_tracker: https://github.com/phntmxyz/sidekick/labels/sidekick_vault
 
 environment:
   sdk: '>=2.14.0 <3.0.0'
