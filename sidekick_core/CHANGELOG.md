@@ -1,3 +1,12 @@
+## 0.9.0
+
+- Fix: Setting `flutterSdkPath` and `dartSdkPath` in `initializeSidekick` now works with relative paths from anywhere as well.  
+  Relative paths are resolved relative from the project root.
+- New: The `plugins create` command now also generates a `README.md`, `.gitignore`, and `analysis_options.yaml`
+- New: `DepsCommand` (previously was in `sidekick`)
+- New: `RecompileCommand` (previously was in `sidekick`)
+- New: Functions returning system Dart/Flutter SDKs (`systemDartSdk`, `systemDartSdkPath`, `systemFlutterSdk`, `systemFlutterSdkPath`)
+
 ## 0.8.0
 
 - `DartCommand` and `FlutterCommand` now require the SDKs to be set in `initializeSidekick(flutterSdkPath: ..., dartSdkPath: ...)`.)`. This is a non-breaking change, falling back to `flutter_wrapper`.
