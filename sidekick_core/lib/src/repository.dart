@@ -118,7 +118,7 @@ class Repository {
 
   /// Returns the list of all packages in the repository
   List<DartPackage> findAllPackages() {
-    return repository.root
+    return root
         .allSubDirectories((dir) {
           if (dir.name.startsWith('.')) {
             // ignore hidden folders
