@@ -119,18 +119,20 @@ class Repository {
   /// Returns the list of all packages in the repository
   List<DartPackage> findAllPackages() {
     return repository.root
-        .listSync()
-        .expand((it) {
-          if (it is Directory) {
-            if (it.name.startsWith('.')) {
-              // ignore hidden folders
-              return [];
-            }
-            return it.listSync();
+        .allSubDirectories((dir) {
+          if (dir.name.startsWith('.')) {
+            // ignore hidden folders
+            return false;
           }
-          return [it];
+          if (dir.name == 'build') {
+            final package = DartPackage.fromDirectory(dir.parent);
+            if (package != null) {
+              // ignore <dartPackage>/build dir
+              return false;
+            }
+          }
+          return true;
         })
-        .whereType<Directory>()
         .mapNotNull((it) => DartPackage.fromDirectory(it))
         .toList();
   }
@@ -153,6 +155,15 @@ extension FindInDirectory on Directory {
         return null;
       }
       dir = dir.parent;
+    }
+  }
+
+  Iterable<Directory> allSubDirectories(
+    bool Function(Directory dir) predicate,
+  ) sync* {
+    yield this;
+    for (final dir in listSync().whereType<Directory>().where(predicate)) {
+      yield* dir.allSubDirectories(predicate);
     }
   }
 }
