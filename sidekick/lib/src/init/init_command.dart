@@ -200,6 +200,8 @@ class InitCommand extends Command {
           'hasNestedPackagesPath': mainProject != null &&
               !relative(mainProject.root.path, from: repoRoot.absolute.path)
                   .startsWith('packages'),
+          'setFlutterSdkPath': [...packages, mainProject]
+              .any((package) => package?.isFlutterPackage ?? false),
         },
         logger: Logger(),
         fileConflictResolution: FileConflictResolution.overwrite,
@@ -258,13 +260,17 @@ class InitCommand extends Command {
       }
     }
 
+    // Download the bundled dart runtime for the CLI
+    final bundledDart = (SidekickDartRuntime(cliPackage)..download()).dart;
+
     // TODO add --offline flag that does not upgrade anything
     // make sure sidekick_core is up-to-date
-    downloadDartRuntime(cliPackage);
-    upgradeSidekickDependencies(
-      cliPackage,
-      packages: ['sidekick_core'],
+    bundledDart(
+      ['pub', 'upgrade', 'sidekick_core'],
+      workingDirectory: cliPackage,
     );
+
+    bundledDart(['format', cliPackage.path], progress: Progress.printStdErr());
   }
 
   void _addPackagesToProjectClass(
@@ -320,29 +326,6 @@ Future<File> installFlutterWrapper(Directory directory) async {
   final exe = directory.file('flutterw');
   assert(exe.existsSync());
   return exe;
-}
-
-/// Downloads the bundled dart runtime for the CLI
-void downloadDartRuntime(Directory sidekickCliPackage) {
-  // TODO replace with DartRuntime(cliPackage).download(); when released
-  dcli.run(
-    'sh tool/download_dart.sh',
-    workingDirectory: sidekickCliPackage.path,
-  );
-  final downloadPath = sidekickCliPackage.directory('build/cache/dart-sdk/');
-  assert(downloadPath.existsSync());
-}
-
-/// Upgrade dependencies of a sidekick cli
-void upgradeSidekickDependencies(
-  Directory sidekickCliPackage, {
-  List<String> packages = const [],
-}) {
-  final dart = sidekickCliPackage.file('build/cache/dart-sdk/bin/dart');
-  dcli.run(
-    '${dart.path} pub upgrade ${packages.join(' ')}',
-    workingDirectory: sidekickCliPackage.path,
-  );
 }
 
 /// Makes a file executable 'rwxr-xr-x' (755)
