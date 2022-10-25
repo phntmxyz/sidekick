@@ -48,6 +48,10 @@ class TemplateProperties {
 extension on TemplateProperties {
   String get analysisOptionsTemplate => '''
 include: package:lint/analysis_options.yaml
+
+linter:
+  rules:
+    avoid_print: false
 ''';
 
   String get gitignoreTemplate => '''
