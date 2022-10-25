@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:{{#lowerCase}}{{name}}{{/lowerCase}}_sidekick/src/commands/deps_command.dart';
-import 'package:{{#lowerCase}}{{name}}{{/lowerCase}}_sidekick/src/commands/recompile_command.dart';
 import 'package:{{#lowerCase}}{{name}}{{/lowerCase}}_sidekick/src/{{#lowerCase}}{{name}}{{/lowerCase}}_project.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 
