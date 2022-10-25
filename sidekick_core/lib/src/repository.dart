@@ -122,6 +122,10 @@ class Repository {
         .listSync()
         .expand((it) {
           if (it is Directory) {
+            if (it.name.startsWith('.')) {
+              // ignore hidden folders
+              return [];
+            }
             return it.listSync();
           }
           return [it];
