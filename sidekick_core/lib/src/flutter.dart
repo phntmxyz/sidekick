@@ -42,8 +42,31 @@ int flutter(
 class FlutterSdkNotSetException implements Exception {
   final String message =
       "No Flutter SDK set. Please set it in `initializeSidekick(flutterSdkPath: 'path/to/sdk')`";
+
   @override
   String toString() {
     return "FlutterSdkNotSetException{message: $message}";
   }
 }
+
+/// Returns the Flutter SDK of the `flutter` executable on PATH
+Directory? systemFlutterSdk() {
+  // /opt/homebrew/bin/flutter
+  final path = dcli
+      .start('which flutter', progress: Progress.capture(), nothrow: true)
+      .firstLine;
+  if (path == null) {
+    // flutter not on path
+    return null;
+  }
+  final file = File(path);
+  // /opt/homebrew/Caskroom/flutter/3.0.4/flutter/bin/flutter
+  final realpath = file.resolveSymbolicLinksSync();
+
+  // located in /bin/flutter
+  final rootDir = File(realpath).parent.parent;
+  return rootDir;
+}
+
+/// Returns the path to Flutter SDK of the `flutter` executable on `PATH`
+String? systemFlutterSdkPath() => systemFlutterSdk()?.path;

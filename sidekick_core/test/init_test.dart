@@ -16,7 +16,7 @@ void main() {
     });
 
     test('mainProject returns null when not set', () async {
-      await insideFakeSidekickProject((dir) async {
+      await insideFakeProjectWithSidekick((dir) async {
         final runner = initializeSidekick(
           name: 'dash',
           // ignore: avoid_redundant_argument_values
@@ -38,7 +38,7 @@ void main() {
     });
 
     test('mainProject returns while running run', () async {
-      await insideFakeSidekickProject((dir) async {
+      await insideFakeProjectWithSidekick((dir) async {
         final runner = initializeSidekick(name: 'dash', mainProjectPath: '.');
         bool called = false;
         runner.addCommand(
@@ -47,7 +47,7 @@ void main() {
             block: () {
               called = true;
               expect(mainProject!.root.path, dir.path);
-              expect(mainProject!.name, 'dash_sdk');
+              expect(mainProject!.name, 'main_project');
             },
           ),
         );
@@ -69,7 +69,7 @@ void main() {
     });
 
     test('repository returns while running run', () {
-      insideFakeSidekickProject((dir) {
+      insideFakeProjectWithSidekick((dir) {
         final runner = initializeSidekick(name: 'dash');
         bool called = false;
         runner.addCommand(
@@ -98,7 +98,7 @@ void main() {
       );
     });
     test('cliName returns while running run', () {
-      insideFakeSidekickProject((dir) {
+      insideFakeProjectWithSidekick((dir) {
         final runner = initializeSidekick(name: 'dash');
         bool called = false;
         runner.addCommand(
@@ -117,7 +117,7 @@ void main() {
   });
 
   test('nested initializeSidekick() restores old static members', () async {
-    await insideFakeSidekickProject((dir) async {
+    await insideFakeProjectWithSidekick((dir) async {
       final outerRunner =
           initializeSidekick(name: 'dash', mainProjectPath: '.');
       bool outerCalled = false;
@@ -132,7 +132,7 @@ void main() {
             void verifyOuter(Directory dir) {
               expect(cliName, 'dash');
               expect(mainProject!.root.path, dir.path);
-              expect(mainProject!.name, 'dash_sdk');
+              expect(mainProject!.name, 'main_project');
               expect(repository.root.path, dir.path);
             }
 
@@ -163,19 +163,103 @@ void main() {
       expect(innerCalled, isTrue);
     });
   });
+
+  group('sdk paths', () {
+    group('are set correctly given a', () {
+      test('absolute sdk path', () {
+        insideFakeProjectWithSidekick((dir) {
+          final fakeDartSdk = dir.directory('my-dart-sdk')..createSync();
+          final fakeFlutterSdk = dir.directory('my-flutter-sdk')..createSync();
+
+          final runner = initializeSidekick(
+            name: 'dash',
+            dartSdkPath: fakeDartSdk.absolute.path,
+            flutterSdkPath: fakeFlutterSdk.absolute.path,
+          );
+
+          expect(runner.flutterSdk?.path, fakeFlutterSdk.absolute.path);
+          expect(runner.dartSdk?.path, fakeDartSdk.absolute.path);
+        });
+      });
+
+      test('relative sdk path when initializing inside of project', () {
+        insideFakeProjectWithSidekick((dir) {
+          final fakeDartSdk = dir.directory('my-dart-sdk')..createSync();
+          final fakeFlutterSdk = dir.directory('my-flutter-sdk')..createSync();
+
+          final runner = initializeSidekick(
+            name: 'dash',
+            dartSdkPath: 'my-dart-sdk',
+            flutterSdkPath: 'my-flutter-sdk',
+          );
+
+          expect(runner.flutterSdk?.path, fakeFlutterSdk.absolute.path);
+          expect(runner.dartSdk?.path, fakeDartSdk.absolute.path);
+        });
+      });
+
+      test('relative sdk path when initializing outside of project', () {
+        void outsideProject(void Function() callback) {
+          final tempDir = Directory.systemTemp.createTempSync();
+          addTearDown(() => tempDir.deleteSync(recursive: true));
+
+          IOOverrides.runZoned(callback, getCurrentDirectory: () => tempDir);
+        }
+
+        insideFakeProjectWithSidekick((dir) {
+          outsideProject(() {
+            final fakeDartSdk = dir.directory('my-dart-sdk')..createSync();
+            final fakeFlutterSdk = dir.directory('my-flutter-sdk')
+              ..createSync();
+
+            final runner = initializeSidekick(
+              name: 'dash',
+              dartSdkPath: 'my-dart-sdk',
+              flutterSdkPath: 'my-flutter-sdk',
+            );
+
+            expect(runner.flutterSdk?.path, fakeFlutterSdk.absolute.path);
+            expect(runner.dartSdk?.path, fakeDartSdk.absolute.path);
+          });
+        });
+      });
+    });
+
+    test('error is thrown when invalid sdkPaths are given', () {
+      insideFakeProjectWithSidekick((dir) {
+        const doesntExist = 'bielefeld';
+
+        expect(
+          () => initializeSidekick(name: 'dash', dartSdkPath: doesntExist),
+          throwsA(isA<SdkNotFoundException>()),
+        );
+        expect(
+          () => initializeSidekick(name: 'dash', flutterSdkPath: doesntExist),
+          throwsA(isA<SdkNotFoundException>()),
+        );
+      });
+    });
+  });
 }
 
-R insideFakeSidekickProject<R>(R Function(Directory projectDir) block) {
+R insideFakeProjectWithSidekick<R>(R Function(Directory projectDir) block) {
   final tempDir = Directory.systemTemp.createTempSync();
   'git init ${tempDir.path}'.run;
 
-  tempDir.file('dash').createSync();
   tempDir.file('pubspec.yaml')
     ..createSync()
-    ..writeAsStringSync('name: dash_sdk\n');
-  tempDir.directory('lib').createSync();
+    ..writeAsStringSync('name: main_project\n');
+  tempDir.file('dash').createSync();
 
-  env['SIDEKICK_PACKAGE_HOME'] = tempDir.absolute.path;
+  final fakeSidekickDir = tempDir.directory('packages/dash_sdk')
+    ..createSync(recursive: true);
+
+  fakeSidekickDir.file('pubspec.yaml')
+    ..createSync()
+    ..writeAsStringSync('name: dash_sdk\n');
+  fakeSidekickDir.directory('lib').createSync();
+
+  env['SIDEKICK_PACKAGE_HOME'] = fakeSidekickDir.absolute.path;
 
   addTearDown(() {
     tempDir.deleteSync(recursive: true);
