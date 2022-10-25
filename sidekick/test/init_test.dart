@@ -83,6 +83,86 @@ void main() {
         );
       },
     );
+
+    test(
+      'after sidekick init in dart package, CLI has a working dart command and no flutter command $localOrPubDepsLabel',
+      () async {
+        final projectRoot =
+            setupTemplateProject('test/templates/minimal_dart_package');
+        final process = await sidekickCli(
+          ['init', '-n', 'dashi'],
+          workingDirectory: projectRoot,
+        );
+        await process.shouldExit(0);
+        final entrypoint = File("${projectRoot.path}/dashi");
+        expect(entrypoint.existsSync(), isTrue);
+
+        if (shouldUseLocalDevs) {
+          overrideSidekickCoreWithLocalPath(
+            projectRoot.directory('packages/dashi_sidekick'),
+          );
+        }
+
+        final dartDashProcess = await TestProcess.start(
+          entrypoint.path,
+          ['dart'],
+          workingDirectory: projectRoot.path,
+        );
+        printOnFailure(await dartDashProcess.stdoutStream().join('\n'));
+        printOnFailure(await dartDashProcess.stderrStream().join('\n'));
+        dartDashProcess.shouldExit(0);
+
+        final flutterDashProcess = await TestProcess.start(
+          entrypoint.path,
+          ['flutter'],
+          workingDirectory: projectRoot.path,
+        );
+        printOnFailure(await flutterDashProcess.stdoutStream().join('\n'));
+        printOnFailure(await flutterDashProcess.stderrStream().join('\n'));
+        flutterDashProcess.shouldExit(64);
+      },
+      timeout: const Timeout(Duration(minutes: 5)),
+    );
+
+    test(
+      'after sidekick init in flutter package, CLI has working dart and flutter commands $localOrPubDepsLabel',
+      () async {
+        final projectRoot =
+            setupTemplateProject('test/templates/minimal_flutter_package');
+        final process = await sidekickCli(
+          ['init', '-n', 'dashi'],
+          workingDirectory: projectRoot,
+        );
+        await process.shouldExit(0);
+        final entrypoint = File("${projectRoot.path}/dashi");
+        expect(entrypoint.existsSync(), isTrue);
+
+        if (shouldUseLocalDevs) {
+          overrideSidekickCoreWithLocalPath(
+            projectRoot.directory('packages/dashi_sidekick'),
+          );
+        }
+
+        final dartDashProcess = await TestProcess.start(
+          entrypoint.path,
+          ['dart'],
+          workingDirectory: projectRoot.path,
+        );
+        printOnFailure(await dartDashProcess.stdoutStream().join('\n'));
+        printOnFailure(await dartDashProcess.stderrStream().join('\n'));
+        dartDashProcess.shouldExit(0);
+
+        final flutterDashProcess = await TestProcess.start(
+          entrypoint.path,
+          ['flutter'],
+          workingDirectory: projectRoot.path,
+        );
+        printOnFailure(await flutterDashProcess.stdoutStream().join('\n'));
+        printOnFailure(await flutterDashProcess.stderrStream().join('\n'));
+        flutterDashProcess.shouldExit(0);
+      },
+      timeout: const Timeout(Duration(minutes: 5)),
+    );
   });
 
   group('sidekick init - packages layout', () {
