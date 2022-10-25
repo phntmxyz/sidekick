@@ -46,8 +46,12 @@ void main() {
     test(
       'with default hosted source',
       () async {
-        await runDashProcess(
-            ['sidekick', 'plugins', 'install', 'sidekick_vault']);
+        await runDashProcess([
+          'sidekick',
+          'plugins',
+          'install',
+          'sidekick_vault',
+        ]);
       },
       timeout: const Timeout(Duration(minutes: 5)),
       skip: 'Wait for first plugin to be published',
