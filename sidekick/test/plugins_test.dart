@@ -172,30 +172,34 @@ void main() {
 
   /// This test uses the global sidekick CLI while the previous tests
   /// first generate a custom sidekick CLI and then use that
-  test('create plugin with global sidekick', () async {
-    final tempDir = Directory.systemTemp.createTempSync();
-    addTearDown(() => tempDir.deleteSync(recursive: true));
+  test(
+    'create plugin with global sidekick',
+    () async {
+      final tempDir = Directory.systemTemp.createTempSync();
+      addTearDown(() => tempDir.deleteSync(recursive: true));
 
-    final process = await sidekickCli(
-      [
-        'plugins',
-        'create',
-        '-t',
-        'install-only',
-        '-n',
-        'install_only_plugin',
-      ],
-      workingDirectory: tempDir,
-    );
-    process.stdoutStream().listen(print);
-    process.stderrStream().listen(print);
-    await process.shouldExit(0);
+      final process = await sidekickCli(
+        [
+          'plugins',
+          'create',
+          '-t',
+          'install-only',
+          '-n',
+          'install_only_plugin',
+        ],
+        workingDirectory: tempDir,
+      );
+      process.stdoutStream().listen(print);
+      process.stderrStream().listen(print);
+      await process.shouldExit(0);
 
-    final pluginPath = tempDir.directory('install_only_plugin').path;
-    run('dart pub get', workingDirectory: pluginPath);
-    run('dart analyze --fatal-infos', workingDirectory: pluginPath);
-    run('dart format --set-exit-if-changed $pluginPath');
-  });
+      final pluginPath = tempDir.directory('install_only_plugin').path;
+      run('dart pub get', workingDirectory: pluginPath);
+      run('dart analyze --fatal-infos', workingDirectory: pluginPath);
+      run('dart format --set-exit-if-changed $pluginPath');
+    },
+    skip: 'Wait for sidekick_core 0.9.1 to be published',
+  );
 }
 
 const _expectedAnalysisOptions = '''
@@ -204,6 +208,7 @@ include: package:lint/analysis_options.yaml
 linter:
   rules:
     avoid_print: false
+
 ''';
 
 const _expectedGitignore = '''
