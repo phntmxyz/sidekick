@@ -115,6 +115,21 @@ class Repository {
     }
     return file;
   }
+
+  /// Returns the list of all packages in the repository
+  List<DartPackage> findAllPackages() {
+    return repository.root
+        .listSync()
+        .expand((it) {
+          if (it is Directory) {
+            return it.listSync();
+          }
+          return [it];
+        })
+        .whereType<Directory>()
+        .mapNotNull((it) => DartPackage.fromDirectory(it))
+        .toList();
+  }
 }
 
 extension FindInDirectory on Directory {
