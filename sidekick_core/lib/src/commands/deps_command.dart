@@ -9,9 +9,9 @@ class DepsCommand extends Command {
   final String name = 'deps';
 
   /// packages whose dependencies should not be loaded
-  final List<DartPackage> excluded;
+  final List<DartPackage> exclude;
 
-  DepsCommand({this.excluded = const []}) {
+  DepsCommand({this.exclude = const []}) {
     argParser.addOption(
       'package',
       abbr: 'p',
@@ -36,17 +36,21 @@ class DepsCommand extends Command {
       return;
     }
 
-    final List<Object> errors = [];
+    final errorBuffer = StringBuffer();
     for (final package in allPackages) {
       try {
         _getDependencies(package);
-      } catch (e) {
-        errors.add(e);
+      } catch (e, stack) {
+        print('Error while getting dependencies for ${package.name} '
+            '(${package.root.path})');
+        errorBuffer.writeln("${package.name}: $e\n$stack");
       }
     }
-    if (errors.isNotEmpty) {
-      printerr("Errors while getting dependencies:");
-      throw errors.join("\n");
+    final errorText = errorBuffer.toString();
+    if (errorText.isNotEmpty) {
+      printerr("\n\nErrors while getting dependencies:");
+      printerr(errorText);
+      exitCode = 1;
     }
   }
 
@@ -58,9 +62,9 @@ class DepsCommand extends Command {
     } else {
       exitCode = dart(['pub', 'get'], workingDirectory: package.root);
     }
-    print("\n");
     if (exitCode != 0) {
-      throw "Failed to get dependencies for package ${package.name}";
+      throw "Failed to get dependencies for package ${package.root.path}";
     }
+    print("\n");
   }
 }
