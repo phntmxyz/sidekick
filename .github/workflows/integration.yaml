@@ -35,7 +35,7 @@ jobs:
 
   integration_tests_linux_pub:
     runs-on: ubuntu-latest
-    if: ${{ !github.event.issue.pull_request }}
+    if: ${{ !github.event.pull_request }}
     strategy:
       fail-fast: false
       matrix:
