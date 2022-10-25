@@ -121,8 +121,10 @@ void main() {
       final pluginPath = pluginDir.path;
 
       run('dart pub get', workingDirectory: pluginPath);
-      run('dart analyze --fatal-infos', workingDirectory: pluginPath);
-      run('dart format --set-exit-if-changed $pluginPath');
+      if (analyzeGeneratedCode) {
+        run('dart analyze --fatal-infos', workingDirectory: pluginPath);
+        run('dart format --set-exit-if-changed $pluginPath');
+      }
 
       expect(
         pluginDir.file('analysis_options.yaml').readAsStringSync(),
@@ -195,8 +197,10 @@ void main() {
 
       final pluginPath = tempDir.directory('install_only_plugin').path;
       run('dart pub get', workingDirectory: pluginPath);
-      run('dart analyze --fatal-infos', workingDirectory: pluginPath);
-      run('dart format --set-exit-if-changed $pluginPath');
+      if (analyzeGeneratedCode) {
+        run('dart analyze --fatal-infos', workingDirectory: pluginPath);
+        run('dart format --set-exit-if-changed $pluginPath');
+      }
     },
     skip: 'Wait for sidekick_core 0.9.1 to be published',
   );
