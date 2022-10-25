@@ -49,8 +49,8 @@ dependencies:
   sidekick_core: '>=0.7.1 <1.0.0'
 
 dev_dependencies:
-  sidekick_plugin_installer: ^0.1.3
   lint: ^1.5.0
+  sidekick_plugin_installer: ^0.1.3
 ''';
 
   String get installTemplate => '''

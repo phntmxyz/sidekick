@@ -121,7 +121,7 @@ void main() {
       final pluginPath = pluginDir.path;
 
       run('dart pub get', workingDirectory: pluginPath);
-      run('dart analyze', workingDirectory: pluginPath);
+      run('dart analyze --fatal-infos', workingDirectory: pluginPath);
       run('dart format --set-exit-if-changed $pluginPath');
 
       expect(
@@ -193,7 +193,7 @@ void main() {
 
     final pluginPath = tempDir.directory('install_only_plugin').path;
     run('dart pub get', workingDirectory: pluginPath);
-    run('dart analyze', workingDirectory: pluginPath);
+    run('dart analyze --fatal-infos', workingDirectory: pluginPath);
     run('dart format --set-exit-if-changed $pluginPath');
   });
 }

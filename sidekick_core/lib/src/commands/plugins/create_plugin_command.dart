@@ -78,7 +78,21 @@ class CreatePluginCommand extends Command {
     generator.generate(templateProperties);
 
     final formatArgs = ['format', pluginDirectory.path];
-    if (dartSdk == null) {
+
+    // TODO find a better workaround than this hack
+    final usingGlobalSidekickCli = () {
+      try {
+        // when running from global sidekick CLI, accessing `dartSdk` throws 'You cannot access dartSdk outside of a Command executed with SidekickCommandRunner.'
+        if (dartSdk != null) {
+          return false;
+        }
+      } catch (_) {
+        // ignore
+      }
+      return true;
+    }();
+
+    if (usingGlobalSidekickCli) {
       // command is run from global sidekick CLI
       systemDart(formatArgs);
     } else {
