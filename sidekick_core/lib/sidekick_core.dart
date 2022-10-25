@@ -159,6 +159,10 @@ String get cliName {
   return _activeRunner!.executableName;
 }
 
+/// Name of the cli program (if running a generated sidekick CLI)
+/// or null (if running the global sidekick CLI)
+String? get cliNameOrNull => _activeRunner?.executableName;
+
 /// The root of the repository which contains all projects
 Repository get repository {
   if (_activeRunner == null) {
