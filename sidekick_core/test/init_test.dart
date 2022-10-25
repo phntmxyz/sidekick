@@ -9,8 +9,8 @@ void main() {
       expect(
         () => mainProject,
         throwsA(
-          isA<String>()
-              .having((it) => it, 'String', contains('SidekickCommandRunner')),
+          isA<OutOfCommandRunnerScopeException>()
+              .having((it) => it.property, 'property', 'mainProject'),
         ),
       );
     });
@@ -62,8 +62,8 @@ void main() {
       expect(
         () => repository,
         throwsA(
-          isA<String>()
-              .having((it) => it, 'String', contains('SidekickCommandRunner')),
+          isA<OutOfCommandRunnerScopeException>()
+              .having((it) => it.property, 'property', 'repository'),
         ),
       );
     });
@@ -92,8 +92,8 @@ void main() {
       expect(
         () => cliName,
         throwsA(
-          isA<String>()
-              .having((it) => it, 'String', contains('SidekickCommandRunner')),
+          isA<OutOfCommandRunnerScopeException>()
+              .having((it) => it.property, 'property', 'cliName'),
         ),
       );
     });
