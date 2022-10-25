@@ -76,6 +76,6 @@ class CreatePluginCommand extends Command {
 
     final TemplateGenerator generator = templates[template]!;
     generator.generate(templateProperties);
-    sidekickDartRuntime.dart(['format', pluginDirectory.path]);
+    systemDart(['format', pluginDirectory.path]);
   }
 }

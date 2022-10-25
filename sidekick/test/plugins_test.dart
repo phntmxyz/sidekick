@@ -124,21 +124,18 @@ void main() {
       run('dart analyze', workingDirectory: pluginPath);
       run('dart format --set-exit-if-changed $pluginPath');
 
-      // TODO disabled until sidekick_core is updated
-      if (shouldUseLocalDevs) {
-        expect(
-          pluginDir.file('analysis_options.yaml').readAsStringSync(),
-          _expectedAnalysisOptions,
-        );
-        expect(
-          pluginDir.file('.gitignore').readAsStringSync(),
-          _expectedGitignore,
-        );
-        expect(
-          pluginDir.file('README.md').readAsStringSync(),
-          _getExpectedReadme(template),
-        );
-      }
+      expect(
+        pluginDir.file('analysis_options.yaml').readAsStringSync(),
+        _expectedAnalysisOptions,
+      );
+      expect(
+        pluginDir.file('.gitignore').readAsStringSync(),
+        _expectedGitignore,
+      );
+      expect(
+        pluginDir.file('README.md').readAsStringSync(),
+        _getExpectedReadme(template),
+      );
     });
   }
 
@@ -172,6 +169,33 @@ void main() {
       timeout: const Timeout(Duration(minutes: 5)),
     );
   }
+
+  /// This test uses the global sidekick CLI while the previous tests
+  /// first generate a custom sidekick CLI and then use that
+  test('create plugin with global sidekick', () async {
+    final tempDir = Directory.systemTemp.createTempSync();
+    addTearDown(() => tempDir.deleteSync(recursive: true));
+
+    final process = await sidekickCli(
+      [
+        'plugins',
+        'create',
+        '-t',
+        'install-only',
+        '-n',
+        'install_only_plugin',
+      ],
+      workingDirectory: tempDir,
+    );
+    process.stdoutStream().listen(print);
+    process.stderrStream().listen(print);
+    await process.shouldExit(0);
+
+    final pluginPath = tempDir.directory('install_only_plugin').path;
+    run('dart pub get', workingDirectory: pluginPath);
+    run('dart analyze', workingDirectory: pluginPath);
+    run('dart format --set-exit-if-changed $pluginPath');
+  });
 }
 
 const _expectedAnalysisOptions = '''
