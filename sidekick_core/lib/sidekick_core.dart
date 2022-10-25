@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:args/command_runner.dart';
 import 'package:dartx/dartx_io.dart';
+import 'package:dcli/dcli.dart';
 import 'package:sidekick_core/src/cli_util.dart';
 import 'package:sidekick_core/src/dart_package.dart';
 import 'package:sidekick_core/src/repository.dart';
@@ -30,8 +31,6 @@ export 'package:sidekick_core/src/forward_command.dart';
 export 'package:sidekick_core/src/git.dart';
 export 'package:sidekick_core/src/repository.dart';
 export 'package:sidekick_core/src/sidekick_package.dart';
-
-part 'src/resolve_sdk_path.dart';
 
 /// Initializes sidekick, call this at the very start of your CLI program
 ///
@@ -66,6 +65,12 @@ SidekickCommandRunner initializeSidekick({
         DartPackage.fromDirectory(repo.root.directory(mainProjectPath));
   }
 
+  if (flutterSdkPath != null && dartSdkPath != null) {
+    printerr("It's unnecessary to set both `flutterSdkPath` and `dartSdkPath`, "
+        "because `dartSdkPath` is inherited from `flutterSdkPath. "
+        "Set `dartSdkPath` only for pure dart projects.");
+  }
+
   final runner = SidekickCommandRunner._(
     cliName: name,
     description: description ??
@@ -73,8 +78,8 @@ SidekickCommandRunner initializeSidekick({
     repository: repo,
     mainProject: mainProject,
     workingDirectory: Directory.current,
-    flutterSdk: _resolveSdkPath(flutterSdkPath),
-    dartSdk: _resolveSdkPath(dartSdkPath),
+    flutterSdk: _resolveSdkPath(flutterSdkPath, repo.root),
+    dartSdk: _resolveSdkPath(dartSdkPath, repo.root),
   );
   return runner;
 }
@@ -204,4 +209,52 @@ Directory? get dartSdk {
     );
   }
   return _activeRunner?.dartSdk;
+}
+
+/// The Dart or Flutter SDK path is set in [initializeSidekick],
+/// but the directory doesn't exist
+class SdkNotFoundException implements Exception {
+  SdkNotFoundException(this.sdkPath, this.repoRoot);
+
+  final String sdkPath;
+  final Directory repoRoot;
+
+  late final String message =
+      "Dart or Flutter SDK set to '$sdkPath', but that directory doesn't exist. "
+      "Please fix the path in `initializeSidekick` (dartSdkPath/flutterSdkPath). "
+      "Note that relative sdk paths are resolved relative to the project root, "
+      "which in this case is '${repoRoot.path}'.";
+
+  @override
+  String toString() {
+    return "SdkNotFoundException{message: $message}";
+  }
+}
+
+/// Transforms [sdkPath] to an absolute directory
+///
+/// This is to make passing `flutterSdkPath`/`dartSdkPath`
+/// in `initializeSidekick` a relative path work from anywhere.
+///
+/// If [sdkPath] is a relative path, it is resolved relative from
+/// the project root [repoRoot].
+///
+/// Throws a [SdkNotFoundException] if [sdkPath] is given but no
+/// existing directory can be found.
+Directory? _resolveSdkPath(String? sdkPath, Directory repoRoot) {
+  if (sdkPath == null) {
+    return null;
+  }
+
+  final resolvedDir = (Directory(sdkPath).isAbsolute
+          ? Directory(sdkPath)
+          // resolve relative path relative from project root
+          : repoRoot.directory(sdkPath))
+      .absolute;
+
+  if (!resolvedDir.existsSync()) {
+    throw SdkNotFoundException(sdkPath, repoRoot);
+  }
+
+  return resolvedDir;
 }
