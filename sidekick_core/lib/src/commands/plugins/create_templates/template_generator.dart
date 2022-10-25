@@ -94,7 +94,7 @@ the [pub tool](https://dart.dev/tools/pub/cmd/pub-global#activating-a-package).
 ### Installing a plugin from a pub server
 
 ```bash
-${cliNameOrNull ?? 'your_custom_sidekick_cli'} plugins install <plugin name on pub server, e.g. sidekick_vault>
+${cliNameOrNull ?? 'your_custom_sidekick_cli'} sidekick plugins install <plugin name on pub server, e.g. sidekick_vault>
 ```
 
 By default, [pub.dev](https://pub.dev) is used as pub server. A custom pub server can be used with the `--hosted-url`
@@ -103,19 +103,19 @@ parameter.
 ### Installing a plugin from a git repository
 
 ```bash
-${cliNameOrNull ?? 'your_custom_sidekick_cli'} plugins install --source git <link to git repository>
+${cliNameOrNull ?? 'your_custom_sidekick_cli'} sidekick plugins install --source git <link to git repository>
 ```
 
 #### Optional parameters:
 
 - `--git-ref`: Git branch name, tag or full commit SHA (40 characters) to be installed
 - `--git-path`: Path of git package in repository (use when repository root contains multiple packages)
-  - e.g. `${cliNameOrNull ?? 'your_custom_sidekick_cli'} plugins install --source git --git-path sidekick_vault https://github.com/phntmxyz/sidekick`
+  - e.g. `${cliNameOrNull ?? 'your_custom_sidekick_cli'} sidekick plugins install --source git --git-path sidekick_vault https://github.com/phntmxyz/sidekick`
 
 ### Installing a plugin from a local path
 
 ```bash
-${cliNameOrNull ?? 'your_custom_sidekick_cli'} plugins install --source path <path to plugin on local machine>
+${cliNameOrNull ?? 'your_custom_sidekick_cli'} sidekick plugins install --source path <path to plugin on local machine>
 ```
 
 ## Developing plugins
@@ -157,7 +157,7 @@ The `--template` parameter must be given one of the following values:
 
 ### Implementing functionality
 
-Every plugin needs a `tool/install.dart` file which is executed by the `${cliNameOrNull ?? 'your_custom_sidekick_cli'} plugins install` command.
+Every plugin needs a `tool/install.dart` file which is executed by the `${cliNameOrNull ?? 'your_custom_sidekick_cli'} sidekick plugins install` command.
 This adds the plugin command to the custom sidekick CLI which is then available as 
 `${cliNameOrNull ?? 'your_custom_sidekick_cli'} <plugin-name>` (i.e. `${cliNameOrNull ?? 'your_custom_sidekick_cli'} ${pluginName.paramCase}`).  
 
@@ -167,7 +167,7 @@ Use the `argParser` attribute in the constructor to add parameters or subcommand
 
 Implement the functionality in the `run` method of the command. Here following helpers are accessible:
 - Execute Dart and Flutter commands with the `dart` and `flutter` functions.  
-  The Dart runtime bundled with the custom sidekick CLI is accesible through `sidekickDartRuntime.dart`.
+  The Dart runtime bundled with the custom sidekick CLI is accessible through `sidekickDartRuntime.dart`.
 - Use the generated `<your sidekick CLI name>Project` variable to access other packages.
 ''';
 }
