@@ -17,7 +17,6 @@ Future<void> run{{#titleCase}}{{name}}{{/titleCase}}(List<String> args) async {
   {{^mainProjectIsRoot}}{{#lowerCase}}{{name}}{{/lowerCase}}Project = {{#titleCase}}{{name}}{{/titleCase}}Project(runner.repository.root);{{/mainProjectIsRoot}}
   {{#mainProjectIsRoot}}{{#lowerCase}}{{name}}{{/lowerCase}}Project = {{#titleCase}}{{name}}{{/titleCase}}Project(runner.mainProject!.root);{{/mainProjectIsRoot}}
   runner
-    ..addCommand(RecompileCommand())
     {{#setFlutterSdkPath}}..addCommand(FlutterCommand()){{/setFlutterSdkPath}}
     ..addCommand(DartCommand())
     ..addCommand(DepsCommand())
