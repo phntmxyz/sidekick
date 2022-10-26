@@ -271,7 +271,10 @@ class InitCommand extends Command {
       workingDirectory: cliPackage,
     );
 
-    bundledDart(['format', cliPackage.path], progress: Progress.printStdErr());
+    bundledDart(
+      ['format', cliPackage.path],
+      progress: dcli.Progress.printStdErr(),
+    );
   }
 
   void _addPackagesToProjectClass(
