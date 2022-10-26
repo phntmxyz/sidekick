@@ -174,7 +174,7 @@ void main() {
 
         // fake flutter installation because we don't have flutter installed on CI
         final pathWithFakeFlutterSdk = [
-          fakeFlutterSdk().directory('bin'),
+          fakeFlutterSdk().directory('bin').path,
           ...PATH
         ].join(env.delimiterForPATH);
 

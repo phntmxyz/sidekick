@@ -11,7 +11,6 @@ import 'package:test/test.dart';
 /// nothing besides "downloading" a fake Dart executable that does also nothing
 Directory fakeFlutterSdk() {
   final temp = Directory.systemTemp.createTempSync('fake_flutter');
-  print('fakeFlutterSdk in ${temp.path}');
   addTearDown(() => temp.deleteSync(recursive: true));
 
   final flutterExe = temp.file('bin/flutter')
