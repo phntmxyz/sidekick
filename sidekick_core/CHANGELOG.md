@@ -1,3 +1,11 @@
+## 0.10.0
+
+- Template shared-command and shared-code now use the `library` keyword #87
+- `findAllPackages` works now outside of the `SidekickCommandRunner`
+- New `OutOfCommandRunnerScopeException` when accessing `cliName` and friends outside of a `Command` #88
+- Allow execution of `PluginCommand` from our `sidekick` cli using the system dart sdk #91
+- New `SidekickCommand` that bundles now `plugins`, `recompile` and `install-global` #89
+
 ## 0.9.0
 
 - Fix: Setting `flutterSdkPath` and `dartSdkPath` in `initializeSidekick` now works with relative paths from anywhere as well.  
