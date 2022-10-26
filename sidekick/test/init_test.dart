@@ -126,14 +126,19 @@ void main() {
         printOnFailure(await dartDashProcess.stderrStream().join('\n'));
         dartDashProcess.shouldExit(0);
 
-        final flutterDashProcess = await TestProcess.start(
-          entrypoint.path,
-          ['flutter'],
-          workingDirectory: projectRoot.path,
-        );
-        printOnFailure(await flutterDashProcess.stdoutStream().join('\n'));
-        printOnFailure(await flutterDashProcess.stderrStream().join('\n'));
-        flutterDashProcess.shouldExit(64);
+        // TODO fake flutter installation (see fakeFlutterSdk()) because we
+        //  don't have flutter installed on CI
+        if (systemFlutterSdk() != null) {
+          // only when flutter is installed on host
+          final flutterDashProcess = await TestProcess.start(
+            entrypoint.path,
+            ['flutter'],
+            workingDirectory: projectRoot.path,
+          );
+          printOnFailure(await flutterDashProcess.stdoutStream().join('\n'));
+          printOnFailure(await flutterDashProcess.stderrStream().join('\n'));
+          flutterDashProcess.shouldExit(64);
+        }
       },
       timeout: const Timeout(Duration(minutes: 5)),
     );
