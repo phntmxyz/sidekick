@@ -103,6 +103,20 @@ void main() {
           );
         }
 
+        expect(
+          projectRoot
+              .file('packages/dashi_sidekick/lib/dashi_sidekick.dart')
+              .readAsStringSync(),
+          contains('dartSdkPath:'),
+        );
+
+        expect(
+          projectRoot
+              .file('packages/dashi_sidekick/lib/dashi_sidekick.dart')
+              .readAsStringSync(),
+          isNot(contains('flutterSdkPath:')),
+        );
+
         final dartDashProcess = await TestProcess.start(
           entrypoint.path,
           ['dart'],
@@ -142,6 +156,20 @@ void main() {
             projectRoot.directory('packages/dashi_sidekick'),
           );
         }
+
+        expect(
+          projectRoot
+              .file('packages/dashi_sidekick/lib/dashi_sidekick.dart')
+              .readAsStringSync(),
+          isNot(contains('dartSdkPath:')),
+        );
+
+        expect(
+          projectRoot
+              .file('packages/dashi_sidekick/lib/dashi_sidekick.dart')
+              .readAsStringSync(),
+          contains('flutterSdkPath:'),
+        );
 
         final dartDashProcess = await TestProcess.start(
           entrypoint.path,
