@@ -5,6 +5,7 @@ import 'package:test_process/test_process.dart';
 
 import 'templates/templates.dart';
 import 'util/cli_runner.dart';
+import 'util/fake_sdk.dart';
 import 'util/local_testing.dart';
 
 void main() {
@@ -126,19 +127,14 @@ void main() {
         printOnFailure(await dartDashProcess.stderrStream().join('\n'));
         dartDashProcess.shouldExit(0);
 
-        // TODO fake flutter installation (see fakeFlutterSdk()) because we
-        //  don't have flutter installed on CI
-        if (systemFlutterSdk() != null) {
-          // only when flutter is installed on host
-          final flutterDashProcess = await TestProcess.start(
-            entrypoint.path,
-            ['flutter'],
-            workingDirectory: projectRoot.path,
-          );
-          printOnFailure(await flutterDashProcess.stdoutStream().join('\n'));
-          printOnFailure(await flutterDashProcess.stderrStream().join('\n'));
-          flutterDashProcess.shouldExit(64);
-        }
+        final flutterDashProcess = await TestProcess.start(
+          entrypoint.path,
+          ['flutter'],
+          workingDirectory: projectRoot.path,
+        );
+        printOnFailure(await flutterDashProcess.stdoutStream().join('\n'));
+        printOnFailure(await flutterDashProcess.stderrStream().join('\n'));
+        flutterDashProcess.shouldExit(64);
       },
       timeout: const Timeout(Duration(minutes: 5)),
     );
@@ -176,10 +172,17 @@ void main() {
           contains('flutterSdkPath:'),
         );
 
+        // fake flutter installation because we don't have flutter installed on CI
+        final pathWithFakeFlutterSdk = [
+          fakeFlutterSdk().directory('bin'),
+          ...PATH
+        ].join(env.delimiterForPATH);
+
         final dartDashProcess = await TestProcess.start(
           entrypoint.path,
           ['dart'],
           workingDirectory: projectRoot.path,
+          environment: {'PATH': pathWithFakeFlutterSdk},
         );
         printOnFailure(await dartDashProcess.stdoutStream().join('\n'));
         printOnFailure(await dartDashProcess.stderrStream().join('\n'));
@@ -189,6 +192,7 @@ void main() {
           entrypoint.path,
           ['flutter'],
           workingDirectory: projectRoot.path,
+          environment: {'PATH': pathWithFakeFlutterSdk},
         );
         printOnFailure(await flutterDashProcess.stdoutStream().join('\n'));
         printOnFailure(await flutterDashProcess.stderrStream().join('\n'));
