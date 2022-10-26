@@ -38,10 +38,16 @@ class InstallGlobalCommand extends Command {
 
   void _addBinDirToPathOrPrint() {
     final binDirPath = GlobalSidekickRoot.binDirWithHomeEnv;
-    final added = Shell.current.appendToPATH(binDirPath);
-    if (added) {
-      printerr('Added $binDirPath to PATH');
-      return;
+    try {
+      // depending on the shell and dcli version, this can throw.
+      // E.g. dcli-1.30.3 zsh_shell.dart: UnsupportedError('Not supported in zsh')
+      final added = Shell.current.appendToPATH(binDirPath);
+      if (added) {
+        printerr('Added $binDirPath to PATH');
+        return;
+      }
+    } catch (_) {
+      // ignore
     }
 
     print(
