@@ -10,7 +10,7 @@ executables:
   main:
 
 dependencies:
-  sidekick_core: '>=0.9.0 <1.0.0'
+  sidekick_core: '>=0.10.0 <1.0.0'
 
 dev_dependencies:
   lint: ^1.5.3
