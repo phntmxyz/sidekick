@@ -5,6 +5,7 @@ import 'package:test_process/test_process.dart';
 
 import 'templates/templates.dart';
 import 'util/cli_runner.dart';
+import 'util/fake_sdk.dart';
 import 'util/local_testing.dart';
 
 void main() {
@@ -82,6 +83,122 @@ void main() {
           ),
         );
       },
+    );
+
+    test(
+      'after sidekick init in dart package, CLI has a working dart command and no flutter command $localOrPubDepsLabel',
+      () async {
+        final projectRoot =
+            setupTemplateProject('test/templates/minimal_dart_package');
+        final process = await sidekickCli(
+          ['init', '-n', 'dashi'],
+          workingDirectory: projectRoot,
+        );
+        await process.shouldExit(0);
+        final entrypoint = File("${projectRoot.path}/dashi");
+        expect(entrypoint.existsSync(), isTrue);
+
+        if (shouldUseLocalDevs) {
+          overrideSidekickCoreWithLocalPath(
+            projectRoot.directory('packages/dashi_sidekick'),
+          );
+        }
+
+        expect(
+          projectRoot
+              .file('packages/dashi_sidekick/lib/dashi_sidekick.dart')
+              .readAsStringSync(),
+          contains('dartSdkPath:'),
+        );
+
+        expect(
+          projectRoot
+              .file('packages/dashi_sidekick/lib/dashi_sidekick.dart')
+              .readAsStringSync(),
+          isNot(contains('flutterSdkPath:')),
+        );
+
+        final dartDashProcess = await TestProcess.start(
+          entrypoint.path,
+          ['dart'],
+          workingDirectory: projectRoot.path,
+        );
+        printOnFailure(await dartDashProcess.stdoutStream().join('\n'));
+        printOnFailure(await dartDashProcess.stderrStream().join('\n'));
+        dartDashProcess.shouldExit(0);
+
+        final flutterDashProcess = await TestProcess.start(
+          entrypoint.path,
+          ['flutter'],
+          workingDirectory: projectRoot.path,
+        );
+        printOnFailure(await flutterDashProcess.stdoutStream().join('\n'));
+        printOnFailure(await flutterDashProcess.stderrStream().join('\n'));
+        flutterDashProcess.shouldExit(64);
+      },
+      timeout: const Timeout(Duration(minutes: 5)),
+    );
+
+    test(
+      'after sidekick init in flutter package, CLI has working dart and flutter commands $localOrPubDepsLabel',
+      () async {
+        final projectRoot =
+            setupTemplateProject('test/templates/minimal_flutter_package');
+        final process = await sidekickCli(
+          ['init', '-n', 'dashi'],
+          workingDirectory: projectRoot,
+        );
+        await process.shouldExit(0);
+        final entrypoint = File("${projectRoot.path}/dashi");
+        expect(entrypoint.existsSync(), isTrue);
+
+        if (shouldUseLocalDevs) {
+          overrideSidekickCoreWithLocalPath(
+            projectRoot.directory('packages/dashi_sidekick'),
+          );
+        }
+
+        expect(
+          projectRoot
+              .file('packages/dashi_sidekick/lib/dashi_sidekick.dart')
+              .readAsStringSync(),
+          isNot(contains('dartSdkPath:')),
+        );
+
+        expect(
+          projectRoot
+              .file('packages/dashi_sidekick/lib/dashi_sidekick.dart')
+              .readAsStringSync(),
+          contains('flutterSdkPath:'),
+        );
+
+        // fake flutter installation because we don't have flutter installed on CI
+        final pathWithFakeFlutterSdk = [
+          fakeFlutterSdk().directory('bin').path,
+          ...PATH
+        ].join(env.delimiterForPATH);
+
+        final dartDashProcess = await TestProcess.start(
+          entrypoint.path,
+          ['dart'],
+          workingDirectory: projectRoot.path,
+          environment: {'PATH': pathWithFakeFlutterSdk},
+        );
+        printOnFailure(await dartDashProcess.stdoutStream().join('\n'));
+        printOnFailure(await dartDashProcess.stderrStream().join('\n'));
+        dartDashProcess.shouldExit(0);
+
+        final flutterDashProcess = await TestProcess.start(
+          entrypoint.path,
+          ['flutter'],
+          workingDirectory: projectRoot.path,
+          environment: {'PATH': pathWithFakeFlutterSdk},
+        );
+        printOnFailure(await flutterDashProcess.stdoutStream().join('\n'));
+        printOnFailure(await flutterDashProcess.stderrStream().join('\n'));
+        flutterDashProcess.shouldExit(0);
+      },
+      timeout: const Timeout(Duration(minutes: 5)),
     );
   });
 

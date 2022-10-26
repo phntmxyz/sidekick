@@ -18,7 +18,7 @@ dependencies:
   mason: 0.1.0-dev.4
   path: ^1.8.0
   recase: ^4.0.0
-  sidekick_core: '>=0.9.0 <1.0.0'
+  sidekick_core: '>=0.10.0 <1.0.0'
 
 dev_dependencies:
   lint: ^1.5.0

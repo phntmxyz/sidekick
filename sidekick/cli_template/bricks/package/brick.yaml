@@ -10,3 +10,5 @@ vars:
     type: string
   mainProjectIsRoot:
     type: boolean
+  setFlutterSdkPath:
+    type: boolean
