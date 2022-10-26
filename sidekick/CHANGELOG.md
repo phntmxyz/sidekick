@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.7.0
+
+- New plugins system which can be used to easily extend your sidekick CLI and share automation with others (#58)
+- `sidekick plugins create` creates a plugin from a template (#65, #79, #91)
+- `sidekick` command in generated sidekick CLIs now bundles plugins, recompile, and install-global command (#82, #89)
+- Add validation to only allow CLI names which are not already occupied on PATH (#76)
+- Add `CleanCommand` to CLI template (#85)
+- sidekick CLIs now download their own bundled Dart SDK instead of using `flutterw` (#53)
+
 ## 0.6.0
 
 - We now support the "multiple packages" repository layout where all packages are located in `/packages`
