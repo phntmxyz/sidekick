@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.7.1
+
+Hotfix of build error
+
 ## 0.7.0
 
 - New plugins system which can be used to easily extend your sidekick CLI and share automation with others (#58)
