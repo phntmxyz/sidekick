@@ -1,3 +1,6 @@
+## 0.6.0
+- Added plugin installer. You can now install the sidekick_vault plugin with `<cli> sidekick plugin install sidekick_vault`
+
 ## 0.5.4
 
 - Updates dependency `actions_toolkit_dart` to `^0.5.0`
