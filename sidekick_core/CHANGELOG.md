@@ -1,3 +1,7 @@
+## 0.10.1
+
+- Fix `install-global` command which crashed in some cases (#94)
+
 ## 0.10.0
 
 - Template shared-command and shared-code now use the `library` keyword #87
