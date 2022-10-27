@@ -4,6 +4,8 @@ import 'package:args/command_runner.dart';
 import 'package:sidekick/src/init/init_command.dart';
 import 'package:sidekick/src/plugins/plugins_command.dart';
 
+/// See the [README](https://github.com/phntmxyz/sidekick/blob/main/sidekick/README.md)
+/// for more information on sidekick
 Future<void> main(List<String> args) async {
   final runner = _SidekickCommandRunner()
     ..addCommand(InitCommand())
