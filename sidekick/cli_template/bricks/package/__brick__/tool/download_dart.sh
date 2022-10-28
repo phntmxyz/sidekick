@@ -10,6 +10,11 @@ set -e
 
 SIDEKICK_PACKAGE_ROOT=$(dirname "$(dirname "$0")")
 
+if [ -z "$DART_VERSION" ]; then
+  echo "DART_VERSION is not set"
+  exit 1
+fi
+
 DART_SDK_ZIP_FOLDER="$HOME/.dart/sdk/cache/${DART_VERSION}"
 SIDEKICK_DART_SDK_UNZIP_PATH="$SIDEKICK_PACKAGE_ROOT/build/.cache"
 SIDEKICK_DART_SDK_PATH="$SIDEKICK_DART_SDK_UNZIP_PATH/dart-sdk"
