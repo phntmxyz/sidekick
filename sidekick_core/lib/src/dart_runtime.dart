@@ -14,15 +14,31 @@ class SidekickDartRuntime {
 
   /// The location of the Dart SDK
   Directory get dartSdkPath =>
+      sidekickPackage.directory('build/.cache/dart-sdk/');
+
+  /// The old sdk path in sidekick 0.7.0 (cache without .)
+  Directory get _oldDartSdkPath =>
       sidekickPackage.directory('build/cache/dart-sdk/');
 
   /// Downloads the SDK
   void download() {
-    dcli.run(
-      'sh tool/download_dart.sh',
-      workingDirectory: sidekickPackage.path,
+    dcli.withEnvironment(
+      () => dcli.run(
+        'sh tool/download_dart.sh',
+        workingDirectory: sidekickPackage.path,
+      ),
+      environment: {
+        'DART_VERSION': '2.18.3',
+      },
     );
-    assert(isDownloaded(), 'Dart SDK was not downloaded');
+
+    if (!isDownloaded()) {
+      if (_oldDartSdkPath.existsSync()) {
+        throw 'Please regenerate your sidekick CLI with `sidekick init`. '
+            'Your scripts in /tool are outdated.';
+      }
+      throw 'Dart SDK was not downloaded';
+    }
   }
 
   /// True when the SDK is downloaded
@@ -50,6 +66,13 @@ class SidekickDartRuntime {
         return binDir.file('dart');
       }
     }();
+
+    if (!dart.existsSync()) {
+      if (_oldDartSdkPath.existsSync()) {
+        throw 'Please regenerate your sidekick CLI with `sidekick init`. '
+            'Your scripts in /tool are outdated.';
+      }
+    }
 
     dcli.startFromArgs(
       dart.path,
