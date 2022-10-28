@@ -22,9 +22,17 @@ cd "$SAVED" >/dev/null
 export SIDEKICK_PACKAGE_HOME=$(dirname "$TOOL_HOME")
 
 REPO_ROOT=$(git -C "$TOOL_HOME" rev-parse --show-cdup)
+export DART_VERSION="2.18.3"
 DART_SDK="${SIDEKICK_PACKAGE_HOME}/build/.cache/dart-sdk"
 DART="$DART_SDK/bin/dart"
+CACHED_DART_SDK_VERSION=$(cat "$DART_SDK/version" 2> /dev/null) || true
 
+# When the Dart SDK version changes or the Dart SDK is missing, install it.
+if [ "$CACHED_DART_SDK_VERSION" != "$DART_VERSION" ] || [ ! -d "$DART_SDK" ]; then
+  rm -rf "$DART_SDK" || true
+  # Download new Dart runtime with DART_VERSION
+  sh "${SIDEKICK_PACKAGE_HOME}/tool/download_dart.sh"
+fi
 
 ## Run without compilation
 #"${DART}" "${SIDEKICK_PACKAGE_HOME}/bin/main.dart" "$@"

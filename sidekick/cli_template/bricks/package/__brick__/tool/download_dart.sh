@@ -10,14 +10,13 @@ set -e
 
 SIDEKICK_PACKAGE_ROOT=$(dirname "$(dirname "$0")")
 
-DART_VERSION="2.18.3"
 DART_SDK_ZIP_FOLDER="$HOME/.dart/sdk/cache/${DART_VERSION}"
 SIDEKICK_DART_SDK_UNZIP_PATH="$SIDEKICK_PACKAGE_ROOT/build/.cache"
 SIDEKICK_DART_SDK_PATH="$SIDEKICK_DART_SDK_UNZIP_PATH/dart-sdk"
-DART_VERSION_STAMP="$SIDEKICK_PACKAGE_ROOT/build/.cache/dartsdk.stamp"
+DART_VERSION_FILE="$SIDEKICK_DART_SDK_PATH/version"
 OS="$(uname -s)"
 
-if [ ! -f "$DART_VERSION_STAMP" ] || [ "$DART_VERSION" != `cat "$DART_VERSION_STAMP"` ]; then
+if [ ! -f "$DART_VERSION_FILE" ] || [ "$DART_VERSION" != `cat "$DART_VERSION_FILE"` ]; then
   command -v curl > /dev/null 2>&1 || {
     >&2 echo
     >&2 echo 'Missing "curl" tool. Unable to download Dart SDK.'
@@ -167,5 +166,4 @@ if [ ! -f "$DART_VERSION_STAMP" ] || [ "$DART_VERSION" != `cat "$DART_VERSION_ST
 
   $FIND "$SIDEKICK_DART_SDK_PATH" -type d -exec chmod 755 {} \;
   $FIND "$SIDEKICK_DART_SDK_PATH" -type f $IS_USER_EXECUTABLE -exec chmod a+x,a+r {} \;
-  echo "$DART_VERSION" > "$DART_VERSION_STAMP"
 fi
