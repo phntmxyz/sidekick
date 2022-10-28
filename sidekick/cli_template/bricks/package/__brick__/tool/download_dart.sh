@@ -10,10 +10,11 @@ set -e
 
 SIDEKICK_PACKAGE_ROOT=$(dirname "$(dirname "$0")")
 
-SIDEKICK_DART_SDK_PATH="$SIDEKICK_PACKAGE_ROOT/build/cache/dart-sdk"
-DART_SDK_ZIP_FOLDER="$HOME/.dart/sdk/cache"
-DART_VERSION="2.18.2"
-DART_VERSION_STAMP="$SIDEKICK_PACKAGE_ROOT/build/cache/dartsdk.stamp"
+DART_VERSION="2.18.3"
+DART_SDK_ZIP_FOLDER="$HOME/.dart/sdk/cache/${DART_VERSION}"
+SIDEKICK_DART_SDK_UNZIP_PATH="$SIDEKICK_PACKAGE_ROOT/build/.cache"
+SIDEKICK_DART_SDK_PATH="$SIDEKICK_DART_SDK_UNZIP_PATH/dart-sdk"
+DART_VERSION_STAMP="$SIDEKICK_PACKAGE_ROOT/build/.cache/dartsdk.stamp"
 OS="$(uname -s)"
 
 if [ ! -f "$DART_VERSION_STAMP" ] || [ "$DART_VERSION" != `cat "$DART_VERSION_STAMP"` ]; then
@@ -156,7 +157,7 @@ if [ ! -f "$DART_VERSION_STAMP" ] || [ "$DART_VERSION" != `cat "$DART_VERSION_ST
   fi
 
   # Extract sdk to build folder
-  unzip -o -q "$DART_SDK_ZIP" -d "$SIDEKICK_PACKAGE_ROOT/build/cache" || {
+  unzip -o -q "$DART_SDK_ZIP" -d "$SIDEKICK_DART_SDK_UNZIP_PATH" || {
     >&2 echo
     >&2 echo "It appears that the downloaded file is corrupt; please try again."
     >&2 echo

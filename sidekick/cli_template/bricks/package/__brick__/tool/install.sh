@@ -9,7 +9,7 @@ cd "${CLI_PACKAGE_DIR}" || exit
 
   # export pub from .flutter dir
   REPO_ROOT=$(git rev-parse --show-cdup)
-  DART_SDK="${CLI_PACKAGE_DIR}/build/cache/dart-sdk"
+  DART_SDK="${CLI_PACKAGE_DIR}/build/.cache/dart-sdk"
   DART="$DART_SDK/bin/dart" 
 
   # If we're on Windows, invoke the batch script instead
