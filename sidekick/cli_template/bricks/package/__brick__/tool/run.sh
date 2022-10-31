@@ -19,10 +19,11 @@ cd "$(dirname "$PRG")/" >/dev/null
 TOOL_HOME="$(pwd -P)"
 cd "$SAVED" >/dev/null
 
-export SIDEKICK_PACKAGE_HOME=$(dirname "$TOOL_HOME")
+SIDEKICK_PACKAGE_HOME=$(dirname "$TOOL_HOME")
+export SIDEKICK_PACKAGE_HOME
 
 # Extract DART_VERSION
-eval $("$TOOL_HOME/sidekick_config.sh")
+eval "$("$TOOL_HOME/sidekick_config.sh")"
 
 DART_SDK="${SIDEKICK_PACKAGE_HOME}/build/cache/dart-sdk"
 CACHED_DART_SDK_VERSION=$(cat "$DART_SDK/version" 2> /dev/null) || true
@@ -48,7 +49,7 @@ HASH=$(find \
   "${SIDEKICK_PACKAGE_HOME}/pubspec.yaml" \
   "${SIDEKICK_PACKAGE_HOME}/pubspec.lock" \
   -type f -print0 | xargs -0 "$HASH_PROGRAM")
-EXISTING_HASH=$(cat $STAMP_FILE 2> /dev/null) || true
+EXISTING_HASH=$(cat "$STAMP_FILE" 2> /dev/null) || true
 
 EXE="${SIDEKICK_PACKAGE_HOME}/build/cli.exe"
 
