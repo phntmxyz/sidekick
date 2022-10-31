@@ -8,7 +8,7 @@ cd "${CLI_PACKAGE_DIR}" || exit
   echo "Installing {{name}} command line application..."
 
   # export pub from .flutter dir
-  DART_SDK="${CLI_PACKAGE_DIR}/build/.cache/dart-sdk"
+  DART_SDK="${CLI_PACKAGE_DIR}/build/cache/dart-sdk"
   DART="$DART_SDK/bin/dart"
 
   # If we're on Windows, invoke the batch script instead

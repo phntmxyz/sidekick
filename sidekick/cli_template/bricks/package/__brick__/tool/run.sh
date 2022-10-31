@@ -24,7 +24,7 @@ export SIDEKICK_PACKAGE_HOME=$(dirname "$TOOL_HOME")
 # Extract DART_VERSION
 eval $("$TOOL_HOME/sidekick_config.sh")
 
-DART_SDK="${SIDEKICK_PACKAGE_HOME}/build/.cache/dart-sdk"
+DART_SDK="${SIDEKICK_PACKAGE_HOME}/build/cache/dart-sdk"
 DART="$DART_SDK/bin/dart"
 CACHED_DART_SDK_VERSION=$(cat "$DART_SDK/version" 2> /dev/null) || true
 
