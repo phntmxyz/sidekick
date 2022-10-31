@@ -25,7 +25,6 @@ export SIDEKICK_PACKAGE_HOME=$(dirname "$TOOL_HOME")
 eval $("$TOOL_HOME/sidekick_config.sh")
 
 DART_SDK="${SIDEKICK_PACKAGE_HOME}/build/cache/dart-sdk"
-DART="$DART_SDK/bin/dart"
 CACHED_DART_SDK_VERSION=$(cat "$DART_SDK/version" 2> /dev/null) || true
 
 # When the Dart SDK version changes or the Dart SDK is missing, install it.
@@ -34,9 +33,6 @@ if [ "$CACHED_DART_SDK_VERSION" != "$DART_VERSION" ] || [ ! -d "$DART_SDK" ]; th
   # Download new Dart runtime with DART_VERSION
   sh "${SIDEKICK_PACKAGE_HOME}/tool/download_dart.sh"
 fi
-
-## Run without compilation
-#"${DART}" "${SIDEKICK_PACKAGE_HOME}/bin/main.dart" "$@"
 
 HASH_PROGRAM='sha1sum'
 OS="$(uname -s)"
