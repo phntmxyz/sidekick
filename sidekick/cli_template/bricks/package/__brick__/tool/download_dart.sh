@@ -98,15 +98,15 @@ if [ ! -f "$DART_VERSION_FILE" ] || [ "$DART_VERSION" != "$(cat "${DART_VERSION_
   case "$OS" in
     Darwin)
       DART_ZIP_NAME="dartsdk-macos-${ARCH}-release.zip"
-      IS_USER_EXECUTABLE="-perm +100"
+      IS_USER_EXECUTABLE=(-perm +100)
       ;;
     Linux)
       DART_ZIP_NAME="dartsdk-linux-${ARCH}-release.zip"
-      IS_USER_EXECUTABLE="-perm /u+x"
+      IS_USER_EXECUTABLE=(-perm /u+x)
       ;;
     MINGW*)
       DART_ZIP_NAME="dartsdk-windows-${ARCH}-release.zip"
-      IS_USER_EXECUTABLE="-perm /u+x"
+      IS_USER_EXECUTABLE=(-perm /u+x)
       ;;
     *)
       echo "Unknown operating system. Cannot install Dart SDK."
@@ -174,5 +174,5 @@ if [ ! -f "$DART_VERSION_FILE" ] || [ "$DART_VERSION" != "$(cat "${DART_VERSION_
   }
 
   $FIND "$SIDEKICK_DART_SDK_PATH" -type d -exec chmod 755 {} \;
-  $FIND "$SIDEKICK_DART_SDK_PATH" -type f $IS_USER_EXECUTABLE -exec chmod a+x,a+r {} \;
+  $FIND "$SIDEKICK_DART_SDK_PATH" -type f "${IS_USER_EXECUTABLE[@]}" -exec chmod a+x,a+r {} \;
 fi
