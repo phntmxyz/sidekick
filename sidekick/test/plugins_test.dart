@@ -36,11 +36,9 @@ void main() {
     entrypoint = File("${projectRoot.path}/dashi");
     expect(entrypoint.existsSync(), isTrue);
 
-    if (shouldUseLocalDeps) {
-      overrideSidekickCoreWithLocalPath(
-        projectRoot.directory('packages/dashi_sidekick'),
-      );
-    }
+    overrideSidekickCoreWithLocalPath(
+      projectRoot.directory('packages/dashi_sidekick'),
+    );
   });
 
   group('plugins install executes fine', () {
@@ -164,11 +162,9 @@ void main() {
           '-n',
           template.snakeCase,
         ]);
-        if (shouldUseLocalDevs) {
-          overrideSidekickCoreWithLocalPath(
-            projectRoot.directory(template.snakeCase),
-          );
-        }
+        overrideSidekickCoreWithLocalPath(
+          projectRoot.directory(template.snakeCase),
+        );
 
         await runDashProcess(
           [

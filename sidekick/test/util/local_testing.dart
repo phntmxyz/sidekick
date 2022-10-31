@@ -9,6 +9,7 @@ final String localOrPubDepsLabel = shouldUseLocalDeps ? "(local)" : "(pub)";
 
 /// Changes the sidekick_core dependency to a local override
 void overrideSidekickCoreWithLocalPath(Directory package) {
+  if (!shouldUseLocalDevs) return;
   print('Overriding sidekick_core dependency to local');
   final pubspec = package.file("pubspec.yaml");
   // assuming cwd when running those tests is in the sidekick package

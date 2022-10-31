@@ -38,11 +38,9 @@ void main() {
         expect(installSh.existsSync(), isTrue);
         expect(installSh.statSync().modeString(), 'rwxr-xr-x');
 
-        if (shouldUseLocalDeps) {
-          overrideSidekickCoreWithLocalPath(
-            project.directory('packages/dashi_sidekick'),
-          );
-        }
+        overrideSidekickCoreWithLocalPath(
+          project.directory('packages/dashi_sidekick'),
+        );
 
         // runs the main executable fine
         final dashProcess = await TestProcess.start(

@@ -13,9 +13,7 @@ Future<SidekickCli> buildSidekickCli() async {
   addTearDown(() => copy.deleteSync(recursive: true));
   await original.copyRecursively(copy);
 
-  if (shouldUseLocalDevs) {
-    overrideSidekickCoreWithLocalPath(copy);
-  }
+  overrideSidekickCoreWithLocalPath(copy);
 
   final lockFile = copy.file('pubspec.lock');
   if (lockFile.existsSync()) {
@@ -29,25 +27,22 @@ Future<SidekickCli> buildSidekickCli() async {
   startFromArgs('dart', ['pub', 'get'], workingDirectory: copy.path);
   print('created sidekick cli in ${copy.path}');
 
-  return SidekickCli(copy);
+  return SidekickCli._(copy);
 }
 
+/// Copy of package:sidekick in temp directory.
+///
+/// Might contain changes compared to code in <repo>/sidekick for testing like
+/// local path dependencies
 class SidekickCli {
   final Directory root;
 
-  SidekickCli(this.root);
+  SidekickCli._(this.root);
 
   Future<TestProcess> run(
     List<String> args, {
     required Directory workingDirectory,
   }) async {
-    // Use this to debug the sidekick CLI
-    // import 'package:sidekick/sidekick.dart' as sidekick;
-    // await IOOverrides.runZoned(
-    //   () => sidekick.main(args),
-    //   getCurrentDirectory: () => workingDirectory,
-    // );
-
     return TestProcess.start(
       'dart',
       [root.file('bin/sidekick.dart').path, ...args],

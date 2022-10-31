@@ -26,11 +26,9 @@ void main() {
         final entrypoint = File("${nestedPackage.path}/dashi");
         expect(entrypoint.existsSync(), isTrue);
 
-        if (shouldUseLocalDeps) {
-          overrideSidekickCoreWithLocalPath(
-            nestedPackage.directory('packages/dashi_sidekick'),
-          );
-        }
+        overrideSidekickCoreWithLocalPath(
+          nestedPackage.directory('packages/dashi_sidekick'),
+        );
 
         final dashProcess = await TestProcess.start(
           entrypoint.path,
@@ -103,11 +101,9 @@ void main() {
         final entrypoint = File("${projectRoot.path}/dashi");
         expect(entrypoint.existsSync(), isTrue);
 
-        if (shouldUseLocalDeps) {
-          overrideSidekickCoreWithLocalPath(
-            projectRoot.directory('packages/dashi_sidekick'),
-          );
-        }
+        overrideSidekickCoreWithLocalPath(
+          projectRoot.directory('packages/dashi_sidekick'),
+        );
 
         expect(
           projectRoot
@@ -158,11 +154,9 @@ void main() {
         final entrypoint = File("${projectRoot.path}/dashi");
         expect(entrypoint.existsSync(), isTrue);
 
-        if (shouldUseLocalDeps) {
-          overrideSidekickCoreWithLocalPath(
-            projectRoot.directory('packages/dashi_sidekick'),
-          );
-        }
+        overrideSidekickCoreWithLocalPath(
+          projectRoot.directory('packages/dashi_sidekick'),
+        );
 
         expect(
           projectRoot
@@ -281,11 +275,9 @@ void main() {
         final entrypoint = File("${project.path}/dashi");
         expect(entrypoint.existsSync(), isTrue);
 
-        if (shouldUseLocalDeps) {
-          overrideSidekickCoreWithLocalPath(
-            project.directory('packages/dashi_sidekick'),
-          );
-        }
+        overrideSidekickCoreWithLocalPath(
+          project.directory('packages/dashi_sidekick'),
+        );
 
         final dashProcess = await TestProcess.start(
           entrypoint.path,
@@ -320,11 +312,9 @@ void main() {
         expect(entrypoint.existsSync(), isTrue);
         expect(entrypoint.statSync().modeString(), 'rwxr-xr-x');
 
-        if (shouldUseLocalDeps) {
-          overrideSidekickCoreWithLocalPath(
-            project.directory('packages/dashi_sidekick'),
-          );
-        }
+        overrideSidekickCoreWithLocalPath(
+          project.directory('packages/dashi_sidekick'),
+        );
 
         final dashProcess = await TestProcess.start(
           entrypoint.path,
@@ -404,11 +394,9 @@ void main() {
         final entrypoint = File("${project.path}/dashi");
         expect(entrypoint.existsSync(), isTrue);
 
-        if (shouldUseLocalDeps) {
-          overrideSidekickCoreWithLocalPath(
-            project.directory('packages/dashi_sidekick'),
-          );
-        }
+        overrideSidekickCoreWithLocalPath(
+          project.directory('packages/dashi_sidekick'),
+        );
 
         final dashProcess = await TestProcess.start(
           entrypoint.path,
@@ -442,11 +430,9 @@ void main() {
         expect(entrypoint.existsSync(), isTrue);
         expect(entrypoint.statSync().modeString(), 'rwxr-xr-x');
 
-        if (shouldUseLocalDeps) {
-          overrideSidekickCoreWithLocalPath(
-            project.directory('packages/dashi_sidekick'),
-          );
-        }
+        overrideSidekickCoreWithLocalPath(
+          project.directory('packages/dashi_sidekick'),
+        );
 
         final dashProcess = await TestProcess.start(
           entrypoint.path,
@@ -506,11 +492,9 @@ void main() {
           ),
         );
 
-        if (shouldUseLocalDeps) {
-          overrideSidekickCoreWithLocalPath(
-            project.directory('packages/dashi_sidekick'),
-          );
-        }
+        overrideSidekickCoreWithLocalPath(
+          project.directory('packages/dashi_sidekick'),
+        );
 
         final dashProcess = await TestProcess.start(
           entrypoint.path,
