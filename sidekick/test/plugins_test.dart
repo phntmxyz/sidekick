@@ -27,7 +27,8 @@ void main() {
 
   setUp(() async {
     projectRoot = setupTemplateProject('test/templates/minimal_dart_package');
-    final process = await sidekickCli(
+    final cli = await buildSidekickCli();
+    final process = await cli.run(
       ['init', '-n', 'dashi'],
       workingDirectory: projectRoot,
     );
@@ -190,8 +191,8 @@ void main() {
     () async {
       final tempDir = Directory.systemTemp.createTempSync();
       addTearDown(() => tempDir.deleteSync(recursive: true));
-
-      final process = await sidekickCli(
+      final cli = await buildSidekickCli();
+      final process = await cli.run(
         [
           'plugins',
           'create',

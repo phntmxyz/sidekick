@@ -16,7 +16,9 @@ void main() {
         final projectRoot =
             setupTemplateProject('test/templates/nested_package');
         final nestedPackage = projectRoot.directory('foo/bar/nested');
-        final process = await sidekickCli(
+
+        final cli = await buildSidekickCli();
+        final process = await cli.run(
           ['init', '-n', 'dashi'],
           workingDirectory: nestedPackage,
         );
@@ -47,7 +49,8 @@ void main() {
       () async {
         final projectRoot =
             setupTemplateProject('test/templates/minimal_dart_package');
-        final process = await sidekickCli(
+        final cli = await buildSidekickCli();
+        final process = await cli.run(
           ['init', '-n', '-42invalidName'],
           workingDirectory: projectRoot,
         );
@@ -65,7 +68,8 @@ void main() {
       () async {
         final projectRoot =
             setupTemplateProject('test/templates/minimal_dart_package');
-        final process = await sidekickCli(
+        final cli = await buildSidekickCli();
+        final process = await cli.run(
           [
             'init',
             '-n',
@@ -90,7 +94,8 @@ void main() {
       () async {
         final projectRoot =
             setupTemplateProject('test/templates/minimal_dart_package');
-        final process = await sidekickCli(
+        final cli = await buildSidekickCli();
+        final process = await cli.run(
           ['init', '-n', 'dashi'],
           workingDirectory: projectRoot,
         );
@@ -144,7 +149,8 @@ void main() {
       () async {
         final projectRoot =
             setupTemplateProject('test/templates/minimal_flutter_package');
-        final process = await sidekickCli(
+        final cli = await buildSidekickCli();
+        final process = await cli.run(
           ['init', '-n', 'dashi'],
           workingDirectory: projectRoot,
         );
@@ -208,7 +214,8 @@ void main() {
       () async {
         final project =
             setupTemplateProject('test/templates/root_with_packages');
-        final process = await sidekickCli(
+        final cli = await buildSidekickCli();
+        final process = await cli.run(
           ['init', '-n', 'dashi'],
           workingDirectory: project,
         );
@@ -265,7 +272,8 @@ void main() {
       () async {
         final project =
             setupTemplateProject('test/templates/root_with_packages');
-        final process = await sidekickCli(
+        final cli = await buildSidekickCli();
+        final process = await cli.run(
           ['init', '-n', 'dashi'],
           workingDirectory: project,
         );
@@ -296,7 +304,8 @@ void main() {
       () async {
         final project =
             setupTemplateProject('test/templates/root_with_packages');
-        final process = await sidekickCli(
+        final cli = await buildSidekickCli();
+        final process = await cli.run(
           ['init', '-n', 'dashi', project.absolute.path],
           workingDirectory: project.parent,
         );
@@ -335,7 +344,8 @@ void main() {
       'init generates sidekick package + entrypoint',
       () async {
         final project = setupTemplateProject('test/templates/multi_package');
-        final process = await sidekickCli(
+        final cli = await buildSidekickCli();
+        final process = await cli.run(
           ['init', '-n', 'dashi'],
           workingDirectory: project,
         );
@@ -385,7 +395,8 @@ void main() {
       'entrypoint executes fine after sidekick init $localOrPubDepsLabel',
       () async {
         final project = setupTemplateProject('test/templates/multi_package');
-        final process = await sidekickCli(
+        final cli = await buildSidekickCli();
+        final process = await cli.run(
           ['init', '-n', 'dashi'],
           workingDirectory: project,
         );
@@ -415,7 +426,8 @@ void main() {
       'init with path (absolute) $localOrPubDepsLabel',
       () async {
         final project = setupTemplateProject('test/templates/multi_package');
-        final process = await sidekickCli(
+        final cli = await buildSidekickCli();
+        final process = await cli.run(
           ['init', '-n', 'dashi', project.absolute.path],
           workingDirectory: project.parent,
         );
@@ -452,7 +464,8 @@ void main() {
       'with mainProject $localOrPubDepsLabel',
       () async {
         final project = setupTemplateProject('test/templates/multi_package');
-        final process = await sidekickCli(
+        final cli = await buildSidekickCli();
+        final process = await cli.run(
           [
             'init',
             '-n',
