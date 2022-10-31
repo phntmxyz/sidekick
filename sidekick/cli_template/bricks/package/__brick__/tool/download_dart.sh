@@ -5,13 +5,12 @@
 
 # Highly inspired by https://github.com/flutter/flutter/blob/b7b8b759bc3ab7a80d2576d52f7b05bc1e6e23bd/bin/internal/update_dart_sdk.sh
 
-
 set -e
 
-SIDEKICK_PACKAGE_ROOT=$(dirname "$(dirname "$0")")
+SIDEKICK_PACKAGE_HOME=$(dirname "$(dirname "$0")")
 
 # Extract DART_VERSION
-eval "$("$SIDEKICK_PACKAGE_ROOT/tool/sidekick_config.sh")"
+eval "$("$SIDEKICK_PACKAGE_HOME/tool/sidekick_config.sh")"
 
 if [ -z "$DART_VERSION" ]; then
   echo "DART_VERSION is not set"
@@ -19,7 +18,7 @@ if [ -z "$DART_VERSION" ]; then
 fi
 
 DART_SDK_ZIP_FOLDER="$HOME/.dart/sdk/cache/${DART_VERSION}"
-SIDEKICK_DART_SDK_UNZIP_PATH="$SIDEKICK_PACKAGE_ROOT/build/cache"
+SIDEKICK_DART_SDK_UNZIP_PATH="$SIDEKICK_PACKAGE_HOME/build/cache"
 SIDEKICK_DART_SDK_PATH="$SIDEKICK_DART_SDK_UNZIP_PATH/dart-sdk"
 DART_VERSION_FILE="$SIDEKICK_DART_SDK_PATH/version"
 OS="$(uname -s)"

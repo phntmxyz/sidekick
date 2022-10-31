@@ -1,24 +1,6 @@
 #!/usr/bin/env bash
 set -e
 
-# Attempt to set TOOL_HOME
-# Resolve links: $0 may be a link
-PRG="$0"
-# Need this for relative symlinks.
-while [ -h "$PRG" ]; do
-  ls=$(ls -ld "$PRG")
-  link=$(expr "$ls" : '.*-> \(.*\)$')
-  if expr "$link" : '/.*' >/dev/null; then
-    PRG="$link"
-  else
-    PRG=$(dirname "$PRG")"/$link"
-  fi
-done
-SAVED="$(pwd)"
-cd "$(dirname "$PRG")/" >/dev/null
-TOOL_HOME="$(pwd -P)"
-cd "$SAVED" >/dev/null
-
 # Parses a yaml file and prints the variables
 # Usage:
 # parse_yaml sample.yml "CONF_"
@@ -52,7 +34,7 @@ function parse_yaml {
 }
 
 
-SIDEKICK_PACKAGE_HOME=$(dirname "$TOOL_HOME")
+SIDEKICK_PACKAGE_HOME=$(dirname "$(dirname "$0")")
 
 DART_SDK_CONSTRAINTS=$(parse_yaml "${SIDEKICK_PACKAGE_HOME}/pubspec.yaml" | grep "environment_sdk")
 # i.e. extract 2.17.0 from ">=2.17.0 <3.0.0"
