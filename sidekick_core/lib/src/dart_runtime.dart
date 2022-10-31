@@ -22,16 +22,10 @@ class SidekickDartRuntime {
 
   /// Downloads the SDK
   void download() {
-    try {
-      env['DART_VERSION'] = '2.18.3';
-      dcli.run(
-        'sh tool/download_dart.sh',
-        workingDirectory: sidekickPackage.path,
-      );
-    } finally {
-      env['DART_VERSION'] = null;
-    }
-
+    dcli.run(
+      'sh tool/download_dart.sh',
+      workingDirectory: sidekickPackage.path,
+    );
     if (!isDownloaded()) {
       if (_oldDartSdkPath.existsSync()) {
         throw 'Please regenerate your sidekick CLI with `sidekick init`. '

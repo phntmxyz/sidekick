@@ -21,8 +21,9 @@ cd "$SAVED" >/dev/null
 
 export SIDEKICK_PACKAGE_HOME=$(dirname "$TOOL_HOME")
 
-REPO_ROOT=$(git -C "$TOOL_HOME" rev-parse --show-cdup)
-export DART_VERSION="2.18.3"
+# Extract DART_VERSION
+eval $("$TOOL_HOME/sidekick_config.sh")
+
 DART_SDK="${SIDEKICK_PACKAGE_HOME}/build/.cache/dart-sdk"
 DART="$DART_SDK/bin/dart"
 CACHED_DART_SDK_VERSION=$(cat "$DART_SDK/version" 2> /dev/null) || true

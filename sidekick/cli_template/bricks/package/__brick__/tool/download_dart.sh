@@ -10,6 +10,9 @@ set -e
 
 SIDEKICK_PACKAGE_ROOT=$(dirname "$(dirname "$0")")
 
+# Extract DART_VERSION
+eval $("$SIDEKICK_PACKAGE_ROOT/tool/sidekick_config.sh")
+
 if [ -z "$DART_VERSION" ]; then
   echo "DART_VERSION is not set"
   exit 1

@@ -8,7 +8,6 @@ cd "${CLI_PACKAGE_DIR}" || exit
   echo "Installing {{name}} command line application..."
 
   # export pub from .flutter dir
-  REPO_ROOT=$(git rev-parse --show-cdup)
   DART_SDK="${CLI_PACKAGE_DIR}/build/.cache/dart-sdk"
   DART="$DART_SDK/bin/dart"
 
