@@ -25,6 +25,11 @@ export SIDEKICK_PACKAGE_HOME
 # Extract DART_VERSION
 eval "$("$TOOL_HOME/sidekick_config.sh")"
 
+if [ -z "$DART_VERSION" ]; then
+  echo "DART_VERSION is not set"
+  exit 1
+fi
+
 DART_SDK="${SIDEKICK_PACKAGE_HOME}/build/cache/dart-sdk"
 CACHED_DART_SDK_VERSION=$(cat "$DART_SDK/version" 2> /dev/null) || true
 
