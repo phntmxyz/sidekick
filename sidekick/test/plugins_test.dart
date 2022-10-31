@@ -164,6 +164,11 @@ void main() {
           '-n',
           template.snakeCase,
         ]);
+        if (shouldUseLocalDevs) {
+          overrideSidekickCoreWithLocalPath(
+            projectRoot.directory(template.snakeCase),
+          );
+        }
 
         await runDashProcess(
           [
