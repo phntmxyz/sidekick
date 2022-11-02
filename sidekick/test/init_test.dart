@@ -24,7 +24,7 @@ void main() {
         final entrypoint = File("${nestedPackage.path}/dashi");
         expect(entrypoint.existsSync(), isTrue);
 
-        if (shouldUseLocalDevs) {
+        if (shouldUseLocalDeps) {
           overrideSidekickCoreWithLocalPath(
             nestedPackage.directory('packages/dashi_sidekick'),
           );
@@ -98,7 +98,7 @@ void main() {
         final entrypoint = File("${projectRoot.path}/dashi");
         expect(entrypoint.existsSync(), isTrue);
 
-        if (shouldUseLocalDevs) {
+        if (shouldUseLocalDeps) {
           overrideSidekickCoreWithLocalPath(
             projectRoot.directory('packages/dashi_sidekick'),
           );
@@ -152,7 +152,7 @@ void main() {
         final entrypoint = File("${projectRoot.path}/dashi");
         expect(entrypoint.existsSync(), isTrue);
 
-        if (shouldUseLocalDevs) {
+        if (shouldUseLocalDeps) {
           overrideSidekickCoreWithLocalPath(
             projectRoot.directory('packages/dashi_sidekick'),
           );
@@ -273,7 +273,7 @@ void main() {
         final entrypoint = File("${project.path}/dashi");
         expect(entrypoint.existsSync(), isTrue);
 
-        if (shouldUseLocalDevs) {
+        if (shouldUseLocalDeps) {
           overrideSidekickCoreWithLocalPath(
             project.directory('packages/dashi_sidekick'),
           );
@@ -311,7 +311,7 @@ void main() {
         expect(entrypoint.existsSync(), isTrue);
         expect(entrypoint.statSync().modeString(), 'rwxr-xr-x');
 
-        if (shouldUseLocalDevs) {
+        if (shouldUseLocalDeps) {
           overrideSidekickCoreWithLocalPath(
             project.directory('packages/dashi_sidekick'),
           );
@@ -393,7 +393,7 @@ void main() {
         final entrypoint = File("${project.path}/dashi");
         expect(entrypoint.existsSync(), isTrue);
 
-        if (shouldUseLocalDevs) {
+        if (shouldUseLocalDeps) {
           overrideSidekickCoreWithLocalPath(
             project.directory('packages/dashi_sidekick'),
           );
@@ -430,7 +430,7 @@ void main() {
         expect(entrypoint.existsSync(), isTrue);
         expect(entrypoint.statSync().modeString(), 'rwxr-xr-x');
 
-        if (shouldUseLocalDevs) {
+        if (shouldUseLocalDeps) {
           overrideSidekickCoreWithLocalPath(
             project.directory('packages/dashi_sidekick'),
           );
@@ -493,7 +493,7 @@ void main() {
           ),
         );
 
-        if (shouldUseLocalDevs) {
+        if (shouldUseLocalDeps) {
           overrideSidekickCoreWithLocalPath(
             project.directory('packages/dashi_sidekick'),
           );

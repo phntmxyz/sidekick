@@ -35,7 +35,7 @@ void main() {
     entrypoint = File("${projectRoot.path}/dashi");
     expect(entrypoint.existsSync(), isTrue);
 
-    if (shouldUseLocalDevs) {
+    if (shouldUseLocalDeps) {
       overrideSidekickCoreWithLocalPath(
         projectRoot.directory('packages/dashi_sidekick'),
       );
