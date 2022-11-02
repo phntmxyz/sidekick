@@ -13,7 +13,7 @@ void overrideSidekickCoreWithLocalPath(Directory package) {
   print('Overriding sidekick_core dependency to local');
   final pubspec = package.file("pubspec.yaml");
   // assuming cwd when running those tests is in the sidekick package
-  final corePath = normalize(absolute('../sidekick_core'));
+  final corePath = canonicalize('../sidekick_core');
   pubspec.writeAsStringSync(
     '''
 
