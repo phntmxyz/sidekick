@@ -29,7 +29,7 @@ Initialize project
 sidekick init <path-to-repo> 
 ```
 
-Follow the instructions and you just created your first dart CLI.
+Follow the instructions and you just created your first sidekick CLI.
 You can execute your CLI right away using its entrypoint and use any of the existing tasks.
 
 Assuming your CLI is called `flg` (short for `flutter gallery`), execute the `flg` shell script in the root of your repository.
@@ -46,42 +46,61 @@ Global options:
 
 Available commands:
   analyze          Dart analyzes the whole project
+  clean            Cleans the project
   dart             Calls dart
   deps             Gets dependencies for all packages
-  flutter          Use the Flutter SDK associated with the project (Calls flutterw).
-  install-global   Installs the sidekick CLI globally
-  recompile        Recompiles the flg sidekick
+  flutter          Call the Flutter SDK associated with the project
+  sidekick         Manages the sidekick CLI
 
 Run "flg help <command>" for more information about a command.
 ```
 
-### Preinstalled tasks
+## Plugins
 
-#### analyze
+### Install plugin
+
+To install more command, you can use install plugins with 
+
+```bash
+$ <cli> sidekick plugins install <pub-package>
+```
+
+Checkout the available plugins on [pub.dev](https://pub.dev/packages?q=dependency%3Asidekick_plugin_installer)
+
+You can write your own plugin. Checkout the [docs](#sidekick-plugins-install) 
+
+## Preinstalled commands
+
+### analyze
 
 Runs the analyzer for all packages in the project.
 
-#### dart
+### dart
 
 Runs the bundled `dart` runtime with any arguments. 
 By calling `flg dart` you make sure to always use the correct dart version anyone else in your project is using.
+
+### clean
+
+Deletes the build directory of the main application.
+This commands code is part of your CLI, intended to be modified to your needs.
 
 ### deps
 
 Gets all dependencies for all packages in your project.
 This will become your most used command in no time!
 
-#### flutter
+### flutter
 
 Runs the bundled `flutter` runtime (provided via [flutter-wrapper](https://github.com/passsy/flutter_wrapper)) with any arguments.
 By calling `flg flutter` you make sure to always use the correct flutter version, like anyone else of your team.
 
-### install-global
+### sidekick install-global
 
 You can execute your CLI from anywhere. To do so, run the `install-global` command and follow the instructions.
 
 ```bash
-$ ./flg install-global
+$ ./flg sidekick install-global
 
 Please add $HOME/.sidekick/bin to your PATH. 
 Add this to your shell's config file (.zshrc, .bashrc, .bash_profile, ...)
@@ -97,7 +116,69 @@ After adjusting your PATH, you can execute the CLI from anywhere.
 $ flg
 ```
 
-#### recompile
+### sidekick plugins create
+
+A plugin template can be generated with `sidekick plugins create --template <template type> --name <plugin name>`.
+
+This plugin was generated from the template `$templateType`.
+
+The `--template` parameter must be given one of the following values:
+
+- `install-only`  
+  This template is the very minimum, featuring just a `tool/install.dart` file
+  that writes all code to be installed into the users sidekick CLI.
+
+  It doesn't add a pub dependency with shared code. All code is generated in
+  the users sidekick CLI, being fully adjustable.
+
+- `shared-command`  
+  This template adds a pub dependency to a shared CLI `Command` and registers
+  it in the user's sidekick CLI.
+
+  This method is designed for cases where the command might be configurable
+  with parameters but doesn't allow users to actually change the code.
+
+  It allows updates (via `pub upgrade`) without users having to touch their code.
+
+- `shared-code`  
+  This template adds a pub dependency and writes the code of a `Command` into
+  the user's sidekick CLI as well as registers it there.
+
+  The `Command` code is not shared, thus is highly customizable. But it uses
+  shared code from the plugin package that is registered added as dependency.
+  Update of the helper functions is possible via pub, but the actual command
+  flow is up to the user.
+
+### sidekick plugins install
+
+#### Installing a plugin from a pub server
+
+```bash
+<cli> sidekick plugins install <plugin name on pub server, e.g. sidekick_vault>
+```
+
+By default, [pub.dev](https://pub.dev) is used as pub server. A custom pub server can be used with the `--hosted-url`
+parameter.
+
+#### Installing a plugin from a git repository
+
+```bash
+<cli> sidekick plugins install --source git <link to git repository>
+```
+
+**Optional parameters:**
+
+- `--git-ref`: Git branch name, tag or full commit SHA (40 characters) to be installed
+- `--git-path`: Path of git package in repository (use when repository root contains multiple packages)
+    - e.g. `${cliNameOrNull ?? 'your_custom_sidekick_cli'} sidekick plugins install --source git --git-path sidekick_vault https://github.com/phntmxyz/sidekick`
+
+#### Installing a plugin from a local path
+
+```bash
+<cli> sidekick plugins install --source path <path to plugin on local machine>
+```
+
+### recompile
 
 The entrypoint usually automatically detects when you changed the source code of your CLI. 
 But for rare cases (like [path dependencies](https://dart.dev/tools/pub/dependencies#path-packages)) it is not possible to detect changes.
