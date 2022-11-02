@@ -2,7 +2,6 @@ import 'package:dcli/dcli.dart' as dcli;
 import 'package:mason/mason.dart';
 import 'package:recase/recase.dart';
 import 'package:sidekick/src/init/name_suggester.dart';
-import 'package:sidekick/src/init/project_structure_detector.dart';
 import 'package:sidekick/src/templates/entrypoint_bundle.g.dart';
 import 'package:sidekick/src/templates/package_bundle.g.dart';
 import 'package:sidekick_core/sidekick_core.dart';
@@ -22,10 +21,31 @@ class InitCommand extends Command {
           'The name of the CLI to be created \nThe `_cli` prefix will be defined automatically',
     );
     argParser.addOption(
-      'mainProjectPath',
+      'initDirectory',
+      abbr: 'd',
+      help: 'The directory in which the CLI should be created.',
+      defaultsTo: '.',
+    );
+    argParser.addOption(
+      'entrypointDirectory',
+      abbr: 'e',
       help:
-          'Multi package layout only: Sets the mainProject, the package that ultimately builds your app. '
-          '(relative to repository root, i.e. "packages/my_app")',
+          'The directory relative from initDirectory in which the CLI entrypoint script should be created.',
+      defaultsTo: '.',
+    );
+    argParser.addOption(
+      'cliPackageDirectory',
+      abbr: 'c',
+      help:
+          'The directory relative from initDirectory in which the CLI package should be created',
+      defaultsTo: 'packages',
+    );
+    argParser.addOption(
+      'mainProjectPath',
+      abbr: 'm',
+      help:
+          'Optionally sets the mainProject, the package that ultimately builds your app '
+          '(relative from initDirectory, e.g. "packages/my_app").',
     );
   }
 
@@ -35,22 +55,10 @@ class InitCommand extends Command {
       "Welcome to sidekick. You're about to initialize a sidekick project\n",
     );
 
-    final cwd = Directory.current;
-    // TODO make package location and entrypoint location configurable
-    final Directory initDir = () {
-      if (argResults?.rest != null && argResults?.rest.length == 1) {
-        final path = argResults?.rest[0];
-        if (path != null) {
-          final dir = Directory(path);
-          if (!dir.existsSync()) {
-            throw '${dir.path} is not a valid path to a Dart/Flutter project';
-          }
-          return dir;
-        }
-      }
-      // fallback to cwd
-      return cwd;
-    }();
+    final initDir = _getDirectoryArgument('initDirectory');
+    final entrypointDir = _getDirectoryArgument('entrypointDirectory', initDir);
+    final cliPackageDir = _getDirectoryArgument('cliPackageDirectory', initDir);
+
     final cliName = argResults!['cliName'] as String? ??
         () {
           print(
@@ -80,82 +88,49 @@ class InitCommand extends Command {
     bool isGitDir(Directory dir) => dir.directory('.git').existsSync();
     final repoRoot = initDir.findParent(isGitDir) ?? initDir;
 
-    final detector = ProjectStructureDetector();
-    final type = detector.detectProjectType(initDir);
+    final mainProjectPath = argResults!['mainProjectPath'] as String?;
+    DartPackage? mainProject = mainProjectPath != null
+        ? DartPackage.fromDirectory(initDir.directory(mainProjectPath))
+        : null;
 
-    switch (type) {
-      case ProjectStructure.simple:
-        await createSidekickPackage(
-          cliName: cliName,
-          repoRoot: repoRoot,
-          packageDir: initDir.directory('packages'),
-          entrypointDir: initDir,
-          mainProject: DartPackage.fromDirectory(initDir),
-        );
-        break;
-      case ProjectStructure.multiPackage:
-        final mainProjectPath = argResults!['mainProjectPath'] as String?;
-        DartPackage? mainProject = mainProjectPath != null
-            ? DartPackage.fromDirectory(initDir.directory(mainProjectPath))
-            : null;
-        final List<DartPackage> packages = initDir
-            .directory('packages')
-            .listSync()
-            .whereType<Directory>()
-            .map((it) => DartPackage.fromDirectory(it))
-            .filterNotNull()
-            .sortedBy((it) => it.name)
-            .toList();
+    // TODO I think this could break when there are multiple packages with the same name (e.g. example)
+    final packages = Repository(root: repoRoot).findAllPackages();
 
-        if (mainProject == null) {
-          // Ask user for a main project (optional)
-          const none = 'None of the above';
-          final userSelection = dcli.menu(
-            prompt: 'Which of the following packages is your primary app?',
-            options: [...packages.map((it) => it.name), none],
-            defaultOption: none,
-          );
-          if (userSelection != none) {
-            mainProject = packages.firstWhere((it) => it.name == userSelection);
-          }
-        }
-
-        await createSidekickPackage(
-          cliName: cliName,
-          repoRoot: repoRoot,
-          packageDir: initDir.directory('packages'),
-          entrypointDir: initDir,
-          mainProject: mainProject,
-          packages: packages,
-        );
-        break;
-      case ProjectStructure.rootWithPackages:
-        print('Detected a Dart/Flutter project with a /packages directory');
-        final List<DartPackage> packages = initDir
-            .directory('packages')
-            .listSync()
-            .whereType<Directory>()
-            .map((it) => DartPackage.fromDirectory(it))
-            .filterNotNull()
-            .sortedBy((it) => it.name)
-            .toList();
-
-        await createSidekickPackage(
-          cliName: cliName,
-          repoRoot: repoRoot,
-          packageDir: initDir.directory('packages'),
-          entrypointDir: initDir,
-          mainProject: DartPackage.fromDirectory(initDir),
-          packages: packages,
-        );
-        break;
-      case ProjectStructure.unknown:
-        print(
-          'The project structure is not yet supported. '
-          'Please open an issue at https://github.com/phntmxyz/sidekick/issues with details about your project structure',
-        );
-        exit(1);
+    if (mainProject == null) {
+      // Ask user for a main project (optional)
+      const none = 'None of the above';
+      final userSelection = dcli.menu(
+        prompt: 'Which of the following packages is your primary app?',
+        options: [...packages.map((it) => it.name), none],
+        defaultOption: none,
+      );
+      if (userSelection != none) {
+        mainProject = packages.firstWhere((it) => it.name == userSelection);
+      }
     }
+
+    await createSidekickPackage(
+      cliName: cliName,
+      repoRoot: repoRoot,
+      packageDir: cliPackageDir,
+      entrypointDir: entrypointDir,
+      mainProject: mainProject,
+      packages: packages,
+    );
+  }
+
+  Directory _getDirectoryArgument(String dirArg, [Directory? initDir]) {
+    final root = initDir ?? Directory.current;
+    final dir = root.directory(argResults![dirArg] as String);
+    if (initDir != null && !dir.isWithinOrEqual(initDir)) {
+      throw '$dirArg: ${dir.path} is not within or equal to ${root.path}';
+    }
+    if (!dir.existsSync()) {
+      dir.createSync(recursive: true);
+      printerr("$dirArg: ${dir.path} didn't exist and has been created now.");
+    }
+
+    return dir.absolute;
   }
 
   /// Generates a custom sidekick CLI
@@ -166,10 +141,8 @@ class InitCommand extends Command {
   ///   [entrypointDir] - directory in which entrypoint.sh will be created
   ///
   /// Optional parameters:
-  /// if the structure is [ProjectStructure.multiPackage]
   ///   [mainProject] - primary project directory (usually an app which depends on all other packages)
-  /// if the structure is [ProjectStructure.multiPackage] or [ProjectStructure.rootWithPackages]
-  ///   [packages] - list of all packages in the /packages directory
+  ///   [packages] - list of all packages in the [repoRoot]
   Future<void> createSidekickPackage({
     required String cliName,
     required Directory repoRoot,
@@ -359,5 +332,13 @@ Future<void> makeExecutable(FileSystemEntity file) async {
   final exitCode = await p.exitCode;
   if (exitCode != 0) {
     throw 'Cloud not set permission 755 for file ${file.path}';
+  }
+}
+
+extension on Directory {
+  bool isWithinOrEqual(Directory dir) {
+    return this.isWithin(dir) ||
+        // canonicalize is necessary, otherwise '/a/b/c' != '/a/b/c/./.'
+        canonicalize(dir.absolute.path) == canonicalize(absolute.path);
   }
 }
