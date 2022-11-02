@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dcli/dcli.dart' as dcli;
 import 'package:sidekick_core/sidekick_core.dart';
 
@@ -13,6 +15,13 @@ int flutter(
   final sdk = flutterSdk;
   if (sdk == null) {
     throw FlutterSdkNotSetException();
+  }
+
+  for (final initializer in _sdkInitializers) {
+    final future = initializer(sdk);
+    if (future is Future) {
+      dcli.waitForEx(future);
+    }
   }
 
   if (Platform.isWindows) {
@@ -70,3 +79,23 @@ Directory? systemFlutterSdk() {
 
 /// Returns the path to Flutter SDK of the `flutter` executable on `PATH`
 String? systemFlutterSdkPath() => systemFlutterSdk()?.path;
+
+/// Registers an initializer function that is called before executing the flutter command
+/// to prepare the SDK, such as downloading it.
+///
+/// This is a global function,
+Removable addFlutterSdkInitializer(FlutterInitializer initializer) {
+  if (!_sdkInitializers.contains(initializer)) {
+    _sdkInitializers.add(initializer);
+  }
+  return () => _sdkInitializers.remove(initializer);
+}
+
+/// Can be called to remove a listener
+typedef Removable = void Function();
+
+/// Called by [flutter] before executing the flutter executable
+typedef FlutterInitializer = FutureOr<void> Function(Directory sdkDir);
+
+/// Initializers that have to be executed before executing the flutter command
+List<FlutterInitializer> _sdkInitializers = [];
