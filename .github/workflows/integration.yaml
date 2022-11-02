@@ -31,7 +31,7 @@ jobs:
       - name: Run tests
         run: cd sidekick && dart test
         env:
-          SIDEKICK_LOCAL_DEPS: "true"
+          SIDEKICK_PUB_DEPS: "false"
           SIDEKICK_ANALYZE: "${{ matrix.version == '2.18' }}"
 
   integration_tests_linux_pub:
@@ -56,7 +56,7 @@ jobs:
       - name: Run tests
         run: cd sidekick && dart test
         env:
-          SIDEKICK_LOCAL_DEPS: "false"
+          SIDEKICK_PUB_DEPS: "true"
           SIDEKICK_ANALYZE: "${{ matrix.version == '2.18' }}"
 
   integration_tests_windows:

@@ -19,15 +19,26 @@ cd "$(dirname "$PRG")/" >/dev/null
 TOOL_HOME="$(pwd -P)"
 cd "$SAVED" >/dev/null
 
-export SIDEKICK_PACKAGE_HOME=$(dirname "$TOOL_HOME")
+SIDEKICK_PACKAGE_HOME=$(dirname "$TOOL_HOME")
+export SIDEKICK_PACKAGE_HOME
 
-REPO_ROOT=$(git -C "$TOOL_HOME" rev-parse --show-cdup)
+# Extract DART_VERSION
+eval "$("$TOOL_HOME/sidekick_config.sh")"
+
+if [ -z "$DART_VERSION" ]; then
+  echo "DART_VERSION is not set"
+  exit 1
+fi
+
 DART_SDK="${SIDEKICK_PACKAGE_HOME}/build/cache/dart-sdk"
-DART="$DART_SDK/bin/dart"
+CACHED_DART_SDK_VERSION=$(cat "$DART_SDK/version" 2> /dev/null) || true
 
-
-## Run without compilation
-#"${DART}" "${SIDEKICK_PACKAGE_HOME}/bin/main.dart" "$@"
+# When the Dart SDK version changes or the Dart SDK is missing, install it.
+if [ "$CACHED_DART_SDK_VERSION" != "$DART_VERSION" ] || [ ! -d "$DART_SDK" ]; then
+  rm -rf "$DART_SDK" || true
+  # Download new Dart runtime with DART_VERSION
+  sh "${SIDEKICK_PACKAGE_HOME}/tool/download_dart.sh"
+fi
 
 HASH_PROGRAM='sha1sum'
 OS="$(uname -s)"
@@ -43,7 +54,7 @@ HASH=$(find \
   "${SIDEKICK_PACKAGE_HOME}/pubspec.yaml" \
   "${SIDEKICK_PACKAGE_HOME}/pubspec.lock" \
   -type f -print0 | xargs -0 "$HASH_PROGRAM")
-EXISTING_HASH=$(cat $STAMP_FILE 2> /dev/null) || true
+EXISTING_HASH=$(cat "$STAMP_FILE" 2> /dev/null) || true
 
 EXE="${SIDEKICK_PACKAGE_HOME}/build/cli.exe"
 

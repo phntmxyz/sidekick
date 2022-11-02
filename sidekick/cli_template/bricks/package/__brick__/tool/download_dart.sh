@@ -5,18 +5,25 @@
 
 # Highly inspired by https://github.com/flutter/flutter/blob/b7b8b759bc3ab7a80d2576d52f7b05bc1e6e23bd/bin/internal/update_dart_sdk.sh
 
-
 set -e
 
-SIDEKICK_PACKAGE_ROOT=$(dirname "$(dirname "$0")")
+SIDEKICK_PACKAGE_HOME=$(dirname "$(dirname "$0")")
 
-SIDEKICK_DART_SDK_PATH="$SIDEKICK_PACKAGE_ROOT/build/cache/dart-sdk"
-DART_SDK_ZIP_FOLDER="$HOME/.dart/sdk/cache"
-DART_VERSION="2.18.2"
-DART_VERSION_STAMP="$SIDEKICK_PACKAGE_ROOT/build/cache/dartsdk.stamp"
+# Extract DART_VERSION
+eval "$("$SIDEKICK_PACKAGE_HOME/tool/sidekick_config.sh")"
+
+if [ -z "$DART_VERSION" ]; then
+  echo "DART_VERSION is not set"
+  exit 1
+fi
+
+DART_SDK_ZIP_FOLDER="$HOME/.dart/sdk/cache/${DART_VERSION}"
+SIDEKICK_DART_SDK_UNZIP_PATH="$SIDEKICK_PACKAGE_HOME/build/cache"
+SIDEKICK_DART_SDK_PATH="$SIDEKICK_DART_SDK_UNZIP_PATH/dart-sdk"
+DART_VERSION_FILE="$SIDEKICK_DART_SDK_PATH/version"
 OS="$(uname -s)"
 
-if [ ! -f "$DART_VERSION_STAMP" ] || [ "$DART_VERSION" != `cat "$DART_VERSION_STAMP"` ]; then
+if [ ! -f "$DART_VERSION_FILE" ] || [ "$DART_VERSION" != "$(cat "${DART_VERSION_FILE}")" ]; then
   command -v curl > /dev/null 2>&1 || {
     >&2 echo
     >&2 echo 'Missing "curl" tool. Unable to download Dart SDK.'
@@ -108,9 +115,9 @@ if [ ! -f "$DART_VERSION_STAMP" ] || [ "$DART_VERSION" != `cat "$DART_VERSION_ST
 
   # Use the default find if possible.
   if [ -e /usr/bin/find ]; then
-    FIND=/usr/bin/find
+    FIND="/usr/bin/find"
   else
-    FIND=find
+    FIND="find"
   fi
 
   DART_SDK_BASE_URL="${GOOGLE_STORAGE_BASE_URL:-https://storage.googleapis.com}"
@@ -118,7 +125,8 @@ if [ ! -f "$DART_VERSION_STAMP" ] || [ "$DART_VERSION" != `cat "$DART_VERSION_ST
 
   # install the new sdk
   rm -rf -- "$SIDEKICK_DART_SDK_PATH"
-  mkdir -m 755 -p -- "$SIDEKICK_DART_SDK_PATH"
+  mkdir -p -- "$SIDEKICK_DART_SDK_PATH"
+  chmod 755 "$SIDEKICK_DART_SDK_PATH"
   DART_SDK_ZIP="$DART_SDK_ZIP_FOLDER/$DART_ZIP_NAME"
 
   # Create cache folder when it doesn't exits
@@ -156,7 +164,7 @@ if [ ! -f "$DART_VERSION_STAMP" ] || [ "$DART_VERSION" != `cat "$DART_VERSION_ST
   fi
 
   # Extract sdk to build folder
-  unzip -o -q "$DART_SDK_ZIP" -d "$SIDEKICK_PACKAGE_ROOT/build/cache" || {
+  unzip -o -q "$DART_SDK_ZIP" -d "$SIDEKICK_DART_SDK_UNZIP_PATH" || {
     >&2 echo
     >&2 echo "It appears that the downloaded file is corrupt; please try again."
     >&2 echo
@@ -166,5 +174,4 @@ if [ ! -f "$DART_VERSION_STAMP" ] || [ "$DART_VERSION" != `cat "$DART_VERSION_ST
 
   $FIND "$SIDEKICK_DART_SDK_PATH" -type d -exec chmod 755 {} \;
   $FIND "$SIDEKICK_DART_SDK_PATH" -type f $IS_USER_EXECUTABLE -exec chmod a+x,a+r {} \;
-  echo "$DART_VERSION" > "$DART_VERSION_STAMP"
 fi

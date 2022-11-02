@@ -13,7 +13,8 @@ void main() {
       () async {
         final project =
             setupTemplateProject('test/templates/root_with_packages');
-        final process = await sidekickCli(
+        final cli = await buildSidekickCli();
+        final process = await cli.run(
           ['init', '-n', 'dashi'],
           workingDirectory: project,
         );
@@ -37,11 +38,9 @@ void main() {
         expect(installSh.existsSync(), isTrue);
         expect(installSh.statSync().modeString(), 'rwxr-xr-x');
 
-        if (shouldUseLocalDevs) {
-          overrideSidekickCoreWithLocalPath(
-            project.directory('packages/dashi_sidekick'),
-          );
-        }
+        overrideSidekickCoreWithLocalPath(
+          project.directory('packages/dashi_sidekick'),
+        );
 
         // runs the main executable fine
         final dashProcess = await TestProcess.start(
