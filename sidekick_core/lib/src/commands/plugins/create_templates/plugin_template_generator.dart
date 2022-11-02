@@ -3,12 +3,12 @@ import 'package:recase/recase.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 
 /// A file structure template that can be written to disk
-abstract class TemplateGenerator {
-  const TemplateGenerator();
+abstract class PluginTemplateGenerator {
+  const PluginTemplateGenerator();
 
-  /// Generates the template and writes it to [TemplateProperties.pluginDirectory]
+  /// Generates the template and writes it to [PluginTemplateProperties.pluginDirectory]
   @mustCallSuper
-  void generate(TemplateProperties props) {
+  void generate(PluginTemplateProperties props) {
     props.pluginDirectory
         .file('analysis_options.yaml')
         .writeAsStringSync(props.analysisOptionsTemplate);
@@ -23,7 +23,7 @@ abstract class TemplateGenerator {
   }
 }
 
-class TemplateProperties {
+class PluginTemplateProperties {
   /// The name of the to be generated plugin
   final String pluginName;
 
@@ -38,14 +38,14 @@ class TemplateProperties {
   /// The type of template to generate. Also see [CreatePluginCommand.templates]
   final String templateType;
 
-  const TemplateProperties({
+  const PluginTemplateProperties({
     required this.pluginName,
     required this.pluginDirectory,
     required this.templateType,
   });
 }
 
-extension on TemplateProperties {
+extension on PluginTemplateProperties {
   String get analysisOptionsTemplate => '''
 include: package:lint/analysis_options.yaml
 

@@ -1,6 +1,6 @@
 import 'package:recase/recase.dart';
 import 'package:sidekick_core/sidekick_core.dart';
-import 'package:sidekick_core/src/commands/plugins/create_templates/template_generator.dart';
+import 'package:sidekick_core/src/commands/plugins/create_templates/plugin_template_generator.dart';
 
 /// This template adds a pub dependency to a shared CLI [Command] and registers
 /// it in the user's sidekick CLI.
@@ -9,11 +9,11 @@ import 'package:sidekick_core/src/commands/plugins/create_templates/template_gen
 /// with parameters but doesn't allow users to actually change the code.
 ///
 /// It allows updates (via `pub upgrade`) without users having to touch their code.
-class SharedCommandTemplate extends TemplateGenerator {
+class SharedCommandTemplate extends PluginTemplateGenerator {
   const SharedCommandTemplate();
 
   @override
-  void generate(TemplateProperties props) {
+  void generate(PluginTemplateProperties props) {
     final pluginDirectory = props.pluginDirectory;
     pluginDirectory
         .file('pubspec.yaml')
@@ -36,7 +36,7 @@ class SharedCommandTemplate extends TemplateGenerator {
   }
 }
 
-extension on TemplateProperties {
+extension on PluginTemplateProperties {
   String get pubspecTemplate => '''
 name: $pluginName
 description: Generated sidekick plugin (template shared-command)
