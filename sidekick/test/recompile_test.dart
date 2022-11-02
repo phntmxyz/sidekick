@@ -37,7 +37,7 @@ void main() {
         expect(installSh.existsSync(), isTrue);
         expect(installSh.statSync().modeString(), 'rwxr-xr-x');
 
-        if (shouldUseLocalDevs) {
+        if (shouldUseLocalDeps) {
           overrideSidekickCoreWithLocalPath(
             project.directory('packages/dashi_sidekick'),
           );
