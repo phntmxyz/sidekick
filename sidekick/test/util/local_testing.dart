@@ -1,4 +1,3 @@
-import 'package:path/path.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 
 /// True when dependencies should be linked to local sidekick dependencies
