@@ -1,3 +1,9 @@
+# Changelog
+
+## 0.11.0
+- New: `addFlutterSdkInitilizer` method to allow plugins downloading the Flutter SDK before `flutter` is called #99
+- Widen `dcli` version range
+
 ## 0.10.1
 
 - Fix `install-global` command which crashed in some cases (#94)
