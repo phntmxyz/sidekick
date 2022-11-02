@@ -1,17 +1,17 @@
 import 'package:recase/recase.dart';
 import 'package:sidekick_core/sidekick_core.dart';
-import 'package:sidekick_core/src/commands/plugins/create_templates/template_generator.dart';
+import 'package:sidekick_core/src/commands/plugins/create_templates/plugin_template_generator.dart';
 
 /// This template is the very minimum, featuring just a tool/install.dart file
 /// that writes all code to be installed into the users sidekick CLI.
 ///
 /// It doesn't add a pub dependency with shared code. All code is generated in
 /// the users sidekick CLI, being fully adjustable.
-class InstallOnlyTemplate extends TemplateGenerator {
+class InstallOnlyTemplate extends PluginTemplateGenerator {
   const InstallOnlyTemplate();
 
   @override
-  void generate(TemplateProperties props) {
+  void generate(PluginTemplateProperties props) {
     final pluginDirectory = props.pluginDirectory;
     pluginDirectory
         .file('pubspec.yaml')
@@ -24,7 +24,7 @@ class InstallOnlyTemplate extends TemplateGenerator {
   }
 }
 
-extension on TemplateProperties {
+extension on PluginTemplateProperties {
   String get pubspecTemplate => '''
 name: $pluginName
 description: Generated sidekick plugin (template install-only)
