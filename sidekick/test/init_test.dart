@@ -16,7 +16,9 @@ void main() {
         final projectRoot =
             setupTemplateProject('test/templates/nested_package');
         final nestedPackage = projectRoot.directory('foo/bar/nested');
-        final process = await sidekickCli(
+
+        final cli = await buildSidekickCli();
+        final process = await cli.run(
           ['init', '-n', 'dashi'],
           workingDirectory: nestedPackage,
         );
@@ -24,11 +26,9 @@ void main() {
         final entrypoint = File("${nestedPackage.path}/dashi");
         expect(entrypoint.existsSync(), isTrue);
 
-        if (shouldUseLocalDeps) {
-          overrideSidekickCoreWithLocalPath(
-            nestedPackage.directory('packages/dashi_sidekick'),
-          );
-        }
+        overrideSidekickCoreWithLocalPath(
+          nestedPackage.directory('packages/dashi_sidekick'),
+        );
 
         final dashProcess = await TestProcess.start(
           entrypoint.path,
@@ -47,7 +47,8 @@ void main() {
       () async {
         final projectRoot =
             setupTemplateProject('test/templates/minimal_dart_package');
-        final process = await sidekickCli(
+        final cli = await buildSidekickCli();
+        final process = await cli.run(
           ['init', '-n', '-42invalidName'],
           workingDirectory: projectRoot,
         );
@@ -65,7 +66,8 @@ void main() {
       () async {
         final projectRoot =
             setupTemplateProject('test/templates/minimal_dart_package');
-        final process = await sidekickCli(
+        final cli = await buildSidekickCli();
+        final process = await cli.run(
           [
             'init',
             '-n',
@@ -90,7 +92,8 @@ void main() {
       () async {
         final projectRoot =
             setupTemplateProject('test/templates/minimal_dart_package');
-        final process = await sidekickCli(
+        final cli = await buildSidekickCli();
+        final process = await cli.run(
           ['init', '-n', 'dashi'],
           workingDirectory: projectRoot,
         );
@@ -98,11 +101,9 @@ void main() {
         final entrypoint = File("${projectRoot.path}/dashi");
         expect(entrypoint.existsSync(), isTrue);
 
-        if (shouldUseLocalDeps) {
-          overrideSidekickCoreWithLocalPath(
-            projectRoot.directory('packages/dashi_sidekick'),
-          );
-        }
+        overrideSidekickCoreWithLocalPath(
+          projectRoot.directory('packages/dashi_sidekick'),
+        );
 
         expect(
           projectRoot
@@ -144,7 +145,8 @@ void main() {
       () async {
         final projectRoot =
             setupTemplateProject('test/templates/minimal_flutter_package');
-        final process = await sidekickCli(
+        final cli = await buildSidekickCli();
+        final process = await cli.run(
           ['init', '-n', 'dashi'],
           workingDirectory: projectRoot,
         );
@@ -152,11 +154,9 @@ void main() {
         final entrypoint = File("${projectRoot.path}/dashi");
         expect(entrypoint.existsSync(), isTrue);
 
-        if (shouldUseLocalDeps) {
-          overrideSidekickCoreWithLocalPath(
-            projectRoot.directory('packages/dashi_sidekick'),
-          );
-        }
+        overrideSidekickCoreWithLocalPath(
+          projectRoot.directory('packages/dashi_sidekick'),
+        );
 
         expect(
           projectRoot
@@ -208,7 +208,8 @@ void main() {
       () async {
         final project =
             setupTemplateProject('test/templates/root_with_packages');
-        final process = await sidekickCli(
+        final cli = await buildSidekickCli();
+        final process = await cli.run(
           ['init', '-n', 'dashi'],
           workingDirectory: project,
         );
@@ -265,7 +266,8 @@ void main() {
       () async {
         final project =
             setupTemplateProject('test/templates/root_with_packages');
-        final process = await sidekickCli(
+        final cli = await buildSidekickCli();
+        final process = await cli.run(
           ['init', '-n', 'dashi'],
           workingDirectory: project,
         );
@@ -273,11 +275,9 @@ void main() {
         final entrypoint = File("${project.path}/dashi");
         expect(entrypoint.existsSync(), isTrue);
 
-        if (shouldUseLocalDeps) {
-          overrideSidekickCoreWithLocalPath(
-            project.directory('packages/dashi_sidekick'),
-          );
-        }
+        overrideSidekickCoreWithLocalPath(
+          project.directory('packages/dashi_sidekick'),
+        );
 
         final dashProcess = await TestProcess.start(
           entrypoint.path,
@@ -296,7 +296,8 @@ void main() {
       () async {
         final project =
             setupTemplateProject('test/templates/root_with_packages');
-        final process = await sidekickCli(
+        final cli = await buildSidekickCli();
+        final process = await cli.run(
           ['init', '-n', 'dashi', project.absolute.path],
           workingDirectory: project.parent,
         );
@@ -311,11 +312,9 @@ void main() {
         expect(entrypoint.existsSync(), isTrue);
         expect(entrypoint.statSync().modeString(), 'rwxr-xr-x');
 
-        if (shouldUseLocalDeps) {
-          overrideSidekickCoreWithLocalPath(
-            project.directory('packages/dashi_sidekick'),
-          );
-        }
+        overrideSidekickCoreWithLocalPath(
+          project.directory('packages/dashi_sidekick'),
+        );
 
         final dashProcess = await TestProcess.start(
           entrypoint.path,
@@ -335,7 +334,8 @@ void main() {
       'init generates sidekick package + entrypoint',
       () async {
         final project = setupTemplateProject('test/templates/multi_package');
-        final process = await sidekickCli(
+        final cli = await buildSidekickCli();
+        final process = await cli.run(
           ['init', '-n', 'dashi'],
           workingDirectory: project,
         );
@@ -385,7 +385,8 @@ void main() {
       'entrypoint executes fine after sidekick init $localOrPubDepsLabel',
       () async {
         final project = setupTemplateProject('test/templates/multi_package');
-        final process = await sidekickCli(
+        final cli = await buildSidekickCli();
+        final process = await cli.run(
           ['init', '-n', 'dashi'],
           workingDirectory: project,
         );
@@ -393,11 +394,9 @@ void main() {
         final entrypoint = File("${project.path}/dashi");
         expect(entrypoint.existsSync(), isTrue);
 
-        if (shouldUseLocalDeps) {
-          overrideSidekickCoreWithLocalPath(
-            project.directory('packages/dashi_sidekick'),
-          );
-        }
+        overrideSidekickCoreWithLocalPath(
+          project.directory('packages/dashi_sidekick'),
+        );
 
         final dashProcess = await TestProcess.start(
           entrypoint.path,
@@ -415,7 +414,8 @@ void main() {
       'init with path (absolute) $localOrPubDepsLabel',
       () async {
         final project = setupTemplateProject('test/templates/multi_package');
-        final process = await sidekickCli(
+        final cli = await buildSidekickCli();
+        final process = await cli.run(
           ['init', '-n', 'dashi', project.absolute.path],
           workingDirectory: project.parent,
         );
@@ -430,11 +430,9 @@ void main() {
         expect(entrypoint.existsSync(), isTrue);
         expect(entrypoint.statSync().modeString(), 'rwxr-xr-x');
 
-        if (shouldUseLocalDeps) {
-          overrideSidekickCoreWithLocalPath(
-            project.directory('packages/dashi_sidekick'),
-          );
-        }
+        overrideSidekickCoreWithLocalPath(
+          project.directory('packages/dashi_sidekick'),
+        );
 
         final dashProcess = await TestProcess.start(
           entrypoint.path,
@@ -452,7 +450,8 @@ void main() {
       'with mainProject $localOrPubDepsLabel',
       () async {
         final project = setupTemplateProject('test/templates/multi_package');
-        final process = await sidekickCli(
+        final cli = await buildSidekickCli();
+        final process = await cli.run(
           [
             'init',
             '-n',
@@ -493,11 +492,9 @@ void main() {
           ),
         );
 
-        if (shouldUseLocalDeps) {
-          overrideSidekickCoreWithLocalPath(
-            project.directory('packages/dashi_sidekick'),
-          );
-        }
+        overrideSidekickCoreWithLocalPath(
+          project.directory('packages/dashi_sidekick'),
+        );
 
         final dashProcess = await TestProcess.start(
           entrypoint.path,

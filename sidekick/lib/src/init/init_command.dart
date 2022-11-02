@@ -211,6 +211,8 @@ class InitCommand extends Command {
       // mason doesn't support lists, so we have to add them manually
       _addPackagesToProjectClass(repoRoot, cliPackage, cliName, packages);
 
+      // Extracts info from the pubspec.yaml
+      await makeExecutable(cliPackage.file('tool/sidekick_config.sh'));
       // Make runtime downloader executable
       await makeExecutable(cliPackage.file('tool/download_dart.sh'));
       // Make install script executable
