@@ -4,6 +4,8 @@ import 'package:recase/recase.dart';
 import 'package:sidekick/src/init/name_suggester.dart';
 import 'package:sidekick/src/templates/entrypoint_bundle.g.dart';
 import 'package:sidekick/src/templates/package_bundle.g.dart';
+import 'package:sidekick/src/util/dcli_ask_validators.dart';
+import 'package:sidekick/src/util/directory_extension.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 
 class InitCommand extends Command {
@@ -358,63 +360,5 @@ Future<void> makeExecutable(FileSystemEntity file) async {
   final exitCode = await p.exitCode;
   if (exitCode != 0) {
     throw 'Cloud not set permission 755 for file ${file.path}';
-  }
-}
-
-extension on Directory {
-  bool isWithinOrEqual(Directory dir) {
-    return this.isWithin(dir) ||
-        // canonicalize is necessary, otherwise '/a/b/c' != '/a/b/c/./.'
-        dir.canonicalized.path == canonicalized.path;
-  }
-
-  /// Returns the directory you would get when calling `cd` in this directory.
-  ///
-  /// When [path] is absolute, returns the directory at that path.
-  /// Else appends the [path] to this directory.
-  Directory cd(String path) =>
-      (Directory(path).isAbsolute ? Directory(path) : directory(path))
-          .canonicalized;
-
-  /// A [Directory] whose path is the canonicalized path of [this].
-  Directory get canonicalized => Directory(canonicalize(path));
-}
-
-/// Validates that a given path exists as [Directory].
-///
-/// Relative paths are resolved from [relativeFrom] or [Directory.current].
-class DirectoryExistsValidator extends dcli.AskValidator {
-  const DirectoryExistsValidator([this.relativeFrom]);
-
-  final Directory? relativeFrom;
-
-  @override
-  String validate(String line) {
-    final currentDirectory = relativeFrom ?? Directory.current;
-    final dir = currentDirectory.cd(line);
-    if (!dir.existsSync()) {
-      throw AskValidatorException(
-          'The directory $line does not exist (neither as absolute path, nor '
-          'as path relative from ${currentDirectory.canonicalized.path}.');
-    }
-    return line;
-  }
-}
-
-/// Validates that a given path is a directory within or equal to [root]
-class DirectoryIsWithinOrEqualValidator extends dcli.AskValidator {
-  DirectoryIsWithinOrEqualValidator(this.root);
-
-  final Directory root;
-
-  @override
-  String validate(String line) {
-    final dir = root.cd(line);
-    if (!dir.isWithinOrEqual(root)) {
-      throw AskValidatorException(
-        'The directory ${dir.path} must be within or equal to ${root.canonicalized.path}.',
-      );
-    }
-    return line;
   }
 }

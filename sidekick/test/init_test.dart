@@ -1,4 +1,5 @@
 import 'package:sidekick/src/init/name_suggester.dart';
+import 'package:sidekick/src/util/dcli_ask_validators.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:test/test.dart';
 import 'package:test_process/test_process.dart';
