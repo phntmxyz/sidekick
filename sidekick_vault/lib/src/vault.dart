@@ -60,7 +60,11 @@ class SidekickVault {
           '"$filename" does not';
     }
     if (!file.existsSync()) {
-      throw "${file.path} does not exist in vault";
+      if (file.isAbsolute) {
+        throw "${file.path} does not exist";
+      } else {
+        throw "${file.path} does not exist in ${Directory.current.path}";
+      }
     }
     return gpgEncrypt(file, _passphrase!, output: outFile);
   }
