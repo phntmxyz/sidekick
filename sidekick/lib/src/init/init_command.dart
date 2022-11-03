@@ -186,7 +186,7 @@ class InitCommand extends Command {
       hasMainProject: mainProject != null,
       mainProjectPath: mainProject != null
           ? relative(mainProject.root.path, from: repoRoot.absolute.path)
-          : 'ERROR:no-main-project-path-defined',
+          : null,
       mainProjectIsRoot:
           mainProject?.root.absolute.path == repoRoot.absolute.path,
       hasNestedPackagesPath: mainProject != null &&
