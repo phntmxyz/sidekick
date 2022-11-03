@@ -126,8 +126,9 @@ class InitCommand extends Command {
 
     final mainProjectPath = argResults!['mainProjectPath'] as String?;
     DartPackage? mainProject = mainProjectPath != null
-        ? DartPackage.fromDirectory(initDir.directory(mainProjectPath))
-        : null;
+        ? DartPackage.fromDirectory(initDir.cd(mainProjectPath))
+        : (DartPackage.fromDirectory(initDir) ??
+            DartPackage.fromDirectory(repoRoot));
 
     final packages = Repository(root: repoRoot).findAllPackages();
 
