@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.4
+
+- Add example folder
+- Update repository link
+
 ## 0.1.3
 
 - New: `PluginContext` (#72)

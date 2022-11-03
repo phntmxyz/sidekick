@@ -1,8 +1,14 @@
 # Changelog
 
+## 0.7.2
+
+- Add documentation
+- Add example folder
+- Update repository link
+
 ## 0.7.1
 
-Hotfix of build error
+- Hotfix of build error
 
 ## 0.7.0
 
