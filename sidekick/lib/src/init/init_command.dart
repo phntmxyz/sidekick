@@ -17,35 +17,33 @@ class InitCommand extends Command {
     argParser.addOption(
       'cliName',
       abbr: 'n',
-      help:
-          'The name of the CLI to be created \nThe `_cli` prefix will be defined automatically',
+      help: 'The name of the CLI to be created. \n'
+          'The `_cli` prefix will be defined automatically.',
     );
     argParser.addOption(
       'initDirectory',
       abbr: 'd',
       help: 'The directory in which the CLI should be created.',
-      defaultsTo: '.',
     );
     argParser.addOption(
       'entrypointDirectory',
       abbr: 'e',
       help:
-          'The directory relative from initDirectory in which the CLI entrypoint script should be created.',
-      defaultsTo: '.',
+          'The directory in which the CLI entrypoint script should be created. \n'
+          'Absolute path or relative from initDirectory.',
     );
     argParser.addOption(
       'cliPackageDirectory',
       abbr: 'c',
-      help:
-          'The directory relative from initDirectory in which the CLI package should be created',
-      defaultsTo: 'packages',
+      help: 'The directory in which the CLI package should be created. \n'
+          'Absolute path or relative from initDirectory.',
     );
     argParser.addOption(
       'mainProjectPath',
       abbr: 'm',
       help:
-          'Optionally sets the mainProject, the package that ultimately builds your app '
-          '(relative from initDirectory, e.g. "packages/my_app").',
+          'Optionally sets the mainProject, the package that ultimately builds your app. \n'
+          'Absolute path or relative from initDirectory, e.g. "packages/my_app".',
     );
   }
 
@@ -55,9 +53,47 @@ class InitCommand extends Command {
       "Welcome to sidekick. You're about to initialize a sidekick project\n",
     );
 
-    final initDir = _getDirectoryArgument('initDirectory');
-    final entrypointDir = _getDirectoryArgument('entrypointDirectory', initDir);
-    final cliPackageDir = _getDirectoryArgument('cliPackageDirectory', initDir);
+    final initDir = Directory(
+      argResults!['initDirectory'] as String? ??
+          argResults!.rest.firstOrNull ??
+          dcli.ask(
+            'Enter the directory in which the CLI should be created.\n'
+            'Or press enter to use the current directory.\n',
+            validator: const DirectoryExistsValidator(),
+            defaultValue: canonicalize(Directory.current.path),
+          ),
+    ).canonicalized;
+    if (!initDir.existsSync()) {
+      throw 'Directory does not exist: ${initDir.path}';
+    }
+
+    final entrypointDir = initDir.cd(
+      argResults!['entrypointDirectory'] as String? ??
+          dcli.ask(
+            '\nEnter the directory in which the entrypoint script should be created.\n'
+            'Must be an absolute path or a path relative from initDirectory.\n'
+            'Or press enter to use the suggested directory.\n',
+            validator: DirectoryIsWithinOrEqualValidator(initDir),
+            defaultValue: initDir.path,
+          ),
+    );
+    if (!entrypointDir.isWithinOrEqual(initDir)) {
+      throw 'Entrypoint directory ${entrypointDir.path} is not within or equal to ${initDir.path}';
+    }
+
+    final cliPackageDir = initDir.cd(
+      argResults!['cliPackageDirectory'] as String? ??
+          dcli.ask(
+            '\nEnter the directory in which the CLI package should be created.\n'
+            'Must be an absolute path or a path relative from initDirectory.\n'
+            'Or press enter to use the suggested directory.\n',
+            validator: DirectoryIsWithinOrEqualValidator(initDir),
+            defaultValue: initDir.directory('packages').path,
+          ),
+    );
+    if (!cliPackageDir.isWithinOrEqual(initDir)) {
+      throw 'CLI package directory ${cliPackageDir.path} is not within or equal to ${initDir.path}';
+    }
 
     final cliName = argResults!['cliName'] as String? ??
         () {
@@ -93,10 +129,9 @@ class InitCommand extends Command {
         ? DartPackage.fromDirectory(initDir.directory(mainProjectPath))
         : null;
 
-    // TODO I think this could break when there are multiple packages with the same name (e.g. example)
     final packages = Repository(root: repoRoot).findAllPackages();
 
-    if (mainProject == null) {
+    if (mainProject == null && packages.isNotEmpty) {
       // Ask user for a main project (optional)
       const none = 'None of the above';
       final userSelection = dcli.menu(
@@ -117,20 +152,6 @@ class InitCommand extends Command {
       mainProject: mainProject,
       packages: packages,
     );
-  }
-
-  Directory _getDirectoryArgument(String dirArg, [Directory? initDir]) {
-    final root = initDir ?? Directory.current;
-    final dir = root.directory(argResults![dirArg] as String);
-    if (initDir != null && !dir.isWithinOrEqual(initDir)) {
-      throw '$dirArg: ${dir.path} is not within or equal to ${root.path}';
-    }
-    if (!dir.existsSync()) {
-      dir.createSync(recursive: true);
-      printerr("$dirArg: ${dir.path} didn't exist and has been created now.");
-    }
-
-    return dir.absolute;
   }
 
   /// Generates a custom sidekick CLI
@@ -260,9 +281,11 @@ class InitCommand extends Command {
   ) {
     final projectClassFile = cliPackage.file('lib/src/${cliName}_project.dart');
 
+    final packageNames = packages.groupBy((package) => package.name);
     final packageCode = packages.map((package) {
       final path = relative(package.root.path, from: repoRoot.absolute.path);
-      final packageName = ReCase(package.name);
+      final packageNameIsUnique = packageNames[package.name]!.length == 1;
+      final packageName = ReCase(packageNameIsUnique ? package.name : path);
       return "DartPackage get ${packageName.camelCase}Package => DartPackage.fromDirectory(root.directory('$path'))!;";
     }).toList();
 
@@ -341,6 +364,56 @@ extension on Directory {
   bool isWithinOrEqual(Directory dir) {
     return this.isWithin(dir) ||
         // canonicalize is necessary, otherwise '/a/b/c' != '/a/b/c/./.'
-        canonicalize(dir.absolute.path) == canonicalize(absolute.path);
+        dir.canonicalized.path == canonicalized.path;
+  }
+
+  /// Returns the directory you would get when calling `cd` in this directory.
+  ///
+  /// When [path] is absolute, returns the directory at that path.
+  /// Else appends the [path] to this directory.
+  Directory cd(String path) =>
+      (Directory(path).isAbsolute ? Directory(path) : directory(path))
+          .canonicalized;
+
+  /// A [Directory] whose path is the canonicalized path of [this].
+  Directory get canonicalized => Directory(canonicalize(path));
+}
+
+/// Validates that a given path exists as [Directory].
+///
+/// Relative paths are resolved from [relativeFrom] or [Directory.current].
+class DirectoryExistsValidator extends dcli.AskValidator {
+  const DirectoryExistsValidator([this.relativeFrom]);
+
+  final Directory? relativeFrom;
+
+  @override
+  String validate(String line) {
+    final currentDirectory = relativeFrom ?? Directory.current;
+    final dir = currentDirectory.cd(line);
+    if (!dir.existsSync()) {
+      throw AskValidatorException(
+          'The directory $line does not exist (neither as absolute path, nor '
+          'as path relative from ${currentDirectory.canonicalized.path}.');
+    }
+    return line;
+  }
+}
+
+/// Validates that a given path is a directory within or equal to [root]
+class DirectoryIsWithinOrEqualValidator extends dcli.AskValidator {
+  DirectoryIsWithinOrEqualValidator(this.root);
+
+  final Directory root;
+
+  @override
+  String validate(String line) {
+    final dir = root.cd(line);
+    if (!dir.isWithinOrEqual(root)) {
+      throw AskValidatorException(
+        'The directory ${dir.path} must be within or equal to ${root.canonicalized.path}.',
+      );
+    }
+    return line;
   }
 }
