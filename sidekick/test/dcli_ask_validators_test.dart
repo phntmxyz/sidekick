@@ -34,7 +34,9 @@ void main() {
       final tempDir = Directory.systemTemp.createTempSync();
       tempDir.deleteSync();
       expect(
-          () => validate(tempDir.path), throwsA(isA<AskValidatorException>()));
+        () => validate(tempDir.path),
+        throwsA(isA<AskValidatorException>()),
+      );
     });
   });
 
@@ -54,8 +56,10 @@ void main() {
       addTearDown(() => temp.deleteSync());
       final validate = DirectoryIsWithinOrEqualValidator(temp).validate;
 
-      expect(() => validate(Directory.current.path),
-          throwsA(isA<AskValidatorException>()));
+      expect(
+        () => validate(Directory.current.path),
+        throwsA(isA<AskValidatorException>()),
+      );
     });
   });
 }

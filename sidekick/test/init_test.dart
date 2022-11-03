@@ -1,4 +1,3 @@
-import 'package:sidekick/src/init/name_suggester.dart';
 import 'package:sidekick/src/util/dcli_ask_validators.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:test/test.dart';
@@ -65,7 +64,8 @@ void main() {
         await process.shouldExit(255);
         expect(
           await process.stderrStream().contains(
-              'CLI package directory ${tempDir.path} is not within or equal to ${projectRoot.path}'),
+                'CLI package directory ${tempDir.path} is not within or equal to ${projectRoot.path}',
+              ),
           isTrue,
         );
       },
@@ -96,7 +96,8 @@ void main() {
         await process.shouldExit(255);
         expect(
           await process.stderrStream().contains(
-              'Entrypoint directory ${tempDir.path} is not within or equal to ${projectRoot.path}'),
+                'Entrypoint directory ${tempDir.path} is not within or equal to ${projectRoot.path}',
+              ),
           isTrue,
         );
       },
