@@ -200,7 +200,7 @@ class InitCommand extends Command {
     );
     SidekickTemplate().generate(props);
 
-    // mason doesn't support lists, so we have to add them manually
+    // TODO move into template
     _addPackagesToProjectClass(repoRoot, cliPackage, cliName, packages);
 
     // Extracts info from the pubspec.yaml
