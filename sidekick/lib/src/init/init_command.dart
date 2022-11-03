@@ -1,10 +1,7 @@
 import 'package:dcli/dcli.dart' as dcli;
-import 'package:mason/mason.dart';
 import 'package:recase/recase.dart';
 import 'package:sidekick/src/init/name_suggester.dart';
 import 'package:sidekick/src/init/project_structure_detector.dart';
-import 'package:sidekick/src/templates/entrypoint_bundle.g.dart';
-import 'package:sidekick/src/templates/package_bundle.g.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 
 class InitCommand extends Command {
@@ -182,62 +179,40 @@ class InitCommand extends Command {
     await gitInit(repoRoot);
 
     final Directory cliPackage = packageDir.directory('${cliName}_sidekick');
-    {
-      // Generate the package code
-      final generator = await MasonGenerator.fromBundle(packageBundle);
-      final generatorTarget = DirectoryGeneratorTarget(cliPackage);
 
-      await generator.generate(
-        generatorTarget,
-        vars: {
-          'name': cliName,
-          'hasMainProject': mainProject != null,
-          'mainProjectPath': mainProject != null
-              ? relative(mainProject.root.path, from: repoRoot.absolute.path)
-              : 'ERROR:no-main-project-path-defined',
-          'mainProjectIsRoot':
-              mainProject?.root.absolute.path == repoRoot.absolute.path,
-          'hasNestedPackagesPath': mainProject != null &&
-              !relative(mainProject.root.path, from: repoRoot.absolute.path)
-                  .startsWith('packages'),
-          'setFlutterSdkPath': Repository(root: repoRoot)
-              .findAllPackages()
-              .any((package) => package.isFlutterPackage),
-        },
-        logger: Logger(),
-        fileConflictResolution: FileConflictResolution.overwrite,
-      );
+    final entrypoint = entrypointDir.file(cliName.snakeCase);
+    final props = SidekickTemplateProperties(
+      name: cliName,
+      hasMainProject: mainProject != null,
+      mainProjectPath: mainProject != null
+          ? relative(mainProject.root.path, from: repoRoot.absolute.path)
+          : 'ERROR:no-main-project-path-defined',
+      mainProjectIsRoot:
+          mainProject?.root.absolute.path == repoRoot.absolute.path,
+      hasNestedPackagesPath: mainProject != null &&
+          !relative(mainProject.root.path, from: repoRoot.absolute.path)
+              .startsWith('packages'),
+      setFlutterSdkPath: Repository(root: repoRoot)
+          .findAllPackages()
+          .any((package) => package.isFlutterPackage),
+      entrypointLocation: entrypoint,
+      packageLocation: cliPackage,
+    );
+    SidekickTemplate().generate(props);
 
-      // mason doesn't support lists, so we have to add them manually
-      _addPackagesToProjectClass(repoRoot, cliPackage, cliName, packages);
+    // mason doesn't support lists, so we have to add them manually
+    _addPackagesToProjectClass(repoRoot, cliPackage, cliName, packages);
 
-      // Extracts info from the pubspec.yaml
-      await makeExecutable(cliPackage.file('tool/sidekick_config.sh'));
-      // Make runtime downloader executable
-      await makeExecutable(cliPackage.file('tool/download_dart.sh'));
-      // Make install script executable
-      await makeExecutable(cliPackage.file('tool/install.sh'));
-      // Make run script executable
-      await makeExecutable(cliPackage.file('tool/run.sh'));
-    }
+    // Extracts info from the pubspec.yaml
+    await makeExecutable(cliPackage.file('tool/sidekick_config.sh'));
+    // Make runtime downloader executable
+    await makeExecutable(cliPackage.file('tool/download_dart.sh'));
+    // Make install script executable
+    await makeExecutable(cliPackage.file('tool/install.sh'));
+    // Make run script executable
+    await makeExecutable(cliPackage.file('tool/run.sh'));
 
-    {
-      // Generate entrypoint
-      final generator = await MasonGenerator.fromBundle(entrypointBundle);
-      final generatorTarget = DirectoryGeneratorTarget(entrypointDir);
-      await generator.generate(
-        generatorTarget,
-        vars: {
-          'packagePath': relative(cliPackage.path, from: entrypointDir.path),
-        },
-        logger: Logger(),
-        fileConflictResolution: FileConflictResolution.overwrite,
-      );
-      final generatedEntrypoint = entrypointDir.file('entrypoint.sh');
-      final File entrypoint = entrypointDir.file(cliName);
-      generatedEntrypoint.renameSync(entrypoint.path);
-      await makeExecutable(entrypoint);
-    }
+    await makeExecutable(entrypoint);
 
     // Install flutterw when a Flutter project is detected
     final flutterPackages = [if (mainProject != null) mainProject, ...packages]
