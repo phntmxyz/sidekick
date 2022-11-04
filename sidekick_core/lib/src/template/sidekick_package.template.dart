@@ -21,19 +21,23 @@ class SidekickTemplate {
     );
     final entrypoint = entrypointTemplate(packagePath: path);
     props.entrypointLocation.writeAsStringSync(entrypoint);
+    props.entrypointLocation.makeExecutable();
   }
 
   void generateTools(SidekickTemplateProperties props) {
     props.packageLocation.file('tool/download_dart.sh')
       ..createSync(recursive: true)
-      ..writeAsStringSync(downloadDartSh);
-    props.packageLocation
-        .file('tool/install.sh')
-        .writeAsStringSync(installSh(cliName: props.name));
-    props.packageLocation.file('tool/run.sh').writeAsStringSync(runSh);
-    props.packageLocation
-        .file('tool/sidekick_config.sh')
-        .writeAsStringSync(sidekickConfigSh);
+      ..writeAsStringSync(downloadDartSh)
+      ..makeExecutable();
+    props.packageLocation.file('tool/install.sh')
+      ..writeAsStringSync(installSh(cliName: props.name))
+      ..makeExecutable();
+    props.packageLocation.file('tool/run.sh')
+      ..writeAsStringSync(runSh)
+      ..makeExecutable();
+    props.packageLocation.file('tool/sidekick_config.sh')
+      ..writeAsStringSync(sidekickConfigSh)
+      ..makeExecutable();
   }
 
   void generatePackage(SidekickTemplateProperties props) {
@@ -63,25 +67,37 @@ class SidekickTemplate {
 }
 
 class SidekickTemplateProperties {
+  /// Name of the CLI.
+  ///
+  /// Do not rename it to `cliName` which would conflict with [cliName]
   final String name;
+
+  /// Where the entrypoint will be created
   final File entrypointLocation;
+
+  /// Where the sidekick package will be created.
   final Directory packageLocation;
 
-  final String? mainProjectPath;
-  final bool setFlutterSdkPath;
-  final bool mainProjectIsRoot;
+  /// When there's a flutter package that requires a flutter sdk
+  final bool shouldSetFlutterSdkPath;
+
+  /// When the dart package is located in root of the repo
+  final bool isMainProjectRoot;
+
+  /// true when a /packages directory exists
   final bool hasNestedPackagesPath;
-  final bool hasMainProject;
+
+  /// Path to main project, relative from repo root
+  final String? mainProjectPath;
 
   const SidekickTemplateProperties({
     required this.name,
     required this.entrypointLocation,
     required this.packageLocation,
     required this.mainProjectPath,
-    required this.setFlutterSdkPath,
-    required this.mainProjectIsRoot,
+    required this.shouldSetFlutterSdkPath,
+    required this.isMainProjectRoot,
     required this.hasNestedPackagesPath,
-    required this.hasMainProject,
   });
 }
 
@@ -97,7 +113,7 @@ Future<void> main(List<String> arguments) async {
   }
 
   String cliProjectDart() {
-    if (mainProjectIsRoot) {
+    if (isMainProjectRoot) {
       return '''
 import 'package:sidekick_core/sidekick_core.dart';
 
@@ -122,7 +138,7 @@ class ${name.titleCase}Project extends DartPackage {
         .whereType<Directory>()
         .mapNotNull((it) => DartPackage.fromDirectory(it))
         .toList()
-        ${mainProjectIsRoot ? '..add(this)' : ''};
+        ${isMainProjectRoot ? '..add(this)' : ''};
   }
 }
     
@@ -148,7 +164,7 @@ class ${name.titleCase}Project {
         .whereType<Directory>()
         .mapNotNull((it) => DartPackage.fromDirectory(it))
         .toList()
-        ${mainProjectIsRoot ? '..add(this)' : ''};
+        ${isMainProjectRoot ? '..add(this)' : ''};
   }
 }
 
@@ -157,7 +173,7 @@ class ${name.titleCase}Project {
   }
 
   String cliSidekickDart() {
-    final projectRoot = mainProjectIsRoot != true
+    final projectRoot = isMainProjectRoot != true
         ? 'runner.repository.root'
         : 'runner.mainProject!.root';
 
@@ -174,12 +190,12 @@ Future<void> run${name.titleCase}(List<String> args) async {
   final runner = initializeSidekick(
     name: '${name.snakeCase}',
     ${mainProjectPath != null ? "mainProjectPath: '$mainProjectPath'," : ''}
-    ${setFlutterSdkPath ? 'flutterSdkPath: systemFlutterSdkPath(),' : 'dartSdkPath: systemDartSdkPath(),'}
+    ${shouldSetFlutterSdkPath ? 'flutterSdkPath: systemFlutterSdkPath(),' : 'dartSdkPath: systemDartSdkPath(),'}
   );
 
   ${name.snakeCase}Project = ${name.titleCase}Project($projectRoot);
   runner
-    ${setFlutterSdkPath ? '..addCommand(FlutterCommand())' : ''}
+    ${shouldSetFlutterSdkPath ? '..addCommand(FlutterCommand())' : ''}
     ..addCommand(DartCommand())
     ..addCommand(DepsCommand())
     ..addCommand(CleanCommand())
@@ -215,7 +231,7 @@ class CleanCommand extends Command {
 
   @override
   Future<void> run() async {
-    ${hasMainProject ? "flutter(['clean'], workingDirectory: mainProject?.root);" : ''}
+    ${mainProjectPath != null ? "flutter(['clean'], workingDirectory: mainProject?.root);" : ''}
     // TODO Please add your own project clean logic here
 
     print('✔️Cleaned project');
