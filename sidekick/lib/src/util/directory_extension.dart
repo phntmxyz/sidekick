@@ -10,11 +10,9 @@ extension DirectoryExtension on Directory {
         dir.canonicalized.path == canonicalized.path;
   }
 
-  /// Returns the directory you would get when calling `cd` in this directory.
-  ///
   /// When [path] is absolute, returns the directory at that path.
-  /// Else appends the [path] to this directory.
-  Directory cd(String path) =>
+  /// Else resolves the [path] relative to this directory.
+  Directory resolveAbsoluteOrRelativeDirPath(String path) =>
       (Directory(path).isAbsolute ? Directory(path) : directory(path))
           .canonicalized;
 

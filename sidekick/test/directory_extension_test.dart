@@ -24,17 +24,17 @@ void main() {
     });
   });
 
-  group('cd', () {
+  group('resolveAbsoluteOrRelativePath', () {
     test('returns directory at absolute path', () {
       const path = '/a/b';
       final dir = Directory('/foo');
-      expect(dir.cd(path).path, path);
+      expect(dir.resolveAbsoluteOrRelativeDirPath(path).path, path);
     });
 
     test('returns directory at relative path', () {
       const path = 'a/b';
       final dir = Directory('/foo');
-      expect(dir.cd(path).path, '/foo/a/b');
+      expect(dir.resolveAbsoluteOrRelativeDirPath(path).path, '/foo/a/b');
     });
   });
 
