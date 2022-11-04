@@ -15,7 +15,7 @@ dependencies:
   http: ^0.13.3
   path: ^1.8.0
   recase: ^4.0.0
-  sidekick_core: '>=0.10.1 <1.0.0'
+  sidekick_core: '>=0.11.1 <1.0.0'
 
 dev_dependencies:
   lint: ^1.5.0

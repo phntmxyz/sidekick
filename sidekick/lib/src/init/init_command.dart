@@ -202,17 +202,6 @@ class InitCommand extends Command {
     // TODO move into template
     _addPackagesToProjectClass(repoRoot, cliPackage, cliName, packages);
 
-    // Extracts info from the pubspec.yaml
-    await makeExecutable(cliPackage.file('tool/sidekick_config.sh'));
-    // Make runtime downloader executable
-    await makeExecutable(cliPackage.file('tool/download_dart.sh'));
-    // Make install script executable
-    await makeExecutable(cliPackage.file('tool/install.sh'));
-    // Make run script executable
-    await makeExecutable(cliPackage.file('tool/run.sh'));
-
-    await makeExecutable(entrypoint);
-
     // Install flutterw when a Flutter project is detected
     final flutterPackages = [if (mainProject != null) mainProject, ...packages]
         .filter((package) => package.isFlutterPackage);
@@ -306,34 +295,4 @@ Future<File> installFlutterWrapper(Directory directory) async {
   final exe = directory.file('flutterw');
   assert(exe.existsSync());
   return exe;
-}
-
-/// Makes a file executable 'rwxr-xr-x' (755)
-Future<void> makeExecutable(FileSystemEntity file) async {
-  if (file is Directory) {
-    throw "Can't make a Directory executable ($file)";
-  }
-  if (Platform.isWindows) {
-    // The windows file system works differently than unix based ones. exe files are automatically executable
-    // But when generating sidekick on windows, it should also be executable on unix systems on checkout.
-    // This is done by telling git about the file being executable.
-    // https://www.scivision.dev/git-windows-chmod-executable/
-    final p = await Process.start(
-      'git',
-      ['update-index', '--chmod=+x', '--add', file.path],
-    );
-    final exitCode = await p.exitCode;
-    if (exitCode != 0) {
-      throw 'Could not set git file permission for unix systems for file ${file.path}';
-    }
-    return;
-  }
-  if (!file.existsSync()) {
-    throw 'File not found ${file.path}';
-  }
-  final p = await Process.start('chmod', ['755', file.absolute.path]);
-  final exitCode = await p.exitCode;
-  if (exitCode != 0) {
-    throw 'Cloud not set permission 755 for file ${file.path}';
-  }
 }
