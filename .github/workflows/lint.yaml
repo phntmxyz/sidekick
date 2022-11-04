@@ -28,7 +28,5 @@ jobs:
         run: |
              dart pub global activate dartdoc 5.0.1
              cd "${{ matrix.package }}" && $HOME/.pub-cache/bin/dartdoc
-
-      # TODO set dcli constraints
-      #- name: Verify package completeness
-      #  run: cd "${{ matrix.package }}" && dart pub publish -n
+      - name: Verify package completeness
+        run: cd "${{ matrix.package }}" && dart pub publish -n
