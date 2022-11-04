@@ -1,8 +1,0 @@
-name: entrypoint
-description: Creates the sidekick entrypoint
-version: 1.0.0
-vars:
-  name:
-    type: string
-  packagePath:
-    type: string

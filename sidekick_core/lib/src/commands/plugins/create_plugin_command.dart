@@ -1,8 +1,8 @@
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_core/src/commands/plugins/create_templates/install_only.dart';
+import 'package:sidekick_core/src/commands/plugins/create_templates/plugin_template_generator.dart';
 import 'package:sidekick_core/src/commands/plugins/create_templates/shared_code.dart';
 import 'package:sidekick_core/src/commands/plugins/create_templates/shared_command.dart';
-import 'package:sidekick_core/src/commands/plugins/create_templates/template_generator.dart';
 
 /// Generates a new sidekick plugin that can be installed with a sidekick CLI]
 ///
@@ -68,13 +68,13 @@ class CreatePluginCommand extends Command {
 
     pluginDirectory.createSync(recursive: true);
 
-    final templateProperties = TemplateProperties(
+    final templateProperties = PluginTemplateProperties(
       pluginName: name,
       pluginDirectory: pluginDirectory,
       templateType: template,
     );
 
-    final TemplateGenerator generator = templates[template]!;
+    final PluginTemplateGenerator generator = templates[template]!;
     generator.generate(templateProperties);
 
     final formatArgs = ['format', pluginDirectory.path];

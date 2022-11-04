@@ -1,3 +1,5 @@
+// language=Bash
+const String downloadDartSh = r'''
 #!/usr/bin/env bash
 
 # Downloads the dart sdk into the sidekick build folder.
@@ -175,3 +177,5 @@ if [ ! -f "$DART_VERSION_FILE" ] || [ "$DART_VERSION" != "$(cat "${DART_VERSION_
   $FIND "$SIDEKICK_DART_SDK_PATH" -type d -exec chmod 755 {} \;
   $FIND "$SIDEKICK_DART_SDK_PATH" -type f $IS_USER_EXECUTABLE -exec chmod a+x,a+r {} \;
 fi
+
+''';

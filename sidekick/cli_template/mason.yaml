@@ -1,5 +1,0 @@
-bricks:
-  package:
-    path: bricks/package
-  entrypoint:
-    path: bricks/entrypoint

@@ -10,7 +10,6 @@ jobs:
   lint:
     runs-on: ubuntu-latest
 
-
     strategy:
       fail-fast: false
       matrix:
@@ -30,6 +29,6 @@ jobs:
              dart pub global activate dartdoc 5.0.1
              cd "${{ matrix.package }}" && $HOME/.pub-cache/bin/dartdoc
 
-      # Enable when mason released a non-dev dependency
+      # TODO set dcli constraints
       #- name: Verify package completeness
       #  run: cd "${{ matrix.package }}" && dart pub publish -n

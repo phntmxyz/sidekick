@@ -1,3 +1,5 @@
+// language=Bash
+const String sidekickConfigSh = r'''
 #!/usr/bin/env bash
 set -e
 
@@ -41,3 +43,5 @@ DART_SDK_CONSTRAINTS=$(parse_yaml "${SIDEKICK_PACKAGE_HOME}/pubspec.yaml" | grep
 DART_VERSION=$(echo "$DART_SDK_CONSTRAINTS" | sed -E 's/.*>=([0-9.]+).*/\1/')
 
 echo "DART_VERSION=\"$DART_VERSION\""
+
+''';

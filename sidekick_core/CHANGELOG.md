@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.11.1
+- New: `<FileSystemEntity>.makeExecutable()` extension method
+- Update repository URL in pubspec.yaml
+- Move cli template into `sidekick_core`
+
 ## 0.11.0
 - New: `addFlutterSdkInitilizer` method to allow plugins downloading the Flutter SDK before `flutter` is called #99
 - Widen `dcli` version range

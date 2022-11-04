@@ -1,6 +1,6 @@
 import 'package:recase/recase.dart';
 import 'package:sidekick_core/sidekick_core.dart';
-import 'package:sidekick_core/src/commands/plugins/create_templates/template_generator.dart';
+import 'package:sidekick_core/src/commands/plugins/create_templates/plugin_template_generator.dart';
 
 /// This template adds a pub dependency and writes the code of a [Command] into
 /// the user's sidekick CLI as well as registers it there.
@@ -9,10 +9,10 @@ import 'package:sidekick_core/src/commands/plugins/create_templates/template_gen
 /// shared code from the plugin package that is registered added as dependency.
 /// Update of the helper functions is possible via pub, but the actual command
 /// flow is up to the user.
-class SharedCodeTemplate extends TemplateGenerator {
+class SharedCodeTemplate extends PluginTemplateGenerator {
   const SharedCodeTemplate();
   @override
-  void generate(TemplateProperties props) {
+  void generate(PluginTemplateProperties props) {
     final pluginDirectory = props.pluginDirectory;
 
     pluginDirectory
@@ -31,7 +31,7 @@ class SharedCodeTemplate extends TemplateGenerator {
   }
 }
 
-extension on TemplateProperties {
+extension on PluginTemplateProperties {
   String get pubspecTemplate => '''
 name: $pluginName
 description: Generated sidekick plugin (template shared-code)

@@ -1,3 +1,5 @@
+// language=Bash
+const String runSh = r'''
 #!/usr/bin/env bash
 set -e
 
@@ -66,3 +68,5 @@ if [ ! -f "$EXE" ] || [ "$HASH" != "$EXISTING_HASH" ]; then
 fi
 
 "${EXE}" "$@"
+
+''';

@@ -1,3 +1,9 @@
+String installSh({required String cliName}) {
+  return _code.replaceAll('{{cliName}}', cliName);
+}
+
+// language=Bash
+const String _code = r'''
 #!/usr/bin/env bash
 
 CWD=$PWD
@@ -5,7 +11,7 @@ CLI_PACKAGE_DIR=$(dirname "$(dirname "$0")")
 
 cd "${CLI_PACKAGE_DIR}" || exit
 
-  echo "Installing {{name}} command line application..."
+  echo "Installing {{cliName}} command line application..."
 
   # export pub from .flutter dir
   DART_SDK="${CLI_PACKAGE_DIR}/build/cache/dart-sdk"
@@ -35,3 +41,5 @@ cd "${CLI_PACKAGE_DIR}" || exit
   printf -- "\033[1A\033[2K✔ Compiling sidekick cli\n"
 
 cd "${CWD}" || exit
+
+''';

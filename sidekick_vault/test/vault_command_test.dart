@@ -135,10 +135,25 @@ void main() {
         ),
       );
     });
-    test('throws for non-files', () {
+    test('throws for non-files (absolute path)', () {
       expect(
         () => withEnvironment(
           () => runner.run(['vault', 'encrypt', 'unknown.gpg']),
+          environment: {'FLG_VAULT_PASSPHRASE': 'asdfasdf'},
+        ),
+        throwsA(
+          isA<String>().having(
+            (it) => it,
+            'error',
+            contains('unknown.gpg does not exist in'),
+          ),
+        ),
+      );
+    });
+    test('throws for non-files (relative path)', () {
+      expect(
+        () => withEnvironment(
+          () => runner.run(['vault', 'encrypt', '/root/unknown.gpg']),
           environment: {'FLG_VAULT_PASSPHRASE': 'asdfasdf'},
         ),
         throwsA(
