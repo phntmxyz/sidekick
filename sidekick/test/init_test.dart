@@ -11,7 +11,7 @@ import 'util/local_testing.dart';
 void main() {
   group('sidekick init - argument validation', () {
     test(
-      'throws when initDirectory does not exist',
+      'throws when entrypointDirectory does not exist',
       () async {
         final tempDir = Directory.systemTemp.createTempSync();
         addTearDown(() => tempDir.deleteSync());
@@ -24,15 +24,16 @@ void main() {
             'init',
             '-n',
             'dashi',
-            '--initDirectory',
+            '--entrypointDirectory',
             tempDir.directory('foo').path,
           ],
           workingDirectory: projectRoot,
         );
+        process.stderrStream().listen(printOnFailure);
         await process.shouldExit(255);
         expect(
           await process.stderrStream().contains(
-                'Directory does not exist: ${tempDir.directory('foo').path}',
+                'Entrypoint directory ${tempDir.directory('foo').path} does not exist',
               ),
           isTrue,
         );
@@ -41,7 +42,7 @@ void main() {
     );
 
     test(
-      'throws when cliPackageDirectory is not inside initDirectory',
+      'throws when cliPackageDirectory is not inside entrypointDirectory',
       () async {
         final tempDir = Directory.systemTemp.createTempSync();
         addTearDown(() => tempDir.deleteSync());
@@ -54,13 +55,14 @@ void main() {
             'init',
             '-n',
             'dashi',
-            '--initDirectory',
+            '--entrypointDirectory',
             projectRoot.path,
             '--cliPackageDirectory',
             tempDir.path
           ],
           workingDirectory: projectRoot,
         );
+        process.stderrStream().listen(printOnFailure);
         await process.shouldExit(255);
         expect(
           await process.stderrStream().contains(
@@ -73,7 +75,41 @@ void main() {
     );
 
     test(
-      'throws when entrypointDirectory is not inside initDirectory',
+      'throws when mainProjectPath is not inside entrypointDirectory',
+      () async {
+        final tempDir = Directory.systemTemp.createTempSync();
+        addTearDown(() => tempDir.deleteSync(recursive: true));
+        tempDir.file('pubspec.yaml').writeAsStringSync('name: fake');
+
+        final projectRoot =
+            setupTemplateProject('test/templates/minimal_dart_package');
+        final cli = await buildSidekickCli();
+        final process = await cli.run(
+          [
+            'init',
+            '-n',
+            'dashi',
+            '--entrypointDirectory',
+            projectRoot.path,
+            '--mainProjectPath',
+            tempDir.path
+          ],
+          workingDirectory: projectRoot,
+        );
+        process.stderrStream().listen(printOnFailure);
+        await process.shouldExit(255);
+        expect(
+          await process.stderrStream().contains(
+                'Main project ${tempDir.path} is not within or equal to ${projectRoot.path}',
+              ),
+          isTrue,
+        );
+      },
+      timeout: const Timeout(Duration(minutes: 5)),
+    );
+
+    test(
+      'throws when mainProjectPath is given but it does not contain a DartPackage',
       () async {
         final tempDir = Directory.systemTemp.createTempSync();
         addTearDown(() => tempDir.deleteSync());
@@ -86,17 +122,18 @@ void main() {
             'init',
             '-n',
             'dashi',
-            '--initDirectory',
-            projectRoot.path,
             '--entrypointDirectory',
+            projectRoot.path,
+            '--mainProjectPath',
             tempDir.path
           ],
           workingDirectory: projectRoot,
         );
+        process.stderrStream().listen(printOnFailure);
         await process.shouldExit(255);
         expect(
           await process.stderrStream().contains(
-                'Entrypoint directory ${tempDir.path} is not within or equal to ${projectRoot.path}',
+                'mainProjectPath was given, but no DartPackage could be found at the given path ${tempDir.path}',
               ),
           isTrue,
         );

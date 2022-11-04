@@ -32,11 +32,11 @@ class DirectoryExistsValidator extends dcli.AskValidator {
   @override
   String validate(String line) {
     final currentDirectory = relativeFrom ?? Directory.current;
-    final dir = currentDirectory.cd(line);
+    final dir = currentDirectory.resolveAbsoluteOrRelativeDirPath(line);
     if (!dir.existsSync()) {
       throw AskValidatorException(
           'The directory $line does not exist (neither as absolute path, nor '
-          'as path relative from ${currentDirectory.canonicalized.path}.');
+          'as path relative to ${currentDirectory.canonicalized.path}.');
     }
     return line;
   }
@@ -50,7 +50,7 @@ class DirectoryIsWithinOrEqualValidator extends dcli.AskValidator {
 
   @override
   String validate(String line) {
-    final dir = root.cd(line);
+    final dir = root.resolveAbsoluteOrRelativeDirPath(line);
     if (!dir.isWithinOrEqual(root)) {
       throw AskValidatorException(
         'The directory ${dir.path} must be within or equal to ${root.canonicalized.path}.',

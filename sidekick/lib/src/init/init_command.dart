@@ -23,29 +23,33 @@ class InitCommand extends Command {
           'The `_cli` prefix will be defined automatically.',
     );
     argParser.addOption(
-      'initDirectory',
-      abbr: 'd',
-      help: 'The directory in which the CLI should be created.',
-    );
-    argParser.addOption(
       'entrypointDirectory',
       abbr: 'e',
       help:
-          'The directory in which the CLI entrypoint script should be created. \n'
-          'Absolute path or relative from initDirectory.',
+          'The directory in which the CLI entrypoint script should be created.',
     );
     argParser.addOption(
       'cliPackageDirectory',
       abbr: 'c',
       help: 'The directory in which the CLI package should be created. \n'
-          'Absolute path or relative from initDirectory.',
+          'This directory must be within the entrypointDirectory, or '
+          'if the entrypointDirectory is inside a git repository, it must be '
+          'within the git repository. \n'
+          'If this path is given as a relative path and there is a git repository, '
+          'it is resolved relative to the repository root. Else it is resolved '
+          'relative to the entrypointDirectory.',
     );
     argParser.addOption(
       'mainProjectPath',
       abbr: 'm',
       help:
           'Optionally sets the mainProject, the package that ultimately builds your app. \n'
-          'Absolute path or relative from initDirectory, e.g. "packages/my_app".',
+          'This directory must be within the entrypointDirectory, or '
+          'if the entrypointDirectory is inside a git repository, it must be '
+          'within the git repository. \n'
+          'If this path is given as a relative path and there is a git repository, '
+          'it is resolved relative to the repository root. Else it is resolved '
+          'relative to the entrypointDirectory.',
     );
   }
 
@@ -55,46 +59,52 @@ class InitCommand extends Command {
       "Welcome to sidekick. You're about to initialize a sidekick project\n",
     );
 
-    final initDir = Directory(
-      argResults!['initDirectory'] as String? ??
+    final entrypointDir = Directory(
+      argResults!['entrypointDirectory'] as String? ??
           argResults!.rest.firstOrNull ??
           dcli.ask(
-            'Enter the directory in which the CLI should be created.\n'
+            '\nEnter the directory in which the entrypoint script should be created.\n'
             'Or press enter to use the current directory.\n',
             validator: const DirectoryExistsValidator(),
-            defaultValue: canonicalize(Directory.current.path),
+            defaultValue: Directory.current.path,
           ),
     ).canonicalized;
-    if (!initDir.existsSync()) {
-      throw 'Directory does not exist: ${initDir.path}';
+    if (!entrypointDir.existsSync()) {
+      throw 'Entrypoint directory ${entrypointDir.path} does not exist';
     }
 
-    final entrypointDir = initDir.cd(
-      argResults!['entrypointDirectory'] as String? ??
-          dcli.ask(
-            '\nEnter the directory in which the entrypoint script should be created.\n'
-            'Must be an absolute path or a path relative from initDirectory.\n'
-            'Or press enter to use the suggested directory.\n',
-            validator: DirectoryIsWithinOrEqualValidator(initDir),
-            defaultValue: initDir.path,
-          ),
-    );
-    if (!entrypointDir.isWithinOrEqual(initDir)) {
-      throw 'Entrypoint directory ${entrypointDir.path} is not within or equal to ${initDir.path}';
-    }
+    bool isGitDir(Directory dir) => dir.directory('.git').existsSync();
+    final repoRoot = entrypointDir.findParent(isGitDir) ?? entrypointDir;
 
-    final cliPackageDir = initDir.cd(
+    final cliPackageDir = repoRoot.resolveAbsoluteOrRelativeDirPath(
       argResults!['cliPackageDirectory'] as String? ??
           dcli.ask(
             '\nEnter the directory in which the CLI package should be created.\n'
-            'Must be an absolute path or a path relative from initDirectory.\n'
+            'Must be an absolute path or a path '
+            'relative to the repository root (${entrypointDir.path}).\n'
             'Or press enter to use the suggested directory.\n',
-            validator: DirectoryIsWithinOrEqualValidator(initDir),
-            defaultValue: initDir.directory('packages').path,
+            validator: DirectoryIsWithinOrEqualValidator(repoRoot),
+            defaultValue: repoRoot.directory('packages').path,
           ),
     );
-    if (!cliPackageDir.isWithinOrEqual(initDir)) {
-      throw 'CLI package directory ${cliPackageDir.path} is not within or equal to ${initDir.path}';
+    if (!cliPackageDir.isWithinOrEqual(repoRoot)) {
+      throw 'CLI package directory ${cliPackageDir.path} is not within or equal to ${repoRoot.path}';
+    }
+
+    final mainProjectPath = argResults!['mainProjectPath'] as String?;
+    DartPackage? mainProject = mainProjectPath != null
+        ? DartPackage.fromDirectory(
+            repoRoot.resolveAbsoluteOrRelativeDirPath(mainProjectPath),
+          )
+        :
+        // TODO(pepe): not sure if repoRoot ?? entrypointDir or entrypointDir ?? repoRoot is better - or just null if mainProjectPath is unspecified
+        (DartPackage.fromDirectory(entrypointDir) ??
+            DartPackage.fromDirectory(repoRoot));
+    if (mainProjectPath != null && mainProject == null) {
+      throw 'mainProjectPath was given, but no DartPackage could be found at the given path $mainProjectPath';
+    }
+    if (mainProject != null && !mainProject.root.isWithinOrEqual(repoRoot)) {
+      throw 'Main project ${mainProject.root.path} is not within or equal to ${repoRoot.path}';
     }
 
     final cliName = argResults!['cliName'] as String? ??
@@ -103,7 +113,7 @@ class InitCommand extends Command {
             '${dcli.green('Please select a name for your sidekick CLI.')}\n'
             'We know, selecting a name is hard. Here are some suggestions:',
           );
-          final suggester = NameSuggester(projectDir: initDir);
+          final suggester = NameSuggester(projectDir: repoRoot);
           final name = suggester.askUserForName();
           if (name == null) {
             throw 'No cliName provided. Call `sidekick init --cliName <your-name>`';
@@ -122,15 +132,6 @@ class InitCommand extends Command {
     }
 
     print("\nGenerating ${cliName}_sidekick");
-
-    bool isGitDir(Directory dir) => dir.directory('.git').existsSync();
-    final repoRoot = initDir.findParent(isGitDir) ?? initDir;
-
-    final mainProjectPath = argResults!['mainProjectPath'] as String?;
-    DartPackage? mainProject = mainProjectPath != null
-        ? DartPackage.fromDirectory(initDir.cd(mainProjectPath))
-        : (DartPackage.fromDirectory(initDir) ??
-            DartPackage.fromDirectory(repoRoot));
 
     final packages = Repository(root: repoRoot).findAllPackages();
 
