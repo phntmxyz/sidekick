@@ -339,25 +339,29 @@ void main() {
       () async {
         final projectRoot =
             setupTemplateProject('test/templates/minimal_dart_package');
+        final entrypointDir = projectRoot
+            .directory('foo/custom/entrypointDirectory')
+          ..createSync(recursive: true);
         final cli = await buildSidekickCli();
         final process = await cli.run(
           [
             'init',
             '-n',
             'dashi',
+            '--entrypointDirectory',
+            entrypointDir.path,
             '--cliPackageDirectory',
             'my/custom/cliDir',
-            '--entrypointDirectory',
-            'foo/entrypointDirectory',
           ],
           workingDirectory: projectRoot,
         );
+        printOnFailure(await process.stdoutStream().join('\n'));
+        printOnFailure(await process.stderrStream().join('\n'));
         await process.shouldExit(0);
-        final entrypoint =
-            File("${projectRoot.path}/foo/entrypointDirectory/dashi");
+        final entrypoint = entrypointDir.file('dashi');
         expect(entrypoint.existsSync(), isTrue);
         final cliPackage =
-            projectRoot.directory('my/custom/cliDir/dashi_sidekick');
+            entrypointDir.directory('my/custom/cliDir/dashi_sidekick');
         expect(cliPackage.existsSync(), isTrue);
 
         overrideSidekickCoreWithLocalPath(cliPackage);
