@@ -22,6 +22,8 @@ void main() {
           ['init', '-n', 'dashi'],
           workingDirectory: nestedPackage,
         );
+        process.stdoutStream().listen(print);
+        process.stderrStream().listen(print);
         await process.shouldExit(0);
         final entrypoint = File("${nestedPackage.path}/dashi");
         expect(entrypoint.existsSync(), isTrue);
