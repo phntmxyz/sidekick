@@ -1,3 +1,4 @@
+import 'package:dcli/dcli.dart' hide absolute;
 import 'package:sidekick_core/sidekick_core.dart';
 
 extension FileModifier on File {
@@ -74,6 +75,34 @@ extension DeleteDirContents on Directory {
   void deleteContentsSync() {
     for (final file in listSync()) {
       file.deleteSync(recursive: true);
+    }
+  }
+}
+
+extension MakeExecutable on FileSystemEntity {
+  /// Makes a file executable 'rwxr-xr-x' (755)
+  Future<void> makeExecutable() async {
+    if (this is Directory) {
+      throw "Can't make a Directory executable ($this)";
+    }
+    if (!existsSync()) {
+      throw 'File not found $path';
+    }
+    if (Platform.isWindows) {
+      // The windows file system works differently than unix based ones. exe files are automatically executable
+      // But when generating sidekick on windows, it should also be executable on unix systems on checkout.
+      // This is done by telling git about the file being executable.
+      // https://www.scivision.dev/git-windows-chmod-executable/
+      final p =
+          startFromArgs('git', ['update-index', '--chmod=+x', '--add', path]);
+      if (p.exitCode != 0) {
+        throw 'Could not set git file permission for unix systems for file $path';
+      }
+    } else {
+      final p = startFromArgs('chmod', ['755', absolute.path]);
+      if (p.exitCode != 0) {
+        throw 'Cloud not set permission 755 for file $path';
+      }
     }
   }
 }
