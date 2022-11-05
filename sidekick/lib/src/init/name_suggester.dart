@@ -1,6 +1,7 @@
 import 'package:acronym/acronym.dart';
 import 'package:dcli/dcli.dart' as dcli;
 import 'package:path/path.dart' as p;
+import 'package:sidekick/src/util/dcli_ask_validators.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 
 /// Helps users to find a short, pregnant name for their CLI
@@ -88,22 +89,3 @@ class NameSuggester {
         .toSet();
   }
 }
-
-class CliNameValidator extends dcli.AskValidator {
-  const CliNameValidator();
-
-  @override
-  String validate(String line) {
-    if (!isValidPubPackageName(line)) {
-      throw dcli.AskValidatorException(dcli.red(invalidCliNameErrorMessage));
-    }
-
-    return line;
-  }
-}
-
-const invalidCliNameErrorMessage = 'The CLI name must be valid: '
-    'at least one lower case letter or underscore '
-    'followed by zero or more lower case letters, digits, or underscores. '
-    "Furthermore, make sure that it isn't a reserved word. "
-    'For details, see https://dart.dev/tools/pub/pubspec#name';

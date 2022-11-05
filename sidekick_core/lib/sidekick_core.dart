@@ -52,7 +52,7 @@ export 'package:sidekick_core/src/template/sidekick_package.template.dart';
 /// projects.
 /// The paths can either be absolute or relative to the project root. (E.g. if
 /// the custom sidekick CLI is at /Users/foo/project-x/packages/custom_sidekick,
-/// relative paths are resolved relative from /Users/foo/project-x)
+/// relative paths are resolved relative to /Users/foo/project-x)
 SidekickCommandRunner initializeSidekick({
   required String name,
   String? description,
@@ -228,7 +228,7 @@ class SdkNotFoundException implements Exception {
 /// This is to make passing `flutterSdkPath`/`dartSdkPath`
 /// in `initializeSidekick` a relative path work from anywhere.
 ///
-/// If [sdkPath] is a relative path, it is resolved relative from
+/// If [sdkPath] is a relative path, it is resolved relative to
 /// the project root [repoRoot].
 ///
 /// Throws a [SdkNotFoundException] if [sdkPath] is given but no
@@ -240,7 +240,7 @@ Directory? _resolveSdkPath(String? sdkPath, Directory repoRoot) {
 
   final resolvedDir = (Directory(sdkPath).isAbsolute
           ? Directory(sdkPath)
-          // resolve relative path relative from project root
+          // resolve relative path relative to project root
           : repoRoot.directory(sdkPath))
       .absolute;
 
