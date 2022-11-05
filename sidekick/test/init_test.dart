@@ -353,7 +353,7 @@ void main() {
             '--entrypointDirectory',
             entrypointDir.path,
             '--cliPackageDirectory',
-            'my/custom/cliDir',
+            entrypointDir.directory('my/custom/cliDir').path,
           ],
           workingDirectory: projectRoot,
         );
@@ -636,8 +636,8 @@ void main() {
             '-n',
             'dashi',
             '--mainProjectPath',
-            'packages/package_a',
-            project.absolute.path
+            project.directory('packages/package_a').path,
+            project.path
           ],
           workingDirectory: project.parent,
         );

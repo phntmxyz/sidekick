@@ -1,5 +1,4 @@
 import 'package:dcli/dcli.dart' as dcli;
-import 'package:path/path.dart';
 import 'package:recase/recase.dart';
 import 'package:sidekick/src/init/name_suggester.dart';
 import 'package:sidekick/src/util/dcli_ask_validators.dart';
@@ -30,24 +29,18 @@ class InitCommand extends Command {
       'cliPackageDirectory',
       abbr: 'c',
       help: 'The directory in which the CLI package should be created. \n'
-          'This directory must be within the entrypointDirectory, or '
-          'if the entrypointDirectory is inside a git repository, it must be '
-          'within the git repository. \n'
-          'If this path is given as a relative path and there is a git repository, '
-          'it is resolved relative to the repository root. Else it is resolved '
-          'relative to the entrypointDirectory.',
+          'This directory must be within the entrypointDirectory, '
+          'or if the entrypointDirectory is inside a git repository, '
+          'the cliPackageDirectory must be within the same git repository.',
     );
     argParser.addOption(
       'mainProjectPath',
       abbr: 'm',
       help:
           'Optionally sets the mainProject, the package that ultimately builds your app. \n'
-          'This directory must be within the entrypointDirectory, or '
-          'if the entrypointDirectory is inside a git repository, it must be '
-          'within the git repository. \n'
-          'If this path is given as a relative path and there is a git repository, '
-          'it is resolved relative to the repository root. Else it is resolved '
-          'relative to the entrypointDirectory.',
+          'This directory must be within the entrypointDirectory, '
+          'or if the entrypointDirectory is inside a git repository, '
+          'the mainProjectPath must be within the same git repository.',
     );
   }
 
@@ -75,17 +68,15 @@ class InitCommand extends Command {
     final repoRoot = entrypointDir.findParent(isGitDir) ?? entrypointDir;
 
     final cliPackageDir = Directory(
-      Context(current: repoRoot.path).canonicalize(
-        argResults!['cliPackageDirectory'] as String? ??
-            dcli.ask(
-              '\nEnter the directory in which the CLI package should be created.\n'
-              'Must be an absolute path or a path '
-              'relative to the repository root (${entrypointDir.path}).\n'
-              'Or press enter to use the suggested directory.\n',
-              validator: DirectoryIsWithinOrEqualValidator(repoRoot),
-              defaultValue: repoRoot.directory('packages').path,
-            ),
-      ),
+      argResults!['cliPackageDirectory'] as String? ??
+          dcli.ask(
+            '\nEnter the directory in which the CLI package should be created.\n'
+            'Must be an absolute path or a path '
+            'relative to the repository root (${entrypointDir.path}).\n'
+            'Or press enter to use the suggested directory.\n',
+            validator: DirectoryIsWithinOrEqualValidator(repoRoot),
+            defaultValue: repoRoot.directory('packages').path,
+          ),
     );
     if (!cliPackageDir.isWithinOrEqual(repoRoot)) {
       throw 'CLI package directory ${cliPackageDir.path} is not within or equal to ${repoRoot.path}';
@@ -94,12 +85,9 @@ class InitCommand extends Command {
     final mainProjectPath = argResults!['mainProjectPath'] as String?;
     DartPackage? mainProject = mainProjectPath != null
         ? DartPackage.fromDirectory(
-            Directory(
-              Context(current: repoRoot.path).canonicalize(mainProjectPath),
-            ),
+            Directory(mainProjectPath),
           )
-        :
-        (DartPackage.fromDirectory(entrypointDir) ??
+        : (DartPackage.fromDirectory(entrypointDir) ??
             DartPackage.fromDirectory(repoRoot));
     if (mainProjectPath != null && mainProject == null) {
       throw 'mainProjectPath was given, but no DartPackage could be found at the given path $mainProjectPath';
