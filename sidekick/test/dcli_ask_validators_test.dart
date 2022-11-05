@@ -24,10 +24,16 @@ void main() {
 
     test('returns path when directory exists (relative path)', () {
       final temp = Directory.systemTemp.createTempSync();
+      print(temp.path);
       addTearDown(() => temp.deleteSync(recursive: true));
       temp.directory('foo').createSync();
 
-      expect(DirectoryExistsValidator(temp).validate('foo'), 'foo');
+      IOOverrides.runZoned(
+        () {
+          expect(const DirectoryExistsValidator().validate('foo'), 'foo');
+        },
+        getCurrentDirectory: () => temp,
+      );
     });
 
     test('throws AskValidatorException when directory does not exist', () {

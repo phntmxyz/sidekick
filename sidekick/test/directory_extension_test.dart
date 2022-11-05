@@ -24,20 +24,6 @@ void main() {
     });
   });
 
-  group('resolveAbsoluteOrRelativePath', () {
-    test('returns directory at absolute path', () {
-      const path = '/a/b';
-      final dir = Directory('/foo');
-      expect(dir.resolveAbsoluteOrRelativeDirPath(path).path, path);
-    });
-
-    test('returns directory at relative path', () {
-      const path = 'a/b';
-      final dir = Directory('/foo');
-      expect(dir.resolveAbsoluteOrRelativeDirPath(path).path, '/foo/a/b');
-    });
-  });
-
   group('canonicalized', () {
     test('strips extra PlatformSeparators', () {
       final dir = Directory('/a/b/c/////');

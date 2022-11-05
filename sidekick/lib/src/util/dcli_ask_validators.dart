@@ -1,4 +1,5 @@
 import 'package:dcli/dcli.dart' as dcli;
+import 'package:path/path.dart';
 import 'package:sidekick/src/util/directory_extension.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 
@@ -22,21 +23,18 @@ const invalidCliNameErrorMessage = 'The CLI name must be valid: '
     'For details, see https://dart.dev/tools/pub/pubspec#name';
 
 /// Validates that a given path exists as [Directory].
-///
-/// Relative paths are resolved from [relativeFrom] or [Directory.current].
 class DirectoryExistsValidator extends dcli.AskValidator {
-  const DirectoryExistsValidator([this.relativeFrom]);
-
-  final Directory? relativeFrom;
+  const DirectoryExistsValidator();
 
   @override
   String validate(String line) {
-    final currentDirectory = relativeFrom ?? Directory.current;
-    final dir = currentDirectory.resolveAbsoluteOrRelativeDirPath(line);
+    // TODO: this is an unnecessarily verbose version of just Directory(line).
+    // However, with Directory(line) I can't get the test 'returns path when directory exists (relative path)'
+    // to work because I must be missing some value in IOOverrides
+    final dir =
+        Directory(Context(current: Directory.current.path).canonicalize(line));
     if (!dir.existsSync()) {
-      throw AskValidatorException(
-          'The directory $line does not exist (neither as absolute path, nor '
-          'as path relative to ${currentDirectory.canonicalized.path}.');
+      throw AskValidatorException('The directory $line does not exist.');
     }
     return line;
   }
@@ -50,7 +48,7 @@ class DirectoryIsWithinOrEqualValidator extends dcli.AskValidator {
 
   @override
   String validate(String line) {
-    final dir = root.resolveAbsoluteOrRelativeDirPath(line);
+    final dir = Directory(Context(current: root.path).canonicalize(line));
     if (!dir.isWithinOrEqual(root)) {
       throw AskValidatorException(
         'The directory ${dir.path} must be within or equal to ${root.canonicalized.path}.',

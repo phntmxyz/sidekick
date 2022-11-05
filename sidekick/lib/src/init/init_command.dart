@@ -1,4 +1,5 @@
 import 'package:dcli/dcli.dart' as dcli;
+import 'package:path/path.dart';
 import 'package:recase/recase.dart';
 import 'package:sidekick/src/init/name_suggester.dart';
 import 'package:sidekick/src/util/dcli_ask_validators.dart';
@@ -73,16 +74,18 @@ class InitCommand extends Command {
     bool isGitDir(Directory dir) => dir.directory('.git').existsSync();
     final repoRoot = entrypointDir.findParent(isGitDir) ?? entrypointDir;
 
-    final cliPackageDir = repoRoot.resolveAbsoluteOrRelativeDirPath(
-      argResults!['cliPackageDirectory'] as String? ??
-          dcli.ask(
-            '\nEnter the directory in which the CLI package should be created.\n'
-            'Must be an absolute path or a path '
-            'relative to the repository root (${entrypointDir.path}).\n'
-            'Or press enter to use the suggested directory.\n',
-            validator: DirectoryIsWithinOrEqualValidator(repoRoot),
-            defaultValue: repoRoot.directory('packages').path,
-          ),
+    final cliPackageDir = Directory(
+      Context(current: repoRoot.path).canonicalize(
+        argResults!['cliPackageDirectory'] as String? ??
+            dcli.ask(
+              '\nEnter the directory in which the CLI package should be created.\n'
+              'Must be an absolute path or a path '
+              'relative to the repository root (${entrypointDir.path}).\n'
+              'Or press enter to use the suggested directory.\n',
+              validator: DirectoryIsWithinOrEqualValidator(repoRoot),
+              defaultValue: repoRoot.directory('packages').path,
+            ),
+      ),
     );
     if (!cliPackageDir.isWithinOrEqual(repoRoot)) {
       throw 'CLI package directory ${cliPackageDir.path} is not within or equal to ${repoRoot.path}';
@@ -91,10 +94,11 @@ class InitCommand extends Command {
     final mainProjectPath = argResults!['mainProjectPath'] as String?;
     DartPackage? mainProject = mainProjectPath != null
         ? DartPackage.fromDirectory(
-            repoRoot.resolveAbsoluteOrRelativeDirPath(mainProjectPath),
+            Directory(
+              Context(current: repoRoot.path).canonicalize(mainProjectPath),
+            ),
           )
         :
-        // TODO(pepe): not sure if repoRoot ?? entrypointDir or entrypointDir ?? repoRoot is better - or just null if mainProjectPath is unspecified
         (DartPackage.fromDirectory(entrypointDir) ??
             DartPackage.fromDirectory(repoRoot));
     if (mainProjectPath != null && mainProject == null) {

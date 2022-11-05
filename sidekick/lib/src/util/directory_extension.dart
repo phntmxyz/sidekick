@@ -10,12 +10,6 @@ extension DirectoryExtension on Directory {
         dir.canonicalized.path == canonicalized.path;
   }
 
-  /// When [path] is absolute, returns the directory at that path.
-  /// Else resolves the [path] relative to this directory.
-  Directory resolveAbsoluteOrRelativeDirPath(String path) =>
-      (Directory(path).isAbsolute ? Directory(path) : directory(path))
-          .canonicalized;
-
   /// A [Directory] whose path is the canonicalized path of [this].
   Directory get canonicalized => Directory(canonicalize(path));
 }
