@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:dcli/dcli.dart' as dcli;
+import 'package:cli_script/cli_script.dart' as cli_script;
 import 'package:sidekick_core/sidekick_core.dart';
 
 /// Executes the dart cli associated with the project via flutterw
@@ -56,19 +59,38 @@ int dart(
     }
   }();
 
-  final process = dcli.startFromArgs(
-    dart.path,
-    args,
-    workingDirectory: workingDirectory?.path ?? entryWorkingDirectory.path,
-    progress: progress,
-    nothrow: true,
-    terminal: progress == null,
-  );
+  final output = StringBuffer();
+  cli_script.Script? script;
+  int? code;
+  try {
+    script = cli_script.Script.capture((stdin) {
+      cli_script.run(
+        dart.path,
+        args: args,
+        workingDirectory: workingDirectory?.path ?? entryWorkingDirectory.path,
+      );
+    });
+    final combineOutput = script.combineOutput();
+    combineOutput.lines.listen(output.writeln);
+    code = dcli.waitForEx(script.exitCode);
+    if (code != 0) {
+      throw "Dart command failed with exit code $code";
+    }
+  } catch (e) {
+    printerr(output.toString());
+    printerr('');
+    if (code != null) {
+      printerr("Script failed with exitCode: $code");
+    } else {
+      printerr("Script execution failed, no exitCode available");
+    }
+    rethrow;
+  }
 
   if (flutterwLegacyMode) {
     printerr("Sidekick Warning: ${DartSdkNotSetException().message}");
   }
-  return process.exitCode ?? -1;
+  return code ?? -1;
 }
 
 /// The Dart SDK path is not set in [initializeSidekick] (param [dartSdk], neither is is the [flutterSdk])
