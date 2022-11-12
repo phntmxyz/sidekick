@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:cli_script/cli_script.dart' as cli_script;
 import 'package:dcli/dcli.dart' as dcli;
 import 'package:sidekick_core/sidekick_core.dart';
+import 'package:sidekick_core/src/process.dart';
 
 /// Executes the dart cli associated with the project via flutterw
 /// https://github.com/passsy/flutter_wrapper
@@ -60,61 +61,17 @@ int dart(
     }
   }();
 
-  /// combinedOutput will be printed on error. It's important to keep the
-  /// order of the lines, mixing stdout and stderr
-  final combinedOutput = StringBuffer();
-  cli_script.Script? script;
-  int? code;
-  try {
-    script = cli_script.Script.capture((stdin) {
-      cli_script.run(
-        dart.path,
-        args: args,
-        workingDirectory: workingDirectory?.path ?? entryWorkingDirectory.path,
-      );
-    });
-
-    // Consume output streams
-    script.stdout.listen((line) {
-      final stringLine = String.fromCharCodes(line);
-      combinedOutput.write(stringLine);
-      if (progress != null) {
-        for (final trimmed in const LineSplitter().convert(stringLine)) {
-          progress.addToStdout(trimmed);
-        }
-      }
-    });
-    script.stderr.listen((line) {
-      final stringLine = String.fromCharCodes(line);
-      combinedOutput.write(stringLine);
-      if (progress != null) {
-        for (final trimmed in const LineSplitter().convert(stringLine)) {
-          progress.addToStderr(trimmed);
-        }
-      }
-    });
-
-    code = dcli.waitForEx(script.exitCode);
-    if (code != 0) {
-      throw "Dart command failed with exit code $code";
-    }
-  } catch (e) {
-    printerr(combinedOutput.toString());
-    printerr('');
-    if (code != null) {
-      printerr("Script failed with exitCode: $code");
-    } else {
-      printerr("Script execution failed, no exitCode available");
-    }
-    rethrow;
-  }
+  final ProcessResult result = startProcess(
+    dart.path,
+    args,
+    workingDirectory: workingDirectory,
+    progress: progress,
+  );
 
   if (flutterwLegacyMode) {
     printerr("Sidekick Warning: ${DartSdkNotSetException().message}");
   }
-  progress?.exitCode = code;
-  progress?.close();
-  return code ?? -1;
+  return result.exitCode ?? -1;
 }
 
 /// The Dart SDK path is not set in [initializeSidekick] (param [dartSdk], neither is is the [flutterSdk])
