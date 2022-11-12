@@ -46,67 +46,100 @@ void main() {
     });
   });
 
-  test('override stdout', () async {
-    final outerZone = Zone.current;
+  test('When dart command fails it reports stdout and stderr', () async {
     final out = _FakeStdoutStream();
-    await overrideIoStreams(
-      () async {
-        expect(Zone.current, isNot(outerZone));
-        final override = IOOverrides.current;
-        expect(override?.stdout, out);
-        // override?.stdout.writeln('two');
-        print('hello');
-      },
-      stdout: () => out,
-    );
-    expect(out.lines, ['hello']);
-  });
+    final err = _FakeStdoutStream();
 
-  test(
-    'When dart command fails it reports stdout and stderr',
-    () async {
-      final out = _FakeStdoutStream();
-      final err = _FakeStdoutStream();
+    Future<void> code() async {
+      final fakeSdk = fakeFlutterSdk();
+      final runner = initializeSidekick(
+        name: 'dash',
+        flutterSdkPath: fakeSdk.path,
+      );
+      runner.addCommand(DartCommand());
 
-      Future<void> code() async {
-        final fakeSdk = fakeFlutterSdk();
-        final runner = initializeSidekick(
-          name: 'dash',
-          flutterSdkPath: fakeSdk.path,
-        );
-        runner.addCommand(DartCommand());
+      /// initialize dart command in cache
+      await runner.run(['dart']);
 
-        /// initialize dart command in cache
-        await runner.run(['dart']);
-
-        // override dart command to fail
-        fakeSdk.file('bin/cache/dart-sdk/bin/dart').writeAsStringSync('''
+      // override dart command to fail
+      fakeSdk.file('bin/cache/dart-sdk/bin/dart').writeAsStringSync('''
                 #!/bin/sh
                 echo "stdout"
                 echo "stderr" >&2
                 exit 1
             ''');
-        await expectLater(
-          () => runner.run(['dart']),
-          throwsA(
-            isA<String>().having((it) => it, 'text', contains('exit code 1')),
-          ),
-        );
-      }
-
-      await insideFakeProjectWithSidekick(
-        (dir) => overrideIoStreams(
-          code,
-          stdout: () => out,
-          stderr: () => err,
+      await expectLater(
+        () => runner.run(['dart']),
+        throwsA(
+          isA<String>().having((it) => it, 'text', contains('exit code 1')),
         ),
       );
-      expect(out.lines.join(), '');
-      expect(err.lines.join(), contains('stdout'));
-      expect(err.lines.join(), contains('stderr'));
-      expect(err.lines.join(), contains('Script failed with exitCode: 1'));
-    },
-  );
+    }
+
+    await insideFakeProjectWithSidekick(
+      (dir) => overrideIoStreams(
+        code,
+        stdout: () => out,
+        stderr: () => err,
+      ),
+    );
+    expect(out.lines.join(), '');
+    expect(err.lines.join(), contains('stdout'));
+    expect(err.lines.join(), contains('stderr'));
+    expect(err.lines.join(), contains('Script failed with exitCode: 1'));
+  });
+
+  test('be backwards compatible with dcli.Progress api', () async {
+    final out = _FakeStdoutStream();
+    final err = _FakeStdoutStream();
+
+    Future<void> code() async {
+      final fakeSdk = fakeFlutterSdk();
+      final runner = initializeSidekick(
+        name: 'dash',
+        flutterSdkPath: fakeSdk.path,
+      );
+      runner.addCommand(_DcliProgressCommand());
+
+      /// initialize dart command in cache
+      await runner.run(['dcli-progress']);
+
+      // override dart command for expected output
+      fakeSdk.file('bin/cache/dart-sdk/bin/dart').writeAsStringSync('''
+                #!/bin/sh
+                echo "stdout"
+                echo "stderr" >&2
+            ''');
+      final progress = await runner.run(['dcli-progress']) as Progress;
+      expect(progress.toList(), ['stdout', 'stderr']);
+    }
+
+    await insideFakeProjectWithSidekick(
+      (dir) => overrideIoStreams(
+        code,
+        stdout: () => out,
+        stderr: () => err,
+      ),
+    );
+    expect(out.lines.join(), '');
+    expect(err.lines.join(), '');
+  });
+}
+
+class _DcliProgressCommand extends Command {
+  @override
+  final String description = 'My command';
+
+  @override
+  final String name = 'dcli-progress';
+
+  @override
+  Future<Progress> run() async {
+    final output = Progress.capture();
+    // ignore: deprecated_member_use_from_same_package
+    dart([], progress: output);
+    return output;
+  }
 }
 
 Future<File> installFlutterWrapper(Directory directory) async {

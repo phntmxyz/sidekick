@@ -1,7 +1,7 @@
-import 'dart:async';
+import 'dart:convert';
 
-import 'package:dcli/dcli.dart' as dcli;
 import 'package:cli_script/cli_script.dart' as cli_script;
+import 'package:dcli/dcli.dart' as dcli;
 import 'package:sidekick_core/sidekick_core.dart';
 
 /// Executes the dart cli associated with the project via flutterw
@@ -11,7 +11,8 @@ import 'package:sidekick_core/sidekick_core.dart';
 int dart(
   List<String> args, {
   Directory? workingDirectory,
-  dcli.Progress? progress,
+  @Deprecated('Wrap with Script.capture((){ dart([]); }); instead')
+      dcli.Progress? progress,
 }) {
   bool flutterwLegacyMode = false;
 
@@ -59,7 +60,9 @@ int dart(
     }
   }();
 
-  final output = StringBuffer();
+  /// combinedOutput will be printed on error. It's important to keep the
+  /// order of the lines, mixing stdout and stderr
+  final combinedOutput = StringBuffer();
   cli_script.Script? script;
   int? code;
   try {
@@ -70,14 +73,33 @@ int dart(
         workingDirectory: workingDirectory?.path ?? entryWorkingDirectory.path,
       );
     });
-    final combineOutput = script.combineOutput();
-    combineOutput.lines.listen(output.writeln);
+
+    // Consume output streams
+    script.stdout.listen((line) {
+      final stringLine = String.fromCharCodes(line);
+      combinedOutput.write(stringLine);
+      if (progress != null) {
+        for (final trimmed in const LineSplitter().convert(stringLine)) {
+          progress.addToStdout(trimmed);
+        }
+      }
+    });
+    script.stderr.listen((line) {
+      final stringLine = String.fromCharCodes(line);
+      combinedOutput.write(stringLine);
+      if (progress != null) {
+        for (final trimmed in const LineSplitter().convert(stringLine)) {
+          progress.addToStderr(trimmed);
+        }
+      }
+    });
+
     code = dcli.waitForEx(script.exitCode);
     if (code != 0) {
       throw "Dart command failed with exit code $code";
     }
   } catch (e) {
-    printerr(output.toString());
+    printerr(combinedOutput.toString());
     printerr('');
     if (code != null) {
       printerr("Script failed with exitCode: $code");
@@ -90,6 +112,8 @@ int dart(
   if (flutterwLegacyMode) {
     printerr("Sidekick Warning: ${DartSdkNotSetException().message}");
   }
+  progress?.exitCode = code;
+  progress?.close();
   return code ?? -1;
 }
 
