@@ -155,12 +155,16 @@ Directory _getPackageRootDirForHostedOrGitSource(ArgResults args) {
 
   final progress = dcli.Progress(
     dcli.devNull,
-    stderr: print,
     // this parameter has a typo in dcli and actually is captureStdOut
     captureStdin: true,
     captureStderr: true,
   );
-  sidekickDartRuntime.dart(pubGlobalActivateArgs, progress: progress);
+  try {
+    sidekickDartRuntime.dart(pubGlobalActivateArgs, progress: progress);
+  } catch (e) {
+    print(progress.lines.join('\n'));
+    rethrow;
+  }
 
   // TODO We should definitely do this in a less hacky way
   // Our goal is to get the cache directory of the package.
