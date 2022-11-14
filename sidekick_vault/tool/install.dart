@@ -50,7 +50,7 @@ final SidekickVault vault = SidekickVault(
 void _createVaultFolder(SidekickPackage package) {
   final folder = package.root.directory('vault');
   if (!folder.existsSync()) {
-    folder.create();
+    folder.createSync();
   }
 
   final readme = folder.file('README.md');
