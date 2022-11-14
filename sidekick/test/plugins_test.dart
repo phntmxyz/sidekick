@@ -143,18 +143,12 @@ void main() {
         contains('\npubspec.lock'),
       );
 
-      // Readme
       expect(
         pluginDir.file('README.md').readAsStringSync(),
-        contains('generated_plugin sidekick plugin'),
-      );
-      expect(
-        pluginDir.file('README.md').readAsStringSync(),
-        contains('generated_plugin sidekick plugin'),
-      );
-      expect(
-        pluginDir.file('README.md').readAsStringSync(),
-        contains('dashi sidekick plugins install'),
+        allOf([
+          contains('dashi sidekick plugins install'),
+          contains('generated_plugin sidekick plugin'),
+        ]),
       );
     });
   }
