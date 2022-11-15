@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:isolate';
 
 import 'package:http/http.dart';
 import 'package:pub_semver/pub_semver.dart';
@@ -40,6 +41,70 @@ class UpdateCommand extends Command {
     // ? how to call new generator (sidekick_core/lib/src/template)? maybe with reflection?
 
     // TODO apply changes to CLI dart files. how to preserve changes by users? Override everything but keep imports + ..addCommand(...)?
+
+    bool isGitDir(Directory dir) => dir.directory('.git').existsSync();
+    final entrypointDir = Repository.requiredEntryPoint.parent;
+    final repoRoot = entrypointDir.findParent(isGitDir) ?? entrypointDir;
+    final mainProjectPath = mainProject != null
+        ? relative(mainProject!.root.path, from: repoRoot.absolute.path)
+        : null;
+    final isMainProjectRoot =
+        mainProject?.root.absolute.path == repoRoot.absolute.path;
+    final hasNestedPackagesPath = mainProject != null &&
+        !relative(mainProject!.root.path, from: repoRoot.absolute.path)
+            .startsWith('packages');
+
+    final updateScript =
+        Repository.requiredSidekickPackage.buildDir.file('update.dart')
+          ..createSync(recursive: true)
+          ..writeAsStringSync('''
+import 'dart:convert';
+import 'dart:io';
+import 'dart:isolate';
+import 'dart:mirrors';
+import 'package:sidekick_core/src/template/sidekick_package.template.dart';
+
+Future<void> main() async {
+  final templateLibrary = currentMirrorSystem().libraries[Uri.parse(
+      'package:sidekick_core/src/template/sidekick_package.template.dart')]!;
+
+  final sidekickTemplateDefinition =
+      templateLibrary.declarations[#SidekickTemplate]! as ClassMirror;
+  final sidekickTemplatePropertiesDefinition =
+      templateLibrary.declarations[#SidekickTemplateProperties]! as ClassMirror;
+
+  final sidekickTemplateInstance =
+      sidekickTemplateDefinition.newInstance(Symbol.empty, []);
+      
+  final Map<Symbol, dynamic> namedArguments = {
+    #name: '${Repository.requiredSidekickPackage.cliName}',
+    #entrypointLocation: File('${Repository.requiredEntryPoint.path}'),
+    #packageLocation: Directory('${Repository.requiredCliPackage.path}'),
+    #mainProjectPath: ${mainProjectPath != null ? '${mainProjectPath}' : null},
+    #shouldSetFlutterSdkPath: ${runner!.commands.containsKey('flutter')},
+    #isMainProjectRoot: $isMainProjectRoot,
+    #hasNestedPackagesPath: $hasNestedPackagesPath,
+  };
+  
+  final sidekickTemplatePropertiesInstance =
+      sidekickTemplatePropertiesDefinition.newInstance(
+    Symbol.empty,
+    [],
+    namedArguments,
+  );
+
+  sidekickTemplateInstance.invoke(
+    #generateTools,
+    [sidekickTemplatePropertiesInstance.reflectee],
+  );
+  sidekickTemplateInstance.invoke(
+    #generateEntrypoint,
+    [sidekickTemplatePropertiesInstance.reflectee],
+  );
+}
+''');
+    final exitCode = dart([updateScript.path]);
+    if(exitCode != 0) throw 'error $exitCode';
   }
 
   Future<Version> getLatestPackageVersion(String package) async {
@@ -58,7 +123,7 @@ class UpdateCommand extends Command {
 
   Version getCurrentMinimumPackageVersion(String package) {
     final regEx = RegExp(
-      '^  $package:\\s*[\'"\\^<>= ]*(\\d+\\.\\d+\\.\\d+(?:[+-]\\S+)?)',
+      '\n  $package:\\s*[\'"\\^<>= ]*(\\d+\\.\\d+\\.\\d+(?:[+-]\\S+)?)',
     );
     final pubspec =
         Repository.requiredSidekickPackage.pubspec.readAsStringSync();
