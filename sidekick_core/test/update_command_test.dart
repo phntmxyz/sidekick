@@ -10,8 +10,10 @@ import 'package:pub_semver/pub_semver.dart';
 void main() {
   test('description', () async {
     await insideFakeProjectWithSidekick((projectDir) async {
-      final runner =
-          initializeSidekick(name: 'dash', dartSdkPath: systemDartSdkPath());
+      final runner = initializeSidekick(
+        name: 'dash',
+        dartSdkPath: systemDartSdkPath(),
+      );
 
       final toolDir = projectDir.directory('packages/dash/tool');
       expect(toolDir.existsSync(), isFalse);
@@ -62,6 +64,8 @@ dependencies:
 ''');
   fakeSidekickDir.directory('lib').createSync();
 
+  overrideSidekickCoreWithLocalPath(fakeSidekickDir);
+
   env['SIDEKICK_PACKAGE_HOME'] = fakeSidekickDir.absolute.path;
   env['SIDEKICK_ENTRYPOINT_HOME'] = tempDir.absolute.path;
 
@@ -87,4 +91,26 @@ Version getCurrentMinimumSidekickCoreVersion() {
       regEx.allMatches(pubspec).map((e) => e.group(1)).whereNotNull().single;
 
   return Version.parse(minVersion);
+}
+
+/// True when dependencies should be linked to local sidekick dependencies
+final bool shouldUseLocalDeps = env['SIDEKICK_PUB_DEPS'] != 'true';
+
+/// Changes the sidekick_core dependency to a local override
+void overrideSidekickCoreWithLocalPath(Directory package) {
+  if (!shouldUseLocalDeps) return;
+  print('Overriding sidekick_core dependency to local');
+  final pubspec = package.file("pubspec.yaml");
+  // assuming cwd when running those tests is in the sidekick package
+  final corePath = canonicalize('../sidekick_core');
+  pubspec.writeAsStringSync(
+    '''
+
+dependency_overrides:
+  sidekick_core:
+    path: $corePath
+
+  ''',
+    mode: FileMode.append,
+  );
 }

@@ -32,79 +32,32 @@ class UpdateCommand extends Command {
       return;
     }
 
-    // TODO update pubspec.yaml
-
+    // update pubspec.yaml
     updateVersionConstraint('sidekick_core', latestSidekickCoreVersion);
     dart(['pub', 'get'], workingDirectory: Repository.requiredCliPackage);
 
-    // TODO generate new shell scripts (just overwrite because users shouldn't have to touch these files anyways)
-    // ? how to call new generator (sidekick_core/lib/src/template)? maybe with reflection?
+    // generate new shell scripts
 
-    // TODO apply changes to CLI dart files. how to preserve changes by users? Override everything but keep imports + ..addCommand(...)?
-
-    bool isGitDir(Directory dir) => dir.directory('.git').existsSync();
-    final entrypointDir = Repository.requiredEntryPoint.parent;
-    final repoRoot = entrypointDir.findParent(isGitDir) ?? entrypointDir;
-    final mainProjectPath = mainProject != null
-        ? relative(mainProject!.root.path, from: repoRoot.absolute.path)
-        : null;
-    final isMainProjectRoot =
-        mainProject?.root.absolute.path == repoRoot.absolute.path;
-    final hasNestedPackagesPath = mainProject != null &&
-        !relative(mainProject!.root.path, from: repoRoot.absolute.path)
-            .startsWith('packages');
-
+    // call the latest update script
+    // the process running this command uses the old dependency of sidekick_core
+    // and its dependencies can't be changed at runtime
+    // as a workaround, a new process is started (with `dart([updateScript.path])`)
+    // which contains the latest sidekick_core dependency
+    // and thus the latest update script
     final updateScript =
         Repository.requiredSidekickPackage.buildDir.file('update.dart')
           ..createSync(recursive: true)
           ..writeAsStringSync('''
-import 'dart:convert';
-import 'dart:io';
-import 'dart:isolate';
-import 'dart:mirrors';
-import 'package:sidekick_core/src/template/sidekick_package.template.dart';
-
+import 'package:sidekick_core/src/update_sidekick_cli.dart' as update;
 Future<void> main() async {
-  final templateLibrary = currentMirrorSystem().libraries[Uri.parse(
-      'package:sidekick_core/src/template/sidekick_package.template.dart')]!;
-
-  final sidekickTemplateDefinition =
-      templateLibrary.declarations[#SidekickTemplate]! as ClassMirror;
-  final sidekickTemplatePropertiesDefinition =
-      templateLibrary.declarations[#SidekickTemplateProperties]! as ClassMirror;
-
-  final sidekickTemplateInstance =
-      sidekickTemplateDefinition.newInstance(Symbol.empty, []);
-      
-  final Map<Symbol, dynamic> namedArguments = {
-    #name: '${Repository.requiredSidekickPackage.cliName}',
-    #entrypointLocation: File('${Repository.requiredEntryPoint.path}'),
-    #packageLocation: Directory('${Repository.requiredCliPackage.path}'),
-    #mainProjectPath: ${mainProjectPath != null ? '${mainProjectPath}' : null},
-    #shouldSetFlutterSdkPath: ${runner!.commands.containsKey('flutter')},
-    #isMainProjectRoot: $isMainProjectRoot,
-    #hasNestedPackagesPath: $hasNestedPackagesPath,
-  };
-  
-  final sidekickTemplatePropertiesInstance =
-      sidekickTemplatePropertiesDefinition.newInstance(
-    Symbol.empty,
-    [],
-    namedArguments,
-  );
-
-  sidekickTemplateInstance.invoke(
-    #generateTools,
-    [sidekickTemplatePropertiesInstance.reflectee],
-  );
-  sidekickTemplateInstance.invoke(
-    #generateEntrypoint,
-    [sidekickTemplatePropertiesInstance.reflectee],
-  );
+  await update.main(['${Repository.requiredSidekickPackage.cliName}']);
 }
 ''');
-    final exitCode = dart([updateScript.path]);
-    if(exitCode != 0) throw 'error $exitCode';
+    dart([updateScript.path]);
+
+    // TODO update CLI dart files while preserving changes of users. how to preserve changes by users? Override everything but keep imports + ..addCommand(...)?
+
+    updateScript.deleteSync();
   }
 
   Future<Version> getLatestPackageVersion(String package) async {
