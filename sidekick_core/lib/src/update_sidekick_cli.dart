@@ -5,7 +5,7 @@ import 'package:pubspec2/pubspec2.dart' as pub;
 import 'package:sidekick_core/sidekick_core.dart';
 
 Future<void> main(List<String> args) async {
-  final runner = initializeSidekick(name: args.single);
+  final runner = initializeSidekick(name: args.single); // TODO set mainProjectPath
   final unmount = runner.mount();
   try {
     bool isGitDir(Directory dir) => dir.directory('.git').existsSync();

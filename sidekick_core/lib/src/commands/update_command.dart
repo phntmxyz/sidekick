@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:sidekick_core/sidekick_core.dart';
+import 'package:sidekick_core/src/update_sidekick_cli.dart';
 
 /// Updates the sidekick cli
 class UpdateCommand extends Command {
@@ -14,9 +15,11 @@ class UpdateCommand extends Command {
 
   @override
   Future<void> run() async {
-    // TODO (?) read version with which this sidekick CLI was generated (prerequisite: write this info into new block in pubspec) + current sidekick version on pub
+    // TODO instead read version with which this sidekick CLI was generated (prerequisite: write this info into new block in pubspec) + current sidekick version on pub
+    // do not read sidekick_core version
 
     // read this package's sidekick_core version + latest sidekick_core version on pub
+    // TODO use vgv package pub updater
     final latestSidekickCoreVersion =
         await getLatestPackageVersion('sidekick_core');
     final currentMinimumSidekickCoreVersion =
@@ -49,8 +52,12 @@ Future<void> main() async {
   await update.main(['${Repository.requiredSidekickPackage.cliName}']);
 }
 ''');
+    /* TODO pass mainProjectPath to update.main
+    final mainProjectPath = mainProject != null
+        ? relative(mainProject!.root.path, from: repoRoot.absolute.path)
+        : null;
+*/
     dart([updateScript.path]);
-
 
     updateScript.deleteSync();
   }
