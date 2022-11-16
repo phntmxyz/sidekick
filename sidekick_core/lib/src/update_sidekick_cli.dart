@@ -40,6 +40,12 @@ Future<void> main(List<String> args) async {
     // generate lib/src/<cli>_project.dart
     template.generateCliProjectDart(props);
 
+    // generate lib/<cli>_sidekick.dart but preserve user imports + added commands
+    _generateCliSidekickDart(template, props);
+
+    // generate .gitignore but preserve user changes
+    _generateGitignore(props);
+
     // generate new pubspec.yaml but preserve user changes
     await _generatePubSpec(
       oldPubSpecPath: props.packageLocation.file('pubspec.yaml').path,
@@ -47,18 +53,12 @@ Future<void> main(List<String> args) async {
       destination: props.packageLocation,
     );
 
-    // generate .gitignore but preserve user changes
-    _generateGitignore(props);
-
-    // TODO (?) generate analysis_options.yaml but preserve user changes
-
-    // generate lib/<cli>_sidekick.dart but preserve user imports + added commands
-    _generateCliSidekickDart(template, props);
+    // TODO preserve user changes in analysis_options.yaml
+    template.generateAnalysisOptionsYaml(props);
   } finally {
     unmount();
   }
 }
-
 
 /// Generates new pubspec.yaml while preserving values of old pubspec.yaml
 Future<void> _generatePubSpec({
@@ -83,7 +83,12 @@ Future<void> _generatePubSpec({
     },
     dependencies: {
       ...oldPubSpec.dependencies,
-      ...newPubSpec.dependencies,
+      ...Map.fromEntries(
+        newPubSpec.dependencies.entries
+            // sidekick_core dependency is already updated by `updateVersionConstraint` in `update_command.dart`
+            // do not overwrite it with an older version again
+            .where((it) => it.key != 'sidekick_core'),
+      ),
     },
     devDependencies: {
       ...oldPubSpec.devDependencies,
@@ -108,12 +113,11 @@ void _generateGitignore(SidekickTemplateProperties props) {
   }
 }
 
-
 /// Generate lib/<cli>_sidekick.dart but preserve user imports + added commands
 void _generateCliSidekickDart(
-    SidekickTemplate template,
-    SidekickTemplateProperties props,
-    ) {
+  SidekickTemplate template,
+  SidekickTemplateProperties props,
+) {
   final cliSidekickDart = Repository.requiredSidekickPackage.libDir.file(
     '${Repository.requiredSidekickPackage.cliName}_sidekick.dart',
   );

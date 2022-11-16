@@ -5,8 +5,6 @@ import 'package:pub_semver/pub_semver.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 
 /// Updates the sidekick cli
-///
-///
 class UpdateCommand extends Command {
   @override
   final String description = 'Updates the sidekick cli';
@@ -34,7 +32,7 @@ class UpdateCommand extends Command {
     updateVersionConstraint('sidekick_core', latestSidekickCoreVersion);
     dart(['pub', 'get'], workingDirectory: Repository.requiredCliPackage);
 
-    // generate new shell scripts
+    // generate new shell scripts + update CLI dart files while preserving changes of users
 
     // call the latest update script
     // the process running this command uses the old dependency of sidekick_core
@@ -53,7 +51,6 @@ Future<void> main() async {
 ''');
     dart([updateScript.path]);
 
-    // TODO update CLI dart files while preserving changes of users. how to preserve changes by users? Override everything but keep imports + ..addCommand(...)?
 
     updateScript.deleteSync();
   }

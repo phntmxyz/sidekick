@@ -45,16 +45,15 @@ class SidekickTemplate {
     props.packageLocation
         .file('pubspec.yaml')
         .writeAsStringSync(props.pubspecYaml);
-    props.packageLocation
-        .file('analysis_options.yaml')
-        .writeAsStringSync(analysisOptionsYamlTemplate);
+    generateAnalysisOptionsYaml(props);
 
     generateBinMainDart(props);
     generateCliProjectDart(props);
+    generateCliSidekickDart(props);
+
     props.packageLocation.file('lib/src/commands/clean_command.dart')
       ..createSync(recursive: true)
       ..writeAsStringSync(props.cleanCommandDart());
-    generateCliSidekickDart(props);
   }
 
   void generateBinMainDart(SidekickTemplateProperties props) {
@@ -88,6 +87,12 @@ class SidekickTemplate {
     props.packageLocation.file('.gitignore')
       ..createSync(recursive: true)
       ..writeAsStringSync(gitignoreTemplate);
+  }
+
+  void generateAnalysisOptionsYaml(SidekickTemplateProperties props) {
+    props.packageLocation
+        .file('analysis_options.yaml')
+        .writeAsStringSync(analysisOptionsYamlTemplate);
   }
 }
 

@@ -1,17 +1,39 @@
+import 'dart:convert';
+
+import 'package:http/http.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_core/src/commands/update_command.dart';
 import 'package:test/test.dart';
 
 void main() {
-  test('UpdateCommand generates new shell scripts', () async {
+  test('UpdateCommand generates new files', () async {
     await insideFakeProjectWithSidekick((projectDir) async {
+      final sidekickDir = projectDir.directory('packages/dash');
+      final expectedFilesToGenerate = [
+        'tool/download_dart.sh',
+        'tool/install.sh',
+        'tool/run.sh',
+        'tool/sidekick_config.sh',
+        'bin/main.dart',
+        'lib/src/dash_project.dart',
+        'lib/dash_sidekick.dart',
+        'analysis_options.yaml',
+        '.gitignore',
+      ].map(sidekickDir.file);
+
+      for (final file in expectedFilesToGenerate) {
+        expect(
+          !file.existsSync() || file.readAsStringSync().isEmpty,
+          isTrue,
+          reason: '${file.path} exists or is not empty',
+        );
+      }
+
       final runner = initializeSidekick(
         name: 'dash',
         dartSdkPath: systemDartSdkPath(),
       );
-
-      final sidekickDir = projectDir.directory('packages/dash');
 
       final beforeVersion = getCurrentMinimumSidekickCoreVersion();
 
@@ -20,20 +42,14 @@ void main() {
 
       final afterVersion = getCurrentMinimumSidekickCoreVersion();
       expect(beforeVersion, lessThan(afterVersion));
+      expect(afterVersion, await getLatestSidekickCoreVersion());
 
-      for (final file in [
-        'tool/download_dart.sh',
-        'tool/install.sh',
-        'tool/run.sh',
-        'tool/sidekick_config.sh',
-        'bin/main.dart',
-        'lib/src/dash_project.dart',
-        'lib/dash_sidekick.dart',
-        'pubspec.yaml',
-        '.gitignore',
-      ].map(sidekickDir.file)) {
-        expect(file.existsSync(), isTrue);
-        expect(file.readAsStringSync().isNotEmpty, isTrue);
+      for (final file in expectedFilesToGenerate) {
+        expect(
+          file.existsSync() && file.readAsStringSync().isNotEmpty,
+          isTrue,
+          reason: '${file.path} does not exist or is empty',
+        );
       }
     });
   });
@@ -118,4 +134,19 @@ dependency_overrides:
   ''',
     mode: FileMode.append,
   );
+}
+
+Future<Version> getLatestSidekickCoreVersion() async {
+  final response =
+      await get(Uri.parse('https://pub.dev/api/packages/sidekick_core'));
+
+  if (response.statusCode != HttpStatus.ok) {
+    throw "pub.dev didn't respond";
+  }
+
+  final body = jsonDecode(response.body) as Map<String, dynamic>;
+  final latestVersion =
+      (body['latest'] as Map<String, dynamic>)['version'] as String;
+
+  return Version.parse(latestVersion);
 }

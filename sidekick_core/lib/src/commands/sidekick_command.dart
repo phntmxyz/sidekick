@@ -1,4 +1,5 @@
 import 'package:sidekick_core/sidekick_core.dart';
+import 'package:sidekick_core/src/commands/update_command.dart';
 
 /// Sidekick CLI tools directly shipped from the sidekick_core package
 class SidekickCommand extends Command {
@@ -12,5 +13,6 @@ class SidekickCommand extends Command {
     addSubcommand(PluginsCommand());
     addSubcommand(RecompileCommand());
     addSubcommand(InstallGlobalCommand());
+    addSubcommand(UpdateCommand());
   }
 }
