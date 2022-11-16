@@ -1,5 +1,6 @@
 import 'dart:collection';
 
+import 'package:pub_semver/pub_semver.dart';
 import 'package:pubspec2/pubspec2.dart' as pub;
 import 'package:sidekick_core/sidekick_core.dart';
 
@@ -69,9 +70,20 @@ Future<void> _generatePubSpec({
   final oldPubSpec = PubSpec.fromFile(oldPubSpecPath).pubspec;
   final newPubSpec = PubSpec.fromString(newPubSpecTemplate).pubspec;
 
+  final versionRegEx = RegExp(r'\d+\.\d+.\d+');
+  final newVersionConstraint = newPubSpec.environment!.sdkConstraint;
+  final oldVersionConstraint = oldPubSpec.environment!.sdkConstraint;
+  final newVersion = Version.parse(
+    versionRegEx.firstMatch(newVersionConstraint.toString())!.group(0)!,
+  );
+  final oldVersion = Version.parse(
+    versionRegEx.firstMatch(oldVersionConstraint.toString())!.group(0)!,
+  );
+
   final mergedPubSpec = oldPubSpec.copy(
     environment: pub.Environment(
-      newPubSpec.environment?.sdkConstraint,
+      // do not downgrade Dart SDK version if user already upgraded it
+      newVersion > oldVersion ? newVersionConstraint : oldVersionConstraint,
       {
         ...?oldPubSpec.environment?.unParsedYaml,
         ...?newPubSpec.environment?.unParsedYaml
@@ -134,7 +146,7 @@ void _generateCliSidekickDart(
   // e.g. {'DartCommand': 'DartCommand()', 'FooCommand': 'FooCommand(a: 1,\n b: 2,\n)', ...}
   final oldCommands = commandRegex
       .allMatches(oldCliSidekickDartFileContents)
-      .associate((match) => MapEntry(match.group(1)!, match.group(2)!));
+      .associate((match) => MapEntry(match.group(2)!, match.group(1)!));
 
   template.generateCliSidekickDart(
     props,

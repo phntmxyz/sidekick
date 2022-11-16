@@ -30,7 +30,7 @@ class UpdateCommand extends Command {
 
     // update pubspec.yaml
     updateVersionConstraint('sidekick_core', latestSidekickCoreVersion);
-    dart(['pub', 'get'], workingDirectory: Repository.requiredCliPackage);
+    dart(['pub', 'upgrade'], workingDirectory: Repository.requiredCliPackage);
 
     // generate new shell scripts + update CLI dart files while preserving changes of users
 
