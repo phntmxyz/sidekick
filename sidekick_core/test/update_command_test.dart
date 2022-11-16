@@ -1,22 +1,17 @@
-import 'dart:io';
-
-import 'package:dartx/dartx_io.dart';
-import 'package:dcli/dcli.dart';
+import 'package:pub_semver/pub_semver.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_core/src/commands/update_command.dart';
 import 'package:test/test.dart';
-import 'package:pub_semver/pub_semver.dart';
 
 void main() {
-  test('description', () async {
+  test('UpdateCommand generates new shell scripts', () async {
     await insideFakeProjectWithSidekick((projectDir) async {
       final runner = initializeSidekick(
         name: 'dash',
         dartSdkPath: systemDartSdkPath(),
       );
 
-      final toolDir = projectDir.directory('packages/dash/tool');
-      expect(toolDir.existsSync(), isFalse);
+      final sidekickDir = projectDir.directory('packages/dash');
 
       final beforeVersion = getCurrentMinimumSidekickCoreVersion();
 
@@ -27,12 +22,18 @@ void main() {
       expect(beforeVersion, lessThan(afterVersion));
 
       for (final file in [
-        'download_dart.sh',
-        'install.sh',
-        'run.sh',
-        'sidekick_config.sh',
-      ].map(toolDir.file)) {
+        'tool/download_dart.sh',
+        'tool/install.sh',
+        'tool/run.sh',
+        'tool/sidekick_config.sh',
+        'bin/main.dart',
+        'lib/src/dash_project.dart',
+        'lib/dash_sidekick.dart',
+        'pubspec.yaml',
+        '.gitignore',
+      ].map(sidekickDir.file)) {
         expect(file.existsSync(), isTrue);
+        expect(file.readAsStringSync().isNotEmpty, isTrue);
       }
     });
   });
@@ -62,7 +63,11 @@ environment:
 dependencies:
   sidekick_core: 0.7.1
 ''');
-  fakeSidekickDir.directory('lib').createSync();
+
+  final fakeSidekickLibDir = fakeSidekickDir.directory('lib')..createSync();
+
+  fakeSidekickLibDir.file('src/dash_project.dart').createSync(recursive: true);
+  fakeSidekickLibDir.file('dash_sidekick.dart').createSync();
 
   overrideSidekickCoreWithLocalPath(fakeSidekickDir);
 

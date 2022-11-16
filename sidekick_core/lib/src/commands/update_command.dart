@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:isolate';
 
 import 'package:http/http.dart';
 import 'package:pub_semver/pub_semver.dart';
@@ -18,11 +17,10 @@ class UpdateCommand extends Command {
   @override
   Future<void> run() async {
     // TODO (?) read version with which this sidekick CLI was generated (prerequisite: write this info into new block in pubspec) + current sidekick version on pub
-    // TODO read this package's sidekick_core version + current sidekick_core version on pub
 
+    // read this package's sidekick_core version + latest sidekick_core version on pub
     final latestSidekickCoreVersion =
         await getLatestPackageVersion('sidekick_core');
-
     final currentMinimumSidekickCoreVersion =
         getCurrentMinimumPackageVersion('sidekick_core');
 
@@ -69,7 +67,8 @@ Future<void> main() async {
     }
 
     final body = jsonDecode(response.body) as Map<String, dynamic>;
-    final latestVersion = body['latest']['version'] as String;
+    final latestVersion =
+        (body['latest'] as Map<String, dynamic>)['version'] as String;
 
     return Version.parse(latestVersion);
   }

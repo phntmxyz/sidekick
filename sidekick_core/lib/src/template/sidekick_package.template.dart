@@ -41,28 +41,53 @@ class SidekickTemplate {
   }
 
   void generatePackage(SidekickTemplateProperties props) {
-    props.packageLocation.file('.gitignore')
-      ..createSync(recursive: true)
-      ..writeAsStringSync(_gitignore);
+    generateGitignore(props);
     props.packageLocation
         .file('pubspec.yaml')
         .writeAsStringSync(props.pubspecYaml);
     props.packageLocation
         .file('analysis_options.yaml')
-        .writeAsStringSync(_analysisOptionsYaml);
+        .writeAsStringSync(analysisOptionsYamlTemplate);
 
-    props.packageLocation.file('bin/main.dart')
-      ..createSync(recursive: true)
-      ..writeAsStringSync(props.binMainDart());
+    generateBinMainDart(props);
+    generateCliProjectDart(props);
     props.packageLocation.file('lib/src/commands/clean_command.dart')
       ..createSync(recursive: true)
       ..writeAsStringSync(props.cleanCommandDart());
+    generateCliSidekickDart(props);
+  }
+
+  void generateBinMainDart(SidekickTemplateProperties props) {
+    props.packageLocation.file('bin/main.dart')
+      ..createSync(recursive: true)
+      ..writeAsStringSync(props.binMainDart());
+  }
+
+  void generateCliProjectDart(SidekickTemplateProperties props) {
     props.packageLocation
         .file('lib/src/${props.name.snakeCase}_project.dart')
         .writeAsStringSync(props.cliProjectDart());
+  }
+
+  void generateCliSidekickDart(
+    SidekickTemplateProperties props, {
+    List<String> additionalImports = const [],
+    Map<String, String> additionalCommands = const {},
+  }) {
     props.packageLocation
         .file('lib/${props.name.snakeCase}_sidekick.dart')
-        .writeAsStringSync(props.cliSidekickDart());
+        .writeAsStringSync(
+          props.cliSidekickDart(
+            additionalImports: additionalImports,
+            additionalCommands: additionalCommands,
+          ),
+        );
+  }
+
+  void generateGitignore(SidekickTemplateProperties props) {
+    props.packageLocation.file('.gitignore')
+      ..createSync(recursive: true)
+      ..writeAsStringSync(gitignoreTemplate);
   }
 }
 
@@ -172,17 +197,46 @@ class ${name.titleCase}Project {
     }
   }
 
-  String cliSidekickDart() {
+  /// [additionalCommands] e.g. {'DartCommand': 'DartCommand()', 'FooCommand': 'FooCommand(a: 1,\n b: 2,\n)', ...}
+  String cliSidekickDart({
+    List<String> additionalImports = const [],
+    Map<String, String> additionalCommands = const {},
+  }) {
+    // merge default imports with additional imports
+    final defaultImports = [
+      "import 'dart:async';",
+      "",
+      "import 'package:${name.snakeCase}_sidekick/src/commands/clean_command.dart';",
+      "import 'package:${name.snakeCase}_sidekick/src/${name.snakeCase}_project.dart';",
+      "import 'package:sidekick_core/sidekick_core.dart';",
+    ];
+    final allImports = [
+      ...defaultImports,
+      for (final additionalImport in additionalImports)
+        if (!defaultImports.contains(additionalImport)) additionalImport,
+    ].join('\n');
+
+    // merge default commands with additional commands
+    final defaultCommands = {
+      if (shouldSetFlutterSdkPath) 'FlutterCommand': 'FlutterCommand()',
+      'DartCommand': 'DartCommand()',
+      'DepsCommand': 'DepsCommand()',
+      'CleanCommand': 'CleanCommand()',
+      'DartAnalyzeCommand': 'DartAnalyzeCommand()',
+      'SidekickCommand': 'SidekickCommand()',
+    };
+
+    final allCommands = {
+      ...additionalCommands,
+      ...defaultCommands,
+    }.values;
+
     final projectRoot = isMainProjectRoot != true
         ? 'runner.repository.root'
         : 'runner.mainProject!.root';
 
     return '''
-import 'dart:async';
-
-import 'package:${name.snakeCase}_sidekick/src/commands/clean_command.dart';
-import 'package:${name.snakeCase}_sidekick/src/${name.snakeCase}_project.dart';
-import 'package:sidekick_core/sidekick_core.dart';
+$allImports
 
 late ${name.titleCase}Project ${name.snakeCase}Project;
 
@@ -195,12 +249,7 @@ Future<void> run${name.titleCase}(List<String> args) async {
 
   ${name.snakeCase}Project = ${name.titleCase}Project($projectRoot);
   runner
-    ${shouldSetFlutterSdkPath ? '..addCommand(FlutterCommand())' : ''}
-    ..addCommand(DartCommand())
-    ..addCommand(DepsCommand())
-    ..addCommand(CleanCommand())
-    ..addCommand(DartAnalyzeCommand())
-    ..addCommand(SidekickCommand());
+${allCommands.map((cmd) => '    ..addCommand($cmd)').join('\n')};
 
   if (args.isEmpty) {
     print(runner.usage);
@@ -240,7 +289,9 @@ class CleanCommand extends Command {
   
 ''';
   }
+}
 
+extension PubspecYaml on SidekickTemplateProperties {
   String get pubspecYaml {
     return '''
 name: ${name.snakeCase}_sidekick
@@ -259,12 +310,11 @@ dependencies:
 
 dev_dependencies:
   lint: ^1.5.3
-
 ''';
   }
 }
 
-const String _gitignore = '''
+const String gitignoreTemplate = '''
 # Files and directories created by pub
 .dart_tool/
 .packages
@@ -276,7 +326,7 @@ build/
 doc/api/
 ''';
 
-const String _analysisOptionsYaml = '''
+const String analysisOptionsYamlTemplate = '''
 include: package:lint/analysis_options.yaml
 
 linter:
