@@ -7,6 +7,7 @@ import 'package:dartx/dartx_io.dart';
 import 'package:dcli/dcli.dart';
 import 'package:sidekick_core/src/dart_package.dart';
 import 'package:sidekick_core/src/repository.dart';
+import 'package:sidekick_core/src/sidekick_version_checker.dart';
 
 export 'dart:io' hide sleep;
 
@@ -126,10 +127,31 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
 
     final unmount = mount();
     try {
-      final result = await super.run(args);
+      final parsedArgs = parse(args);
+      final result = await super.runCommand(parsedArgs);
+      if (parsedArgs.command?.name != 'update') {
+        await _checkForUpdates();
+      }
       return result;
     } finally {
       unmount();
+    }
+  }
+
+  Future<void> _checkForUpdates() async {
+    try {
+      final isUpToDate = await const SidekickVersionChecker().isUpToDate(
+        package: 'sidekick',
+        pubspecPath: ['sidekick', 'generator_version'],
+      );
+      if (!isUpToDate) {
+        print('''
+${yellow('Update available!')}
+Run ${cyan('$cliName sidekick update')} to update.
+''');
+      }
+    } catch (_) {
+      /* ignore */
     }
   }
 }

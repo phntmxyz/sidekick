@@ -1,63 +1,83 @@
-import 'dart:convert';
+import 'dart:async';
 
-import 'package:http/http.dart';
-import 'package:pub_semver/pub_semver.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_core/src/commands/update_command.dart';
+import 'package:sidekick_core/src/sidekick_version_checker.dart';
 import 'package:test/test.dart';
 
 void main() {
   test('UpdateCommand generates new files', () async {
-    await insideFakeProjectWithSidekick((projectDir) async {
-      final sidekickDir = projectDir.directory('packages/dash');
-      final expectedFilesToGenerate = [
-        'tool/download_dart.sh',
-        'tool/install.sh',
-        'tool/run.sh',
-        'tool/sidekick_config.sh',
-        'bin/main.dart',
-        'lib/src/dash_project.dart',
-        'lib/dash_sidekick.dart',
-        'analysis_options.yaml',
-        '.gitignore',
-      ].map(sidekickDir.file);
+    final printLog = <String>[];
+    // override print to verify output
+    final spec = ZoneSpecification(
+      print: (_, __, ___, line) => printLog.add(line),
+    );
+    await Zone.current.fork(specification: spec).run(() async {
+      await insideFakeProjectWithSidekick((projectDir) async {
+        final sidekickDir = projectDir.directory('packages/dash');
+        final expectedFilesToGenerate = [
+          'tool/download_dart.sh',
+          'tool/install.sh',
+          'tool/run.sh',
+          'tool/sidekick_config.sh',
+        ].map(sidekickDir.file);
 
-      for (final file in expectedFilesToGenerate) {
-        expect(
-          !file.existsSync() || file.readAsStringSync().isEmpty,
-          isTrue,
-          reason: '${file.path} exists or is not empty',
+        for (final file in expectedFilesToGenerate) {
+          expect(
+            !file.existsSync() || file.readAsStringSync().isEmpty,
+            isTrue,
+            reason: '${file.path} exists or is not empty',
+          );
+        }
+
+        final runner = initializeSidekick(
+          name: 'dash',
+          dartSdkPath: systemDartSdkPath(),
         );
-      }
 
-      final runner = initializeSidekick(
-        name: 'dash',
-        dartSdkPath: systemDartSdkPath(),
-      );
+        runner.addCommand(UpdateCommand());
+        await runner.run(['update']);
 
-      final beforeVersion = getCurrentMinimumSidekickCoreVersion();
+        const versionChecker = SidekickVersionChecker();
 
-      runner.addCommand(UpdateCommand());
-      await runner.run(['update']);
+        final sidekickVersionAfterUpdate = versionChecker
+            .getCurrentMinimumPackageVersion(['sidekick', 'generator_version']);
+        final sidekickCoreVersionAfterUpdate = versionChecker
+            .getCurrentMinimumPackageVersion(['dependencies', 'sidekick_core']);
+        final latestSidekickVersion =
+            await versionChecker.getLatestPackageVersion('sidekick');
+        final latestSidekickCoreVersion =
+            await versionChecker.getLatestPackageVersion('sidekick_core');
 
-      final afterVersion = getCurrentMinimumSidekickCoreVersion();
-      expect(beforeVersion, lessThan(afterVersion));
-      expect(afterVersion, await getLatestSidekickCoreVersion());
+        expect(sidekickVersionAfterUpdate, latestSidekickVersion);
+        expect(sidekickCoreVersionAfterUpdate, latestSidekickCoreVersion);
 
-      for (final file in expectedFilesToGenerate) {
+        for (final file in expectedFilesToGenerate) {
+          expect(
+            file.existsSync() && file.readAsStringSync().isNotEmpty,
+            isTrue,
+            reason: '${file.path} does not exist or is empty',
+          );
+        }
+
         expect(
-          file.existsSync() && file.readAsStringSync().isNotEmpty,
-          isTrue,
-          reason: '${file.path} does not exist or is empty',
+          printLog,
+          containsAllInOrder([
+            grey(
+              'Updating sidekick CLI dash from version 0.0.0 to $latestSidekickVersion ...',
+            ),
+            green(
+              'Successfully updated sidekick CLI dash from version 0.0.0 to $latestSidekickVersion!',
+            ),
+          ]),
         );
-      }
+      });
     });
   });
 }
 
 R insideFakeProjectWithSidekick<R>(R Function(Directory projectDir) block) {
   final tempDir = Directory.systemTemp.createTempSync();
-  print(tempDir);
   'git init ${tempDir.path}'.run;
 
   tempDir.file('pubspec.yaml')
@@ -77,7 +97,10 @@ environment:
   sdk: '>=2.14.0 <3.0.0'
 
 dependencies:
-  sidekick_core: 0.7.1
+  sidekick_core: 0.0.0
+
+sidekick:
+  generator_version: 0.0.0
 ''');
 
   final fakeSidekickLibDir = fakeSidekickDir.directory('lib')..createSync();
@@ -102,18 +125,6 @@ dependencies:
   );
 }
 
-Version getCurrentMinimumSidekickCoreVersion() {
-  final regEx = RegExp(
-    '\n  sidekick_core:\\s*[\'"\\^<>= ]*(\\d+\\.\\d+\\.\\d+(?:[+-]\\S+)?)',
-  );
-  final pubspec = Repository.requiredSidekickPackage.pubspec.readAsStringSync();
-
-  final minVersion =
-      regEx.allMatches(pubspec).map((e) => e.group(1)).whereNotNull().single;
-
-  return Version.parse(minVersion);
-}
-
 /// True when dependencies should be linked to local sidekick dependencies
 final bool shouldUseLocalDeps = env['SIDEKICK_PUB_DEPS'] != 'true';
 
@@ -134,19 +145,4 @@ dependency_overrides:
   ''',
     mode: FileMode.append,
   );
-}
-
-Future<Version> getLatestSidekickCoreVersion() async {
-  final response =
-      await get(Uri.parse('https://pub.dev/api/packages/sidekick_core'));
-
-  if (response.statusCode != HttpStatus.ok) {
-    throw "pub.dev didn't respond";
-  }
-
-  final body = jsonDecode(response.body) as Map<String, dynamic>;
-  final latestVersion =
-      (body['latest'] as Map<String, dynamic>)['version'] as String;
-
-  return Version.parse(latestVersion);
 }

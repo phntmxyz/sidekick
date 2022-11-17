@@ -1,3 +1,4 @@
+import 'package:pub_semver/pub_semver.dart';
 import 'package:recase/recase.dart';
 
 import 'package:sidekick_core/sidekick_core.dart';
@@ -120,6 +121,9 @@ class SidekickTemplateProperties {
   /// Path to main project, relative from repo root
   final String? mainProjectPath;
 
+  /// The version of the sidekick CLI generating this template
+  final Version sidekickVersion;
+
   const SidekickTemplateProperties({
     required this.name,
     required this.entrypointLocation,
@@ -128,6 +132,7 @@ class SidekickTemplateProperties {
     required this.shouldSetFlutterSdkPath,
     required this.isMainProjectRoot,
     required this.hasNestedPackagesPath,
+    required this.sidekickVersion,
   });
 }
 
@@ -315,6 +320,10 @@ dependencies:
 
 dev_dependencies:
   lint: ^1.5.3
+
+# generated code, do not edit this manually
+sidekick:
+  generator_version: ${sidekickVersion.canonicalizedVersion}
 ''';
   }
 }

@@ -1,3 +1,4 @@
+import 'package:pub_semver/pub_semver.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:test/test.dart';
 
@@ -16,6 +17,7 @@ void main() {
         shouldSetFlutterSdkPath: false,
         isMainProjectRoot: true,
         hasNestedPackagesPath: false,
+        sidekickVersion: Version.none,
       );
       SidekickTemplate().generate(props);
 
@@ -36,6 +38,7 @@ void main() {
         shouldSetFlutterSdkPath: false,
         isMainProjectRoot: true,
         hasNestedPackagesPath: false,
+        sidekickVersion: Version.none,
       );
       SidekickTemplate().generate(props);
 
