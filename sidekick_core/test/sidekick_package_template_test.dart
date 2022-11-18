@@ -12,7 +12,7 @@ void main() {
   });
 
   tearDown(() {
-    //tempDir.deleteSync(recursive: true);
+    tempDir.deleteSync(recursive: true);
   });
 
   for (final cliName in const ['dashi', 'foo_bar']) {
