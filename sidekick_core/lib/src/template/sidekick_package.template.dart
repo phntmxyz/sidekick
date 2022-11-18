@@ -138,10 +138,9 @@ class ${name.titleCase}Project extends DartPackage {
         .whereType<Directory>()
         .mapNotNull((it) => DartPackage.fromDirectory(it))
         .toList()
-        ${isMainProjectRoot ? '..add(this)' : ''};
+      ${isMainProjectRoot ? '..add(this)' : ''};
   }
 }
-    
 ''';
     } else {
       return '''
@@ -214,7 +213,6 @@ Future<void> run${name.titleCase}(List<String> args) async {
     exit(64); // usage error
   }
 }
-
 ''';
   }
 
@@ -237,7 +235,6 @@ class CleanCommand extends Command {
     print('✔️Cleaned project');
   }
 }
-  
 ''';
   }
 
