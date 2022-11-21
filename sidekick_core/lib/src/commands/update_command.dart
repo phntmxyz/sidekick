@@ -59,23 +59,6 @@ Future<void> main(List<String> args) async {
         ],
         progress: Progress.print(),
       );
-      sidekickVersionChecker.updateVersionConstraint(
-        package: 'cli_version',
-        newMinimumVersion: latestSidekickCoreVersion,
-        pinVersion: true,
-      );
-      print(
-        green(
-          'Successfully updated sidekick CLI $cliName from version $currentSidekickCliVersion to $latestSidekickCoreVersion!',
-        ),
-      );
-    } catch (_) {
-      print(
-        red(
-          'There was an error updating sidekick CLI $cliName from version $currentSidekickCliVersion to $latestSidekickCoreVersion.',
-        ),
-      );
-      rethrow;
     } finally {
       updateScript.deleteSync();
     }

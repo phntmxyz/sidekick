@@ -68,8 +68,8 @@ void main() {
       );
     });
 
-    test('repository returns while running run', () {
-      insideFakeProjectWithSidekick((dir) {
+    test('repository returns while running run', () async {
+      await insideFakeProjectWithSidekick((dir) async {
         final runner = initializeSidekick(name: 'dash');
         bool called = false;
         runner.addCommand(
@@ -81,7 +81,7 @@ void main() {
             },
           ),
         );
-        runner.run(['inside']);
+        await runner.run(['inside']);
         expect(called, isTrue);
       });
     });
@@ -97,8 +97,8 @@ void main() {
         ),
       );
     });
-    test('cliName returns while running run', () {
-      insideFakeProjectWithSidekick((dir) {
+    test('cliName returns while running run', () async {
+      await insideFakeProjectWithSidekick((dir) async {
         final runner = initializeSidekick(name: 'dash');
         bool called = false;
         runner.addCommand(
@@ -110,7 +110,7 @@ void main() {
             },
           ),
         );
-        runner.run(['inside']);
+        await runner.run(['inside']);
         expect(called, isTrue);
       });
     });
@@ -256,7 +256,15 @@ R insideFakeProjectWithSidekick<R>(R Function(Directory projectDir) block) {
 
   fakeSidekickDir.file('pubspec.yaml')
     ..createSync()
-    ..writeAsStringSync('name: dash_sdk\n');
+    ..writeAsStringSync('''
+name: dash_sdk
+
+dependencies:
+  sidekick_core: 0.0.0
+
+sidekick:
+  cli_version: 0.0.0    
+''');
   fakeSidekickDir.directory('lib').createSync();
 
   env['SIDEKICK_PACKAGE_HOME'] = fakeSidekickDir.absolute.path;

@@ -91,8 +91,11 @@ class SidekickTemplateProperties {
   /// Path to main project, relative from repo root
   final String? mainProjectPath;
 
-  /// The version of the sidekick CLI generating this template
-  final Version sidekickVersion;
+  /// The version of the generated sidekick CLI
+  ///
+  /// This is set to the version of sidekick_core because sidekick_core contains
+  /// the template used for generation of the CLI.
+  final Version sidekickCliVersion;
 
   const SidekickTemplateProperties({
     required this.name,
@@ -102,7 +105,7 @@ class SidekickTemplateProperties {
     required this.shouldSetFlutterSdkPath,
     required this.isMainProjectRoot,
     required this.hasNestedPackagesPath,
-    required this.sidekickVersion,
+    required this.sidekickCliVersion,
   });
 }
 
@@ -268,7 +271,7 @@ dev_dependencies:
 
 # generated code, do not edit this manually
 sidekick:
-  cli_version: ${sidekickVersion.canonicalizedVersion}
+  cli_version: ${sidekickCliVersion.canonicalizedVersion}
 ''';
   }
 }

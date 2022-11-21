@@ -27,7 +27,7 @@ void main() {
         shouldSetFlutterSdkPath: true,
         isMainProjectRoot: true,
         hasNestedPackagesPath: true,
-        sidekickVersion: Version.none,
+        sidekickCliVersion: Version.none,
       );
 
       template.generate(props);

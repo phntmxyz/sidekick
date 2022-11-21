@@ -17,7 +17,7 @@ void main() {
         shouldSetFlutterSdkPath: false,
         isMainProjectRoot: true,
         hasNestedPackagesPath: false,
-        sidekickVersion: Version.none,
+        sidekickCliVersion: Version.none,
       );
       SidekickTemplate().generate(props);
 
@@ -38,7 +38,7 @@ void main() {
         shouldSetFlutterSdkPath: false,
         isMainProjectRoot: true,
         hasNestedPackagesPath: false,
-        sidekickVersion: Version.none,
+        sidekickCliVersion: Version.none,
       );
       SidekickTemplate().generate(props);
 
