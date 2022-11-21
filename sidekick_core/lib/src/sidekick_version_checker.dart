@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:deep_pick/deep_pick.dart';
 import 'package:http/http.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:sidekick_core/sidekick_core.dart';
@@ -68,7 +67,8 @@ class SidekickVersionChecker {
     }
 
     final latestVersion =
-        pick(jsonDecode(response.body), 'latest', 'version').asStringOrThrow();
+        ((jsonDecode(response.body) as Map<String, dynamic>)['latest']
+            as Map<String, dynamic>)['version'] as String;
 
     return Version.parse(latestVersion);
   }
@@ -96,11 +96,20 @@ class SidekickVersionChecker {
   }
 
   String _readFromPubspecYaml(List<Object> path) {
-    final yaml =
-        loadYaml(Repository.requiredSidekickPackage.pubspec.readAsStringSync());
-    // convert yaml to json so `pickDeep` can be used to read any yaml value
-    final pubspec = jsonDecode(jsonEncode(yaml));
+    if (path.isEmpty) {
+      throw 'Need at least one key in path parameter, but it was empty.';
+    }
 
-    return pickDeep(pubspec, path).asStringOrThrow();
+    final pubspec =
+        loadYaml(Repository.requiredSidekickPackage.pubspec.readAsStringSync());
+
+    // ignore: avoid_dynamic_calls
+    dynamic current = pubspec[path.first];
+    for (final key in path.sublist(1)) {
+      // ignore: avoid_dynamic_calls
+      current = current[key];
+    }
+
+    return current as String;
   }
 }
