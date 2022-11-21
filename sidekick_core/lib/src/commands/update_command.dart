@@ -25,14 +25,15 @@ class UpdateCommand extends Command {
     // update sidekick_core to load the latest update script
     await sidekickVersionChecker
         .updateVersionConstraintToLatest('sidekick_core');
-    dart(['pub', 'get'], workingDirectory: Repository.requiredCliPackage);
+    sidekickDartRuntime
+        .dart(['pub', 'get'], workingDirectory: Repository.requiredCliPackage);
 
     // generate new shell scripts
 
     // call the latest update script
     // the process running this command uses the old dependency of sidekick_core
     // and its dependencies can't be changed at runtime
-    // as a workaround, a new process is started (with `dart([updateScript.path])`)
+    // as a workaround, a new process is started (with `sidekickDartRuntime.dart([updateScript.path])`)
     // which contains the latest sidekick_core dependency
     // and thus the latest update script
     final updateScript =
@@ -45,7 +46,7 @@ Future<void> main(List<String> args) async {
 }
 ''');
     try {
-      dart(
+      sidekickDartRuntime.dart(
         [
           updateScript.path,
           Repository.requiredSidekickPackage.cliName,

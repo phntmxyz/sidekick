@@ -5,6 +5,8 @@ import 'package:sidekick_core/src/commands/update_command.dart';
 import 'package:sidekick_core/src/sidekick_version_checker.dart';
 import 'package:test/test.dart';
 
+import 'util/local_testing.dart';
+
 void main() {
   test('UpdateCommand generates new files', () async {
     final printLog = <String>[];
@@ -113,6 +115,8 @@ sidekick:
   env['SIDEKICK_PACKAGE_HOME'] = fakeSidekickDir.absolute.path;
   env['SIDEKICK_ENTRYPOINT_HOME'] = tempDir.absolute.path;
 
+  overrideSidekickDartRuntimeWithSystemDartRuntime(fakeSidekickDir);
+
   addTearDown(() {
     tempDir.deleteSync(recursive: true);
     env['SIDEKICK_PACKAGE_HOME'] = null;
@@ -122,27 +126,5 @@ sidekick:
   return IOOverrides.runZoned(
     () => block(tempDir),
     getCurrentDirectory: () => tempDir,
-  );
-}
-
-/// True when dependencies should be linked to local sidekick dependencies
-final bool shouldUseLocalDeps = env['SIDEKICK_PUB_DEPS'] != 'true';
-
-/// Changes the sidekick_core dependency to a local override
-void overrideSidekickCoreWithLocalPath(Directory package) {
-  if (!shouldUseLocalDeps) return;
-  print('Overriding sidekick_core dependency to local');
-  final pubspec = package.file("pubspec.yaml");
-  // assuming cwd when running those tests is in the sidekick package
-  final corePath = canonicalize('../sidekick_core');
-  pubspec.writeAsStringSync(
-    '''
-
-dependency_overrides:
-  sidekick_core:
-    path: $corePath
-
-  ''',
-    mode: FileMode.append,
   );
 }

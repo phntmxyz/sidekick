@@ -1,8 +1,9 @@
 import 'package:dcli/dcli.dart';
+import 'package:pub_semver/pub_semver.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:test/test.dart';
 
-import 'local_testing.dart';
+import 'util/local_testing.dart';
 
 void main() {
   late Directory tempDir;
@@ -26,6 +27,7 @@ void main() {
         shouldSetFlutterSdkPath: true,
         isMainProjectRoot: true,
         hasNestedPackagesPath: true,
+        sidekickVersion: Version.none,
       );
 
       template.generate(props);
