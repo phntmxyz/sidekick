@@ -268,7 +268,7 @@ dev_dependencies:
 
 # generated code, do not edit this manually
 sidekick:
-  generator_version: ${sidekickVersion.canonicalizedVersion}
+  cli_version: ${sidekickVersion.canonicalizedVersion}
 ''';
   }
 }

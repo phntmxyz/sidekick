@@ -43,7 +43,7 @@ void main() {
         const versionChecker = SidekickVersionChecker();
 
         final sidekickVersionAfterUpdate = versionChecker
-            .getCurrentMinimumPackageVersion(['sidekick', 'generator_version']);
+            .getCurrentMinimumPackageVersion(['sidekick', 'cli_version']);
         final sidekickCoreVersionAfterUpdate = versionChecker
             .getCurrentMinimumPackageVersion(['dependencies', 'sidekick_core']);
         final latestSidekickVersion =
@@ -102,7 +102,7 @@ dependencies:
   sidekick_core: 0.0.0
 
 sidekick:
-  generator_version: 0.0.0
+  cli_version: 0.0.0
 ''');
 
   final fakeSidekickLibDir = fakeSidekickDir.directory('lib')..createSync();

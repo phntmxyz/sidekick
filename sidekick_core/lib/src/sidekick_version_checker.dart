@@ -13,7 +13,7 @@ class SidekickVersionChecker {
   ///
   /// [pubspecPath] can be passed to override the default behavior of reading
   /// the current package version from the pubspec.yaml at ['dependencies'][package]
-  /// E.g. ['dev_dependencies', 'some_dev_dependency'] or ['sidekick', 'generator_version']
+  /// E.g. ['dev_dependencies', 'some_dev_dependency'] or ['sidekick', 'cli_version']
   Future<bool> isUpToDate({
     required String package,
     List<String>? pubspecPath,
@@ -78,7 +78,7 @@ class SidekickVersionChecker {
   /// [pubspecPath] is the path from which to retrieve the version in pubspec.yaml, e.g.
   /// - ['dependencies', 'sidekick_core']
   /// - ['dev_dependencies', 'lint']
-  /// - ['sidekick', 'generator_version']
+  /// - ['sidekick', 'cli_version']
   Version getCurrentMinimumPackageVersion(List<String> pubspecPath) {
     final versionConstraint = _readFromPubspecYaml(pubspecPath);
 

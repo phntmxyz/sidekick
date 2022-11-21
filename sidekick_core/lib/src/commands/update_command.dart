@@ -15,7 +15,7 @@ class UpdateCommand extends Command {
     final latestSidekickVersion =
         await sidekickVersionChecker.getLatestPackageVersion('sidekick');
     final currentSidekickVersion = sidekickVersionChecker
-        .getCurrentMinimumPackageVersion(['sidekick', 'generator_version']);
+        .getCurrentMinimumPackageVersion(['sidekick', 'cli_version']);
     if (latestSidekickVersion == currentSidekickVersion) {
       print('No need to update because you are already using the '
           'latest sidekick version.');
@@ -56,7 +56,7 @@ Future<void> main(List<String> args) async {
         progress: Progress.print(),
       );
       sidekickVersionChecker.updateVersionConstraint(
-        package: 'generator_version',
+        package: 'cli_version',
         newMinimumVersion: latestSidekickVersion,
         pinVersion: true,
       );
