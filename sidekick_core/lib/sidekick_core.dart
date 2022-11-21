@@ -127,6 +127,7 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
 
     final unmount = mount();
     try {
+      _checkCliVersionIntegrity();
       final parsedArgs = parse(args);
       final result = await super.runCommand(parsedArgs);
       if (parsedArgs.command?.name != 'update') {
@@ -152,6 +153,20 @@ Run ${cyan('$cliName sidekick update')} to update.
       }
     } catch (_) {
       /* ignore */
+    }
+  }
+
+  void _checkCliVersionIntegrity() {
+    const versionChecker = SidekickVersionChecker();
+    final sidekickCoreVersion = versionChecker
+        .getCurrentMinimumPackageVersion(['dependencies', 'sidekick_core']);
+    final sidekickCliVersion = versionChecker
+        .getCurrentMinimumPackageVersion(['sidekick', 'cli_version']);
+
+    if (sidekickCliVersion != sidekickCoreVersion) {
+      throw 'You probably updated the sidekick_core dependency of your '
+          'CLI package manually.\n'
+          'Please run ${cyan('$cliName sidekick update')} to repair your CLI.';
     }
   }
 }
