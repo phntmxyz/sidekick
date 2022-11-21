@@ -112,7 +112,7 @@ extension on SidekickTemplateProperties {
 import 'package:${name.snakeCase}_sidekick/${name.snakeCase}_sidekick.dart';
 
 Future<void> main(List<String> arguments) async {
-  await run${name.titleCase}(arguments);
+  await run${name.pascalCase}(arguments);
 }
 ''';
   }
@@ -122,13 +122,13 @@ Future<void> main(List<String> arguments) async {
       return '''
 import 'package:sidekick_core/sidekick_core.dart';
 
-class ${name.titleCase}Project extends DartPackage {
-  factory ${name.titleCase}Project(Directory root) {
+class ${name.pascalCase}Project extends DartPackage {
+  factory ${name.pascalCase}Project(Directory root) {
     final package = DartPackage.fromDirectory(root)!;
-    return ${name.titleCase}Project._(package.root, package.name);
+    return ${name.pascalCase}Project._(package.root, package.name);
   }
 
-  ${name.titleCase}Project._(Directory root, String name) : super.flutter(root, name);
+  ${name.pascalCase}Project._(Directory root, String name) : super.flutter(root, name);
 
   /// packages
 
@@ -143,17 +143,16 @@ class ${name.titleCase}Project extends DartPackage {
         .whereType<Directory>()
         .mapNotNull((it) => DartPackage.fromDirectory(it))
         .toList()
-        ${isMainProjectRoot ? '..add(this)' : ''};
+      ${isMainProjectRoot ? '..add(this)' : ''};
   }
 }
-    
 ''';
     } else {
       return '''
 import 'package:sidekick_core/sidekick_core.dart';
 
-class ${name.titleCase}Project {
-  ${name.titleCase}Project(this.root);
+class ${name.pascalCase}Project {
+  ${name.pascalCase}Project(this.root);
 
   final Directory root;
   /// packages
@@ -198,16 +197,16 @@ import 'package:${name.snakeCase}_sidekick/src/commands/clean_command.dart';
 import 'package:${name.snakeCase}_sidekick/src/${name.snakeCase}_project.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 
-late ${name.titleCase}Project ${name.snakeCase}Project;
+late ${name.pascalCase}Project ${name.snakeCase}Project;
 
-Future<void> run${name.titleCase}(List<String> args) async {
+Future<void> run${name.pascalCase}(List<String> args) async {
   final runner = initializeSidekick(
     name: '${name.snakeCase}',
     ${mainProjectPath != null ? "mainProjectPath: '$mainProjectPath'," : ''}
     ${shouldSetFlutterSdkPath ? 'flutterSdkPath: systemFlutterSdkPath(),' : 'dartSdkPath: systemDartSdkPath(),'}
   );
 
-  ${name.snakeCase}Project = ${name.titleCase}Project($projectRoot);
+  ${name.snakeCase}Project = ${name.pascalCase}Project($projectRoot);
   runner
 ${commands.map((cmd) => '    ..addCommand($cmd)').join('\n')};
 
@@ -223,7 +222,6 @@ ${commands.map((cmd) => '    ..addCommand($cmd)').join('\n')};
     exit(64); // usage error
   }
 }
-
 ''';
   }
 
@@ -246,7 +244,6 @@ class CleanCommand extends Command {
     print('✔️Cleaned project');
   }
 }
-  
 ''';
   }
 
@@ -294,4 +291,9 @@ include: package:lint/analysis_options.yaml
 linter:
   rules:
     avoid_print: false
+
+analyzer:
+  exclude:
+    - build/**
+
 ''';

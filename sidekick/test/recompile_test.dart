@@ -60,12 +60,14 @@ void main() {
         );
         final stdout = await updateProcess.stdoutStream().join('\n');
         printOnFailure(stdout);
-        printOnFailure(await updateProcess.stderrStream().join('\n'));
+        final stderr = await updateProcess.stderrStream().join('\n');
+        printOnFailure(stderr);
         updateProcess.shouldExit(0);
-        expect(stdout, contains('Installing dashi command line application'));
-        expect(stdout, contains('Getting dependencies'));
-        expect(stdout, contains('Bundling assets'));
-        expect(stdout, contains('Compiling sidekick cli'));
+        expect(stderr, contains('Installing dashi command line application'));
+        expect(stderr, contains('Getting dependencies'));
+        expect(stderr, contains('Bundling assets'));
+        expect(stderr, contains('Compiling sidekick cli'));
+        expect(stderr, contains('Success!'));
       },
       timeout: const Timeout(Duration(minutes: 5)),
     );
