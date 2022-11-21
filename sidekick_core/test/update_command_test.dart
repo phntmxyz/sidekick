@@ -46,12 +46,10 @@ void main() {
             .getCurrentMinimumPackageVersion(['sidekick', 'cli_version']);
         final sidekickCoreVersionAfterUpdate = versionChecker
             .getCurrentMinimumPackageVersion(['dependencies', 'sidekick_core']);
-        final latestSidekickVersion =
-            await versionChecker.getLatestPackageVersion('sidekick');
         final latestSidekickCoreVersion =
             await versionChecker.getLatestPackageVersion('sidekick_core');
 
-        expect(sidekickVersionAfterUpdate, latestSidekickVersion);
+        expect(sidekickVersionAfterUpdate, latestSidekickCoreVersion);
         expect(sidekickCoreVersionAfterUpdate, latestSidekickCoreVersion);
 
         for (final file in expectedFilesToGenerate) {
@@ -66,10 +64,10 @@ void main() {
           printLog,
           containsAllInOrder([
             grey(
-              'Updating sidekick CLI dash from version 0.0.0 to $latestSidekickVersion ...',
+              'Updating sidekick CLI dash from version 0.0.0 to $latestSidekickCoreVersion ...',
             ),
             green(
-              'Successfully updated sidekick CLI dash from version 0.0.0 to $latestSidekickVersion!',
+              'Successfully updated sidekick CLI dash from version 0.0.0 to $latestSidekickCoreVersion!',
             ),
           ]),
         );

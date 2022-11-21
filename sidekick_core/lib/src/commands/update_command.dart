@@ -12,13 +12,17 @@ class UpdateCommand extends Command {
   @override
   Future<void> run() async {
     const sidekickVersionChecker = SidekickVersionChecker();
-    final latestSidekickVersion =
-        await sidekickVersionChecker.getLatestPackageVersion('sidekick');
-    final currentSidekickVersion = sidekickVersionChecker
+    // to remember which sidekick_core version the sidekick CLI was generated
+    // with, that sidekick_core version is written into the CLI's pubspec.yaml
+    // at the path ['sidekick', 'cli_version']
+
+    final latestSidekickCoreVersion =
+        await sidekickVersionChecker.getLatestPackageVersion('sidekick_core');
+    final currentSidekickCliVersion = sidekickVersionChecker
         .getCurrentMinimumPackageVersion(['sidekick', 'cli_version']);
-    if (latestSidekickVersion == currentSidekickVersion) {
+    if (latestSidekickCoreVersion == currentSidekickCliVersion) {
       print('No need to update because you are already using the '
-          'latest sidekick version.');
+          'latest sidekick cli version.');
       return;
     }
 
@@ -50,25 +54,25 @@ Future<void> main(List<String> args) async {
         [
           updateScript.path,
           Repository.requiredSidekickPackage.cliName,
-          currentSidekickVersion.canonicalizedVersion,
-          latestSidekickVersion.canonicalizedVersion,
+          currentSidekickCliVersion.canonicalizedVersion,
+          latestSidekickCoreVersion.canonicalizedVersion,
         ],
         progress: Progress.print(),
       );
       sidekickVersionChecker.updateVersionConstraint(
         package: 'cli_version',
-        newMinimumVersion: latestSidekickVersion,
+        newMinimumVersion: latestSidekickCoreVersion,
         pinVersion: true,
       );
       print(
         green(
-          'Successfully updated sidekick CLI $cliName from version $currentSidekickVersion to $latestSidekickVersion!',
+          'Successfully updated sidekick CLI $cliName from version $currentSidekickCliVersion to $latestSidekickCoreVersion!',
         ),
       );
     } catch (_) {
       print(
         red(
-          'There was an error updating sidekick CLI $cliName from version $currentSidekickVersion to $latestSidekickVersion.',
+          'There was an error updating sidekick CLI $cliName from version $currentSidekickCliVersion to $latestSidekickCoreVersion.',
         ),
       );
       rethrow;
