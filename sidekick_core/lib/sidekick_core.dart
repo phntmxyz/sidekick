@@ -127,10 +127,12 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
 
     final unmount = mount();
     try {
+      // throw if the user didn't fully update their CLI
       _checkCliVersionIntegrity();
       final parsedArgs = parse(args);
       final result = await super.runCommand(parsedArgs);
       if (parsedArgs.command?.name != 'update') {
+        // print info if CLI update is available
         await _checkForUpdates();
       }
       return result;
@@ -156,6 +158,9 @@ Run ${cyan('$cliName sidekick update')} to update.
     }
   }
 
+  /// This method throws if the user manually updated the sidekick_core
+  /// minimum version of their CLI and that version doesn't match with the
+  /// CLI version listed in the pubspec at the path ['sidekick', 'cli_version']
   void _checkCliVersionIntegrity() {
     const versionChecker = SidekickVersionChecker();
     final sidekickCoreVersion = versionChecker
