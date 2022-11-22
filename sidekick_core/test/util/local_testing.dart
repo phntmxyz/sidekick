@@ -47,10 +47,16 @@ void overrideSidekickDartRuntimeWithSystemDartRuntime(Directory sidekick) {
 /// - [overrideSidekickDartWithSystemDart] whether to link [SidekickDartRuntime]
 ///   to [systemDartSdkPath]. Useful when testing a command which depends
 ///   on [SidekickDartRuntime.dart]
+/// - [sidekickCoreVersion] the dependency of sidekick_core in the pubspec.
+///   Default value: 0.0.0
+/// - [sidekickCliVersion] sidekick: cli_version: <sidekickCliVersion> in the
+///   pubspec. Default value: 0.0.0
 R insideFakeProjectWithSidekick<R>({
   required R Function(Directory projectDir) callback,
   bool overrideSidekickCoreWithLocalDependency = false,
   bool overrideSidekickDartWithSystemDart = false,
+  String sidekickCoreVersion = "0.0.0",
+  String sidekickCliVersion = "0.0.0",
 }) {
   final tempDir = Directory.systemTemp.createTempSync();
   'git init ${tempDir.path}'.run;
@@ -72,10 +78,10 @@ environment:
   sdk: '>=2.14.0 <3.0.0'
 
 dependencies:
-  sidekick_core: 0.0.0
+  sidekick_core: $sidekickCoreVersion
 
 sidekick:
-  cli_version: 0.0.0
+  cli_version: $sidekickCliVersion
 ''');
 
   final fakeSidekickLibDir = fakeSidekickDir.directory('lib')..createSync();
@@ -100,7 +106,7 @@ sidekick:
     env['SIDEKICK_ENTRYPOINT_HOME'] = null;
   });
 
-  return IOOverrides.runZoned(
+  return IOOverrides.runZoned<R>(
     () => callback(tempDir),
     getCurrentDirectory: () => tempDir,
   );

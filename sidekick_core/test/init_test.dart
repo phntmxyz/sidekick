@@ -178,7 +178,7 @@ void main() {
 
   group('sdk paths', () {
     group('are set correctly given a', () {
-      test('absolute sdk path', () {
+      test('absolute sdk path', () async {
         insideFakeProjectWithSidekick(
           callback: (dir) {
             final fakeDartSdk = dir.directory('my-dart-sdk')..createSync();
@@ -197,7 +197,7 @@ void main() {
         );
       });
 
-      test('relative sdk path when initializing inside of project', () {
+      test('relative sdk path when initializing inside of project', () async {
         insideFakeProjectWithSidekick(
           callback: (dir) {
             final fakeDartSdk = dir.directory('my-dart-sdk')..createSync();
@@ -216,7 +216,7 @@ void main() {
         );
       });
 
-      test('relative sdk path when initializing outside of project', () {
+      test('relative sdk path when initializing outside of project', () async {
         void outsideProject(void Function() callback) {
           final tempDir = Directory.systemTemp.createTempSync();
           addTearDown(() => tempDir.deleteSync(recursive: true));
@@ -245,7 +245,7 @@ void main() {
       });
     });
 
-    test('error is thrown when invalid sdkPaths are given', () {
+    test('error is thrown when invalid sdkPaths are given', () async {
       insideFakeProjectWithSidekick(
         callback: (dir) {
           const doesntExist = 'bielefeld';
