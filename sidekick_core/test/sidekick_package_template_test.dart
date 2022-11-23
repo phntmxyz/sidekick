@@ -35,9 +35,15 @@ void main() {
       final generatedFiles = tempDir
           .listSync(recursive: true)
           .whereType<File>()
-          .where((file) => file.readAsStringSync().isNotEmpty)
+          .where((file) => file.readAsStringSync().isNotEmpty);
+      final generatedFilePaths = generatedFiles
           .map((e) => relative(e.path, from: tempDir.path))
           .toSet();
+      final generatedExecutableFilePaths = generatedFiles
+          .where((it) => it.statSync().modeString() == 'rwxr-xr-x')
+          .map((e) => relative(e.path, from: tempDir.path))
+          .toSet();
+
       final expectedFiles = {
         cliName,
         '.gitignore',
@@ -52,8 +58,16 @@ void main() {
         'tool/download_dart.sh',
         'tool/sidekick_config.sh'
       };
+      final expectedExecutables = {
+        cliName,
+        'tool/install.sh',
+        'tool/run.sh',
+        'tool/download_dart.sh',
+        'tool/sidekick_config.sh',
+      };
 
-      expect(generatedFiles, expectedFiles);
+      expect(generatedFilePaths, expectedFiles);
+      expect(generatedExecutableFilePaths, expectedExecutables);
 
       run('dart pub get', workingDirectory: tempDir.path);
       if (analyzeGeneratedCode) {
