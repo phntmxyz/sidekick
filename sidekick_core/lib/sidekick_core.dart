@@ -169,9 +169,7 @@ Run ${cyan('$cliName sidekick update')} to update.
         .getCurrentMinimumPackageVersion(['sidekick', 'cli_version']);
 
     if (sidekickCliVersion != sidekickCoreVersion) {
-      throw 'You probably updated the sidekick_core dependency of your '
-          'CLI package manually.\n'
-          'Please run ${cyan('$cliName sidekick update')} to repair your CLI.';
+      throw OutdatedSidekickToolsException();
     }
   }
 }
@@ -306,5 +304,22 @@ class OutOfCommandRunnerScopeException implements Exception {
   @override
   String toString() {
     return "OutOfCommandRunnerScopeException{message: $message}";
+  }
+}
+
+/// The sidekick_core version is incompatible with the bash scripts in /tool and entrypoint
+///
+/// Please update your CLI with `sidekick update`
+class OutdatedSidekickToolsException implements Exception {
+  String get message =>
+      'You probably updated the sidekick_core dependency of your '
+      'CLI package manually.\n'
+      'Please run ${cyan('$cliName sidekick update')} to repair your CLI.;';
+
+  OutdatedSidekickToolsException();
+
+  @override
+  String toString() {
+    return "OutdatedSidekickToolsException{message: $message}";
   }
 }
