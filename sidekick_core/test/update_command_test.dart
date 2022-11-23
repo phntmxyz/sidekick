@@ -16,9 +16,7 @@ void main() {
     );
     await Zone.current.fork(specification: spec).run(() async {
       await insideFakeProjectWithSidekick(
-        overrideSidekickCoreWithLocalDependency: true,
-        overrideSidekickDartWithSystemDart: true,
-        callback: (projectDir) async {
+        (projectDir) async {
           final sidekickDir = projectDir.directory('packages/dash');
           final expectedFilesToGenerate = [
             'tool/download_dart.sh',
@@ -77,6 +75,8 @@ void main() {
             ]),
           );
         },
+        overrideSidekickCoreWithLocalDependency: true,
+        overrideSidekickDartWithSystemDart: true,
       );
     });
   });

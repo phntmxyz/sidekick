@@ -51,8 +51,8 @@ void overrideSidekickDartRuntimeWithSystemDartRuntime(Directory sidekick) {
 ///   Default value: 0.0.0
 /// - [sidekickCliVersion] sidekick: cli_version: <sidekickCliVersion> in the
 ///   pubspec. Default value: 0.0.0
-R insideFakeProjectWithSidekick<R>({
-  required R Function(Directory projectDir) callback,
+R insideFakeProjectWithSidekick<R>(
+  R Function(Directory projectDir) callback, {
   bool overrideSidekickCoreWithLocalDependency = false,
   bool overrideSidekickDartWithSystemDart = false,
   String sidekickCoreVersion = "0.0.0",

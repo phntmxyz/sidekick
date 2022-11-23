@@ -7,9 +7,7 @@ void main() {
   test('throws when CLI version does not match sidekick_core version',
       () async {
     await insideFakeProjectWithSidekick(
-      sidekickCoreVersion: "1.1.0",
-      sidekickCliVersion: "1.0.0",
-      callback: (tempDir) async {
+      (tempDir) async {
         final runner = initializeSidekick(
           name: 'dash',
         );
@@ -26,6 +24,8 @@ void main() {
         });
         expect(errorOccured, isTrue);
       },
+      sidekickCoreVersion: "1.1.0",
+      sidekickCliVersion: "1.0.0",
     );
   });
 }
