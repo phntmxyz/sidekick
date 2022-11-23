@@ -1,7 +1,6 @@
 // ignore_for_file: avoid_classes_with_only_static_members
 
 import 'package:sidekick_core/sidekick_core.dart';
-import 'package:sidekick_plugin_installer/sidekick_plugin_installer.dart';
 
 /// Global parameters passed from sidekick into the plugin installer
 class PluginContext {
