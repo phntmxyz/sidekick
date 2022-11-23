@@ -81,6 +81,9 @@ class SidekickVersionChecker {
   /// - ['sidekick', 'cli_version']
   Version getCurrentMinimumPackageVersion(List<String> pubspecPath) {
     final versionConstraint = _readFromPubspecYaml(pubspecPath);
+    if (versionConstraint == null) {
+      return Version.none;
+    }
 
     final versionConstraintRegEx = RegExp(
       '[\'"\\^<>= ]*(\\d+\\.\\d+\\.\\d+(?:[+-]\\S+)?)',
@@ -95,7 +98,7 @@ class SidekickVersionChecker {
     return Version.parse(minVersion);
   }
 
-  String _readFromPubspecYaml(List<Object> path) {
+  String? _readFromPubspecYaml(List<Object> path) {
     if (path.isEmpty) {
       throw 'Need at least one key in path parameter, but it was empty.';
     }
@@ -103,13 +106,15 @@ class SidekickVersionChecker {
     final pubspec =
         loadYaml(Repository.requiredSidekickPackage.pubspec.readAsStringSync());
 
-    // ignore: avoid_dynamic_calls
-    dynamic current = pubspec[path.first];
+    Object? current = pubspec[path.first];
     for (final key in path.sublist(1)) {
-      // ignore: avoid_dynamic_calls
-      current = current[key];
+      if (current is Map && current != null) {
+        current = current[key];
+      } else {
+        return null;
+      }
     }
 
-    return current as String;
+    return current as String?;
   }
 }
