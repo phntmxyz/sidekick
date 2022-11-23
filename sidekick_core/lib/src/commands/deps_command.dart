@@ -37,7 +37,7 @@ class DepsCommand extends Command {
     }
 
     final errorBuffer = StringBuffer();
-    for (final package in allPackages) {
+    for (final package in allPackages.filter((it) => !exclude.contains(it))) {
       try {
         _getDependencies(package);
       } catch (e, stack) {
