@@ -7,6 +7,7 @@
       <module fileurl="file://$PROJECT_DIR$/sidekick_core/sidekick_core.iml" filepath="$PROJECT_DIR$/sidekick_core/sidekick_core.iml" />
       <module fileurl="file://$PROJECT_DIR$/sidekick_plugin_installer/sidekick_plugin_installer.iml" filepath="$PROJECT_DIR$/sidekick_plugin_installer/sidekick_plugin_installer.iml" />
       <module fileurl="file://$PROJECT_DIR$/sidekick_vault/sidekick_vault.iml" filepath="$PROJECT_DIR$/sidekick_vault/sidekick_vault.iml" />
+      <module fileurl="file://$PROJECT_DIR$/sk_sidekick/sk_sidekick.iml" filepath="$PROJECT_DIR$/sk_sidekick/sk_sidekick.iml" />
     </modules>
   </component>
 </project>
