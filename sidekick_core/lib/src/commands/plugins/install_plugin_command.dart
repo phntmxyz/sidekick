@@ -9,7 +9,10 @@ class InstallPluginCommand extends Command {
   final String description = 'Adds a new command to this sidekick cli';
 
   @override
-  String get invocation => '${super.invocation.removeSuffix(' [arguments]')} '
+  String get invocation =>
+      // super.invocation returns e.g. '<command> <subcommand> [arguments]'
+      // insert '<package> [version-constraint]' before '[arguments]'
+      '${super.invocation.removeSuffix(' [arguments]')} '
       '<package> [version-constraint] [arguments]';
 
   @override
