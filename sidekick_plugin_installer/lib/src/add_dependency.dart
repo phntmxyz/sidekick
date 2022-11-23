@@ -22,11 +22,10 @@ void addDependency({
   // hosted is the default if none of the other arguments are given
   final hosted = hostedUrl != null || (!git && !path);
 
-  if (path ^ hosted ^ git) {
-    throw 'Exactly one type of dependency arguments  (path/hosted/git) '
-        'must be passed, but they were mixed or none were given.';
+  if (!(path ^ hosted ^ git)) {
+    throw 'Too many arguments. Pass only one type of arguments (path/hosted/git).';
   }
-  if (git && gitUrl != null) {
+  if (git && gitUrl == null) {
     throw 'git arguments were passed, but `gitUrl` was null.';
   }
 
@@ -41,8 +40,7 @@ void addDependency({
       '--path',
       localPath!
     ] else if (hosted) ...[
-      if (hostedUrl != null) '--hosted-url',
-      hostedUrl!
+      if (hostedUrl != null) ...['--hosted-url', hostedUrl],
     ] else if (git) ...[
       '--git-url',
       gitUrl!,
@@ -51,11 +49,13 @@ void addDependency({
     ]
   ];
 
-  sidekickDartRuntime.dart(
-    ['pub', 'remove', dependency],
-    workingDirectory: package.root,
-    progress: Progress.devNull(),
-  );
+  if (package.pubspec.readAsStringSync().contains('$dependency:')) {
+    sidekickDartRuntime.dart(
+      ['pub', 'remove', dependency],
+      workingDirectory: package.root,
+      progress: Progress.devNull(),
+    );
+  }
   sidekickDartRuntime.dart(
     pubAddArgs,
     workingDirectory: package.root,
