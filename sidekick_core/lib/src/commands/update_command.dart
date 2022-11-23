@@ -31,8 +31,10 @@ class UpdateCommand extends Command {
         .updateVersionConstraintToLatest('sidekick_core');
     final dartCommand =
         sidekickDartRuntime.isDownloaded() ? sidekickDartRuntime.dart : dart;
-    dartCommand(['pub', 'get'],
-        workingDirectory: Repository.requiredCliPackage);
+    dartCommand(
+      ['pub', 'get'],
+      workingDirectory: Repository.requiredCliPackage,
+    );
 
     // generate new shell scripts
 

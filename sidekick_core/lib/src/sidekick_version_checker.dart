@@ -106,9 +106,11 @@ class SidekickVersionChecker {
     final pubspec =
         loadYaml(Repository.requiredSidekickPackage.pubspec.readAsStringSync());
 
-    Object? current = pubspec[path.first];
+    Object? current =
+        // ignore: avoid_dynamic_calls, pubspec currently is a [YamlMap] but will be a [HashMap] in future versions
+        pubspec[path.first];
     for (final key in path.sublist(1)) {
-      if (current is Map && current != null) {
+      if (current is Map) {
         current = current[key];
       } else {
         return null;
