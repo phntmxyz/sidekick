@@ -153,10 +153,10 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
         pubspecPath: ['sidekick', 'cli_version'],
       );
       if (!isUpToDate) {
-        printerr('''
-${yellow('Update available!')}
-Run ${cyan('$cliName sidekick update')} to update your CLI.
-''');
+        print(
+          '${yellow('Update available!')}\n'
+          'Run ${cyan('$cliName sidekick update')} to update your CLI.',
+        );
       }
     } catch (_) {
       /* ignore */
@@ -180,8 +180,7 @@ Run ${cyan('$cliName sidekick update')} to update your CLI.
     }
 
     if (sidekickCliVersion != sidekickCoreVersion) {
-      printerr(
-          'The sidekick_core version is incompatible with the bash scripts '
+      print('The sidekick_core version is incompatible with the bash scripts '
           'in /tool and entrypoint because you probably updated the '
           'sidekick_core dependency of your CLI package manually.\n'
           'Please run ${cyan('$cliName sidekick update')} to repair your CLI.');
