@@ -16,6 +16,7 @@ export 'package:args/command_runner.dart';
 export 'package:dartx/dartx.dart';
 export 'package:dartx/dartx_io.dart';
 export 'package:dcli/dcli.dart' hide run, start, startFromArgs, absolute;
+export 'package:pub_semver/pub_semver.dart' show Version;
 export 'package:sidekick_core/src/cli_util.dart';
 export 'package:sidekick_core/src/commands/analyze_command.dart';
 export 'package:sidekick_core/src/commands/dart_command.dart';
@@ -36,6 +37,13 @@ export 'package:sidekick_core/src/git.dart';
 export 'package:sidekick_core/src/repository.dart';
 export 'package:sidekick_core/src/sidekick_package.dart';
 export 'package:sidekick_core/src/template/sidekick_package.template.dart';
+
+/// The version of package:sidekick_core
+///
+/// This is used by the update command to determine if your sidekick cli
+/// requires an update
+// DO NOT MANUALLY EDIT THIS VERSION, instead run `sk bump-version sidekick_core`
+final Version version = Version.parse('0.11.1');
 
 /// Initializes sidekick, call this at the very start of your CLI program
 ///

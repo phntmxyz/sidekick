@@ -2,10 +2,26 @@ import 'dart:async';
 
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:test/test.dart';
+import 'package:yaml/yaml.dart';
 
 import 'util/local_testing.dart';
 
 void main() {
+  test('version is correct', () {
+    final pubspec = File('pubspec.yaml');
+    expect(pubspec.existsSync(), isTrue);
+
+    final yaml = loadYaml(pubspec.readAsStringSync());
+
+    // ignore: avoid_dynamic_calls, yaml is [YamlMap] now but will be [HashMap] in future versions
+    final packageName = yaml['name'];
+    // ignore: avoid_dynamic_calls, yaml is [YamlMap] now but will be [HashMap] in future versions
+    final packageVersion = Version.parse(yaml['version'] as String);
+
+    expect(packageName, 'sidekick_core');
+    expect(packageVersion, version);
+  });
+
   group('mainProject', () {
     test('mainProject only works in SidekickCommandRunner scope', () {
       expect(
