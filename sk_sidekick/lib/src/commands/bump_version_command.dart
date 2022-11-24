@@ -111,6 +111,7 @@ class BumpVersionCommand extends Command {
     print(green('Bumped ${package.name} from $version to $newVersion'));
   }
 
+  /// Updates the version in pubspec.yaml
   void bumpPubspecVersion(
     DartPackage package,
     Version oldVersion,
@@ -148,6 +149,11 @@ void commitFileModifications(
     'git commit -m "$commitMessage" --no-verify'
         .start(progress: Progress.printStdErr());
     'git --no-pager log -n1 --oneline'.run;
+  } catch (e) {
+    printerr('Detected error, discarding modifications');
+    // discard all modifications
+    'git reset --hard'.start(progress: Progress.printStdErr());
+    rethrow;
   } finally {
     // restore changes
     'git stash pop 0'.start(progress: Progress.printStdErr());
