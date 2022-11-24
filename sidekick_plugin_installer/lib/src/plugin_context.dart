@@ -62,6 +62,37 @@ class PluginContext {
   ///
   /// {@macro installer_parameter}
   static String? get gitPath => env['SIDEKICK_PLUGIN_GIT_PATH'];
+
+  /// This getter is deprecated. Use [PluginContext.localPath] instead
+  ///
+  /// This is the plugin package that is getting installed from local source
+  ///
+  /// Plugin installer might need to know the local location during development,
+  /// to link the plugin dependency to a local path, instead of pub.dev where
+  /// the plugin is not yet published. (See [pubAddLocalDependency])
+  ///
+  /// Returns `null` when the plugin is not installed from local source, but
+  /// from a remote source (pub or git)
+  @Deprecated('Use `PluginContext.localPath` instead.')
+  static DartPackage? get localPlugin {
+    if (_localPlugin == null) {
+      final path = env['SIDEKICK_LOCAL_PLUGIN_PATH'];
+      if (path == null) {
+        return null;
+      }
+      final dir = Directory(path);
+      if (!dir.existsSync()) {
+        throw "Directory at ${dir.absolute.path} (env.SIDEKICK_LOCAL_PLUGIN_PATH) does not exist";
+      }
+      _localPlugin = DartPackage.fromDirectory(dir);
+      if (_localPlugin == null) {
+        throw "Directory at ${dir.absolute.path} (env.SIDEKICK_LOCAL_PLUGIN_PATH) is not a dart package";
+      }
+    }
+    return _localPlugin;
+  }
+
+  static DartPackage? _localPlugin;
 }
 
 /// {@template installer_parameter}
