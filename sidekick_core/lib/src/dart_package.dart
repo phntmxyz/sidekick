@@ -78,10 +78,10 @@ class DartPackage {
       identical(this, other) ||
       other is DartPackage &&
           runtimeType == other.runtimeType &&
-          root.path == other.root.path;
+          canonicalize(root.path) == canonicalize(other.root.path);
 
   @override
-  int get hashCode => root.path.hashCode;
+  int get hashCode => canonicalize(root.path).hashCode;
 
   @override
   String toString() => "DartPackage '$name'";
