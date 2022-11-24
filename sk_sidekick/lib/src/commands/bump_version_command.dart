@@ -11,7 +11,7 @@ class BumpVersionCommand extends Command {
   @override
   String get invocation => super.invocation.replaceFirst(
         ' [arguments]',
-        '<package-path> --major|minor|patch --[no-]commit',
+        '<package-path> [--minor|patch|major] --[no-]commit',
       );
 
   BumpVersionCommand() {
