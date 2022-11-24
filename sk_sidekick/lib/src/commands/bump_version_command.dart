@@ -17,7 +17,7 @@ class BumpVersionCommand extends Command {
   BumpVersionCommand() {
     argParser.addFlag(
       'major',
-      help: 'Bumps to the next minor version. e.g. 1.2.6 => 2.0.0',
+      help: 'Bumps to the next major version. e.g. 1.2.6 => 2.0.0',
     );
     argParser.addFlag(
       'minor',
