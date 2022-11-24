@@ -169,6 +169,9 @@ void main() {
         overrideSidekickCoreWithLocalPath(
           projectRoot.directory(template.snakeCase),
         );
+        overrideSidekickPluginInstallerWithLocalPath(
+          projectRoot.directory(template.snakeCase),
+        );
 
         await runDashProcess(
           [
