@@ -247,7 +247,7 @@ packages:
     source: hosted
     version: "2.2.3"
   pub_semver:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: pub_semver
       url: "https://pub.dartlang.org"
@@ -298,9 +298,9 @@ packages:
   sidekick_core:
     dependency: "direct main"
     description:
-      path: "../sidekick_core"
-      relative: true
-    source: path
+      name: sidekick_core
+      url: "https://pub.dartlang.org"
+    source: hosted
     version: "0.11.1"
   source_span:
     dependency: transitive
