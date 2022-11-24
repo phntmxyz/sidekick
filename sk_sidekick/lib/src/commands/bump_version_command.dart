@@ -71,15 +71,12 @@ class BumpVersionCommand extends Command {
       if (bumpMajor) {
         return version.nextMajor;
       }
-      if (bumpMinor) {
-        return version.nextMinor;
-      }
       if (bumpPatch) {
         return version.nextPatch;
       }
 
-      // default
-      return version.nextMajor;
+      // default: bumpMinor
+      return version.nextMinor;
     }();
 
     void applyModifications() {
