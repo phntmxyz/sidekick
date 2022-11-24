@@ -4,7 +4,10 @@ import 'package:sk_sidekick/sk_sidekick.dart';
 
 /// Updates the version in sidekick_core/lib/sidekick_core.dart
 void coreBundledVersionBump(
-    DartPackage package, Version oldVersion, Version newVersion) {
+  DartPackage package,
+  Version oldVersion,
+  Version newVersion,
+) {
   if (package != skProject.sidekickCorePackage) {
     return;
   }

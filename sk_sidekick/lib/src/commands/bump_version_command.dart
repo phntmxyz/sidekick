@@ -169,9 +169,10 @@ extension VersionExtensions on Version {
   static const _defaultParameter = Object();
 
   // copyWith version which handles `null`, as in freezed
-  Version _copyWith(
-      {dynamic preRelease = _defaultParameter,
-      dynamic build = _defaultParameter}) {
+  Version _copyWith({
+    dynamic preRelease = _defaultParameter,
+    dynamic build = _defaultParameter,
+  }) {
     return Version(
       major,
       minor,

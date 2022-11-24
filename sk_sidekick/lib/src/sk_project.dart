@@ -9,7 +9,8 @@ class SkProject {
       DartPackage.fromDirectory(root.directory('sidekick'))!;
 
   DartPackage get minimalSidekickPluginPackage => DartPackage.fromDirectory(
-      root.directory('sidekick/test/templates/minimal_sidekick_plugin'))!;
+        root.directory('sidekick/test/templates/minimal_sidekick_plugin'),
+      )!;
 
   DartPackage get sidekickVaultPackage =>
       DartPackage.fromDirectory(root.directory('sidekick_vault'))!;
