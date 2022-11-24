@@ -1,0 +1,104 @@
+import 'dart:io';
+
+import 'package:pubspec2/pubspec2.dart' hide PubSpec;
+import 'package:sidekick_core/sidekick_core.dart';
+import 'package:sidekick_core/src/sidekick_version_checker.dart';
+import 'package:test/test.dart';
+
+void main() {
+  const versionChecker = SidekickVersionChecker();
+
+  late File pubspecFile;
+
+  setUp(() {
+    final temp = Directory.systemTemp.createTempSync();
+    pubspecFile = temp.file('pubspec.yaml');
+    env['SIDEKICK_PACKAGE_HOME'] = temp.path;
+
+    addTearDown(() {
+      env['SIDEKICK_PACKAGE_HOME'] = null;
+      temp.deleteSync(recursive: true);
+    });
+  });
+
+  group('updateVersionConstraint', () {
+    test('updates package when it already exists in pubspec', () async {
+      pubspecFile.writeAsStringSync('''
+name: dashi
+
+dependencies:
+  foo: 1.2.3
+''');
+
+      final newVersion = Version(1, 2, 4);
+
+      versionChecker.updateVersionConstraint(
+        package: 'foo',
+        newMinimumVersion: newVersion,
+        pinVersion: true,
+      );
+
+      final pubspec = PubSpec.fromFile(pubspecFile.path);
+      expect(
+        pubspec.dependencies['foo']?.reference,
+        isA<HostedReference>().having(
+          (p0) => p0.versionConstraint,
+          'versionConstraint',
+          Version(1, 2, 4),
+        ),
+      );
+    });
+
+    test('sets package when it does not yet exist in pubspec', () async {
+      pubspecFile.writeAsStringSync('''
+name: dashi
+
+dependencies:
+  bar: 0.0.0
+# foo does not exist here yet, it should be added by updateVersionConstraint
+''');
+
+      final newVersion = Version(1, 2, 4);
+
+      versionChecker.updateVersionConstraint(
+        package: 'foo',
+        newMinimumVersion: newVersion,
+        pinVersion: true,
+      );
+
+      final pubspec = PubSpec.fromFile(pubspecFile.path);
+      expect(
+        pubspec.dependencies['foo']?.reference,
+        isA<HostedReference>().having(
+          (p0) => p0.versionConstraint,
+          'versionConstraint',
+          Version(1, 2, 4),
+        ),
+      );
+    });
+    test('sets whole block when it does not yet exist in pubspec', () async {
+      pubspecFile.writeAsStringSync('''
+name: dashi
+
+# the pubspec does not have a dependencies block, it should be added by updateVersionConstraint
+''');
+      final newVersion = Version(1, 2, 4);
+
+      versionChecker.updateVersionConstraint(
+        package: 'foo',
+        newMinimumVersion: newVersion,
+        pinVersion: true,
+      );
+
+      final pubspec = PubSpec.fromFile(pubspecFile.path);
+      expect(
+        pubspec.dependencies['foo']?.reference,
+        isA<HostedReference>().having(
+          (p0) => p0.versionConstraint,
+          'versionConstraint',
+          Version(1, 2, 4),
+        ),
+      );
+    });
+  });
+}
