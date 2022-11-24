@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:sidekick_core/sidekick_core.dart';
+import 'package:sk_sidekick/src/commands/bump_version_command.dart';
+import 'package:sk_sidekick/src/release/core_bundled_version_bump.dart';
 import 'package:sk_sidekick/src/sk_project.dart';
 
 late SkProject skProject;
@@ -16,6 +18,9 @@ Future<void> runSk(List<String> args) async {
     ..addCommand(DartCommand())
     ..addCommand(DepsCommand(exclude: [...testPackages]))
     ..addCommand(DartAnalyzeCommand())
+    ..addCommand(
+      BumpVersionCommand()..addModification(coreBundledVersionBump),
+    )
     ..addCommand(SidekickCommand());
 
   if (args.isEmpty) {
