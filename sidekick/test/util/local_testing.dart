@@ -44,11 +44,11 @@ void _overrideDependency({
   required String dependency,
   required String path,
 }) {
-  final pubspec =
-      PubSpec.fromFile(package.file('pubspec.yaml').path);
+  final pubspecPath = package.file('pubspec.yaml').path;
+  final pubspec = PubSpec.fromFile(pubspecPath);
   pubspec.dependencyOverrides = {
     ...pubspec.dependencyOverrides,
     dependency: Dependency.fromPath(dependency, path),
   };
-  pubspec.saveToFile(package.path);
+  pubspec.saveToFile(pubspecPath);
 }
