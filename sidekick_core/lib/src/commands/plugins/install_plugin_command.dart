@@ -9,13 +9,6 @@ class InstallPluginCommand extends Command {
   final String description = 'Adds a new command to this sidekick cli';
 
   @override
-  String get invocation =>
-      // super.invocation returns e.g. '<command> <subcommand> [arguments]'
-      // insert '<package> [version-constraint]' before '[arguments]'
-      '${super.invocation.removeSuffix(' [arguments]')} '
-      '<package> [version-constraint] [arguments]';
-
-  @override
   final String name = 'install';
 
   InstallPluginCommand() {
@@ -56,38 +49,22 @@ class InstallPluginCommand extends Command {
       );
     }
 
-    final package = args.rest.first;
-    final versionConstraint = args.rest.length > 1 ? args.rest[1] : null;
+    final installer = args.rest.first;
     print(
-      white('Installing $package '
-          '${versionConstraint != null ? '$versionConstraint ' : ''}'
-          'for ${Repository.sidekickPackage!.cliName}'),
+      white('Installing $installer for '
+          '${Repository.sidekickPackage!.cliName}'),
     );
-    env['SIDEKICK_PLUGIN_NAME'] = package;
-    env['SIDEKICK_PLUGIN_VERSION_CONSTRAINT'] = versionConstraint;
-
     final Directory pluginInstallerDir = () {
       switch (source) {
         case 'path':
-          final dir = Directory(package);
-          if (!dir.existsSync()) {
-            throw "Directory at ${dir.absolute.path} does not exist";
-          }
-          if (DartPackage.fromDirectory(dir) == null) {
-            throw "Directory at ${dir.absolute.path} is not a dart package";
-          }
-
-          env['SIDEKICK_PLUGIN_LOCAL_PATH'] = dir.absolute.path;
+          final dir = Directory(installer);
+          env['SIDEKICK_LOCAL_PLUGIN_PATH'] = dir.absolute.path;
           return dir;
         case 'hosted':
-          env['SIDEKICK_PLUGIN_HOSTED_URL'] = args['hosted-url'] as String?;
-          print('Downloading from pub $package...');
+          print('Downloading from pub $installer...');
           return _getPackageRootDirForHostedOrGitSource(args);
         case 'git':
-          env['SIDEKICK_PLUGIN_GIT_URL'] = args['git-url'] as String?;
-          env['SIDEKICK_PLUGIN_GIT_REF'] = args['git-ref'] as String?;
-          env['SIDEKICK_PLUGIN_GIT_PATH'] = args['git-path'] as String?;
-          print('Downloading from git $package...');
+          print('Downloading from git $installer...');
           return _getPackageRootDirForHostedOrGitSource(args);
         default:
           throw StateError('unreachable');

@@ -127,8 +127,6 @@ void main() {
 
       final pluginDir = projectRoot.directory('generated_plugin');
       final pluginPath = pluginDir.path;
-      // override dependency, otherwise `dart analyze` fails when plugin uses unpublished API
-      overrideSidekickPluginInstallerWithLocalPath(pluginDir);
 
       run('dart pub get', workingDirectory: pluginPath);
       if (analyzeGeneratedCode) {
@@ -169,9 +167,6 @@ void main() {
           template.snakeCase,
         ]);
         overrideSidekickCoreWithLocalPath(
-          projectRoot.directory(template.snakeCase),
-        );
-        overrideSidekickPluginInstallerWithLocalPath(
           projectRoot.directory(template.snakeCase),
         );
 
