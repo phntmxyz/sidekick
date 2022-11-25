@@ -134,8 +134,11 @@ void commitFileModifications(
   void Function() block, {
   required String commitMessage,
 }) {
+  final stashName = 'pre-bump-${DateTime.now().toIso8601String()}';
+
   // stash changes
-  'git stash save --include-untracked'.start(progress: Progress.printStdErr());
+  'git stash save --include-untracked "$stashName"'
+      .start(progress: Progress.printStdErr());
 
   try {
     // apply modifications
@@ -152,8 +155,13 @@ void commitFileModifications(
     'git reset --hard'.start(progress: Progress.printStdErr());
     rethrow;
   } finally {
-    // restore changes
-    'git stash pop 0'.start(progress: Progress.printStdErr());
+    final stashes = 'git stash list'.start(progress: Progress.capture()).lines;
+    final stash = stashes.firstOrNullWhere((line) => line.contains(stashName));
+    if (stash != null) {
+      final stashId = RegExp(r'stash@{(\d+)}').firstMatch(stash)?.group(1);
+      // restore changes
+      'git stash pop $stashId'.start(progress: Progress.printStdErr());
+    }
   }
 }
 
