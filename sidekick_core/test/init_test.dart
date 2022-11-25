@@ -4,6 +4,8 @@ import 'package:sidekick_core/sidekick_core.dart';
 import 'package:test/test.dart';
 import 'package:yaml/yaml.dart';
 
+import 'util/local_testing.dart';
+
 void main() {
   test('version is correct', () {
     final pubspec = File('pubspec.yaml');
@@ -84,8 +86,8 @@ void main() {
       );
     });
 
-    test('repository returns while running run', () {
-      insideFakeProjectWithSidekick((dir) {
+    test('repository returns while running run', () async {
+      await insideFakeProjectWithSidekick((dir) async {
         final runner = initializeSidekick(name: 'dash');
         bool called = false;
         runner.addCommand(
@@ -97,7 +99,7 @@ void main() {
             },
           ),
         );
-        runner.run(['inside']);
+        await runner.run(['inside']);
         expect(called, isTrue);
       });
     });
@@ -113,8 +115,8 @@ void main() {
         ),
       );
     });
-    test('cliName returns while running run', () {
-      insideFakeProjectWithSidekick((dir) {
+    test('cliName returns while running run', () async {
+      await insideFakeProjectWithSidekick((dir) async {
         final runner = initializeSidekick(name: 'dash');
         bool called = false;
         runner.addCommand(
@@ -126,7 +128,7 @@ void main() {
             },
           ),
         );
-        runner.run(['inside']);
+        await runner.run(['inside']);
         expect(called, isTrue);
       });
     });
@@ -256,36 +258,6 @@ void main() {
       });
     });
   });
-}
-
-R insideFakeProjectWithSidekick<R>(R Function(Directory projectDir) block) {
-  final tempDir = Directory.systemTemp.createTempSync();
-  'git init ${tempDir.path}'.run;
-
-  tempDir.file('pubspec.yaml')
-    ..createSync()
-    ..writeAsStringSync('name: main_project\n');
-  tempDir.file('dash').createSync();
-
-  final fakeSidekickDir = tempDir.directory('packages/dash_sdk')
-    ..createSync(recursive: true);
-
-  fakeSidekickDir.file('pubspec.yaml')
-    ..createSync()
-    ..writeAsStringSync('name: dash_sdk\n');
-  fakeSidekickDir.directory('lib').createSync();
-
-  env['SIDEKICK_PACKAGE_HOME'] = fakeSidekickDir.absolute.path;
-
-  addTearDown(() {
-    tempDir.deleteSync(recursive: true);
-    env['SIDEKICK_PACKAGE_HOME'] = null;
-  });
-
-  return IOOverrides.runZoned(
-    () => block(tempDir),
-    getCurrentDirectory: () => tempDir,
-  );
 }
 
 class DelegatedCommand extends Command {

@@ -11,9 +11,12 @@ dependencies:
   args: ^2.1.0
   dartx: '>=0.7.1 <2.0.0'
   dcli: ^1.15.0
+  http: ^0.13.5
   meta: ^1.5.0
   # transitive from dcli
   pub_semver: ^2.1.1
+  # transitive from dcli
+  pubspec2: ^2.4.1
   recase: ^4.1.0
   yaml: ^3.1.0
 

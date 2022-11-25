@@ -8,6 +8,7 @@ import 'package:dcli/dcli.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:sidekick_core/src/dart_package.dart';
 import 'package:sidekick_core/src/repository.dart';
+import 'package:sidekick_core/src/sidekick_version_checker.dart';
 
 export 'dart:io' hide sleep;
 
@@ -134,11 +135,65 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
     exitCode = 0;
 
     final unmount = mount();
+
+    String? command;
     try {
-      final result = await super.run(args);
+      final parsedArgs = parse(args);
+      command = parsedArgs.command?.name;
+      final result = await super.runCommand(parsedArgs);
       return result;
     } finally {
+      if (command != 'update') {
+        // print warning if the user didn't fully update their CLI
+        _checkCliVersionIntegrity();
+        // print warning if CLI update is available
+        await _checkForUpdates();
+      }
       unmount();
+    }
+  }
+
+  /// Print a warning if the CLI isn't up to date
+  Future<void> _checkForUpdates() async {
+    try {
+      final isUpToDate = await const SidekickVersionChecker().isUpToDate(
+        package: 'sidekick_core',
+        pubspecKeys: ['sidekick', 'cli_version'],
+      );
+      if (!isUpToDate) {
+        printerr(
+          '${yellow('Update available!')}\n'
+          'Run ${cyan('$cliName sidekick update')} to update your CLI.',
+        );
+      }
+    } catch (_) {
+      /* ignore */
+    }
+  }
+
+  /// Print a warning if the user manually updated the sidekick_core
+  /// minimum version of their CLI and that version doesn't match with the
+  /// CLI version listed in the pubspec at the path ['sidekick', 'cli_version']
+  void _checkCliVersionIntegrity() {
+    const versionChecker = SidekickVersionChecker();
+    final sidekickCoreVersion = versionChecker
+        .getCurrentMinimumPackageVersion(['dependencies', 'sidekick_core']);
+    final sidekickCliVersion = versionChecker
+        .getCurrentMinimumPackageVersion(['sidekick', 'cli_version']);
+
+    // old CLI which has no version information yet
+    // _checkForUpdates will print a warning to update the CLI in this case
+    if (sidekickCliVersion == Version.none) {
+      return;
+    }
+
+    if (sidekickCliVersion != sidekickCoreVersion) {
+      printerr(
+        'The sidekick_core version is incompatible with the bash scripts '
+        'in /tool and entrypoint because you probably updated the '
+        'sidekick_core dependency of your CLI package manually.\n'
+        'Please run ${cyan('$cliName sidekick update')} to repair your CLI.',
+      );
     }
   }
 }

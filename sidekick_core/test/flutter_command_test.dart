@@ -2,7 +2,7 @@ import 'package:sidekick_core/sidekick_core.dart';
 import 'package:test/test.dart';
 
 import 'fake_sdk.dart';
-import 'init_test.dart';
+import 'util/local_testing.dart';
 
 void main() {
   test('flutter command works when flutterSdkPath is set', () async {
