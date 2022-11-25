@@ -1,4 +1,3 @@
-import 'package:pub_semver/pub_semver.dart';
 import 'package:recase/recase.dart';
 
 import 'package:sidekick_core/sidekick_core.dart';

@@ -1,4 +1,3 @@
-import 'package:pub_semver/pub_semver.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_core/src/sidekick_version_checker.dart';
 

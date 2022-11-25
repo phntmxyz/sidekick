@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:http/http.dart';
-import 'package:pub_semver/pub_semver.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:yaml/yaml.dart';
 

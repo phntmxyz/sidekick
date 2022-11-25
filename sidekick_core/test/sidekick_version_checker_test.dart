@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:pubspec2/pubspec2.dart' hide PubSpec;
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_core/src/sidekick_version_checker.dart';
