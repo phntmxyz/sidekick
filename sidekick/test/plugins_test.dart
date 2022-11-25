@@ -127,6 +127,7 @@ void main() {
 
       final pluginDir = projectRoot.directory('generated_plugin');
       final pluginPath = pluginDir.path;
+      overrideSidekickPluginInstallerWithLocalPath(pluginDir);
 
       run('dart pub get', workingDirectory: pluginPath);
       if (analyzeGeneratedCode) {
