@@ -115,8 +115,8 @@ class SidekickVersionChecker {
       return Version.none;
     }
 
-    const versionConstraintRegEx =
-        '[\'"\\^<>= ]*(\\d+\\.\\d+\\.\\d+(?:[+-]\\S+)?)';
+    final versionConstraintRegEx =
+        RegExp('[\'"\\^<>= ]*(\\d+\\.\\d+\\.\\d+(?:[+-]\\S+)?)');
     final minVersion = versionConstraintRegEx
         .allMatches(versionConstraint)
         .map((e) => e.group(1))
