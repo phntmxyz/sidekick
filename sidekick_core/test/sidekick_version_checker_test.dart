@@ -33,7 +33,7 @@ dependencies:
       final newVersion = Version(1, 2, 4);
 
       versionChecker.updateVersionConstraint(
-        package: 'foo',
+        pubspecKeys: ['dependencies', 'foo'],
         newMinimumVersion: newVersion,
         pinVersion: true,
       );
@@ -47,21 +47,30 @@ dependencies:
           Version(1, 2, 4),
         ),
       );
+      expect(
+        pubspecFile.readAsStringSync(),
+        '''
+name: dashi
+
+dependencies:
+  foo: 1.2.4
+''',
+      );
     });
 
     test('sets package when it does not yet exist in pubspec', () async {
+      // foo does not exist in the pubspec yet, it should be added by updateVersionConstraint
       pubspecFile.writeAsStringSync('''
 name: dashi
 
 dependencies:
   bar: 0.0.0
-# foo does not exist here yet, it should be added by updateVersionConstraint
 ''');
 
       final newVersion = Version(1, 2, 4);
 
       versionChecker.updateVersionConstraint(
-        package: 'foo',
+        pubspecKeys: ['dependencies', 'foo'],
         newMinimumVersion: newVersion,
         pinVersion: true,
       );
@@ -74,6 +83,16 @@ dependencies:
           'versionConstraint',
           Version(1, 2, 4),
         ),
+      );
+      expect(
+        pubspecFile.readAsStringSync(),
+        '''
+name: dashi
+
+dependencies:
+  foo: 1.2.4
+  bar: 0.0.0
+''',
       );
     });
     test('sets whole block when it does not yet exist in pubspec', () async {
@@ -85,7 +104,7 @@ name: dashi
       final newVersion = Version(1, 2, 4);
 
       versionChecker.updateVersionConstraint(
-        package: 'foo',
+        pubspecKeys: ['dependencies', 'foo'],
         newMinimumVersion: newVersion,
         pinVersion: true,
       );
@@ -98,6 +117,16 @@ name: dashi
           'versionConstraint',
           Version(1, 2, 4),
         ),
+      );
+      expect(
+        pubspecFile.readAsStringSync(),
+        '''
+name: dashi
+
+# the pubspec does not have a dependencies block, it should be added by updateVersionConstraint
+dependencies:
+  foo: 1.2.4
+''',
       );
     });
   });

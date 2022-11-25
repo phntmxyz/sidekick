@@ -158,7 +158,7 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
     try {
       final isUpToDate = await const SidekickVersionChecker().isUpToDate(
         package: 'sidekick_core',
-        pubspecPath: ['sidekick', 'cli_version'],
+        pubspecKeys: ['sidekick', 'cli_version'],
       );
       if (!isUpToDate) {
         printerr(

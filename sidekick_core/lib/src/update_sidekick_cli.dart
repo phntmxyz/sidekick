@@ -51,7 +51,7 @@ Future<void> main(List<String> args) async {
     // that update has completed successfully
     const sidekickVersionChecker = SidekickVersionChecker();
     sidekickVersionChecker.updateVersionConstraint(
-      package: 'cli_version',
+      pubspecKeys: ['sidekick', 'cli_version'],
       newMinimumVersion: latestSidekickCoreVersion,
       pinVersion: true,
     );
