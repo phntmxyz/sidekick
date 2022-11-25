@@ -56,16 +56,12 @@ import 'package:sidekick_plugin_installer/sidekick_plugin_installer.dart';
 Future<void> main() async {
   final SidekickPackage package = PluginContext.sidekickPackage;
 
-  addDependency(
-    package: PluginContext.sidekickPackage,
-    dependency: PluginContext.name,
-    versionConstraint: PluginContext.versionConstraint,
-    localPath: PluginContext.localPath,
-    hostedUrl: PluginContext.hostedUrl,
-    gitUrl: PluginContext.gitUrl,
-    gitRef: PluginContext.gitRef,
-    gitPath: PluginContext.gitPath,
-  );
+  if (PluginContext.localPlugin == null) {
+    pubAddDependency(package, '${pluginName.snakeCase}');
+  } else {
+    // For local development
+    pubAddLocalDependency(package, PluginContext.localPlugin!.root.path);
+  }
   pubGet(package);
   
   final commandFile = package.root.file('lib/src/${pluginName.snakeCase}.dart');
