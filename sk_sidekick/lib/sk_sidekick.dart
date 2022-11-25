@@ -46,4 +46,4 @@ final testPackages = [
   'sidekick/test/templates/nested_package/foo/bar/nested',
   'sidekick/test/templates/multi_package/packages/package_b',
   'sidekick/test/templates/multi_package/packages/package_a',
-].mapNotNull((it) => DartPackage.fromDirectory(Directory(it)));
+].mapNotNull((it) => DartPackage.fromDirectory(skProject.root.directory(it)));
