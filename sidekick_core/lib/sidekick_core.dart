@@ -143,12 +143,15 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
       final result = await super.runCommand(parsedArgs);
       return result;
     } finally {
+      // TODO(update-feature): enable update check when ready
+      /*
       if (command != 'update') {
         // print warning if the user didn't fully update their CLI
         _checkCliVersionIntegrity();
         // print warning if CLI update is available
         await _checkForUpdates();
       }
+      */
       unmount();
     }
   }
