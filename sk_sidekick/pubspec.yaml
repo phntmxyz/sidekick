@@ -11,7 +11,7 @@ executables:
 
 dependencies:
   pub_semver: ^2.1.1
-  sidekick_core: '>=0.10.0 <1.0.0'
+  sidekick_core: '>=0.12.0 <1.0.0'
 
 dev_dependencies:
   lint: ^1.5.3
