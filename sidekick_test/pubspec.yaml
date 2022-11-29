@@ -1,7 +1,7 @@
 name: sidekick_test
-description: A starting point for Dart libraries or applications.
+description: Shared utilities for testing sidekick packages.
 version: 1.0.0
-# homepage: https://www.example.com
+publish_to: none
 
 environment:
   sdk: '>=2.14.0 <3.0.0'
