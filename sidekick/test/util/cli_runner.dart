@@ -1,9 +1,8 @@
 import 'package:dcli/dcli.dart';
 import 'package:sidekick_core/sidekick_core.dart';
+import 'package:sidekick_test/sidekick_test.dart';
 import 'package:test/scaffolding.dart';
 import 'package:test_process/test_process.dart';
-
-import 'local_testing.dart';
 
 /// Creates the sidekick cli in a separate temp directory with linked
 /// dependencies to the local sidekick_core
@@ -14,6 +13,19 @@ Future<SidekickCli> buildSidekickCli() async {
   await original.copyRecursively(copy);
 
   overrideSidekickCoreWithLocalPath(copy);
+
+  // remove local dependency on sidekick_test, it breaks because of the
+  // relative path but can be safely removed because it's just a dev_dependency
+  final pubspec = copy.file('pubspec.yaml');
+  pubspec.writeAsStringSync(
+    pubspec.readAsStringSync().replaceAll(
+      '''
+  sidekick_test:
+    path: ../sidekick_test
+''',
+      '',
+    ),
+  );
 
   final lockFile = copy.file('pubspec.lock');
   if (lockFile.existsSync()) {

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:sidekick_core/sidekick_core.dart';
+import 'package:sidekick_test/sidekick_test.dart';
 import 'package:test/test.dart';
 import 'package:yaml/yaml.dart';
 
@@ -40,7 +41,7 @@ void main() {
         );
         bool called = false;
         runner.addCommand(
-          DelegatedCommand(
+          _DelegatedCommand(
             name: 'inside',
             block: () {
               called = true;
@@ -58,7 +59,7 @@ void main() {
         final runner = initializeSidekick(name: 'dash', mainProjectPath: '.');
         bool called = false;
         runner.addCommand(
-          DelegatedCommand(
+          _DelegatedCommand(
             name: 'inside',
             block: () {
               called = true;
@@ -89,7 +90,7 @@ void main() {
         final runner = initializeSidekick(name: 'dash');
         bool called = false;
         runner.addCommand(
-          DelegatedCommand(
+          _DelegatedCommand(
             name: 'inside',
             block: () {
               called = true;
@@ -118,7 +119,7 @@ void main() {
         final runner = initializeSidekick(name: 'dash');
         bool called = false;
         runner.addCommand(
-          DelegatedCommand(
+          _DelegatedCommand(
             name: 'inside',
             block: () {
               called = true;
@@ -139,7 +140,7 @@ void main() {
       bool outerCalled = false;
       bool innerCalled = false;
       outerRunner.addCommand(
-        DelegatedCommand(
+        _DelegatedCommand(
           name: 'outer',
           block: () async {
             outerCalled = true;
@@ -156,7 +157,7 @@ void main() {
 
             final innerRunner = initializeSidekick(name: 'innerdash');
             innerRunner.addCommand(
-              DelegatedCommand(
+              _DelegatedCommand(
                 name: 'inner',
                 block: () {
                   innerCalled = true;
@@ -258,46 +259,8 @@ void main() {
   });
 }
 
-R insideFakeProjectWithSidekick<R>(R Function(Directory projectDir) block) {
-  final tempDir = Directory.systemTemp.createTempSync();
-  'git init ${tempDir.path}'.run;
-
-  tempDir.file('pubspec.yaml')
-    ..createSync()
-    ..writeAsStringSync('''
-name: main_project
-environment:
-  sdk: ^2.10.0
-''');
-  tempDir.file('dash').createSync();
-
-  final fakeSidekickDir = tempDir.directory('packages/dash_sdk')
-    ..createSync(recursive: true);
-
-  fakeSidekickDir.file('pubspec.yaml')
-    ..createSync()
-    ..writeAsStringSync('''
-name: dash_sdk
-environment:
-  sdk: ^2.10.0
-''');
-  fakeSidekickDir.directory('lib').createSync();
-
-  env['SIDEKICK_PACKAGE_HOME'] = fakeSidekickDir.absolute.path;
-
-  addTearDown(() {
-    tempDir.deleteSync(recursive: true);
-    env['SIDEKICK_PACKAGE_HOME'] = null;
-  });
-
-  return IOOverrides.runZoned(
-    () => block(tempDir),
-    getCurrentDirectory: () => tempDir,
-  );
-}
-
-class DelegatedCommand extends Command {
-  DelegatedCommand({
+class _DelegatedCommand extends Command {
+  _DelegatedCommand({
     required this.name,
     required this.block,
   });

@@ -20,4 +20,6 @@ dependencies:
 
 dev_dependencies:
   lint: ^1.5.0
+  sidekick_test:
+    path: ../sidekick_test
   test: ^1.20.0

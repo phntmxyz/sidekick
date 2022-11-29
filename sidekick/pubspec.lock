@@ -414,6 +414,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.11.1"
+  sidekick_test:
+    dependency: "direct dev"
+    description:
+      path: "../sidekick_test"
+      relative: true
+    source: path
+    version: "1.0.0"
   source_map_stack_trace:
     dependency: transitive
     description:
