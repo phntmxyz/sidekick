@@ -105,6 +105,18 @@ class InstallPluginCommand extends Command {
       error('installer package at $pluginInstallerDir is '
           'not a valid dart package');
     }
+
+    final cliVersion = _getMinDependencyVersion(
+        Repository.requiredSidekickPackage, 'cli_version');
+    final pluginSidekickPluginInstallerVersion = _getMinDependencyVersion(
+        pluginInstallerCode, 'sidekick_plugin_installer');
+
+    // TODO add check: old CLIs shouldn't install new plugins. throw error: update your cli
+
+    // TODO ? add check: can new CLIs install old plugins? As long as there's no breaking change in protocol, we could set the old env vars as well in that case
+
+    // TODO ? add these checks to addDependency (or somewhere else)
+
     final pluginName = pluginInstallerCode.name;
 
     // The target where to install the plugin
@@ -314,4 +326,17 @@ Directory _getPackageRootDirForHostedOrGitSource(ArgResults args) {
     default:
       throw StateError('unreachable');
   }
+}
+
+Version? _getMinDependencyVersion(DartPackage package, String dependency) {
+  final pubspec = package.pubspec.readAsStringSync();
+
+  final versionConstraintRegEx =
+      RegExp('  $dependency:[\'"\\^<>= ]*(\\d+\\.\\d+\\.\\d+(?:[+-]\\S+)?)');
+  final minVersion = versionConstraintRegEx
+      .allMatches(pubspec)
+      .map((e) => e.group(1))
+      .whereNotNull();
+
+  return minVersion.isEmpty ? null : Version.parse(minVersion.single);
 }
