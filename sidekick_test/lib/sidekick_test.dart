@@ -1,8 +1,5 @@
-/// Support for doing something awesome.
-///
-/// More dartdocs go here.
+/// Shared test utility functions for testing sidekick packages
 library sidekick_test;
 
-export 'src/sidekick_test_base.dart';
-
-// TODO: Export any libraries intended for clients of this package.
+export 'src/fake_sdk.dart';
+export 'src/local_testing.dart';

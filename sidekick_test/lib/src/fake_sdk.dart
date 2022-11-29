@@ -4,9 +4,6 @@ import 'package:dartx/dartx_io.dart';
 import 'package:dcli/dcli.dart';
 import 'package:test/test.dart';
 
-// TODO this already exists in sidekick_core/test; maybe we should create
-// a sidekick_test package to share these utility functions
-
 /// Creates a fake Flutter SDK in temp with a `flutter` executable that does
 /// nothing besides "downloading" a fake Dart executable that does also nothing
 Directory fakeFlutterSdk() {

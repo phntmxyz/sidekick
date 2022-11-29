@@ -1,4 +1,7 @@
-import 'package:sidekick_core/sidekick_core.dart';
+import 'dart:io';
+
+import 'package:dartx/dartx_io.dart';
+import 'package:dcli/dcli.dart';
 
 /// True when dependencies should be linked to local sidekick dependencies
 final bool shouldUseLocalDeps = env['SIDEKICK_PUB_DEPS'] != 'true';
