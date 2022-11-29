@@ -1,3 +1,5 @@
+import 'package:glob/glob.dart';
+import 'package:glob/list_local_fs.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 
 /// Downloads dependencies of all Flutter/Dart packages in the repository
@@ -9,9 +11,18 @@ class DepsCommand extends Command {
   final String name = 'deps';
 
   /// packages whose dependencies should not be loaded
+  @Deprecated('Use excludedPackages instead.')
   final List<DartPackage> exclude;
 
-  DepsCommand({this.exclude = const []}) {
+  /// packages whose dependencies should not be loaded
+  ///
+  /// Glob syntax can be used to e.g. exclude all packages in a directory: '/path/to/dir/**'
+  final List<String> excludedPackages;
+
+  DepsCommand({
+    @Deprecated('Use excludePackages instead.') this.exclude = const [],
+    this.excludedPackages = const [],
+  }) {
     argParser.addOption(
       'package',
       abbr: 'p',
@@ -37,7 +48,21 @@ class DepsCommand extends Command {
     }
 
     final errorBuffer = StringBuffer();
-    for (final package in allPackages.filter((it) => !exclude.contains(it))) {
+
+    final excluded = excludedPackages
+        .map((p) => Glob(p))
+        .map(
+          (e) => e.listSync(
+            // See https://github.com/dart-lang/glob/issues/52
+            root: Directory.current.path,
+          ),
+        )
+        .expand((e) => e) // flattens nested list
+        .whereType<Directory>()
+        .mapNotNull((e) => DartPackage.fromDirectory(e))
+        // ignore: deprecated_member_use_from_same_package, until `exclude` is removed
+        .append(exclude);
+    for (final package in allPackages.whereNot(excluded.contains)) {
       try {
         _getDependencies(package);
       } catch (e, stack) {
