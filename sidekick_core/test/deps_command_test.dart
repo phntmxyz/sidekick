@@ -123,8 +123,10 @@ environment:
           expect(
             fakeStderr.lines,
             containsAll([
-              'Error while getting dependencies:',
-              'broken: Failed to get dependencies for package ${brokenPubspec.parent.path}'
+              '\n\nErrors while getting dependencies:',
+              startsWith(
+                'broken: Failed to get dependencies for package ${brokenPubspec.parent.path}',
+              )
             ]),
           );
         },
