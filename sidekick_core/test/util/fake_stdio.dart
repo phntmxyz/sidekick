@@ -42,7 +42,7 @@ T overrideIoStreams<T>({
   Stdout Function()? stderr,
 }) {
   return runZoned(
-        () => IOOverrides.runZoned(
+    () => IOOverrides.runZoned(
       body,
       stdout: stdout,
       stdin: stdin,
