@@ -36,7 +36,6 @@ dependency_overrides:
 /// dartfmt is updated with the sdk and may require different formatting
 final bool analyzeGeneratedCode = env['SIDEKICK_ANALYZE'] == 'true';
 
-
 R insideFakeProjectWithSidekick<R>(R Function(Directory projectDir) block) {
   final tempDir = Directory.systemTemp.createTempSync();
   'git init ${tempDir.path}'.run;
@@ -62,7 +61,7 @@ R insideFakeProjectWithSidekick<R>(R Function(Directory projectDir) block) {
   });
 
   return IOOverrides.runZoned(
-        () => block(tempDir),
+    () => block(tempDir),
     getCurrentDirectory: () => tempDir,
   );
 }

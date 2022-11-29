@@ -8,7 +8,7 @@ import 'package:dartx/dartx_io.dart';
 /// nothing besides "downloading" a fake Dart executable that does also nothing
 Directory fakeFlutterSdk({Directory? directory}) {
   final Directory dir = directory ??
-          () {
+      () {
         final temp = Directory.systemTemp.createTempSync('fake_flutter');
         addTearDown(() => temp.deleteSync(recursive: true));
         return temp;
