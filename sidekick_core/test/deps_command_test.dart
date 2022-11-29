@@ -3,9 +3,6 @@ import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_test/sidekick_test.dart';
 import 'package:test/test.dart';
 
-import 'init_test.dart';
-import 'util/fake_stdio.dart';
-
 void main() {
   void setUpPackages(Directory tempDir) {
     final packages = [
