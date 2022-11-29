@@ -1,7 +1,7 @@
 import 'package:sidekick_core/sidekick_core.dart';
+import 'package:sidekick_test/sidekick_test.dart';
 import 'package:test/test.dart';
 
-import 'fake_sdk.dart';
 import 'init_test.dart';
 
 void main() {
@@ -41,14 +41,4 @@ void main() {
       await runner.run(['dart']);
     });
   });
-}
-
-Future<File> installFlutterWrapper(Directory directory) async {
-  writeAndRunShellScript(
-    r'sh -c "$(curl -fsSL https://raw.githubusercontent.com/passsy/flutter_wrapper/master/install.sh)"',
-    workingDirectory: directory,
-  );
-  final exe = directory.file('flutterw');
-  assert(exe.existsSync());
-  return exe;
 }

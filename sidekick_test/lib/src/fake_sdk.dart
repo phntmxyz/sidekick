@@ -1,27 +1,44 @@
 import 'dart:io';
 
-import 'package:dartx/dartx_io.dart';
-import 'package:dcli/dcli.dart';
+import 'package:dcli/dcli.dart' as dcli;
 import 'package:test/test.dart';
+import 'package:dartx/dartx_io.dart';
 
 /// Creates a fake Flutter SDK in temp with a `flutter` executable that does
 /// nothing besides "downloading" a fake Dart executable that does also nothing
-Directory fakeFlutterSdk() {
-  final temp = Directory.systemTemp.createTempSync('fake_flutter');
-  addTearDown(() => temp.deleteSync(recursive: true));
+Directory fakeFlutterSdk({Directory? directory}) {
+  final Directory dir = directory ??
+          () {
+        final temp = Directory.systemTemp.createTempSync('fake_flutter');
+        addTearDown(() => temp.deleteSync(recursive: true));
+        return temp;
+      }();
 
-  final flutterExe = temp.file('bin/flutter')
+  final flutterExe = dir.file('bin/flutter')
     ..createSync(recursive: true)
     ..writeAsStringSync('''
 #!/bin/bash
 echo "fake Flutter executable"
 
 # Download dart SDK on execution
-mkdir -p ${temp.absolute.path}/bin/cache/dart-sdk/bin
+mkdir -p ${dir.absolute.path}/bin/cache/dart-sdk/bin
 # write into file
-printf "#!/bin/bash\\necho \\"fake embedded Dart executable\\"\\n" > ${temp.absolute.path}/bin/cache/dart-sdk/bin/dart
-chmod 755 ${temp.absolute.path}/bin/cache/dart-sdk/bin/dart
+printf "#!/bin/bash\\necho \\"fake embedded Dart executable\\"\\n" > ${dir.absolute.path}/bin/cache/dart-sdk/bin/dart
+chmod 755 ${dir.absolute.path}/bin/cache/dart-sdk/bin/dart
 ''');
-  run('chmod 755 ${flutterExe.path}');
+  dcli.run('chmod 755 ${flutterExe.path}');
+  return dir;
+}
+
+/// Creates a fake Dart SDK with a `dart` executable that does nothing
+Directory fakeDartSdk() {
+  final temp = Directory.systemTemp.createTempSync('fake_dart');
+  addTearDown(() => temp.deleteSync(recursive: true));
+
+  final exe = temp.file('bin/dart')
+    ..createSync(recursive: true)
+    ..writeAsStringSync('#!/bin/bash\necho "fake Dart executable"');
+  dcli.run('chmod 755 ${exe.path}');
+
   return temp;
 }
