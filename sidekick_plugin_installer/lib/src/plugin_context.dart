@@ -27,7 +27,15 @@ class PluginContext {
 
   /// Name of the plugin package to be installed
   ///
-  /// {@macro installer_parameter}
+  /// {@template installer_parameter}
+  /// This is a parameter for installing a plugin package in a sidekick CLI
+  ///
+  /// The plugin installer needs to know the location of the plugin package
+  /// which can either be a local path, a remote pub server, or a remote git
+  /// repository. See [addDependency]
+  ///
+  /// Returns `null` when the plugin is installed from another source
+  /// {@endtemplate}
   static String get name => env['SIDEKICK_PLUGIN_NAME']!;
 
   /// Version constraint of the plugin package to be installed
@@ -94,13 +102,3 @@ class PluginContext {
 
   static DartPackage? _localPlugin;
 }
-
-/// {@template installer_parameter}
-/// This is a parameter for installing a plugin package in a sidekick CLI
-///
-/// The plugin installer needs to know the location of the plugin package
-/// which can either be a local path, a remote pub server, or a remote git
-/// repository. See [addDependency]
-///
-/// Returns `null` when the plugin is installed from another source
-/// {@endtemplate}
