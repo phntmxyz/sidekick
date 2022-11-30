@@ -1,4 +1,5 @@
 import 'package:dcli/dcli.dart' as dcli;
+import 'package:pub_semver/pub_semver.dart';
 
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_core/src/pub/pub.dart' as pub;
@@ -106,16 +107,45 @@ class InstallPluginCommand extends Command {
           'not a valid dart package');
     }
 
-    final cliVersion = _getMinDependencyVersion(
-        Repository.requiredSidekickPackage, 'cli_version');
-    final pluginSidekickPluginInstallerVersion = _getMinDependencyVersion(
-        pluginInstallerCode, 'sidekick_plugin_installer');
+    final pluginInstallerProtocolVersion =
+        _getPluginInstallerProtocolVersion(pluginInstallerCode);
+    final supportedInstallerVersions = VersionRange(
+      // update when sidekick_core removes support for old sidekick_plugin_installer protocol
+      min: Version.none,
+      // update when sidekick_core supports new sidekick_plugin_installer protocol
+      max: Version(0, 2, 0),
+    );
 
-    // TODO add check: old CLIs shouldn't install new plugins. throw error: update your cli
+    // old CLIs shouldn't install new plugins
+    if (!supportedInstallerVersions.allows(pluginInstallerProtocolVersion)) {
+      if (pluginInstallerProtocolVersion < supportedInstallerVersions.max!) {
+        throw "The plugin doesn't support your CLI's version.\n"
+            'Please run ${yellow('$cliName sidekick update')} to update your CLI.';
+      } else {
+        throw 'The plugin is too old to be installed to your CLI '
+            'because it depends on an outdated version of sidekick_plugin_installer.';
+      }
+    }
 
-    // TODO ? add check: can new CLIs install old plugins? As long as there's no breaking change in protocol, we could set the old env vars as well in that case
-
-    // TODO ? add these checks to addDependency (or somewhere else)
+    // ensure backwards compatibility where possible
+    // new CLI installing old plugin: respect old protocol of sidekick_plugin_installer
+    if (pluginInstallerProtocolVersion <= Version(0, 1, 4)) {
+      // up until v0.1.4:
+      // - the env variable for path installation had a different name
+      // - installation from git was not possible
+      switch (source) {
+        case 'path':
+          env['SIDEKICK_LOCAL_PLUGIN_PATH'] = env['SIDEKICK_PLUGIN_LOCAL_PATH'];
+          break;
+        case 'hosted':
+          break;
+        case 'git':
+          throw "The plugin's outdated sidekick_plugin_installer dependency "
+              "doesn't allow installation from git.";
+        default:
+          throw StateError('unreachable');
+      }
+    }
 
     final pluginName = pluginInstallerCode.name;
 
@@ -328,15 +358,23 @@ Directory _getPackageRootDirForHostedOrGitSource(ArgResults args) {
   }
 }
 
-Version? _getMinDependencyVersion(DartPackage package, String dependency) {
-  final pubspec = package.pubspec.readAsStringSync();
+Version _getPluginInstallerProtocolVersion(DartPackage plugin) {
+  final pubspec = plugin.pubspec.readAsStringSync();
 
-  final versionConstraintRegEx =
-      RegExp('  $dependency:[\'"\\^<>= ]*(\\d+\\.\\d+\\.\\d+(?:[+-]\\S+)?)');
+  final versionConstraintRegEx = RegExp(
+    '^  sidekick_plugin_installer:[\'"\\^<>= ]*(\\d+\\.\\d+\\.\\d+(?:[+-]\\S+)?)',
+    multiLine: true,
+  );
   final minVersion = versionConstraintRegEx
       .allMatches(pubspec)
       .map((e) => e.group(1))
       .whereNotNull();
 
-  return minVersion.isEmpty ? null : Version.parse(minVersion.single);
+  if (minVersion.length != 1) {
+    throw "Tried installing '${plugin.name}' as a sidekick plugin, "
+        "but couldn't get its plugin installer protocol version.\n"
+        "A valid sidekick plugin needs a single dependency on sidekick_plugin_installer.";
+  }
+
+  return Version.parse(minVersion.single);
 }
