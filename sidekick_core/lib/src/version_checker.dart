@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:http/http.dart';
+import 'package:pub_semver/pub_semver.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:yaml/yaml.dart';
 
@@ -113,7 +114,7 @@ class VersionChecker {
   /// - ['dev_dependencies', 'lint']
   /// - ['sidekick', 'cli_version']
   Version getMinimumVersionConstraint(List<String> pubspecKeys) {
-    final versionConstraint = _readFromPubspecYaml(pubspecKeys);
+    final versionConstraint = _readFromYaml(package.pubspec, pubspecKeys);
     if (versionConstraint == null) {
       return Version.none;
     }
@@ -135,22 +136,49 @@ class VersionChecker {
     return minVersionConstraint;
   }
 
-  String? _readFromPubspecYaml(List<Object> path) {
+  Version getResolvedVersion(String dependency) {
+    final pubspecLockFile = package.root.file('pubspec.lock');
+    final resolvedVersion =
+        _readFromYaml(pubspecLockFile, ['packages', dependency, 'version']);
+    if (resolvedVersion == null) {
+      // TODO check if this can ever be true - maybe with a git dependency?
+      // TODO add error message
+      throw 'TODO';
+    }
+    return Version.parse(resolvedVersion);
+  }
+
+  String? _readFromYaml(File yamlFile, List<Object> path) {
+    String describePath(List<Object> path) =>
+        '[${path.map((e) => '$e').join(', ')}]';
+
     if (path.isEmpty) {
       throw 'Need at least one key in path parameter, but it was empty.';
     }
+    if (!yamlFile.existsSync()) {
+      throw "Tried reading '${describePath(path)}' from yaml file "
+          "'${yamlFile.path}', but that file doesn't exist.";
+    }
 
-    final pubspec = loadYaml(package.pubspec.readAsStringSync());
+    final yaml = loadYaml(yamlFile.readAsStringSync());
 
     Object? current =
         // ignore: avoid_dynamic_calls, pubspec currently is a [YamlMap] but will be a [HashMap] in future versions
-        pubspec[path.first];
-    for (final key in path.sublist(1)) {
+        yaml[path.first];
+    final remainingPath = path.sublist(1);
+    var i = 0;
+    for (final key in remainingPath) {
       if (current is Map) {
         current = current[key];
       } else {
+        if (i != remainingPath.length - 1) {
+          // TODO add test
+          throw "Couldn't read full path '${describePath(path)}' from yaml file "
+              "'${yamlFile.path}', was only able to read until '${describePath(path.sublist(0, i))}'";
+        }
         return null;
       }
+      i++;
     }
 
     return current as String?;
