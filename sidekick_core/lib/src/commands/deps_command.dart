@@ -11,17 +11,14 @@ class DepsCommand extends Command {
   final String name = 'deps';
 
   /// packages whose dependencies should not be loaded
-  @Deprecated('Use excludedPackages instead.')
   final List<DartPackage> exclude;
 
-  /// packages whose dependencies should not be loaded
-  ///
-  /// Glob syntax can be used to e.g. exclude all packages in a directory: '/path/to/dir/**'
-  final List<String> excludedPackages;
+  /// glob patterns of packages whose dependencies should not be loaded
+  final List<String> excludeGlob;
 
   DepsCommand({
-    @Deprecated('Use excludePackages instead.') this.exclude = const [],
-    this.excludedPackages = const [],
+    this.exclude = const [],
+    this.excludeGlob = const [],
   }) {
     argParser.addOption(
       'package',
@@ -49,7 +46,7 @@ class DepsCommand extends Command {
 
     final errorBuffer = StringBuffer();
 
-    final excluded = excludedPackages
+    final excluded = excludeGlob
         .map((p) => Glob(p))
         .map(
           (e) => e.listSync(
@@ -60,7 +57,6 @@ class DepsCommand extends Command {
         .expand((e) => e) // flattens nested list
         .whereType<Directory>()
         .mapNotNull((e) => DartPackage.fromDirectory(e))
-        // ignore: deprecated_member_use_from_same_package, until `exclude` is removed
         .append(exclude);
     for (final package in allPackages.whereNot(excluded.contains)) {
       try {

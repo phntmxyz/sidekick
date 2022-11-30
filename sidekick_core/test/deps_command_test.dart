@@ -70,9 +70,8 @@ environment:
           );
           runner.addCommand(
             DepsCommand(
-              // ignore: deprecated_member_use_from_same_package, until `exclude` is removed
               exclude: [DartPackage.fromDirectory(dir)!],
-              excludedPackages: ['foo/**'],
+              excludeGlob: ['foo/**'],
             ),
           );
           await runner.run(['deps']);
