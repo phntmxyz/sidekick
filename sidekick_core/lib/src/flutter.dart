@@ -62,10 +62,11 @@ class FlutterSdkNotSetException implements Exception {
 Directory? systemFlutterSdk() {
   // /opt/homebrew/bin/flutter
   final path = dcli
-      .start('which flutter', progress: Progress.capture(), nothrow: true)
-      .firstLine;
+          .start('which flutter', progress: Progress.capture(), nothrow: true)
+          .firstLine ??
+      env['FLUTTER_ROOT'];
   if (path == null) {
-    // flutter not on path
+    // flutter not on path or env.FLUTTER_ROOT
     return null;
   }
   final file = File(path);

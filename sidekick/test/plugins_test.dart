@@ -2,12 +2,12 @@ import 'package:dcli/dcli.dart';
 import 'package:recase/recase.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_core/src/commands/plugins/create_plugin_command.dart';
+import 'package:sidekick_test/sidekick_test.dart';
 import 'package:test/test.dart';
 import 'package:test_process/test_process.dart';
 
 import 'templates/templates.dart';
 import 'util/cli_runner.dart';
-import 'util/local_testing.dart';
 
 void main() {
   late File entrypoint;
