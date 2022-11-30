@@ -1,3 +1,5 @@
+import 'package:glob/glob.dart';
+import 'package:glob/list_local_fs.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 
 /// Downloads dependencies of all Flutter/Dart packages in the repository
@@ -11,7 +13,13 @@ class DepsCommand extends Command {
   /// packages whose dependencies should not be loaded
   final List<DartPackage> exclude;
 
-  DepsCommand({this.exclude = const []}) {
+  /// glob patterns of packages whose dependencies should not be loaded
+  final List<String> excludeGlob;
+
+  DepsCommand({
+    this.exclude = const [],
+    this.excludeGlob = const [],
+  }) {
     argParser.addOption(
       'package',
       abbr: 'p',
@@ -37,7 +45,20 @@ class DepsCommand extends Command {
     }
 
     final errorBuffer = StringBuffer();
-    for (final package in allPackages.filter((it) => !exclude.contains(it))) {
+
+    final excluded = excludeGlob
+        .map((p) => Glob(p))
+        .map(
+          (e) => e.listSync(
+            // See https://github.com/dart-lang/glob/issues/52
+            root: Directory.current.path,
+          ),
+        )
+        .expand((e) => e) // flattens nested list
+        .whereType<Directory>()
+        .mapNotNull((e) => DartPackage.fromDirectory(e))
+        .append(exclude);
+    for (final package in allPackages.whereNot(excluded.contains)) {
       try {
         _getDependencies(package);
       } catch (e, stack) {

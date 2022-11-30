@@ -1,8 +1,8 @@
 import 'dart:io';
 
+import 'package:dartx/dartx_io.dart';
 import 'package:dcli/dcli.dart' as dcli;
 import 'package:test/test.dart';
-import 'package:dartx/dartx_io.dart';
 
 /// Creates a fake Flutter SDK in temp with a `flutter` executable that does
 /// nothing besides "downloading" a fake Dart executable that does also nothing

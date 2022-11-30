@@ -12,4 +12,4 @@ dependencies:
   test: ^1.17.0
 
 dev_dependencies:
-  lints: ^2.0.0
+  lint: ^1.5.0

@@ -42,7 +42,11 @@ R insideFakeProjectWithSidekick<R>(R Function(Directory projectDir) block) {
 
   tempDir.file('pubspec.yaml')
     ..createSync()
-    ..writeAsStringSync('name: main_project\n');
+    ..writeAsStringSync('''
+name: main_project
+environment:
+  sdk: ^2.10.0
+''');
   tempDir.file('dash').createSync();
 
   final fakeSidekickDir = tempDir.directory('packages/dash_sdk')
@@ -50,7 +54,11 @@ R insideFakeProjectWithSidekick<R>(R Function(Directory projectDir) block) {
 
   fakeSidekickDir.file('pubspec.yaml')
     ..createSync()
-    ..writeAsStringSync('name: dash_sdk\n');
+    ..writeAsStringSync('''
+name: dash_sdk
+environment:
+  sdk: ^2.10.0
+''');
   fakeSidekickDir.directory('lib').createSync();
 
   env['SIDEKICK_PACKAGE_HOME'] = fakeSidekickDir.absolute.path;
