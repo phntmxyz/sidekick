@@ -16,6 +16,7 @@ Future<void> runSk(List<String> args) async {
   skProject = SkProject(runner.repository.root);
   runner
     ..addCommand(DartCommand())
+    // TODO: use `excludePackages: ['test/**']` when fix for https://github.com/phntmxyz/sidekick/issues/122 is available
     ..addCommand(DepsCommand(exclude: [...testPackages]))
     ..addCommand(DartAnalyzeCommand())
     ..addCommand(
