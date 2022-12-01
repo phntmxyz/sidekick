@@ -154,10 +154,11 @@ name: dashi
           () => versionChecker
               .getMinimumVersionConstraint(['dependencies', 'foo']),
           throwsA(
-              "Couldn't read path '[dependencies, foo]' from yaml file '${pubspecYamlFile.path}'"),
+            "Couldn't read path '[dependencies, foo]' from yaml file '${pubspecYamlFile.path}'",
+          ),
         );
       });
-      
+
       test('path exists only partially', () {
         pubspecYamlFile.writeAsStringSync('''
 name: dashi
