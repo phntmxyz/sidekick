@@ -13,6 +13,30 @@ void addDependencyFromPluginContext() => addDependency(
       gitPath: PluginContext.gitPath,
     );
 
+/// Adds a dependency using [addDependency] compatibly with the old protocol
+///
+/// Doesn't support installing plugins from git as the old protocol doesn't
+/// support that
+@Deprecated('Use `addDependency` or `addDependencyFromPluginContext` instead.')
+void addDependencyNonBreakingWrapper(String pluginName) {
+  // ignore: deprecated_member_use_from_same_package
+  if (PluginContext.localPlugin == null) {
+    // install from hosted source which is the default when given nothing else
+    addDependency(
+      package: PluginContext.sidekickPackage,
+      dependency: pluginName,
+    );
+  } else {
+    // install from local source
+    addDependency(
+      package: PluginContext.sidekickPackage,
+      dependency: pluginName,
+      // ignore: deprecated_member_use_from_same_package
+      localPath: PluginContext.localPlugin!.root.path,
+    );
+  }
+}
+
 /// Adds [dependency] to [package] as a path, hosted, or git dependency.
 ///
 /// If no additional parameters are specified, a dependency is added as

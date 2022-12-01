@@ -61,7 +61,7 @@ import 'package:sidekick_plugin_installer/sidekick_plugin_installer.dart';
 Future<void> main() async {
   final SidekickPackage package = PluginContext.sidekickPackage;
 
-  addDependencyFromPluginContext();
+  addDependencyNonBreakingWrapper('${pluginName.snakeCase}');
   pubGet(package);
 
   registerPlugin(
