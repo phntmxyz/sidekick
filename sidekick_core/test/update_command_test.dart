@@ -3,9 +3,8 @@ import 'dart:async';
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_core/src/commands/update_command.dart';
 import 'package:sidekick_core/src/sidekick_version_checker.dart';
+import 'package:sidekick_test/sidekick_test.dart';
 import 'package:test/test.dart';
-
-import 'util/local_testing.dart';
 
 void main() {
   test('UpdateCommand generates new files', () async {

@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.12.0
+- New: `version` getter mirroring the `sidekick_core` version in `pubspec.yaml`
+- Analyzer now ignores the `build` folder. Previously, the embedded dart sdk was accidentally analyzed #107  
+- Reduce stdout noise when installing a plugin from pub (`sidekick plugin install`) #109
+- Reduce stdout when compiling the cli (not showing `dart pub get` stdout) #109
+- Allow cli names to include underscores (sidekick init) #112
+- `DepsCommand` now accounts for the `exclude` parameter, not loading dependencies for those packages #118
+
 ## 0.11.1
 - New: `<FileSystemEntity>.makeExecutable()` extension method
 - Update repository URL in pubspec.yaml

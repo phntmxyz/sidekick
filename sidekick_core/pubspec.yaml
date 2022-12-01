@@ -1,6 +1,6 @@
 name: sidekick_core
 description: Reusable code pieces for sidekick CLIs. Provides a project and useful helper methods when working with files
-version: 0.11.1
+version: 0.12.0
 repository: https://github.com/phntmxyz/sidekick/tree/main/sidekick_core
 issue_tracker: https://github.com/phntmxyz/sidekick/labels/sidekick_core
 
@@ -11,15 +11,18 @@ dependencies:
   args: ^2.1.0
   dartx: '>=0.7.1 <2.0.0'
   dcli: ^1.15.0
+  glob: ^2.0.2
   http: ^0.13.5
   meta: ^1.5.0
   # transitive from dcli
   pub_semver: ^2.1.1
-  # transitive from dcli
-  pubspec2: ^2.4.1
   recase: ^4.1.0
   yaml: ^3.1.0
 
 dev_dependencies:
   lint: ^1.5.0
+  # transitive from dcli
+  pubspec2: ^2.4.1
+  sidekick_test:
+    path: ../sidekick_test
   test: ^1.20.0

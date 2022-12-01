@@ -1,0 +1,17 @@
+name: sk_sidekick
+description: Sidekick CLI for sk
+version: 0.0.1
+publish_to: none
+
+environment:
+  sdk: '>=2.14.0 <3.0.0'
+
+executables:
+  main:
+
+dependencies:
+  pub_semver: ^2.1.1
+  sidekick_core: '>=0.12.0 <1.0.0'
+
+dev_dependencies:
+  lint: ^1.5.3

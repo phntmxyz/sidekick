@@ -1,5 +1,7 @@
+import 'dart:io';
+
+import 'package:dartx/dartx_io.dart';
 import 'package:dcli/dcli.dart' as dcli;
-import 'package:sidekick_core/sidekick_core.dart';
 import 'package:test/test.dart';
 
 /// Creates a fake Flutter SDK in temp with a `flutter` executable that does

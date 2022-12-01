@@ -122,6 +122,7 @@ name: dashi
 name: dashi
 
 # the pubspec does not have a dependencies block, it should be added by updateVersionConstraint
+
 dependencies:
   foo: 1.2.4
 ''',

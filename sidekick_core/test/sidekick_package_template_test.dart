@@ -1,8 +1,7 @@
 import 'package:dcli/dcli.dart';
 import 'package:sidekick_core/sidekick_core.dart';
+import 'package:sidekick_test/sidekick_test.dart';
 import 'package:test/test.dart';
-
-import 'util/local_testing.dart';
 
 void main() {
   late Directory tempDir;

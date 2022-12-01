@@ -2,7 +2,14 @@
 <module type="WEB_MODULE" version="4">
   <component name="NewModuleRootManager" inherit-compiler-output="true">
     <exclude-output />
-    <content url="file://$MODULE_DIR$" />
+    <content url="file://$MODULE_DIR$">
+      <excludeFolder url="file://$MODULE_DIR$/sk_sidekick/build" />
+      <excludeFolder url="file://$MODULE_DIR$/sk_sidekick/.pub" />
+      <excludeFolder url="file://$MODULE_DIR$/sk_sidekick/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/sidekick_test/.dart_tool" />
+      <excludeFolder url="file://$MODULE_DIR$/sidekick_test/build" />
+      <excludeFolder url="file://$MODULE_DIR$/sidekick_test/.pub" />
+    </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="Dart SDK" level="project" />

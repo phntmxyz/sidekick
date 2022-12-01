@@ -1,10 +1,9 @@
 import 'dart:async';
 
 import 'package:sidekick_core/sidekick_core.dart';
+import 'package:sidekick_test/sidekick_test.dart';
 import 'package:test/test.dart';
 import 'package:yaml/yaml.dart';
-
-import 'util/local_testing.dart';
 
 void main() {
   test('version is correct', () {
@@ -42,7 +41,7 @@ void main() {
         );
         bool called = false;
         runner.addCommand(
-          DelegatedCommand(
+          _DelegatedCommand(
             name: 'inside',
             block: () {
               called = true;
@@ -60,7 +59,7 @@ void main() {
         final runner = initializeSidekick(name: 'dash', mainProjectPath: '.');
         bool called = false;
         runner.addCommand(
-          DelegatedCommand(
+          _DelegatedCommand(
             name: 'inside',
             block: () {
               called = true;
@@ -91,7 +90,7 @@ void main() {
         final runner = initializeSidekick(name: 'dash');
         bool called = false;
         runner.addCommand(
-          DelegatedCommand(
+          _DelegatedCommand(
             name: 'inside',
             block: () {
               called = true;
@@ -120,7 +119,7 @@ void main() {
         final runner = initializeSidekick(name: 'dash');
         bool called = false;
         runner.addCommand(
-          DelegatedCommand(
+          _DelegatedCommand(
             name: 'inside',
             block: () {
               called = true;
@@ -141,7 +140,7 @@ void main() {
       bool outerCalled = false;
       bool innerCalled = false;
       outerRunner.addCommand(
-        DelegatedCommand(
+        _DelegatedCommand(
           name: 'outer',
           block: () async {
             outerCalled = true;
@@ -158,7 +157,7 @@ void main() {
 
             final innerRunner = initializeSidekick(name: 'innerdash');
             innerRunner.addCommand(
-              DelegatedCommand(
+              _DelegatedCommand(
                 name: 'inner',
                 block: () {
                   innerCalled = true;
@@ -260,8 +259,8 @@ void main() {
   });
 }
 
-class DelegatedCommand extends Command {
-  DelegatedCommand({
+class _DelegatedCommand extends Command {
+  _DelegatedCommand({
     required this.name,
     required this.block,
   });

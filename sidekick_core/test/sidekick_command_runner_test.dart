@@ -1,11 +1,18 @@
 import 'package:sidekick_core/sidekick_core.dart';
+import 'package:sidekick_test/fake_stdio.dart';
+import 'package:sidekick_test/sidekick_test.dart';
 import 'package:test/fake.dart';
 import 'package:test/test.dart';
 
-import 'util/fake_stdio.dart';
-import 'util/local_testing.dart';
-
 void main() {
+  setUp(() {
+    env['SIDEKICK_ENABLE_UPDATE_CHECK'] = 'true';
+  });
+
+  tearDown(() {
+    addTearDown(() => env['SIDEKICK_ENABLE_UPDATE_CHECK'] = null);
+  });
+
   test('prints warnings to update outdated CLI', () async {
     final fakeStderr = FakeStdoutStream();
     await insideFakeProjectWithSidekick(

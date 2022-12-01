@@ -3,12 +3,9 @@
   <component name="NewModuleRootManager" inherit-compiler-output="true">
     <exclude-output />
     <content url="file://$MODULE_DIR$">
+      <excludeFolder url="file://$MODULE_DIR$/.dart_tool" />
       <excludeFolder url="file://$MODULE_DIR$/build" />
       <excludeFolder url="file://$MODULE_DIR$/.pub" />
-      <excludeFolder url="file://$MODULE_DIR$/.dart_tool" />
-      <excludeFolder url="file://$MODULE_DIR$/test/templates/minimal_sidekick_plugin/.dart_tool" />
-      <excludeFolder url="file://$MODULE_DIR$/test/templates/minimal_sidekick_plugin/.pub" />
-      <excludeFolder url="file://$MODULE_DIR$/test/templates/minimal_sidekick_plugin/build" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

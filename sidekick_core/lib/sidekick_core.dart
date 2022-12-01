@@ -43,7 +43,7 @@ export 'package:sidekick_core/src/template/sidekick_package.template.dart';
 /// This is used by the update command to determine if your sidekick cli
 /// requires an update
 // DO NOT MANUALLY EDIT THIS VERSION, instead run `sk bump-version sidekick_core`
-final Version version = Version.parse('0.11.1');
+final Version version = Version.parse('0.12.0');
 
 /// Initializes sidekick, call this at the very start of your CLI program
 ///
@@ -143,15 +143,14 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
       final result = await super.runCommand(parsedArgs);
       return result;
     } finally {
-      // TODO(update-feature): enable update check when ready
-      /*
-      if (command != 'update') {
+      // TODO(update-feature): remove env check when ready
+      if (env['SIDEKICK_ENABLE_UPDATE_CHECK'] == 'true' &&
+          command != 'update') {
         // print warning if the user didn't fully update their CLI
         _checkCliVersionIntegrity();
         // print warning if CLI update is available
         await _checkForUpdates();
       }
-      */
       unmount();
     }
   }
