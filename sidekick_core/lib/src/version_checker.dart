@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:convert';
 
 import 'package:http/http.dart';
@@ -134,15 +135,19 @@ class VersionChecker {
   Version getResolvedVersion(String dependency) {
     final pubspecLockFile = package.root.file('pubspec.lock');
     final resolvedVersion =
-        _readFromYaml(pubspecLockFile, ['packages', dependency, 'version']);
-    if (resolvedVersion == null) {
-      // TODO check if this can ever be true - maybe with a git dependency?
-      // TODO add error message
-      throw 'TODO';
-    }
+        _readFromYaml(pubspecLockFile, ['packages', dependency, 'version'])
+        // the null assertion operator is safe to use here
+        // because every dependency in pubspec.lock has a version
+        // even if a local dependency doesn't explicitly specify a version in their
+        // pubspec.yaml, there is an implicit version of 0.0.0
+        !;
     return Version.parse(resolvedVersion);
   }
 
+  /// Returns the string specified by [path] in [yamlFile]
+  ///
+  /// Returns null if the string is empty
+  /// Throws if the [path] can't be found in the [yamlFile]
   String? _readFromYaml(File yamlFile, List<Object> path) {
     String describePath(List<Object> path) =>
         '[${path.map((e) => '$e').join(', ')}]';
@@ -157,17 +162,20 @@ class VersionChecker {
 
     final yaml = loadYaml(yamlFile.readAsStringSync());
 
+    // ignore: avoid_dynamic_calls, pubspec currently is a [YamlMap] but will be a [HashMap] in future versions
+    if (!(yaml.keys.contains(path.first) as bool)) {
+      throw "Couldn't read path '${describePath(path)}' from yaml file '${yamlFile.path}'";
+    }
+
     Object? current =
         // ignore: avoid_dynamic_calls, pubspec currently is a [YamlMap] but will be a [HashMap] in future versions
         yaml[path.first];
-    final remainingPath = path.sublist(1);
-    var i = 0;
-    for (final key in remainingPath) {
+    var i = 1;
+    for (final key in path.sublist(1)) {
       if (current is Map) {
         current = current[key];
       } else {
-        if (i != remainingPath.length - 1) {
-          // TODO add test
+        if (i != path.length) {
           throw "Couldn't read full path '${describePath(path)}' from yaml file "
               "'${yamlFile.path}', was only able to read until '${describePath(path.sublist(0, i))}'";
         }

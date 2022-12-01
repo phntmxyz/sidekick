@@ -127,17 +127,64 @@ dependencies:
   });
 
   group('getMinimumVersionConstraint', () {
+    group('throws when ', () {
+      test('path is empty', () {
+        expect(
+          () => versionChecker.getMinimumVersionConstraint([]),
+          throwsA("Need at least one key in path parameter, but it was empty."),
+        );
+      });
+
+      test('yaml file does not exist', () {
+        pubspecYamlFile.deleteSync();
+        expect(
+          () => versionChecker
+              .getMinimumVersionConstraint(['dependencies', 'foo']),
+          throwsA(
+            "Tried reading '[dependencies, foo]' from yaml file '${pubspecYamlFile.path}', but that file doesn't exist.",
+          ),
+        );
+      });
+
+      test('path does not exist at all', () {
+        pubspecYamlFile.writeAsStringSync('''
+name: dashi
+''');
+        expect(
+          () => versionChecker
+              .getMinimumVersionConstraint(['dependencies', 'foo']),
+          throwsA(
+              "Couldn't read path '[dependencies, foo]' from yaml file '${pubspecYamlFile.path}'"),
+        );
+      });
+      
+      test('path exists only partially', () {
+        pubspecYamlFile.writeAsStringSync('''
+name: dashi
+dependencies:
+''');
+        expect(
+          () => versionChecker
+              .getMinimumVersionConstraint(['dependencies', 'foo']),
+          throwsA(
+            "Couldn't read full path '[dependencies, foo]' from yaml file '${pubspecYamlFile.path}', was only able to read until '[dependencies]'",
+          ),
+        );
+      });
+    });
+
     test('returns Version.none when any version is allowed explicitly', () {
       pubspecYamlFile.writeAsStringSync('''
 name: dashi
 
-foo:
-  bar: 
-    baz: any
+dependencies:
+  foo: any
 ''');
 
-      final actual =
-          versionChecker.getMinimumVersionConstraint(['foo', 'bar', 'baz']);
+      final actual = versionChecker.getMinimumVersionConstraint([
+        'dependencies',
+        'foo',
+      ]);
       expect(actual, Version.none);
     });
 
@@ -145,13 +192,12 @@ foo:
       pubspecYamlFile.writeAsStringSync('''
 name: dashi
 
-foo:
-  bar: 
-    baz:   
+dependencies:
+  foo: 
 ''');
 
       final actual =
-          versionChecker.getMinimumVersionConstraint(['foo', 'bar', 'baz']);
+          versionChecker.getMinimumVersionConstraint(['dependencies', 'foo']);
       expect(actual, Version.none);
     });
 
@@ -159,13 +205,12 @@ foo:
       pubspecYamlFile.writeAsStringSync('''
 name: dashi
 
-foo:
-  bar: 
-    baz: '>=0.5.0 <1.0.0'
+dependencies: 
+  foo: '>=0.5.0 <1.0.0'
 ''');
 
       final actual =
-          versionChecker.getMinimumVersionConstraint(['foo', 'bar', 'baz']);
+          versionChecker.getMinimumVersionConstraint(['dependencies', 'foo']);
       expect(actual, Version(0, 5, 0));
     });
 
@@ -173,13 +218,12 @@ foo:
       pubspecYamlFile.writeAsStringSync('''
 name: dashi
 
-foo:
-  bar: 
-    baz: '<1.0.0 >=0.5.0'
+dependencies:
+  foo: '<1.0.0 >=0.5.0'
 ''');
 
       final actual =
-          versionChecker.getMinimumVersionConstraint(['foo', 'bar', 'baz']);
+          versionChecker.getMinimumVersionConstraint(['dependencies', 'foo']);
       expect(actual, Version(0, 5, 0));
     });
 
@@ -187,13 +231,12 @@ foo:
       pubspecYamlFile.writeAsStringSync('''
 name: dashi
 
-foo:
-  bar: 
-    baz: '>0.5.0 <1.0.0'
+dependencies:
+  foo: '>0.5.0 <1.0.0'
 ''');
 
       final actual =
-          versionChecker.getMinimumVersionConstraint(['foo', 'bar', 'baz']);
+          versionChecker.getMinimumVersionConstraint(['dependencies', 'foo']);
       expect(actual, Version(0, 5, 1));
     });
   });
