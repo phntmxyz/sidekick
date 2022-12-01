@@ -122,4 +122,76 @@ dependencies:
       );
     });
   });
+
+  group('getMinimumVersionConstraint', () {
+    test('gets Version.none when any version is allowed explicitly', () {
+      pubspecFile.writeAsStringSync('''
+name: dashi
+
+foo:
+  bar: 
+    baz: any
+''');
+
+      final actual =
+          versionChecker.getMinimumVersionConstraint(['foo', 'bar', 'baz']);
+      expect(actual, Version.none);
+    });
+
+    test('gets Version.none when any version is allowed implicitly', () {
+      pubspecFile.writeAsStringSync('''
+name: dashi
+
+foo:
+  bar: 
+    baz:   
+''');
+
+      final actual =
+          versionChecker.getMinimumVersionConstraint(['foo', 'bar', 'baz']);
+      expect(actual, Version.none);
+    });
+
+    test('gets correct version from normal range', () {
+      pubspecFile.writeAsStringSync('''
+name: dashi
+
+foo:
+  bar: 
+    baz: '>=0.5.0 <1.0.0'
+''');
+
+      final actual =
+          versionChecker.getMinimumVersionConstraint(['foo', 'bar', 'baz']);
+      expect(actual, Version(0, 5, 0));
+    });
+
+    test('gets correct version if range order is unusual', () {
+      pubspecFile.writeAsStringSync('''
+name: dashi
+
+foo:
+  bar: 
+    baz: '<1.0.0 >=0.5.0'
+''');
+
+      final actual =
+          versionChecker.getMinimumVersionConstraint(['foo', 'bar', 'baz']);
+      expect(actual, Version(0, 5, 0));
+    });
+
+    test('gets correct version if range is exclusive on the lower end', () {
+      pubspecFile.writeAsStringSync('''
+name: dashi
+
+foo:
+  bar: 
+    baz: '>0.5.0 <1.0.0'
+''');
+
+      final actual =
+          versionChecker.getMinimumVersionConstraint(['foo', 'bar', 'baz']);
+      expect(actual, Version(0, 5, 1));
+    });
+  });
 }

@@ -114,26 +114,21 @@ class VersionChecker {
   /// - ['dev_dependencies', 'lint']
   /// - ['sidekick', 'cli_version']
   Version getMinimumVersionConstraint(List<String> pubspecKeys) {
-    final versionConstraint = _readFromYaml(package.pubspec, pubspecKeys);
-    if (versionConstraint == null) {
-      return Version.none;
+    final versionConstraint = VersionConstraint.parse(
+      _readFromYaml(package.pubspec, pubspecKeys) ?? 'any',
+    );
+
+    if (versionConstraint is VersionRange) {
+      final minVersion = versionConstraint.min;
+      if (minVersion == null) {
+        return Version.none;
+      }
+      return versionConstraint.includeMin ? minVersion : minVersion.nextPatch;
+    } else if (versionConstraint is Version) {
+      return versionConstraint;
+    } else {
+      throw 'Unknown $versionConstraint';
     }
-
-    final versionConstraintRegEx =
-        RegExp('[\'"\\^<>= ]*(\\d+\\.\\d+\\.\\d+(?:[+-]\\S+)?)');
-
-    final minVersionConstraint = versionConstraintRegEx
-        .allMatches(versionConstraint)
-        .map((e) => e.group(1))
-        .whereNotNull()
-        // it isn't correct to just return the first matched version (.first)
-        // that would work for '>0.5.0 <=1.0.0' but fail for '<=1.0.0 >0.5.0'
-        // instead, get the minimum by sorting and picking the first value
-        .map((e) => Version.parse(e))
-        .sorted()
-        .first;
-
-    return minVersionConstraint;
   }
 
   Version getResolvedVersion(String dependency) {
