@@ -3,6 +3,7 @@ import 'package:pub_semver/pub_semver.dart';
 
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_core/src/pub/pub.dart' as pub;
+import 'package:sidekick_core/src/version_checker.dart';
 
 /// Installs a sidekick plugin
 class InstallPluginCommand extends Command {
@@ -107,8 +108,31 @@ class InstallPluginCommand extends Command {
           'not a valid dart package');
     }
 
+    final pluginName = pluginInstallerCode.name;
+
+    // The target where to install the plugin
+    final target = Repository.requiredSidekickPackage;
+    final workingDir = target.root.directory('build/plugins/$pluginName');
+
+    print('Preparing $pluginName installer...');
+    // copy installer from cache into build dir. We should not manipulate anything in the cache
+    if (workingDir.existsSync()) {
+      workingDir.deleteSync(recursive: true);
+    }
+    workingDir.createSync(recursive: true);
+    await pluginInstallerDir.copyRecursively(workingDir);
+
+    // get installer dependencies
+    sidekickDartRuntime.dart(
+      ['pub', 'get'],
+      workingDirectory: workingDir,
+      progress: Progress.printStdErr(),
+    );
+
+    final pluginVersionChecker = VersionChecker(pluginInstallerCode);
+
     final pluginInstallerProtocolVersion =
-        _getPluginInstallerProtocolVersion(pluginInstallerCode);
+        pluginVersionChecker.getResolvedVersion('sidekick_plugin_installer');
     final supportedInstallerVersions = VersionRange(
       // update when sidekick_core removes support for old sidekick_plugin_installer protocol
       min: Version.none,
@@ -146,27 +170,6 @@ class InstallPluginCommand extends Command {
           throw StateError('unreachable');
       }
     }
-
-    final pluginName = pluginInstallerCode.name;
-
-    // The target where to install the plugin
-    final target = Repository.requiredSidekickPackage;
-    final workingDir = target.root.directory('build/plugins/$pluginName');
-
-    print('Preparing $pluginName installer...');
-    // copy installer from cache into build dir. We should not manipulate anything in the cache
-    if (workingDir.existsSync()) {
-      workingDir.deleteSync(recursive: true);
-    }
-    workingDir.createSync(recursive: true);
-    await pluginInstallerDir.copyRecursively(workingDir);
-
-    // get installer dependencies
-    sidekickDartRuntime.dart(
-      ['pub', 'get'],
-      workingDirectory: workingDir,
-      progress: Progress.printStdErr(),
-    );
 
     print(white('Executing installer $pluginName...'));
     // Execute installer. Requires a tool/install.dart file to execute
@@ -356,25 +359,4 @@ Directory _getPackageRootDirForHostedOrGitSource(ArgResults args) {
     default:
       throw StateError('unreachable');
   }
-}
-
-Version _getPluginInstallerProtocolVersion(DartPackage plugin) {
-  final pubspec = plugin.pubspec.readAsStringSync();
-
-  final versionConstraintRegEx = RegExp(
-    '^  sidekick_plugin_installer:[\'"\\^<>= ]*(\\d+\\.\\d+\\.\\d+(?:[+-]\\S+)?)',
-    multiLine: true,
-  );
-  final minVersion = versionConstraintRegEx
-      .allMatches(pubspec)
-      .map((e) => e.group(1))
-      .whereNotNull();
-
-  if (minVersion.length != 1) {
-    throw "Tried installing '${plugin.name}' as a sidekick plugin, "
-        "but couldn't get its plugin installer protocol version.\n"
-        "A valid sidekick plugin needs a single dependency on sidekick_plugin_installer.";
-  }
-
-  return Version.parse(minVersion.single);
 }
