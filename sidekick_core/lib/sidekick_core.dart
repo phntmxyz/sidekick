@@ -8,7 +8,7 @@ import 'package:dcli/dcli.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:sidekick_core/src/dart_package.dart';
 import 'package:sidekick_core/src/repository.dart';
-import 'package:sidekick_core/src/sidekick_version_checker.dart';
+import 'package:sidekick_core/src/version_checker.dart';
 
 export 'dart:io' hide sleep;
 
@@ -158,8 +158,9 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
   /// Print a warning if the CLI isn't up to date
   Future<void> _checkForUpdates() async {
     try {
-      final isUpToDate = await const SidekickVersionChecker().isUpToDate(
-        package: 'sidekick_core',
+      final isUpToDate =
+          await VersionChecker(Repository.requiredSidekickPackage).isUpToDate(
+        dependency: 'sidekick_core',
         pubspecKeys: ['sidekick', 'cli_version'],
       );
       if (!isUpToDate) {
@@ -177,11 +178,11 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
   /// minimum version of their CLI and that version doesn't match with the
   /// CLI version listed in the pubspec at the path ['sidekick', 'cli_version']
   void _checkCliVersionIntegrity() {
-    const versionChecker = SidekickVersionChecker();
+    final versionChecker = VersionChecker(Repository.requiredSidekickPackage);
     final sidekickCoreVersion = versionChecker
-        .getCurrentMinimumPackageVersion(['dependencies', 'sidekick_core']);
-    final sidekickCliVersion = versionChecker
-        .getCurrentMinimumPackageVersion(['sidekick', 'cli_version']);
+        .getMinimumVersionConstraint(['dependencies', 'sidekick_core']);
+    final sidekickCliVersion =
+        versionChecker.getMinimumVersionConstraint(['sidekick', 'cli_version']);
 
     // old CLI which has no version information yet
     // _checkForUpdates will print a warning to update the CLI in this case

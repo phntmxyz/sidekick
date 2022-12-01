@@ -1,5 +1,5 @@
 import 'package:sidekick_core/sidekick_core.dart';
-import 'package:sidekick_core/src/sidekick_version_checker.dart';
+import 'package:sidekick_core/src/version_checker.dart';
 
 Future<void> main(List<String> args) async {
   final sidekickCliName = args[0];
@@ -48,8 +48,8 @@ Future<void> main(List<String> args) async {
 
     // update sidekick: cli_version: <version> in pubspec.yaml to signalize
     // that update has completed successfully
-    const sidekickVersionChecker = SidekickVersionChecker();
-    sidekickVersionChecker.updateVersionConstraint(
+    final versionChecker = VersionChecker(Repository.requiredSidekickPackage);
+    versionChecker.updateVersionConstraint(
       pubspecKeys: ['sidekick', 'cli_version'],
       newMinimumVersion: latestSidekickCoreVersion,
       pinVersion: true,

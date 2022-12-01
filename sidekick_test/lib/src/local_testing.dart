@@ -144,7 +144,6 @@ String? _systemDartSdkPath() {
   return libexec.path;
 }
 
-
 void _overrideDependency({
   required Directory package,
   required String dependency,

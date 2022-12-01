@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_core/src/commands/update_command.dart';
-import 'package:sidekick_core/src/sidekick_version_checker.dart';
+import 'package:sidekick_core/src/version_checker.dart';
 import 'package:sidekick_test/sidekick_test.dart';
 import 'package:test/test.dart';
 
@@ -40,16 +40,17 @@ void main() {
           runner.addCommand(UpdateCommand());
           await runner.run(['update']);
 
-          const versionChecker = SidekickVersionChecker();
+          final versionChecker =
+              VersionChecker(Repository.requiredSidekickPackage);
 
           final sidekickVersionAfterUpdate = versionChecker
-              .getCurrentMinimumPackageVersion(['sidekick', 'cli_version']);
+              .getMinimumVersionConstraint(['sidekick', 'cli_version']);
           final sidekickCoreVersionAfterUpdate =
-              versionChecker.getCurrentMinimumPackageVersion(
+              versionChecker.getMinimumVersionConstraint(
             ['dependencies', 'sidekick_core'],
           );
           final latestSidekickCoreVersion =
-              await versionChecker.getLatestPackageVersion('sidekick_core');
+              await versionChecker.getLatestDependencyVersion('sidekick_core');
 
           expect(sidekickVersionAfterUpdate, latestSidekickCoreVersion);
           expect(sidekickCoreVersionAfterUpdate, latestSidekickCoreVersion);

@@ -1,35 +1,38 @@
 import 'dart:convert';
 
 import 'package:http/http.dart';
+import 'package:pub_semver/pub_semver.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:yaml/yaml.dart';
 
-/// Checks and updates dependencies of the generated sidekick CLI
-class SidekickVersionChecker {
-  const SidekickVersionChecker();
+/// Checks and updates dependencies of the given [package]
+class VersionChecker {
+  const VersionChecker(this.package);
 
-  /// Checks whether the latest version of [package] is being used in the generated sidekick CLI
+  final DartPackage package;
+
+  /// Checks whether the latest version of [dependency] is being used in the generated sidekick CLI
   ///
   /// [pubspecKeys] can be passed to override the default behavior of reading
-  /// the current package version from the pubspec.yaml at ['dependencies'][package]
+  /// the current package version from the pubspec.yaml at ['dependencies'][dependency]
   /// E.g. ['dev_dependencies', 'some_dev_dependency'] or ['sidekick', 'cli_version']
   Future<bool> isUpToDate({
-    required String package,
+    required String dependency,
     List<String>? pubspecKeys,
   }) async {
-    final latest = await getLatestPackageVersion(package);
-    final current = getCurrentMinimumPackageVersion(
-      pubspecKeys ?? ['dependencies', package],
+    final latest = await getLatestDependencyVersion(dependency);
+    final current = getMinimumVersionConstraint(
+      pubspecKeys ?? ['dependencies', dependency],
     );
 
     return latest == current;
   }
 
-  /// Updates the version constraint of [package] to the latest version
-  Future<void> updateVersionConstraintToLatest(String package) async =>
+  /// Updates the version constraint of [dependency] to the latest version
+  Future<void> updateVersionConstraintToLatest(String dependency) async =>
       updateVersionConstraint(
-        pubspecKeys: ['dependencies', package],
-        newMinimumVersion: await getLatestPackageVersion(package),
+        pubspecKeys: ['dependencies', dependency],
+        newMinimumVersion: await getLatestDependencyVersion(dependency),
       );
 
   /// Sets the version constraint at [pubspecKeys] in pubspec.yaml to [newMinimumVersion]
@@ -41,7 +44,7 @@ class SidekickVersionChecker {
     required Version newMinimumVersion,
     bool pinVersion = false,
   }) {
-    final pubspec = Repository.requiredSidekickPackage.pubspec;
+    final pubspec = package.pubspec;
     final pubspecContent = pubspec.readAsStringSync();
 
     final newVersionConstraint = pinVersion
@@ -68,7 +71,7 @@ class SidekickVersionChecker {
     if (largestMatch == null) {
       // everything is missing, add it to the end of the file
       pubspec.writeAsStringSync(
-        '\n${missingKeys.mapIndexed(
+        '${missingKeys.mapIndexed(
               (index, key) => '${'  ' * index}$key:',
             ).join('\n')} $newVersionConstraint\n',
         mode: FileMode.append,
@@ -87,13 +90,13 @@ class SidekickVersionChecker {
     }
   }
 
-  /// Returns the latest version of [package] available on pub.dev
-  Future<Version> getLatestPackageVersion(String package) async {
+  /// Returns the latest version of [dependency] available on pub.dev
+  Future<Version> getLatestDependencyVersion(String dependency) async {
     final response =
-        await get(Uri.parse('https://pub.dev/api/packages/$package'));
+        await get(Uri.parse('https://pub.dev/api/packages/$dependency'));
 
     if (response.statusCode != HttpStatus.ok) {
-      throw "Package '$package' not found on pub.dev";
+      throw "Package '$dependency' not found on pub.dev";
     }
 
     final latestVersion =
@@ -103,46 +106,81 @@ class SidekickVersionChecker {
     return Version.parse(latestVersion);
   }
 
-  /// Returns the current minimum version of [package] being used in the generated sidekick CLI
+  /// Returns the minimum version constraint of a dependency in [package]
   ///
-  /// [pubspecKeys] is the path from which to retrieve the version in pubspec.yaml, e.g.
+  /// [pubspecKeys] is the path from which to retrieve the version in
+  /// the pubspec.yaml of [package], e.g.
   /// - ['dependencies', 'sidekick_core']
   /// - ['dev_dependencies', 'lint']
   /// - ['sidekick', 'cli_version']
-  Version getCurrentMinimumPackageVersion(List<String> pubspecKeys) {
-    final versionConstraint = _readFromPubspecYaml(pubspecKeys);
-    if (versionConstraint == null) {
-      return Version.none;
+  Version getMinimumVersionConstraint(List<String> pubspecKeys) {
+    final versionConstraint = VersionConstraint.parse(
+      _readFromYaml(package.pubspec, pubspecKeys) ?? 'any',
+    );
+
+    if (versionConstraint is VersionRange) {
+      final minVersion = versionConstraint.min;
+      if (minVersion == null) {
+        return Version.none;
+      }
+      return versionConstraint.includeMin ? minVersion : minVersion.nextPatch;
+    } else if (versionConstraint is Version) {
+      return versionConstraint;
+    } else {
+      throw 'Unknown $versionConstraint';
     }
-
-    final versionConstraintRegEx =
-        RegExp('[\'"\\^<>= ]*(\\d+\\.\\d+\\.\\d+(?:[+-]\\S+)?)');
-    final minVersion = versionConstraintRegEx
-        .allMatches(versionConstraint)
-        .map((e) => e.group(1))
-        .whereNotNull()
-        .first;
-
-    return Version.parse(minVersion);
   }
 
-  String? _readFromPubspecYaml(List<Object> path) {
+  Version getResolvedVersion(String dependency) {
+    final pubspecLockFile = package.root.file('pubspec.lock');
+    final resolvedVersion =
+        _readFromYaml(pubspecLockFile, ['packages', dependency, 'version'])
+        // the null assertion operator is safe to use here
+        // because every dependency in pubspec.lock has a version
+        // even if a local dependency doesn't explicitly specify a version in their
+        // pubspec.yaml, there is an implicit version of 0.0.0
+        !;
+    return Version.parse(resolvedVersion);
+  }
+
+  /// Returns the string specified by [path] in [yamlFile]
+  ///
+  /// Returns null if the string is empty
+  /// Throws if the [path] can't be found in the [yamlFile]
+  String? _readFromYaml(File yamlFile, List<Object> path) {
+    String describePath(List<Object> path) =>
+        '[${path.map((e) => '$e').join(', ')}]';
+
     if (path.isEmpty) {
       throw 'Need at least one key in path parameter, but it was empty.';
     }
+    if (!yamlFile.existsSync()) {
+      throw "Tried reading '${describePath(path)}' from yaml file "
+          "'${yamlFile.path}', but that file doesn't exist.";
+    }
 
-    final pubspec =
-        loadYaml(Repository.requiredSidekickPackage.pubspec.readAsStringSync());
+    final yaml = loadYaml(yamlFile.readAsStringSync());
+
+    // ignore: avoid_dynamic_calls, pubspec currently is a [YamlMap] but will be a [HashMap] in future versions
+    if (!(yaml.keys.contains(path.first) as bool)) {
+      throw "Couldn't read path '${describePath(path)}' from yaml file '${yamlFile.path}'";
+    }
 
     Object? current =
         // ignore: avoid_dynamic_calls, pubspec currently is a [YamlMap] but will be a [HashMap] in future versions
-        pubspec[path.first];
+        yaml[path.first];
+    var i = 1;
     for (final key in path.sublist(1)) {
       if (current is Map) {
         current = current[key];
       } else {
+        if (i != path.length) {
+          throw "Couldn't read full path '${describePath(path)}' from yaml file "
+              "'${yamlFile.path}', was only able to read until '${describePath(path.sublist(0, i))}'";
+        }
         return null;
       }
+      i++;
     }
 
     return current as String?;

@@ -1,5 +1,5 @@
 import 'package:sidekick_core/sidekick_core.dart';
-import 'package:sidekick_core/src/sidekick_version_checker.dart';
+import 'package:sidekick_core/src/version_checker.dart';
 
 /// Updates the sidekick cli
 class UpdateCommand extends Command {
@@ -11,15 +11,15 @@ class UpdateCommand extends Command {
 
   @override
   Future<void> run() async {
-    const sidekickVersionChecker = SidekickVersionChecker();
+    final versionChecker = VersionChecker(Repository.requiredSidekickPackage);
     // to remember which sidekick_core version the sidekick CLI was generated
     // with, that sidekick_core version is written into the CLI's pubspec.yaml
     // at the path ['sidekick', 'cli_version']
 
     final latestSidekickCoreVersion =
-        await sidekickVersionChecker.getLatestPackageVersion('sidekick_core');
-    final currentSidekickCliVersion = sidekickVersionChecker
-        .getCurrentMinimumPackageVersion(['sidekick', 'cli_version']);
+        await versionChecker.getLatestDependencyVersion('sidekick_core');
+    final currentSidekickCliVersion =
+        versionChecker.getMinimumVersionConstraint(['sidekick', 'cli_version']);
     if (latestSidekickCoreVersion == currentSidekickCliVersion) {
       print('No need to update because you are already using the '
           'latest sidekick cli version.');
@@ -27,8 +27,7 @@ class UpdateCommand extends Command {
     }
 
     // update sidekick_core to load the latest update script
-    await sidekickVersionChecker
-        .updateVersionConstraintToLatest('sidekick_core');
+    await versionChecker.updateVersionConstraintToLatest('sidekick_core');
     final dartCommand =
         sidekickDartRuntime.isDownloaded() ? sidekickDartRuntime.dart : dart;
     dartCommand(
