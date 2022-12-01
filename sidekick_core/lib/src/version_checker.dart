@@ -192,9 +192,9 @@ class VersionChecker {
   /// - createNestedVersionYamlRegex(['version'])
   ///   -> '^dependencies:'
   /// - createNestedVersionYamlRegex(['dependencies', 'foo'])
-  ///   -> '^dependencies:(\\n  .*)*\\n  foo:'
+  ///   -> '^dependencies:\\s*(\\n  .*)*\\n  foo:'
   /// - createNestedVersionYamlRegex(['dependencies', 'foo', 'bar'])
-  ///   -> '^dependencies:(\\n  .*)*\\n  foo:(\\n    .*)*\\n    bar:'
+  ///   -> '^dependencies:\\s*(\\n  .*)*\\n  foo:\\s*(\\n    .*)*\\n    bar:'
   RegExp _createNestedYamlKeyRegex(List<String> keys) {
     final sb = StringBuffer('^');
     for (int i = 0; i < keys.length; i++) {
@@ -203,7 +203,7 @@ class VersionChecker {
 
       if (i < keys.length - 1) {
         final indentation = '  ' * (i + 1);
-        sb.write('(\\n$indentation.*)*\\n$indentation');
+        sb.write('\\s*(\\n$indentation.*)*\\n$indentation');
       }
     }
     return RegExp(

@@ -77,6 +77,7 @@ void main() {
         },
         overrideSidekickCoreWithLocalDependency: true,
         overrideSidekickDartWithSystemDart: true,
+        sidekickCliVersion: '0.0.0',
       );
     });
   });
