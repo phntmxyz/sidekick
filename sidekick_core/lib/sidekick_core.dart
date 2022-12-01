@@ -143,12 +143,12 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
       final result = await super.runCommand(parsedArgs);
       return result;
     } finally {
-      // TODO(update-feature): remove env check when ready
-      if (env['SIDEKICK_ENABLE_UPDATE_CHECK'] == 'true' &&
-          command != 'update') {
+      if (_isUpdateCheckEnabled && command != 'update') {
         // print warning if the user didn't fully update their CLI
         _checkCliVersionIntegrity();
         // print warning if CLI update is available
+        // TODO start the update check in the background at command start
+        // TODO prevent multiple update checks when a command start another command
         await _checkForUpdates();
       }
       unmount();
@@ -158,11 +158,13 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
   /// Print a warning if the CLI isn't up to date
   Future<void> _checkForUpdates() async {
     try {
-      final isUpToDate =
-          await VersionChecker(Repository.requiredSidekickPackage).isUpToDate(
+      final checker = VersionChecker(Repository.requiredSidekickPackage);
+      final updateFuture = checker.isUpToDate(
         dependency: 'sidekick_core',
         pubspecKeys: ['sidekick', 'cli_version'],
       );
+      // If it takes too long, don't wait for it
+      final isUpToDate = await updateFuture.timeout(const Duration(seconds: 3));
       if (!isUpToDate) {
         printerr(
           '${yellow('Update available!')}\n'
@@ -200,6 +202,9 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
     }
   }
 }
+
+/// Enables the [SidekickCommandRunner] to check for `sidekick` updates
+bool get _isUpdateCheckEnabled => env['SIDEKICK_ENABLE_UPDATE_CHECK'] == 'true';
 
 typedef Unmount = void Function();
 
