@@ -102,13 +102,11 @@ class InstallPluginCommand extends Command {
       error("Package directory doesn't exist");
     }
 
-    final pluginInstallerCode = DartPackage.fromDirectory(pluginInstallerDir);
-    if (pluginInstallerCode == null) {
+    final pluginName = DartPackage.fromDirectory(pluginInstallerDir)?.name;
+    if (pluginName == null) {
       error('installer package at $pluginInstallerDir is '
           'not a valid dart package');
     }
-
-    final pluginName = pluginInstallerCode.name;
 
     // The target where to install the plugin
     final target = Repository.requiredSidekickPackage;
@@ -121,6 +119,11 @@ class InstallPluginCommand extends Command {
     }
     workingDir.createSync(recursive: true);
     await pluginInstallerDir.copyRecursively(workingDir);
+    final pluginInstallerCode = DartPackage.fromDirectory(workingDir);
+    if (pluginInstallerCode == null) {
+      error('installer package at $workingDir is '
+          'not a valid dart package');
+    }
 
     // get installer dependencies
     sidekickDartRuntime.dart(
