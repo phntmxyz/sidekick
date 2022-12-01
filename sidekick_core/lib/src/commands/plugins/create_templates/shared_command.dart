@@ -61,16 +61,7 @@ import 'package:sidekick_plugin_installer/sidekick_plugin_installer.dart';
 Future<void> main() async {
   final SidekickPackage package = PluginContext.sidekickPackage;
 
-  addDependency(
-    package: PluginContext.sidekickPackage,
-    dependency: PluginContext.name,
-    versionConstraint: PluginContext.versionConstraint,
-    localPath: PluginContext.localPath,
-    hostedUrl: PluginContext.hostedUrl,
-    gitUrl: PluginContext.gitUrl,
-    gitRef: PluginContext.gitRef,
-    gitPath: PluginContext.gitPath,
-  );
+  addDependencyFromPluginContext();
   pubGet(package);
 
   registerPlugin(

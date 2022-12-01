@@ -1,4 +1,17 @@
 import 'package:sidekick_core/sidekick_core.dart';
+import 'package:sidekick_plugin_installer/sidekick_plugin_installer.dart';
+
+/// Adds a dependency to a package as defined by [PluginContext]
+void addDependencyFromPluginContext() => addDependency(
+      package: PluginContext.sidekickPackage,
+      dependency: PluginContext.name,
+      versionConstraint: PluginContext.versionConstraint,
+      localPath: PluginContext.localPath,
+      hostedUrl: PluginContext.hostedUrl,
+      gitUrl: PluginContext.gitUrl,
+      gitRef: PluginContext.gitRef,
+      gitPath: PluginContext.gitPath,
+    );
 
 /// Adds [dependency] to [package] as a path, hosted, or git dependency.
 ///
