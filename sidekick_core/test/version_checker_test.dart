@@ -4,12 +4,15 @@ import 'package:sidekick_core/src/version_checker.dart';
 import 'package:test/test.dart';
 
 void main() {
-  late File pubspecFile;
+  late File pubspecYamlFile;
+  late File pubspecLockFile;
   late VersionChecker versionChecker;
 
   setUp(() {
     final temp = Directory.systemTemp.createTempSync();
-    pubspecFile = temp.file('pubspec.yaml')..writeAsStringSync('name: dashi');
+    pubspecYamlFile = temp.file('pubspec.yaml')
+      ..writeAsStringSync('name: dashi');
+    pubspecLockFile = temp.file('pubspec.lock');
     env['SIDEKICK_PACKAGE_HOME'] = temp.path;
     versionChecker = VersionChecker(DartPackage.fromDirectory(temp)!);
 
@@ -21,7 +24,7 @@ void main() {
 
   group('updateVersionConstraint', () {
     test('updates package when it already exists in pubspec', () async {
-      pubspecFile.writeAsStringSync('''
+      pubspecYamlFile.writeAsStringSync('''
 name: dashi
 dependencies:
   foo: 1.2.3
@@ -35,7 +38,7 @@ dependencies:
         pinVersion: true,
       );
 
-      final pubspec = PubSpec.fromFile(pubspecFile.path);
+      final pubspec = PubSpec.fromFile(pubspecYamlFile.path);
       expect(
         pubspec.dependencies['foo']?.reference,
         isA<HostedReference>().having(
@@ -45,7 +48,7 @@ dependencies:
         ),
       );
       expect(
-        pubspecFile.readAsStringSync(),
+        pubspecYamlFile.readAsStringSync(),
         '''
 name: dashi
 dependencies:
@@ -56,7 +59,7 @@ dependencies:
 
     test('sets package when it does not yet exist in pubspec', () async {
       // foo does not exist in the pubspec yet, it should be added by updateVersionConstraint
-      pubspecFile.writeAsStringSync('''
+      pubspecYamlFile.writeAsStringSync('''
 name: dashi
 dependencies:
   bar: 0.0.0
@@ -70,7 +73,7 @@ dependencies:
         pinVersion: true,
       );
 
-      final pubspec = PubSpec.fromFile(pubspecFile.path);
+      final pubspec = PubSpec.fromFile(pubspecYamlFile.path);
       expect(
         pubspec.dependencies['foo']?.reference,
         isA<HostedReference>().having(
@@ -80,7 +83,7 @@ dependencies:
         ),
       );
       expect(
-        pubspecFile.readAsStringSync(),
+        pubspecYamlFile.readAsStringSync(),
         '''
 name: dashi
 dependencies:
@@ -90,7 +93,7 @@ dependencies:
       );
     });
     test('sets whole block when it does not yet exist in pubspec', () async {
-      pubspecFile.writeAsStringSync('''
+      pubspecYamlFile.writeAsStringSync('''
 name: dashi
 # the pubspec does not have a dependencies block, it should be added by updateVersionConstraint
 ''');
@@ -102,7 +105,7 @@ name: dashi
         pinVersion: true,
       );
 
-      final pubspec = PubSpec.fromFile(pubspecFile.path);
+      final pubspec = PubSpec.fromFile(pubspecYamlFile.path);
       expect(
         pubspec.dependencies['foo']?.reference,
         isA<HostedReference>().having(
@@ -112,7 +115,7 @@ name: dashi
         ),
       );
       expect(
-        pubspecFile.readAsStringSync(),
+        pubspecYamlFile.readAsStringSync(),
         '''
 name: dashi
 # the pubspec does not have a dependencies block, it should be added by updateVersionConstraint
@@ -124,8 +127,8 @@ dependencies:
   });
 
   group('getMinimumVersionConstraint', () {
-    test('gets Version.none when any version is allowed explicitly', () {
-      pubspecFile.writeAsStringSync('''
+    test('returns Version.none when any version is allowed explicitly', () {
+      pubspecYamlFile.writeAsStringSync('''
 name: dashi
 
 foo:
@@ -138,8 +141,8 @@ foo:
       expect(actual, Version.none);
     });
 
-    test('gets Version.none when any version is allowed implicitly', () {
-      pubspecFile.writeAsStringSync('''
+    test('returns Version.none when any version is allowed implicitly', () {
+      pubspecYamlFile.writeAsStringSync('''
 name: dashi
 
 foo:
@@ -152,8 +155,8 @@ foo:
       expect(actual, Version.none);
     });
 
-    test('gets correct version from normal range', () {
-      pubspecFile.writeAsStringSync('''
+    test('returns correct version from normal range', () {
+      pubspecYamlFile.writeAsStringSync('''
 name: dashi
 
 foo:
@@ -166,8 +169,8 @@ foo:
       expect(actual, Version(0, 5, 0));
     });
 
-    test('gets correct version if range order is unusual', () {
-      pubspecFile.writeAsStringSync('''
+    test('returns correct version if range order is unusual', () {
+      pubspecYamlFile.writeAsStringSync('''
 name: dashi
 
 foo:
@@ -180,8 +183,8 @@ foo:
       expect(actual, Version(0, 5, 0));
     });
 
-    test('gets correct version if range is exclusive on the lower end', () {
-      pubspecFile.writeAsStringSync('''
+    test('returns correct version if range is exclusive on the lower end', () {
+      pubspecYamlFile.writeAsStringSync('''
 name: dashi
 
 foo:
@@ -192,6 +195,24 @@ foo:
       final actual =
           versionChecker.getMinimumVersionConstraint(['foo', 'bar', 'baz']);
       expect(actual, Version(0, 5, 1));
+    });
+  });
+
+  group('getResolvedVersion', () {
+    test('returns version from pubspec.lock', () {
+      pubspecLockFile.writeAsStringSync('''
+packages:
+  foo:
+    dependency: transitive
+    description:
+      name: foo
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "42.0.0"
+''');
+
+      final actual = versionChecker.getResolvedVersion('foo');
+      expect(actual, Version(42, 0, 0));
     });
   });
 }
