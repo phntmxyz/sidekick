@@ -16,16 +16,7 @@ Future<SidekickCli> buildSidekickCli() async {
 
   // remove local dependency on sidekick_test, it breaks because of the
   // relative path but can be safely removed because it's just a dev_dependency
-  final pubspec = copy.file('pubspec.yaml');
-  pubspec.writeAsStringSync(
-    pubspec.readAsStringSync().replaceAll(
-      '''
-  sidekick_test: 
-    path: ../sidekick_test
-''',
-      '',
-    ),
-  );
+  systemDart(['pub', 'remove', 'sidekick_test'], workingDirectory: copy);
 
   final lockFile = copy.file('pubspec.lock');
   if (lockFile.existsSync()) {

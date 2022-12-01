@@ -186,7 +186,7 @@ class InitCommand extends Command {
           .any((package) => package.isFlutterPackage),
       entrypointLocation: entrypoint,
       packageLocation: cliPackage,
-      // TODO(update-feature): pass the current global sidekick version to the new sidekickVersion parameter
+      sidekickCliVersion: version,
       // We can't read the pubspec.yaml to get the version because the global
       // sidekick executable is compiled and thus does not have access to pubspec.yaml because it isn't bundled with the compiled executable
       // Instead we could use an automatically generated source file which contains the version information

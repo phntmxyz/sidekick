@@ -26,3 +26,10 @@ dev_dependencies:
 
 executables:
   sidekick:
+
+# TODO: this dependency override is just to get tests running again.
+# when new version of sidekick_core containing new parameter SidekickTemplateProperties.sidekickCliVersion
+# is published, remove this dependency_override and update the sidekick_core minimum version constraint
+dependency_overrides:
+  sidekick_core:
+    path: ../sidekick_core

@@ -14,18 +14,12 @@ final String localOrPubDepsLabel = shouldUseLocalDeps ? "(local)" : "(pub)";
 void overrideSidekickCoreWithLocalPath(Directory package) {
   if (!shouldUseLocalDeps) return;
   print('Overriding sidekick_core dependency to local');
-  final pubspec = package.file("pubspec.yaml");
   // assuming cwd when running those tests is in the sidekick package
-  final corePath = canonicalize('../sidekick_core');
-  pubspec.writeAsStringSync(
-    '''
-
-dependency_overrides:
-  sidekick_core:
-    path: $corePath
-
-  ''',
-    mode: FileMode.append,
+  final path = canonicalize('../sidekick_core');
+  _overrideDependency(
+    package: package,
+    dependency: 'sidekick_core',
+    path: path,
   );
 }
 
@@ -148,4 +142,19 @@ String? _systemDartSdkPath() {
 
   final libexec = File(realpath).parent.parent;
   return libexec.path;
+}
+
+
+void _overrideDependency({
+  required Directory package,
+  required String dependency,
+  required String path,
+}) {
+  final pubspecPath = package.file('pubspec.yaml').path;
+  final pubspec = PubSpec.fromFile(pubspecPath);
+  pubspec.dependencyOverrides = {
+    ...pubspec.dependencyOverrides,
+    dependency: Dependency.fromPath(dependency, path),
+  };
+  pubspec.saveToFile(pubspecPath);
 }

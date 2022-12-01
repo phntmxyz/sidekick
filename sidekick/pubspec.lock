@@ -431,9 +431,9 @@ packages:
   sidekick_core:
     dependency: "direct main"
     description:
-      name: sidekick_core
-      url: "https://pub.dartlang.org"
-    source: hosted
+      path: "../sidekick_core"
+      relative: true
+    source: path
     version: "0.12.0"
   sidekick_test:
     dependency: "direct dev"
