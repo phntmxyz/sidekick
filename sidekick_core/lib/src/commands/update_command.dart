@@ -10,17 +10,35 @@ class UpdateCommand extends Command {
   final String name = 'update';
 
   @override
+  String get invocation => super.invocation.replaceFirst(
+        '[arguments]',
+        "[{<version>, 'latest'}]",
+      );
+
+  @override
   Future<void> run() async {
+    final args = argResults!;
+    final version = args.rest.isNotEmpty ? args.rest.first : 'latest';
+
+    if (version != 'latest') {
+      try {
+        Version.parse(version);
+      } on FormatException catch (_) {
+        usageException("'$version' is not a valid semver version.");
+      }
+    }
+
     final versionChecker = VersionChecker(Repository.requiredSidekickPackage);
     // to remember which sidekick_core version the sidekick CLI was generated
     // with, that sidekick_core version is written into the CLI's pubspec.yaml
     // at the path ['sidekick', 'cli_version']
 
-    final latestSidekickCoreVersion =
-        await versionChecker.getLatestDependencyVersion('sidekick_core');
+    final versionToInstall = version == 'latest'
+        ? await versionChecker.getLatestDependencyVersion('sidekick_core')
+        : Version.parse(version);
     final currentSidekickCliVersion =
         versionChecker.getMinimumVersionConstraint(['sidekick', 'cli_version']);
-    if (latestSidekickCoreVersion == currentSidekickCliVersion) {
+    if (versionToInstall <= currentSidekickCliVersion) {
       print('No need to update because you are already using the '
           'latest sidekick cli version.');
       return;
@@ -58,7 +76,7 @@ Future<void> main(List<String> args) async {
           updateScript.path,
           Repository.requiredSidekickPackage.cliName,
           currentSidekickCliVersion.canonicalizedVersion,
-          latestSidekickCoreVersion.canonicalizedVersion,
+          versionToInstall.canonicalizedVersion,
         ],
         progress: Progress.print(),
       );
