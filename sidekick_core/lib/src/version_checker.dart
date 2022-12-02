@@ -113,22 +113,27 @@ class VersionChecker {
   /// - ['dependencies', 'sidekick_core']
   /// - ['dev_dependencies', 'lint']
   /// - ['sidekick', 'cli_version']
-  Version getMinimumVersionConstraint(List<String> pubspecKeys) {
-    final versionConstraint = VersionConstraint.parse(
-      _readFromYaml(package.pubspec, pubspecKeys) ?? 'any',
-    );
+  /// Throws if pubspec.yaml does not contain [pubspecKeys]
+  Version getMinimumVersionConstraint(List<String> pubspecKeys) =>
+      VersionConstraint.parse(
+        _readFromYaml(package.pubspec, pubspecKeys) ?? 'any',
+      ).minVersion;
 
-    if (versionConstraint is VersionRange) {
-      final minVersion = versionConstraint.min;
-      if (minVersion == null) {
-        return Version.none;
-      }
-      return versionConstraint.includeMin ? minVersion : minVersion.nextPatch;
-    } else if (versionConstraint is Version) {
-      return versionConstraint;
-    } else {
-      throw 'Unknown $versionConstraint';
+  /// Returns the minimum version constraint of a dependency in [package]
+  /// or null if the package does not depend on the dependency
+  ///
+  /// [pubspecKeys] is the path from which to retrieve the version in
+  /// the pubspec.yaml of [package], e.g.
+  /// - ['dependencies', 'sidekick_core']
+  /// - ['dev_dependencies', 'lint']
+  /// - ['sidekick', 'cli_version']
+  Version? getMinimumVersionConstraintOrNull(List<String> pubspecKeys) {
+    final result = _readFromYamlImpl(package.pubspec, pubspecKeys);
+    if (result == _pathNotFoundInYaml) {
+      return null;
     }
+    // `dependency: ` is equivalent to `dependency: any`
+    return VersionConstraint.parse((result as String?) ?? 'any').minVersion;
   }
 
   Version getResolvedVersion(String dependency) {
@@ -146,39 +151,53 @@ class VersionChecker {
   /// Returns the string specified by [path] in [yamlFile]
   ///
   /// Returns null if the string is empty
-  /// Throws if the [path] can't be found in the [yamlFile]
-  String? _readFromYaml(File yamlFile, List<Object> path) {
-    String describePath(List<Object> path) =>
-        '[${path.map((e) => '$e').join(', ')}]';
+  ///
+  /// Throws if [throwWhenPathNotFound] is true and the [path] can't be found
+  /// in the [yamlFile]. Else returns null.
+  String? _readFromYaml(
+    File yamlFile,
+    List<Object> path, {
+    bool throwWhenPathNotFound = true,
+  }) {
+    final result = _readFromYamlImpl(yamlFile, path);
 
+    if (result == _pathNotFoundInYaml) {
+      if (throwWhenPathNotFound) {
+        throw "Couldn't read path '[${path.map((e) => "'$e'").join(', ')}]' from yaml file '${yamlFile.path}'";
+      }
+      return null;
+    }
+    return result as String?;
+  }
+
+  static const _pathNotFoundInYaml = Object();
+
+  dynamic _readFromYamlImpl(File yamlFile, List<Object> path) {
     if (path.isEmpty) {
       throw 'Need at least one key in path parameter, but it was empty.';
     }
     if (!yamlFile.existsSync()) {
-      throw "Tried reading '${describePath(path)}' from yaml file "
-          "'${yamlFile.path}', but that file doesn't exist.";
+      throw "Tried reading '[${path.map((e) => "'$e'").join(', ')}]' "
+          "from yaml file '${yamlFile.path}', but that file doesn't exist.";
     }
 
     final yaml = loadYaml(yamlFile.readAsStringSync());
 
     // ignore: avoid_dynamic_calls, pubspec currently is a [YamlMap] but will be a [HashMap] in future versions
     if (!(yaml.keys.contains(path.first) as bool)) {
-      throw "Couldn't read path '${describePath(path)}' from yaml file '${yamlFile.path}'";
+      return _pathNotFoundInYaml;
     }
 
-    Object? current =
-        // ignore: avoid_dynamic_calls, pubspec currently is a [YamlMap] but will be a [HashMap] in future versions
-        yaml[path.first];
+    // ignore: avoid_dynamic_calls, pubspec currently is a [YamlMap] but will be a [HashMap] in future versions
+    Object? current = yaml[path.first];
     var i = 1;
     for (final key in path.sublist(1)) {
       if (current is Map) {
         current = current[key];
       } else {
         if (i != path.length) {
-          throw "Couldn't read full path '${describePath(path)}' from yaml file "
-              "'${yamlFile.path}', was only able to read until '${describePath(path.sublist(0, i))}'";
+          return _pathNotFoundInYaml;
         }
-        return null;
       }
       i++;
     }
@@ -210,5 +229,22 @@ class VersionChecker {
       sb.toString(),
       multiLine: true,
     );
+  }
+}
+
+extension on VersionConstraint {
+  Version get minVersion {
+    final versionConstraint = this;
+    if (versionConstraint is VersionRange) {
+      final minVersion = versionConstraint.min;
+      if (minVersion == null) {
+        return Version.none;
+      }
+      return versionConstraint.includeMin ? minVersion : minVersion.nextPatch;
+    } else if (versionConstraint is Version) {
+      return versionConstraint;
+    } else {
+      throw 'Unknown $versionConstraint';
+    }
   }
 }

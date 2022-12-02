@@ -29,15 +29,16 @@ class UpdateCommand extends Command {
     }
 
     final versionChecker = VersionChecker(Repository.requiredSidekickPackage);
-    // to remember which sidekick_core version the sidekick CLI was generated
-    // with, that sidekick_core version is written into the CLI's pubspec.yaml
-    // at the path ['sidekick', 'cli_version']
 
     final versionToInstall = version == 'latest'
         ? await versionChecker.getLatestDependencyVersion('sidekick_core')
         : Version.parse(version);
-    final currentSidekickCliVersion =
-        versionChecker.getMinimumVersionConstraint(['sidekick', 'cli_version']);
+    // to remember which sidekick_core version the sidekick CLI was generated
+    // with, that sidekick_core version is written into the CLI's pubspec.yaml
+    // at the path ['sidekick', 'cli_version']
+    final currentSidekickCliVersion = versionChecker
+            .getMinimumVersionConstraintOrNull(['sidekick', 'cli_version']) ??
+        Version.none;
     if (versionToInstall <= currentSidekickCliVersion) {
       print('No need to update because you are already using the '
           'latest sidekick cli version.');
@@ -48,6 +49,7 @@ class UpdateCommand extends Command {
     versionChecker.updateVersionConstraint(
       pubspecKeys: ['dependencies', 'sidekick_core'],
       newMinimumVersion: versionToInstall,
+      // make sure we get the update script exactly at the specified version
       pinVersion: true,
     );
     final dartCommand =
@@ -85,10 +87,14 @@ Future<void> main(List<String> args) async {
         progress: Progress.print(),
       );
       // previously the version was pinned to get the correct version of the
-      // update_sidekick_cli script, now we can allow newer versions
+      // update_sidekick_cli script, now we can allow newer versions again
       versionChecker.updateVersionConstraint(
         pubspecKeys: ['dependencies', 'sidekick_core'],
         newMinimumVersion: versionToInstall,
+      );
+      dartCommand(
+        ['pub', 'get'],
+        workingDirectory: Repository.requiredCliPackage,
       );
     } finally {
       updateScript.deleteSync();

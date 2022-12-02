@@ -220,8 +220,8 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
 
       // Step into the command.
       argResults = argResults.command!;
-      command = commands[argResults.name]!;
-      commands = Map.from(command.subcommands);
+      command = commands[argResults.name];
+      commands = Map.from(command!.subcommands);
     }
 
     if (parsedArgs['help'] as bool) {
