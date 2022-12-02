@@ -1,6 +1,14 @@
 import 'package:sidekick_core/sidekick_core.dart';
+import 'package:sidekick_core/src/commands/update_command.dart';
 import 'package:sidekick_core/src/version_checker.dart';
 
+/// Updates a sidekick CLI
+///
+/// This function is called by [UpdateCommand]
+/// and receives the following arguments:
+///   1. name of the sidekick cli to update
+///   2. current version of the sidekick cli
+///   3. target version of the sidekick cli
 Future<void> main(List<String> args) async {
   final sidekickCliName = args[0];
   final currentSidekickCliVersion = Version.parse(args[1]);
