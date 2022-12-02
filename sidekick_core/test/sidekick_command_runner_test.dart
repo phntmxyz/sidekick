@@ -39,7 +39,7 @@ void main() {
               expectedOutdatedWarning,
             ];
 
-            expect(fakeStderr.lines, expectedWarnings);
+            expect(fakeStderr.lines, containsAll(expectedWarnings));
           },
         );
       },
@@ -92,7 +92,10 @@ void main() {
 
             await runner.run(['-h']);
 
-            expect(fakeStderr.lines, [expectedCliVersionIntegrityWarning]);
+            expect(
+              fakeStderr.lines,
+              contains(expectedCliVersionIntegrityWarning),
+            );
           },
         );
       },
@@ -144,7 +147,7 @@ void main() {
               expectedOutdatedWarning,
             ];
 
-            expect(fakeStderr.lines, expectedWarnings);
+            expect(fakeStderr.lines, containsAll(expectedWarnings));
           },
         );
       },
