@@ -187,10 +187,6 @@ class InitCommand extends Command {
       entrypointLocation: entrypoint,
       packageLocation: cliPackage,
       sidekickCliVersion: version,
-      // We can't read the pubspec.yaml to get the version because the global
-      // sidekick executable is compiled and thus does not have access to pubspec.yaml because it isn't bundled with the compiled executable
-      // Instead we could use an automatically generated source file which contains the version information
-      // See e.g. https://stackoverflow.com/a/69048343/9905602 or how mason_cli implements this in a version.dart file https://github.com/felangel/mason/pull/538/files
     );
     SidekickTemplate().generate(props);
 
