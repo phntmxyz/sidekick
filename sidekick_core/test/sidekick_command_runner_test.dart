@@ -1,4 +1,5 @@
 import 'package:sidekick_core/sidekick_core.dart';
+import 'package:sidekick_core/src/version_checker.dart';
 import 'package:sidekick_test/fake_stdio.dart';
 import 'package:sidekick_test/sidekick_test.dart';
 import 'package:test/fake.dart';
@@ -32,6 +33,11 @@ void main() {
               name: 'dash',
             );
 
+            final fakeVersionChecker = _FakeVersionChecker(
+              package: Repository.requiredSidekickPackage,
+              latestDependencyVersions: {'sidekick_core': '1.0.0'},
+            );
+            runner.injectedVersionChecker = fakeVersionChecker;
             await runner.run(['-h']);
 
             final expectedWarnings = [
@@ -49,10 +55,6 @@ void main() {
   });
 
   test('prints no warnings when offline and versions match', () async {
-    addTearDown(() => HttpOverrides.global = null);
-    // mock being offline by overriding with a HttpClient which only throws
-    HttpOverrides.global = _ThrowingHttpClient();
-
     final fakeStderr = FakeStdoutStream();
     await insideFakeProjectWithSidekick(
       (tempDir) async {
@@ -76,10 +78,6 @@ void main() {
 
   test('prints only warning to repair CLI when offline and versions mismatch',
       () async {
-    addTearDown(() => HttpOverrides.global = null);
-    // mock being offline by overriding with a HttpClient which only throws
-    HttpOverrides.global = _ThrowingHttpClient();
-
     final fakeStderr = FakeStdoutStream();
     await insideFakeProjectWithSidekick(
       (tempDir) async {
@@ -90,6 +88,12 @@ void main() {
               name: 'dash',
             );
 
+            final fakeVersionChecker = _FakeVersionChecker(
+              package: Repository.requiredSidekickPackage,
+              // empty map is equivalent to being offline
+              latestDependencyVersions: {},
+            );
+            runner.injectedVersionChecker = fakeVersionChecker;
             await runner.run(['-h']);
 
             expect(
@@ -177,4 +181,17 @@ class _UpdateCommand extends Command {
 
   @override
   final String name = 'update';
+}
+
+class _FakeVersionChecker extends VersionChecker {
+  _FakeVersionChecker({
+    required DartPackage package,
+    required this.latestDependencyVersions,
+  }) : super(package);
+
+  final Map<String, String> latestDependencyVersions;
+
+  @override
+  Future<Version> getLatestDependencyVersion(String dependency) async =>
+      Version.parse(latestDependencyVersions[dependency]!);
 }

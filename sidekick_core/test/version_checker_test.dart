@@ -108,7 +108,7 @@ dependencies:
           () => versionChecker
               .getMinimumVersionConstraint(['dependencies', 'foo']),
           throwsA(
-            "Tried reading '[dependencies, foo]' from yaml file '${pubspecYamlFile.path}', but that file doesn't exist.",
+            "Tried reading '['dependencies', 'foo']' from yaml file '${pubspecYamlFile.path}', but that file doesn't exist.",
           ),
         );
       });
@@ -121,7 +121,7 @@ name: dashi
           () => versionChecker
               .getMinimumVersionConstraint(['dependencies', 'foo']),
           throwsA(
-            "Couldn't read path '[dependencies, foo]' from yaml file '${pubspecYamlFile.path}'",
+            "Couldn't read path '['dependencies', 'foo']' from yaml file '${pubspecYamlFile.path}'",
           ),
         );
       });
@@ -135,7 +135,7 @@ dependencies:
           () => versionChecker
               .getMinimumVersionConstraint(['dependencies', 'foo']),
           throwsA(
-            "Couldn't read full path '[dependencies, foo]' from yaml file '${pubspecYamlFile.path}', was only able to read until '[dependencies]'",
+            "Couldn't read path '['dependencies', 'foo']' from yaml file '${pubspecYamlFile.path}'",
           ),
         );
       });

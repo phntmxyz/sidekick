@@ -8,7 +8,9 @@ import 'package:test/test.dart';
 
 void main() {
   for (final currentSidekickCliVersion in [null, "0.0.0"]) {
-    test('UpdateCommand generates new files when current sidekick cli version is $currentSidekickCliVersion', () async {
+    test(
+        'UpdateCommand generates new files when current sidekick cli version is $currentSidekickCliVersion',
+        () async {
       final printLog = <String>[];
       // override print to verify output
       final spec = ZoneSpecification(
