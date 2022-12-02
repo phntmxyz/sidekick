@@ -65,6 +65,12 @@ void main() {
               name: 'dash',
             );
 
+            final fakeVersionChecker = _FakeVersionChecker(
+              package: Repository.requiredSidekickPackage,
+              // empty map is equivalent to being offline
+              latestDependencyVersions: {},
+            );
+            runner.injectedVersionChecker = fakeVersionChecker;
             await runner.run(['-h']);
 
             expect(fakeStderr.lines.isEmpty, isTrue);
@@ -160,8 +166,6 @@ void main() {
     );
   });
 }
-
-class _ThrowingHttpClient extends Fake implements HttpOverrides {}
 
 class _WrapperCommand extends Command {
   @override
