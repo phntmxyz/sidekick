@@ -136,14 +136,17 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
 
     final unmount = mount();
 
-    String? command;
+    late final bool isSidekickUpdateCommand;
     try {
       final parsedArgs = parse(args);
-      command = parsedArgs.command?.name;
+      final command = parsedArgs.command;
+      isSidekickUpdateCommand = command?.name == 'sidekick' &&
+          command is ArgResults &&
+          command.command?.name == 'update';
       final result = await super.runCommand(parsedArgs);
       return result;
     } finally {
-      if (_isUpdateCheckEnabled && command != 'update') {
+      if (_isUpdateCheckEnabled && !isSidekickUpdateCommand) {
         // print warning if the user didn't fully update their CLI
         _checkCliVersionIntegrity();
         // print warning if CLI update is available
