@@ -1,4 +1,3 @@
-import 'package:pubspec2/pubspec2.dart' hide PubSpec;
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_core/src/version_checker.dart';
 import 'package:test/test.dart';
@@ -30,23 +29,12 @@ dependencies:
   foo: 1.2.3
 ''');
 
-      final newVersion = Version(1, 2, 4);
-
       versionChecker.updateVersionConstraint(
         pubspecKeys: ['dependencies', 'foo'],
-        newMinimumVersion: newVersion,
+        newMinimumVersion: Version(1, 2, 4),
         pinVersion: true,
       );
 
-      final pubspec = PubSpec.fromFile(pubspecYamlFile.path);
-      expect(
-        pubspec.dependencies['foo']?.reference,
-        isA<HostedReference>().having(
-          (p0) => p0.versionConstraint,
-          'versionConstraint',
-          Version(1, 2, 4),
-        ),
-      );
       expect(
         pubspecYamlFile.readAsStringSync(),
         '''
@@ -65,23 +53,12 @@ dependencies:
   bar: 0.0.0
 ''');
 
-      final newVersion = Version(1, 2, 4);
-
       versionChecker.updateVersionConstraint(
         pubspecKeys: ['dependencies', 'foo'],
-        newMinimumVersion: newVersion,
+        newMinimumVersion: Version(1, 2, 4),
         pinVersion: true,
       );
 
-      final pubspec = PubSpec.fromFile(pubspecYamlFile.path);
-      expect(
-        pubspec.dependencies['foo']?.reference,
-        isA<HostedReference>().having(
-          (p0) => p0.versionConstraint,
-          'versionConstraint',
-          Version(1, 2, 4),
-        ),
-      );
       expect(
         pubspecYamlFile.readAsStringSync(),
         '''
@@ -97,23 +74,13 @@ dependencies:
 name: dashi
 # the pubspec does not have a dependencies block, it should be added by updateVersionConstraint
 ''');
-      final newVersion = Version(1, 2, 4);
 
       versionChecker.updateVersionConstraint(
         pubspecKeys: ['dependencies', 'foo'],
-        newMinimumVersion: newVersion,
+        newMinimumVersion: Version(1, 2, 4),
         pinVersion: true,
       );
 
-      final pubspec = PubSpec.fromFile(pubspecYamlFile.path);
-      expect(
-        pubspec.dependencies['foo']?.reference,
-        isA<HostedReference>().having(
-          (p0) => p0.versionConstraint,
-          'versionConstraint',
-          Version(1, 2, 4),
-        ),
-      );
       expect(
         pubspecYamlFile.readAsStringSync(),
         '''

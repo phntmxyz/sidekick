@@ -16,8 +16,7 @@ void addDependencyFromPluginContext() => addDependency(
 /// Adds a dependency using [addDependency] compatibly with the old protocol
 ///
 /// Doesn't support installing plugins from git as the old protocol doesn't
-/// support that
-@Deprecated('Use `addDependency` or `addDependencyFromPluginContext` instead.')
+/// support it. Use `addDependency` or `addDependencyFromPluginContext` instead.
 void addDependencyNonBreakingWrapper(String pluginName) {
   // ignore: deprecated_member_use_from_same_package
   if (PluginContext.localPlugin == null) {
