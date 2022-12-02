@@ -6,6 +6,7 @@ import 'package:args/command_runner.dart';
 import 'package:dartx/dartx_io.dart';
 import 'package:dcli/dcli.dart';
 import 'package:pub_semver/pub_semver.dart';
+import 'package:sidekick_core/src/commands/update_command.dart';
 import 'package:sidekick_core/src/dart_package.dart';
 import 'package:sidekick_core/src/repository.dart';
 import 'package:sidekick_core/src/version_checker.dart';
@@ -136,17 +137,13 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
 
     final unmount = mount();
 
-    late final bool isSidekickUpdateCommand;
+    ArgResults? parsedArgs;
     try {
-      final parsedArgs = parse(args);
-      final command = parsedArgs.command;
-      isSidekickUpdateCommand = command?.name == 'sidekick' &&
-          command is ArgResults &&
-          command.command?.name == 'update';
+      parsedArgs = parse(args);
       final result = await super.runCommand(parsedArgs);
       return result;
     } finally {
-      if (_isUpdateCheckEnabled && !isSidekickUpdateCommand) {
+      if (_isUpdateCheckEnabled && !_isSidekickCliUpdateCommand(parsedArgs)) {
         // print warning if the user didn't fully update their CLI
         _checkCliVersionIntegrity();
         // print warning if CLI update is available
@@ -203,6 +200,36 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
         'Please run ${cyan('$cliName sidekick update')} to repair your CLI.',
       );
     }
+  }
+
+  /// Returns true if the command executed from [parsedArgs] is [UpdateCommand]
+  ///
+  /// Copied and adapted from CommandRunner.runCommand
+  bool _isSidekickCliUpdateCommand(ArgResults? parsedArgs) {
+    if (parsedArgs == null) {
+      return false;
+    }
+    var argResults = parsedArgs;
+    Command? command;
+    var commands = Map.of(this.commands);
+
+    while (commands.isNotEmpty) {
+      if (argResults.command == null) {
+        return false;
+      }
+
+      // Step into the command.
+      argResults = argResults.command!;
+      command = commands[argResults.name]!;
+      commands = Map.from(command.subcommands);
+    }
+
+    if (parsedArgs['help'] as bool) {
+      // execute HelpCommand from args library
+      return false;
+    }
+
+    return command is UpdateCommand;
   }
 }
 
