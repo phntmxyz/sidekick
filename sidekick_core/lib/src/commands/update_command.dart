@@ -44,8 +44,12 @@ class UpdateCommand extends Command {
       return;
     }
 
-    // update sidekick_core to load the latest update script
-    await versionChecker.updateVersionConstraintToLatest('sidekick_core');
+    // update sidekick_core to load the update script at the necessary version
+    versionChecker.updateVersionConstraint(
+      pubspecKeys: ['dependencies', 'sidekick_core'],
+      newMinimumVersion: versionToInstall,
+      pinVersion: true,
+    );
     final dartCommand =
         sidekickDartRuntime.isDownloaded() ? sidekickDartRuntime.dart : dart;
     dartCommand(
@@ -79,6 +83,12 @@ Future<void> main(List<String> args) async {
           versionToInstall.canonicalizedVersion,
         ],
         progress: Progress.print(),
+      );
+      // previously the version was pinned to get the correct version of the
+      // update_sidekick_cli script, now we can allow newer versions
+      versionChecker.updateVersionConstraint(
+        pubspecKeys: ['dependencies', 'sidekick_core'],
+        newMinimumVersion: versionToInstall,
       );
     } finally {
       updateScript.deleteSync();
