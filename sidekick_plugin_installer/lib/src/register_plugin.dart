@@ -39,7 +39,6 @@ Future<void> _addCommand(File file, String command) async {
 class _AddCommandVisitor extends BreadthFirstVisitor<void> {
   final File file;
   final String commandText;
-
   _AddCommandVisitor(this.file, this.commandText);
 
   @override
