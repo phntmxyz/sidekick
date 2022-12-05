@@ -39,6 +39,7 @@ Future<void> _addCommand(File file, String command) async {
 class _AddCommandVisitor extends BreadthFirstVisitor<void> {
   final File file;
   final String commandText;
+
   _AddCommandVisitor(this.file, this.commandText);
 
   @override
@@ -62,6 +63,10 @@ class _AddCommandVisitor extends BreadthFirstVisitor<void> {
           final lineStart = lineInfo.getOffsetOfLine(line - 1);
           final indent = beginToken - lineStart;
           final contents = file.readAsStringSync();
+          // check if the command already exists
+          if (contents.contains('..addCommand($commandText)')) {
+            return;
+          }
           final update = contents.replaceRange(
             injectionPosition,
             injectionPosition,
