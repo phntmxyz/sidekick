@@ -26,6 +26,10 @@ class SharedCodeTemplate extends PluginTemplateGenerator {
     libDirectory
         .file('${props.pluginName.snakeCase}.dart')
         .writeAsStringSync(props.helpers);
+    final pluginCommandFile = libDirectory
+        .file('src/${props.pluginName.snakeCase}_command.dart')
+      ..createSync(recursive: true);
+    pluginCommandFile.writeAsStringSync(props.exampleCommand);
 
     super.generate(props);
   }
@@ -64,14 +68,19 @@ Future<void> main() async {
   }
   pubGet(package);
   
-  final commandFile = package.root.file('lib/src/${pluginName.snakeCase}.dart');
-  commandFile.writeAsStringSync("""
-$exampleCommand
-""");
+  // Platform.script.path -> <plugin>/tool/install.dart
+  final pluginDir = File(Platform.script.path).parent.parent;
+
+  final cliCommandFile =
+      package.root.file('lib/src/${pluginName.snakeCase}_command.dart');
+
+  pluginDir
+      .file('lib/src/${pluginName.snakeCase}_command.dart')
+      .copySync(cliCommandFile.path);
   
   registerPlugin(
     sidekickCli: package,
-    import: "import 'package:\${package.name}/src/${pluginName.snakeCase}.dart';",
+    import: "import 'package:\${package.name}/src/${pluginName.snakeCase}_command.dart';",
     command: '${pluginName.pascalCase}Command()',
   );
 }
@@ -96,10 +105,10 @@ class ${pluginName.pascalCase}Command extends Command {
   Future<void> run() async {
     // please implement me
     final hello = getGreetings().shuffled().first;
-    print('\\\$hello from PHNTM!');
+    print('\$hello from PHNTM!');
     
     final bye = getFarewells().shuffled().first;
-    print('\\\$bye from PHNTM!');
+    print('\$bye from PHNTM!');
   }
 }
 ''';
