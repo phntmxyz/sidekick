@@ -2,7 +2,6 @@ import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_core/src/version_checker.dart';
 import 'package:sidekick_test/fake_stdio.dart';
 import 'package:sidekick_test/sidekick_test.dart';
-import 'package:test/fake.dart';
 import 'package:test/test.dart';
 
 void main() {
