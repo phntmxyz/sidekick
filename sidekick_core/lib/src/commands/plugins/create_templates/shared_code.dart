@@ -87,8 +87,10 @@ Future<void> main() async {
 ''';
 
   String get exampleCommand => '''
-import 'package:sidekick_core/sidekick_core.dart';
-import 'package:$pluginName/${pluginName.snakeCase}.dart';
+${[
+        "import 'package:sidekick_core/sidekick_core.dart';",
+        "import 'package:$pluginName/${pluginName.snakeCase}.dart';",
+      ].sorted().join('\n')}
 
 class ${pluginName.pascalCase}Command extends Command {
   @override
