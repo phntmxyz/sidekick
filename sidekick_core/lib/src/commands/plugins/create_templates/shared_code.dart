@@ -26,10 +26,13 @@ class SharedCodeTemplate extends PluginTemplateGenerator {
     libDirectory
         .file('${props.pluginName.snakeCase}.dart')
         .writeAsStringSync(props.helpers);
-    final pluginCommandFile = libDirectory
-        .file('src/${props.pluginName.snakeCase}_command.dart')
+
+    final templateDirectory = pluginDirectory.directory('template')
+      ..createSync();
+    final pluginCommandTemplateFile = templateDirectory
+        .file('${props.pluginName.snakeCase}_command.template.dart')
       ..createSync(recursive: true);
-    pluginCommandFile.writeAsStringSync(props.exampleCommand);
+    pluginCommandTemplateFile.writeAsStringSync(props.exampleCommand);
 
     super.generate(props);
   }
@@ -75,7 +78,7 @@ Future<void> main() async {
       package.root.file('lib/src/${pluginName.snakeCase}_command.dart');
 
   pluginDir
-      .file('lib/src/${pluginName.snakeCase}_command.dart')
+      .file('template/${pluginName.snakeCase}_command.template.dart')
       .copySync(cliCommandFile.path);
   
   registerPlugin(
