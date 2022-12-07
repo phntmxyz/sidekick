@@ -128,8 +128,9 @@ void main() {
       final pluginDir = projectRoot.directory('generated_plugin');
       final pluginPath = pluginDir.path;
 
-      run('dart pub get', workingDirectory: pluginPath);
       if (analyzeGeneratedCode) {
+        overrideSidekickPluginInstallerWithLocalPath(pluginDir);
+        run('dart pub get', workingDirectory: pluginPath);
         run('dart analyze --fatal-infos', workingDirectory: pluginPath);
         run('dart format --set-exit-if-changed $pluginPath');
       }
