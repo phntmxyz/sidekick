@@ -53,4 +53,32 @@ class PluginContext {
   }
 
   static DartPackage? _localPlugin;
+
+  /// The plugin which is currently being installed
+  ///
+  /// During installation, the plugin is copied to a build directory. This
+  /// method returns the plugin from that location.
+  ///
+  /// This only works during execution a plugin's tool/install.dart,
+  /// otherwise it throws
+  static DartPackage get installingPlugin {
+    final toolInstallScript = Platform.script;
+    // build/plugins/<name>/tool/install.dart
+    final relevantPath = toolInstallScript.pathSegments.takeLast(5).join('/');
+    final expectedPathPattern = RegExp('build/plugins/[^/]+/tool/install.dart');
+
+    if (!expectedPathPattern.hasMatch(relevantPath)) {
+      throw 'PluginContext.buildPlugin can only be accessed inside of a '
+          "plugin's tool/install.dart";
+    }
+
+    final pluginDir = File(Platform.script.path).parent.parent;
+    final pluginPackage = DartPackage.fromDirectory(pluginDir);
+
+    if (pluginPackage == null) {
+      throw "Plugin at '${pluginDir.absolute.path}' is not a dart package.";
+    }
+
+    return pluginPackage;
+  }
 }

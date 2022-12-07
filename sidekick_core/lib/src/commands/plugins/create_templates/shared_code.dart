@@ -71,13 +71,12 @@ Future<void> main() async {
   }
   pubGet(package);
   
-  // Platform.script.path -> <plugin>/tool/install.dart
-  final pluginDir = File(Platform.script.path).parent.parent;
-
   final cliCommandFile =
       package.root.file('lib/src/${pluginName.snakeCase}_command.dart');
 
-  pluginDir
+  PluginContext
+      .installingPlugin
+      .root
       .file('template/${pluginName.snakeCase}_command.template.dart')
       .copySync(cliCommandFile.path);
   
