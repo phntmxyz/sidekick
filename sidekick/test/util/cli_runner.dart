@@ -20,7 +20,7 @@ Future<SidekickCli> buildSidekickCli() async {
   pubspec.writeAsStringSync(
     pubspec.readAsStringSync().replaceAll(
       '''
-  sidekick_test:
+  sidekick_test: 
     path: ../sidekick_test
 ''',
       '',
