@@ -14,18 +14,26 @@ final String localOrPubDepsLabel = shouldUseLocalDeps ? "(local)" : "(pub)";
 void overrideSidekickCoreWithLocalPath(Directory package) {
   if (!shouldUseLocalDeps) return;
   print('Overriding sidekick_core dependency to local');
-  final pubspec = package.file("pubspec.yaml");
   // assuming cwd when running those tests is in the sidekick package
-  final corePath = canonicalize('../sidekick_core');
-  pubspec.writeAsStringSync(
-    '''
+  final path = canonicalize('../sidekick_core');
+  _overrideDependency(
+    package: package,
+    dependency: 'sidekick_core',
+    path: path,
+  );
+}
 
-dependency_overrides:
-  sidekick_core:
-    path: $corePath
 
-  ''',
-    mode: FileMode.append,
+/// Changes the sidekick_plugin_installer dependency to a local override
+void overrideSidekickPluginInstallerWithLocalPath(Directory package) {
+  if (!shouldUseLocalDeps) return;
+  print('Overriding sidekick_plugin_installer dependency to local');
+  // assuming cwd when running those tests is in the sidekick package
+  final path = canonicalize('../sidekick_plugin_installer');
+  _overrideDependency(
+    package: package,
+    dependency: 'sidekick_plugin_installer',
+    path: path,
   );
 }
 
@@ -72,4 +80,18 @@ environment:
     () => block(tempDir),
     getCurrentDirectory: () => tempDir,
   );
+}
+
+void _overrideDependency({
+  required Directory package,
+  required String dependency,
+  required String path,
+}) {
+  final pubspecPath = package.file('pubspec.yaml').path;
+  final pubspec = PubSpec.fromFile(pubspecPath);
+  pubspec.dependencyOverrides = {
+    ...pubspec.dependencyOverrides,
+    dependency: Dependency.fromPath(dependency, path),
+  };
+  pubspec.saveToFile(pubspecPath);
 }
