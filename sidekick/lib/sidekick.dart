@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:args/command_runner.dart';
 import 'package:sidekick/src/init/init_command.dart';
 import 'package:sidekick/src/plugins/plugins_command.dart';
-import 'package:sidekick_core/sidekick_core.dart' as skc;
+import 'package:sidekick_core/sidekick_core.dart' as core;
 import 'package:sidekick_core/sidekick_core.dart' show Version;
 
 /// The version of package:sidekick
@@ -38,7 +38,7 @@ class _SidekickCommandRunner extends CommandRunner {
   Future<void> run(Iterable<String> args) async {
     final parsedArgs = parse(args);
     if (parsedArgs['version'] == true) {
-      print('sidekick: $version\nsidekick_core: ${skc.version}');
+      print('sidekick: $version\nsidekick_core: ${core.version}');
       return;
     }
     return super.run(args);

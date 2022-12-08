@@ -1,9 +1,7 @@
-import 'dart:async';
-
 import 'package:sidekick/sidekick.dart';
 import 'package:sidekick/src/util/dcli_ask_validators.dart';
 import 'package:sidekick_core/sidekick_core.dart' hide version;
-import 'package:sidekick_core/sidekick_core.dart' as skc;
+import 'package:sidekick_core/sidekick_core.dart' as core;
 import 'package:sidekick_test/sidekick_test.dart';
 import 'package:test/test.dart';
 import 'package:test_process/test_process.dart';
@@ -31,7 +29,7 @@ void main() {
     final process =
         await cli.run(['--version'], workingDirectory: Directory.current);
     final output = await process.stdoutStream().join('\n');
-    expect(output, 'sidekick: $version\nsidekick_core: ${skc.version}');
+    expect(output, 'sidekick: $version\nsidekick_core: ${core.version}');
   });
 
   group('sidekick init - argument validation', () {
