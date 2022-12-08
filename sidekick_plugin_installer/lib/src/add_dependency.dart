@@ -7,19 +7,28 @@ import 'package:sidekick_plugin_installer/sidekick_plugin_installer.dart';
 ///
 /// Should be called from tool/install.dart
 void addSelfAsDependency() {
-  final hasNewPluginContext = [
-    PluginContext.name,
-    PluginContext.versionConstraint,
-    PluginContext.localPath,
-    PluginContext.hostedUrl,
-    PluginContext.gitUrl,
-    PluginContext.gitRef,
-    PluginContext.gitPath,
-  ].whereNotNull().isNotEmpty;
-  if (hasNewPluginContext) {
+  final isPluginProtocolV2 = PluginContext.name != null;
+  if (isPluginProtocolV2) {
+    // Starting with sidekick_core: >=0.13.0
+    // - PluginContext.sidekickPackage (always available)
+    // - PluginContext.name (always available)
+
+    // Available when installed from local path
+    // - PluginContext.localPath (always)
+    // - PluginContext.versionConstraint (optional)
+
+    // Available when installed from git
+    // - PluginContext.gitUrl (always)
+    // - PluginContext.gitRef (optional)
+    // - PluginContext.gitPath (optional)
+    // - PluginContext.versionConstraint (optional)
+
+    // Available when installed from hosted
+    // - PluginContext.hostedUrl (optional)
+    // - PluginContext.versionConstraint (optional)
     addDependency(
       package: PluginContext.sidekickPackage,
-      dependency: PluginContext.name,
+      dependency: PluginContext.name!,
       versionConstraint: PluginContext.versionConstraint,
       localPath: PluginContext.localPath,
       hostedUrl: PluginContext.hostedUrl,
@@ -30,6 +39,10 @@ void addSelfAsDependency() {
     return;
   }
 
+  // Protocol v1 (sidekick_core: >=0.11.0 <=0.12.0)
+  // Injected env vars are:
+  // - PluginContext.sidekickPackage (always available)
+  // - PluginContext.localPlugin (when installed via local path)
   final pluginName = PluginContext.installerPlugin.name;
   if (PluginContext.localPlugin == null) {
     // install from hosted source which is the default when given nothing else
