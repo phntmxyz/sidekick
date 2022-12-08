@@ -1,5 +1,7 @@
+import 'package:sidekick/sidekick.dart';
 import 'package:sidekick/src/util/dcli_ask_validators.dart';
-import 'package:sidekick_core/sidekick_core.dart';
+import 'package:sidekick_core/sidekick_core.dart' hide version;
+import 'package:sidekick_core/sidekick_core.dart' as core;
 import 'package:sidekick_test/sidekick_test.dart';
 import 'package:test/test.dart';
 import 'package:test_process/test_process.dart';
@@ -8,6 +10,28 @@ import 'templates/templates.dart';
 import 'util/cli_runner.dart';
 
 void main() {
+  test('version is correct', () {
+    final pubspec = File('pubspec.yaml');
+    expect(pubspec.existsSync(), isTrue);
+
+    final yaml = pubspec.readAsStringSync();
+
+    final packageName = RegExp(r'name:\s*(.*)').firstMatch(yaml)!.group(1)!;
+    final packageVersion =
+        Version.parse(RegExp(r'version:\s*(.*)').firstMatch(yaml)!.group(1)!);
+
+    expect(packageName, 'sidekick');
+    expect(packageVersion, version);
+  });
+
+  test('--version flag prints sidekick and sidekick_core versions', () async {
+    final cli = await buildSidekickCli();
+    final process =
+        await cli.run(['--version'], workingDirectory: Directory.current);
+    final output = await process.stdoutStream().join('\n');
+    expect(output, 'sidekick: $version\nsidekick_core: ${core.version}');
+  });
+
   group('sidekick init - argument validation', () {
     test(
       'throws when entrypointDirectory does not exist',

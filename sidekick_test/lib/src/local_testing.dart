@@ -141,22 +141,6 @@ void overrideSidekickDartRuntimeWithSystemDartRuntime(Directory sidekick) {
   );
 }
 
-/// Returns the path to Dart SDK of the `dart` executable on `PATH`
-String? _systemDartSdkPath() {
-  // /opt/homebrew/bin/dart
-  final path = start('which dart', progress: Progress.capture(), nothrow: true)
-      .firstLine;
-  if (path == null) {
-    return null;
-  }
-  final file = File(path);
-  // /opt/homebrew/Cellar/dart/2.18.1/libexec/bin/dart
-  final realpath = file.resolveSymbolicLinksSync();
-
-  final libexec = File(realpath).parent.parent;
-  return libexec.path;
-}
-
 void _overrideDependency({
   required Directory package,
   required String dependency,
@@ -170,3 +154,26 @@ void _overrideDependency({
   };
   pubspec.saveToFile(pubspecPath);
 }
+
+/// Returns the Dart SDK of the `dart` executable on `PATH`
+Directory? _systemDartSdk() {
+  // /opt/homebrew/bin/dart
+  final path = _systemDartExecutable();
+  if (path == null) {
+    // dart not on path
+    return null;
+  }
+  final file = File(path);
+  // /opt/homebrew/Cellar/dart/2.18.1/libexec/bin/dart
+  final realpath = file.resolveSymbolicLinksSync();
+
+  final libexec = File(realpath).parent.parent;
+  return libexec;
+}
+
+/// Returns the path to Dart SDK of the `dart` executable on `PATH`
+String? _systemDartSdkPath() => _systemDartSdk()?.path;
+
+String? _systemDartExecutable() =>
+    // /opt/homebrew/bin/dart
+    start('which dart', progress: Progress.capture(), nothrow: true).firstLine;

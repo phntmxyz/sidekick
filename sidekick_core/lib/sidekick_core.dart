@@ -110,7 +110,13 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
     required this.workingDirectory,
     this.flutterSdk,
     this.dartSdk,
-  }) : super(cliName, description);
+  }) : super(cliName, description) {
+    argParser.addFlag(
+      'version',
+      negatable: false,
+      help: 'Print the sidekick version of this CLI.',
+    );
+  }
 
   final Repository repository;
   final DartPackage? mainProject;
@@ -148,6 +154,11 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
     ArgResults? parsedArgs;
     try {
       parsedArgs = parse(args);
+      if (parsedArgs['version'] == true) {
+        print('$cliName is using sidekick version $version');
+        return null;
+      }
+
       final result = await super.runCommand(parsedArgs);
       return result;
     } finally {
