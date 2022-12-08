@@ -15,7 +15,7 @@ dependencies:
   http: ^0.13.3
   path: ^1.8.0
   recase: ^4.0.0
-  sidekick_core: '>=0.11.1 <1.0.0'
+  sidekick_core: '>=0.13.0 <1.0.0'
 
 dev_dependencies:
   lint: ^1.5.0
@@ -26,10 +26,3 @@ dev_dependencies:
 
 executables:
   sidekick:
-
-# TODO: this dependency override is just to get tests running again.
-# when new version of sidekick_core containing new parameter SidekickTemplateProperties.sidekickCliVersion
-# is published, remove this dependency_override and update the sidekick_core minimum version constraint
-dependency_overrides:
-  sidekick_core:
-    path: ../sidekick_core
