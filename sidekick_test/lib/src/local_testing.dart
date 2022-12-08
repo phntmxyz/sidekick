@@ -23,7 +23,6 @@ void overrideSidekickCoreWithLocalPath(Directory package) {
   );
 }
 
-
 /// Changes the sidekick_plugin_installer dependency to a local override
 void overrideSidekickPluginInstallerWithLocalPath(Directory package) {
   if (!shouldUseLocalDeps) return;
@@ -43,6 +42,25 @@ void overrideSidekickPluginInstallerWithLocalPath(Directory package) {
 /// Usually, this should be checked only on the latest dart version, because
 /// dartfmt is updated with the sdk and may require different formatting
 final bool analyzeGeneratedCode = env['SIDEKICK_ANALYZE'] == 'true';
+
+/// Links [SidekickDartRuntime] to [_systemDartSdkPath]
+///
+/// Use when testing a command which depends on [SidekickDartRuntime.dart] with
+/// a fake sidekick package
+void overrideSidekickDartRuntimeWithSystemDartRuntime(Directory sidekick) {
+  env['SIDEKICK_PACKAGE_HOME'] = sidekick.absolute.path;
+
+  final link = Link(sidekick.file('build/cache/dart-sdk').path)
+    ..createSync(
+      _systemDartSdkPath()!,
+      recursive: true,
+    );
+
+  addTearDown(() {
+    link.deleteSync();
+    env['SIDEKICK_PACKAGE_HOME'] = null;
+  });
+}
 
 R insideFakeProjectWithSidekick<R>(R Function(Directory projectDir) block) {
   final tempDir = Directory.systemTemp.createTempSync();
@@ -95,3 +113,26 @@ void _overrideDependency({
   };
   pubspec.saveToFile(pubspecPath);
 }
+
+/// Returns the Dart SDK of the `dart` executable on `PATH`
+Directory? _systemDartSdk() {
+  // /opt/homebrew/bin/dart
+  final path = _systemDartExecutable();
+  if (path == null) {
+    // dart not on path
+    return null;
+  }
+  final file = File(path);
+  // /opt/homebrew/Cellar/dart/2.18.1/libexec/bin/dart
+  final realpath = file.resolveSymbolicLinksSync();
+
+  final libexec = File(realpath).parent.parent;
+  return libexec;
+}
+
+/// Returns the path to Dart SDK of the `dart` executable on `PATH`
+String? _systemDartSdkPath() => _systemDartSdk()?.path;
+
+String? _systemDartExecutable() =>
+    // /opt/homebrew/bin/dart
+    start('which dart', progress: Progress.capture(), nothrow: true).firstLine;
