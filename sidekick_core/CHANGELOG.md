@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.13.0
+- New `sidekick update` command for updating your sidekick CLI (#111)
+- Add `excludeGlob` parameter to `DepsCommand` (#125)
+- Add `--version` flag to `sidekick` command
+- Support `FLUTTER_ROOT` environment variable for local Flutter SDK (#123)
+- Update templates (#132, #126)
+- Installing sidekick plugins from git is now possible (#126)
+- Experimental: Automatic sidekick update check when setting `SIDEKICK_ENABLE_UPDATE_CHECK` environment variable to `true`
+
 ## 0.12.0
 - New: `version` getter mirroring the `sidekick_core` version in `pubspec.yaml`
 - Analyzer now ignores the `build` folder. Previously, the embedded dart sdk was accidentally analyzed #107  
