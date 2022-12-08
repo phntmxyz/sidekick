@@ -80,6 +80,7 @@ class InstallPluginCommand extends Command {
           }
 
           env['SIDEKICK_PLUGIN_LOCAL_PATH'] = dir.absolute.path;
+          env['SIDEKICK_LOCAL_PLUGIN_PATH'] = dir.absolute.path;
           return dir;
         case 'hosted':
           env['SIDEKICK_PLUGIN_HOSTED_URL'] = args['hosted-url'] as String?;
@@ -158,11 +159,9 @@ class InstallPluginCommand extends Command {
     // new CLI installing old plugin: respect old protocol of sidekick_plugin_installer
     if (pluginInstallerProtocolVersion <= Version(0, 1, 4)) {
       // up until v0.1.4:
-      // - the env variable for path installation had a different name
       // - installation from git was not possible
       switch (source) {
         case 'path':
-          env['SIDEKICK_LOCAL_PLUGIN_PATH'] = env['SIDEKICK_PLUGIN_LOCAL_PATH'];
           break;
         case 'hosted':
           break;

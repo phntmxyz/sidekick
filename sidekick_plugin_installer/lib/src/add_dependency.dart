@@ -14,11 +14,25 @@ void addDependencyFromPluginContext() => addDependency(
     );
 
 /// Adds a dependency using [addDependency] compatibly with the old protocol
-///
-/// Doesn't support installing plugins from git as the old protocol doesn't
-/// support it. Use `addDependency` or `addDependencyFromPluginContext` instead.
-void addDependencyNonBreakingWrapper(String pluginName) {
-  // ignore: deprecated_member_use_from_same_package
+void addDependencyNonBreakingWrapper() {
+  final canUseNewAddDependencyFunction = [
+    PluginContext.name,
+    PluginContext.versionConstraint,
+    PluginContext.localPath,
+    PluginContext.hostedUrl,
+    PluginContext.gitUrl,
+    PluginContext.gitRef,
+    PluginContext.gitPath,
+  ].whereNotNull().isNotEmpty;
+  if (canUseNewAddDependencyFunction) {
+    addDependencyFromPluginContext();
+    return;
+  }
+  // addSelfAsDependency / addPluginAsDependency
+
+  // für plugin package eigenen PR nur für PluginContext einzelne PRs für plugin installer package
+
+  final pluginName = PluginContext.installerPlugin.name;
   if (PluginContext.localPlugin == null) {
     // install from hosted source which is the default when given nothing else
     addDependency(
@@ -30,7 +44,6 @@ void addDependencyNonBreakingWrapper(String pluginName) {
     addDependency(
       package: PluginContext.sidekickPackage,
       dependency: pluginName,
-      // ignore: deprecated_member_use_from_same_package
       localPath: PluginContext.localPlugin!.root.path,
     );
   }
