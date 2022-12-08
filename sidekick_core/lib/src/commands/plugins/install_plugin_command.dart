@@ -1,12 +1,21 @@
 import 'package:dcli/dcli.dart' as dcli;
+import 'package:pub_semver/pub_semver.dart';
 
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_core/src/pub/pub.dart' as pub;
+import 'package:sidekick_core/src/version_checker.dart';
 
 /// Installs a sidekick plugin
 class InstallPluginCommand extends Command {
   @override
   final String description = 'Adds a new command to this sidekick cli';
+
+  @override
+  String get invocation =>
+      // super.invocation returns e.g. '<command> <subcommand> [arguments]'
+      // insert '<package> [version-constraint]' before '[arguments]'
+      '${super.invocation.removeSuffix(' [arguments]')} '
+      '<package> [version-constraint] [arguments]';
 
   @override
   final String name = 'install';
@@ -49,22 +58,39 @@ class InstallPluginCommand extends Command {
       );
     }
 
-    final installer = args.rest.first;
+    final package = args.rest.first;
+    final versionConstraint = args.rest.length > 1 ? args.rest[1] : null;
     print(
-      white('Installing $installer for '
-          '${Repository.sidekickPackage!.cliName}'),
+      white('Installing $package '
+          '${versionConstraint != null ? '$versionConstraint ' : ''}'
+          'for ${Repository.sidekickPackage!.cliName}'),
     );
+    env['SIDEKICK_PLUGIN_NAME'] = package;
+    env['SIDEKICK_PLUGIN_VERSION_CONSTRAINT'] = versionConstraint;
+
     final Directory pluginInstallerDir = () {
       switch (source) {
         case 'path':
-          final dir = Directory(installer);
+          final dir = Directory(package);
+          if (!dir.existsSync()) {
+            throw "Directory at ${dir.absolute.path} does not exist";
+          }
+          if (DartPackage.fromDirectory(dir) == null) {
+            throw "Directory at ${dir.absolute.path} is not a dart package";
+          }
+
+          env['SIDEKICK_PLUGIN_LOCAL_PATH'] = dir.absolute.path;
           env['SIDEKICK_LOCAL_PLUGIN_PATH'] = dir.absolute.path;
           return dir;
         case 'hosted':
-          print('Downloading from pub $installer...');
+          env['SIDEKICK_PLUGIN_HOSTED_URL'] = args['hosted-url'] as String?;
+          print('Downloading from pub $package...');
           return _getPackageRootDirForHostedOrGitSource(args);
         case 'git':
-          print('Downloading from git $installer...');
+          env['SIDEKICK_PLUGIN_GIT_URL'] = args['git-url'] as String?;
+          env['SIDEKICK_PLUGIN_GIT_REF'] = args['git-ref'] as String?;
+          env['SIDEKICK_PLUGIN_GIT_PATH'] = args['git-path'] as String?;
+          print('Downloading from git $package...');
           return _getPackageRootDirForHostedOrGitSource(args);
         default:
           throw StateError('unreachable');
@@ -77,12 +103,11 @@ class InstallPluginCommand extends Command {
       error("Package directory doesn't exist");
     }
 
-    final pluginInstallerCode = DartPackage.fromDirectory(pluginInstallerDir);
-    if (pluginInstallerCode == null) {
+    final pluginName = DartPackage.fromDirectory(pluginInstallerDir)?.name;
+    if (pluginName == null) {
       error('installer package at $pluginInstallerDir is '
           'not a valid dart package');
     }
-    final pluginName = pluginInstallerCode.name;
 
     // The target where to install the plugin
     final target = Repository.requiredSidekickPackage;
@@ -95,6 +120,11 @@ class InstallPluginCommand extends Command {
     }
     workingDir.createSync(recursive: true);
     await pluginInstallerDir.copyRecursively(workingDir);
+    final pluginInstallerCode = DartPackage.fromDirectory(workingDir);
+    if (pluginInstallerCode == null) {
+      error('installer package at $workingDir is '
+          'not a valid dart package');
+    }
 
     // get installer dependencies
     sidekickDartRuntime.dart(
@@ -102,6 +132,46 @@ class InstallPluginCommand extends Command {
       workingDirectory: workingDir,
       progress: Progress.printStdErr(),
     );
+
+    final pluginVersionChecker = VersionChecker(pluginInstallerCode);
+
+    final pluginInstallerProtocolVersion =
+        pluginVersionChecker.getResolvedVersion('sidekick_plugin_installer');
+    final supportedInstallerVersions = VersionRange(
+      // update when sidekick_core removes support for old sidekick_plugin_installer protocol
+      min: Version.none,
+      // update when sidekick_core supports new sidekick_plugin_installer protocol
+      max: Version(0, 3, 0),
+    );
+
+    // old CLIs shouldn't install new plugins
+    if (!supportedInstallerVersions.allows(pluginInstallerProtocolVersion)) {
+      if (pluginInstallerProtocolVersion < supportedInstallerVersions.max!) {
+        throw "The plugin doesn't support your CLI's version.\n"
+            'Please run ${yellow('$cliName sidekick update')} to update your CLI.';
+      } else {
+        throw 'The plugin is too old to be installed to your CLI '
+            'because it depends on an outdated version of sidekick_plugin_installer.';
+      }
+    }
+
+    // ensure backwards compatibility where possible
+    // new CLI installing old plugin: respect old protocol of sidekick_plugin_installer
+    if (pluginInstallerProtocolVersion <= Version(0, 1, 4)) {
+      // up until v0.1.4:
+      // - installation from git was not possible
+      switch (source) {
+        case 'path':
+          break;
+        case 'hosted':
+          break;
+        case 'git':
+          throw "The plugin's outdated sidekick_plugin_installer dependency "
+              "doesn't allow installation from git.";
+        default:
+          throw StateError('unreachable');
+      }
+    }
 
     print(white('Executing installer $pluginName...'));
     // Execute installer. Requires a tool/install.dart file to execute

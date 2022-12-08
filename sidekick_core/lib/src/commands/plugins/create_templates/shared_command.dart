@@ -50,7 +50,7 @@ dependencies:
 
 dev_dependencies:
   lint: ^1.5.0
-  sidekick_plugin_installer: ^0.1.3
+  sidekick_plugin_installer: ^0.2.1
 ''';
 
   String get installTemplate => '''
@@ -61,12 +61,7 @@ import 'package:sidekick_plugin_installer/sidekick_plugin_installer.dart';
 Future<void> main() async {
   final SidekickPackage package = PluginContext.sidekickPackage;
 
-  if (PluginContext.localPlugin == null) {
-    pubAddDependency(package, '${pluginName.snakeCase}');
-  } else {
-    // For local development
-    pubAddLocalDependency(package, PluginContext.localPlugin!.root.path);
-  }
+  addSelfAsDependency();
   pubGet(package);
 
   registerPlugin(

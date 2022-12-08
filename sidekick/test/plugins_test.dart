@@ -93,6 +93,9 @@ void main() {
     test(
       'with local source',
       () async {
+        printOnFailure(
+          'Did you forget to update the max parameter of supportedInstallerVersions in install_plugin_command.dart to the next breaking version of sidekick_plugin_installer? ',
+        );
         final pluginPath = Directory('test/templates/minimal_sidekick_plugin');
 
         await runDashProcess([
@@ -127,6 +130,8 @@ void main() {
 
       final pluginDir = projectRoot.directory('generated_plugin');
       final pluginPath = pluginDir.path;
+      // override dependency, otherwise `dart analyze` fails when plugin uses unpublished API
+      overrideSidekickPluginInstallerWithLocalPath(pluginDir);
 
       if (analyzeGeneratedCode) {
         overrideSidekickPluginInstallerWithLocalPath(pluginDir);
