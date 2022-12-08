@@ -27,18 +27,22 @@ void main() {
     final spec = ZoneSpecification(
       print: (_, __, ___, line) => printLog.add(line),
     );
-    await Zone.current.fork(specification: spec).run(() async {
-      await insideFakeProjectWithSidekick((dir) async {
-        final runner = initializeSidekick(name: 'dash');
-        bool called = false;
-        runner.addCommand(
-          _DelegatedCommand(name: 'inside', block: () => called = true),
-        );
-        await runner.run(['inside', '--version']);
-        expect(called, isFalse);
-        expect(printLog, contains('dash is using sidekick version $version'));
-      });
-    });
+
+    await runZoned(
+      () async {
+        await insideFakeProjectWithSidekick((dir) async {
+          final runner = initializeSidekick(name: 'dash');
+          bool called = false;
+          runner.addCommand(
+            _DelegatedCommand(name: 'inside', block: () => called = true),
+          );
+          await runner.run(['inside', '--version']);
+          expect(called, isFalse);
+          expect(printLog, contains('dash is using sidekick version $version'));
+        });
+      },
+      zoneSpecification: spec,
+    );
   });
 
   group('mainProject', () {
