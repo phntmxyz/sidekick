@@ -71,8 +71,6 @@ class PluginContext {
   /// {@macro installer_parameter}
   static String? get gitPath => env['SIDEKICK_PLUGIN_GIT_PATH'];
 
-  /// This getter is deprecated. Use [PluginContext.localPath] instead
-  ///
   /// This is the plugin package that is getting installed from local source
   ///
   /// Plugin installer might need to know the local location during development,
@@ -81,7 +79,6 @@ class PluginContext {
   ///
   /// Returns `null` when the plugin is not installed from local source, but
   /// from a remote source (pub or git)
-  @Deprecated('Use `PluginContext.localPath` instead.')
   static DartPackage? get localPlugin {
     if (_localPlugin == null) {
       final path = env['SIDEKICK_LOCAL_PLUGIN_PATH'];
