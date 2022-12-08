@@ -21,6 +21,26 @@ void main() {
     expect(packageVersion, version);
   });
 
+  test('--version flag prints version and does not execute command', () async {
+    final printLog = <String>[];
+    // override print to verify output
+    final spec = ZoneSpecification(
+      print: (_, __, ___, line) => printLog.add(line),
+    );
+    await Zone.current.fork(specification: spec).run(() async {
+      await insideFakeProjectWithSidekick((dir) async {
+        final runner = initializeSidekick(name: 'dash');
+        bool called = false;
+        runner.addCommand(
+          _DelegatedCommand(name: 'inside', block: () => called = true),
+        );
+        await runner.run(['inside', '--version']);
+        expect(called, isFalse);
+        expect(printLog, contains('dash is using sidekick version $version'));
+      });
+    });
+  });
+
   group('mainProject', () {
     test('mainProject only works in SidekickCommandRunner scope', () {
       expect(
