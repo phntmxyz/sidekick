@@ -1,7 +1,11 @@
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_plugin_installer/sidekick_plugin_installer.dart';
 
-/// Adds a dependency using [addDependency] compatibly with the old protocol
+/// Add the plugin itself as dependency to the sidekick CLI
+///
+/// Uses [PluginContext] to get the necessary information
+///
+/// Should be called from tool/install.dart
 void addSelfAsDependency() {
   final hasNewPluginContext = [
     PluginContext.name,
