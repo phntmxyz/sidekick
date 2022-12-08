@@ -75,7 +75,7 @@ Future<void> main() async {
       package.root.file('lib/src/${pluginName.snakeCase}_command.dart');
 
   PluginContext
-      .installingPlugin
+      .installerPlugin
       .root
       .file('template/${pluginName.snakeCase}_command.template.dart')
       .copySync(cliCommandFile.path);

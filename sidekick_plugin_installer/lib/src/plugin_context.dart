@@ -61,7 +61,7 @@ class PluginContext {
   ///
   /// This only works during execution a plugin's tool/install.dart,
   /// otherwise it throws
-  static DartPackage get installingPlugin {
+  static DartPackage get installerPlugin {
     final toolInstallScript = Platform.script;
     // build/plugins/<name>/tool/install.dart
     final relevantPath = toolInstallScript.pathSegments.takeLast(5).join('/');
