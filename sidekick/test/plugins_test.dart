@@ -93,6 +93,8 @@ void main() {
     test(
       'with local source',
       () async {
+        printOnFailure(
+            'Did you forget to update the max parameter of supportedInstallerVersions in install_plugin_command.dart to the next breaking version of sidekick_plugin_installer? ');
         final pluginPath = Directory('test/templates/minimal_sidekick_plugin');
 
         await runDashProcess([
