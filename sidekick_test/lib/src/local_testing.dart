@@ -130,6 +130,8 @@ sidekick:
 /// Use when testing a command which depends on [SidekickDartRuntime.dart] with
 /// a fake sidekick package
 void overrideSidekickDartRuntimeWithSystemDartRuntime(Directory sidekick) {
+  env['SIDEKICK_PACKAGE_HOME'] = sidekick.absolute.path;
+
   final systemDartSdkPath = _systemDartSdkPath();
   if (systemDartSdkPath == null) {
     throw "Tried overriding Dart SDK of package '${sidekick.path}', but "
