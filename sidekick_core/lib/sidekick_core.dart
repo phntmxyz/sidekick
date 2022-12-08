@@ -111,7 +111,7 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
     argParser.addFlag(
       'version',
       negatable: false,
-      help: 'Reports the sidekick version of this CLI.',
+      help: 'Print the sidekick version of this CLI.',
     );
   }
 
@@ -142,7 +142,7 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
     final unmount = mount();
     try {
       final parsedArgs = parse(args);
-      if ((parsedArgs['version'] as bool?) ?? false) {
+      if (parsedArgs['version'] == true) {
         print('$cliName is using sidekick version $version');
         return null;
       }
