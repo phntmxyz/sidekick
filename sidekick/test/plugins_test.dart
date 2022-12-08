@@ -228,6 +228,5 @@ void main() {
         run('dart format --set-exit-if-changed $pluginPath');
       }
     },
-    skip: 'Wait for sidekick_core 0.9.1 to be published',
   );
 }

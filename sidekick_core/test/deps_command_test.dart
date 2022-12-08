@@ -42,7 +42,7 @@ environment:
           expect(exitCode, 0);
 
           final expectedPackages = [
-            'dash_sdk',
+            'dash',
             'main_project',
             'foo_a',
             'foo_b',
@@ -80,7 +80,7 @@ environment:
           final includedPackages = [
             'test_a',
             'test_b',
-            'dash_sdk',
+            'dash',
           ].map((e) => yellow('=== package $e ==='));
           expect(fakeStdOut.lines, containsAll(includedPackages));
 

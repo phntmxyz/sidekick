@@ -90,6 +90,12 @@ class SidekickTemplateProperties {
   /// Path to main project, relative from repo root
   final String? mainProjectPath;
 
+  /// The version of the generated sidekick CLI
+  ///
+  /// This is set to the version of sidekick_core because sidekick_core contains
+  /// the template used for generation of the CLI.
+  final Version sidekickCliVersion;
+
   const SidekickTemplateProperties({
     required this.name,
     required this.entrypointLocation,
@@ -98,6 +104,7 @@ class SidekickTemplateProperties {
     required this.shouldSetFlutterSdkPath,
     required this.isMainProjectRoot,
     required this.hasNestedPackagesPath,
+    required this.sidekickCliVersion,
   });
 }
 
@@ -172,6 +179,15 @@ class ${name.pascalCase}Project {
   }
 
   String cliSidekickDart() {
+    final commands = [
+      if (shouldSetFlutterSdkPath) 'FlutterCommand()',
+      'DartCommand()',
+      'DepsCommand()',
+      'CleanCommand()',
+      'DartAnalyzeCommand()',
+      'SidekickCommand()',
+    ];
+
     final projectRoot = isMainProjectRoot != true
         ? 'runner.repository.root'
         : 'runner.mainProject!.root';
@@ -194,12 +210,7 @@ Future<void> run${name.pascalCase}(List<String> args) async {
 
   ${name.snakeCase}Project = ${name.pascalCase}Project($projectRoot);
   runner
-    ${shouldSetFlutterSdkPath ? '..addCommand(FlutterCommand())' : ''}
-    ..addCommand(DartCommand())
-    ..addCommand(DepsCommand())
-    ..addCommand(CleanCommand())
-    ..addCommand(DartAnalyzeCommand())
-    ..addCommand(SidekickCommand());
+${commands.map((cmd) => '    ..addCommand($cmd)').join('\n')};
 
   if (args.isEmpty) {
     print(runner.usage);
@@ -257,6 +268,9 @@ dependencies:
 dev_dependencies:
   lint: ^1.5.3
 
+# generated code, do not edit this manually
+sidekick:
+  cli_version: ${sidekickCliVersion.canonicalizedVersion}
 ''';
   }
 }

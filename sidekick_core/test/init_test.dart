@@ -109,8 +109,8 @@ void main() {
       );
     });
 
-    test('repository returns while running run', () {
-      insideFakeProjectWithSidekick((dir) {
+    test('repository returns while running run', () async {
+      await insideFakeProjectWithSidekick((dir) async {
         final runner = initializeSidekick(name: 'dash');
         bool called = false;
         runner.addCommand(
@@ -122,7 +122,7 @@ void main() {
             },
           ),
         );
-        runner.run(['inside']);
+        await runner.run(['inside']);
         expect(called, isTrue);
       });
     });
@@ -138,8 +138,8 @@ void main() {
         ),
       );
     });
-    test('cliName returns while running run', () {
-      insideFakeProjectWithSidekick((dir) {
+    test('cliName returns while running run', () async {
+      await insideFakeProjectWithSidekick((dir) async {
         final runner = initializeSidekick(name: 'dash');
         bool called = false;
         runner.addCommand(
@@ -151,7 +151,7 @@ void main() {
             },
           ),
         );
-        runner.run(['inside']);
+        await runner.run(['inside']);
         expect(called, isTrue);
       });
     });

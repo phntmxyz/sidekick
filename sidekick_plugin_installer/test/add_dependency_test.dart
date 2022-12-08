@@ -1,5 +1,3 @@
-import 'package:pubspec/pubspec.dart'
-    show PathReference, HostedReference, GitReference;
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_plugin_installer/sidekick_plugin_installer.dart';
 import 'package:sidekick_test/sidekick_test.dart';
@@ -53,12 +51,17 @@ environment:
         localPath: barDir.path,
       );
 
-      final modifiedPubspec = PubSpec.fromFile(pubspec.path);
-      final dependency = modifiedPubspec.dependencies['bar'];
-
       expect(
-        dependency?.reference,
-        isA<PathReference>().having((p0) => p0.path, 'path', barDir.path),
+        pubspec.readAsStringSync(),
+        '''
+name: foo
+
+environment:
+  sdk: ^2.0.0
+dependencies:
+  bar:
+    path: ${barDir.path}
+''',
       );
     });
 
@@ -69,16 +72,16 @@ environment:
         versionConstraint: '^0.10.0',
       );
 
-      final modifiedPubspec = PubSpec.fromFile(pubspec.path);
-      final dependency = modifiedPubspec.dependencies['sidekick_core'];
-
       expect(
-        dependency?.reference,
-        isA<HostedReference>().having(
-          (p0) => p0.versionConstraint.toString(),
-          'version',
-          '^0.10.0',
-        ),
+        pubspec.readAsStringSync(),
+        '''
+name: foo
+
+environment:
+  sdk: ^2.0.0
+dependencies:
+  sidekick_core: ^0.10.0
+''',
       );
     });
 
@@ -90,22 +93,19 @@ environment:
         gitPath: 'sidekick_core',
       );
 
-      final modifiedPubspec = PubSpec.fromFile(pubspec.path);
-      final dependency = modifiedPubspec.dependencies['sidekick_core'];
-
       expect(
-        dependency?.reference,
-        isA<GitReference>()
-            .having(
-              (p0) => p0.url,
-              'url',
-              'https://github.com/phntmxyz/sidekick',
-            )
-            .having(
-              (p0) => p0.path,
-              'path',
-              'sidekick_core',
-            ),
+        pubspec.readAsStringSync(),
+        '''
+name: foo
+
+environment:
+  sdk: ^2.0.0
+dependencies:
+  sidekick_core:
+    git:
+      url: https://github.com/phntmxyz/sidekick
+      path: sidekick_core
+''',
       );
     });
   });

@@ -43,26 +43,25 @@ void overrideSidekickPluginInstallerWithLocalPath(Directory package) {
 /// dartfmt is updated with the sdk and may require different formatting
 final bool analyzeGeneratedCode = env['SIDEKICK_ANALYZE'] == 'true';
 
-/// Links [SidekickDartRuntime] to [_systemDartSdkPath]
+/// Fakes a sidekick package by writing required files and environment variables
 ///
-/// Use when testing a command which depends on [SidekickDartRuntime.dart] with
-/// a fake sidekick package
-void overrideSidekickDartRuntimeWithSystemDartRuntime(Directory sidekick) {
-  env['SIDEKICK_PACKAGE_HOME'] = sidekick.absolute.path;
-
-  final link = Link(sidekick.file('build/cache/dart-sdk').path)
-    ..createSync(
-      _systemDartSdkPath()!,
-      recursive: true,
-    );
-
-  addTearDown(() {
-    link.deleteSync();
-    env['SIDEKICK_PACKAGE_HOME'] = null;
-  });
-}
-
-R insideFakeProjectWithSidekick<R>(R Function(Directory projectDir) block) {
+/// Optional Parameters:
+/// - [overrideSidekickCoreWithLocalDependency] whether to add a dependency
+///   override to use the local sidekick_core dependency
+/// - [overrideSidekickDartWithSystemDart] whether to link [SidekickDartRuntime]
+///   to [_systemDartSdkPath]. Useful when testing a command which depends
+///   on [SidekickDartRuntime.dart]
+/// - [sidekickCoreVersion] the dependency of sidekick_core in the pubspec.
+///   Only written to pubspec if value is not null.
+/// - [sidekickCliVersion] sidekick: cli_version: <sidekickCliVersion> in the
+///   pubspec. Only written to pubspec if value is not null.
+R insideFakeProjectWithSidekick<R>(
+  R Function(Directory projectDir) callback, {
+  bool overrideSidekickCoreWithLocalDependency = false,
+  bool overrideSidekickDartWithSystemDart = false,
+  String? sidekickCoreVersion,
+  String? sidekickCliVersion,
+}) {
   final tempDir = Directory.systemTemp.createTempSync();
   'git init ${tempDir.path}'.run;
 
@@ -70,33 +69,77 @@ R insideFakeProjectWithSidekick<R>(R Function(Directory projectDir) block) {
     ..createSync()
     ..writeAsStringSync('''
 name: main_project
+
 environment:
-  sdk: ^2.10.0
+  sdk: '>=2.14.0 <3.0.0'
 ''');
   tempDir.file('dash').createSync();
 
-  final fakeSidekickDir = tempDir.directory('packages/dash_sdk')
+  final fakeSidekickDir = tempDir.directory('packages/dash')
     ..createSync(recursive: true);
 
   fakeSidekickDir.file('pubspec.yaml')
     ..createSync()
     ..writeAsStringSync('''
-name: dash_sdk
+name: dash
+
 environment:
-  sdk: ^2.10.0
+  sdk: '>=2.14.0 <3.0.0'
+  
+${sidekickCoreVersion == null && !overrideSidekickCoreWithLocalDependency ? '' : '''
+dependencies:
+  sidekick_core: ${sidekickCoreVersion ?? '0.0.0'}
+'''}
+
+${sidekickCliVersion == null ? '' : '''
+sidekick:
+  cli_version: $sidekickCliVersion
+'''}
 ''');
-  fakeSidekickDir.directory('lib').createSync();
+
+  final fakeSidekickLibDir = fakeSidekickDir.directory('lib')..createSync();
+
+  fakeSidekickLibDir.file('src/dash_project.dart').createSync(recursive: true);
+  fakeSidekickLibDir.file('dash_sidekick.dart').createSync();
 
   env['SIDEKICK_PACKAGE_HOME'] = fakeSidekickDir.absolute.path;
+  env['SIDEKICK_ENTRYPOINT_HOME'] = tempDir.absolute.path;
+
+  if (overrideSidekickCoreWithLocalDependency) {
+    overrideSidekickCoreWithLocalPath(fakeSidekickDir);
+  }
+
+  if (overrideSidekickDartWithSystemDart) {
+    overrideSidekickDartRuntimeWithSystemDartRuntime(fakeSidekickDir);
+  }
 
   addTearDown(() {
     tempDir.deleteSync(recursive: true);
     env['SIDEKICK_PACKAGE_HOME'] = null;
+    env['SIDEKICK_ENTRYPOINT_HOME'] = null;
   });
 
-  return IOOverrides.runZoned(
-    () => block(tempDir),
+  return IOOverrides.runZoned<R>(
+    () => callback(tempDir),
     getCurrentDirectory: () => tempDir,
+  );
+}
+
+/// Links [SidekickDartRuntime] to [_systemDartSdkPath]
+///
+/// Use when testing a command which depends on [SidekickDartRuntime.dart] with
+/// a fake sidekick package
+void overrideSidekickDartRuntimeWithSystemDartRuntime(Directory sidekick) {
+  env['SIDEKICK_PACKAGE_HOME'] = sidekick.absolute.path;
+
+  final systemDartSdkPath = _systemDartSdkPath();
+  if (systemDartSdkPath == null) {
+    throw "Tried overriding Dart SDK of package '${sidekick.path}', but "
+        "couldn't get path of system Dart SDK.";
+  }
+  Link(sidekick.file('build/cache/dart-sdk').path).createSync(
+    systemDartSdkPath,
+    recursive: true,
   );
 }
 

@@ -186,6 +186,7 @@ class InitCommand extends Command {
           .any((package) => package.isFlutterPackage),
       entrypointLocation: entrypoint,
       packageLocation: cliPackage,
+      sidekickCliVersion: version,
     );
     SidekickTemplate().generate(props);
 

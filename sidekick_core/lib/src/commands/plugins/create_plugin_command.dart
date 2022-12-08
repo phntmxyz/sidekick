@@ -97,7 +97,7 @@ class CreatePluginCommand extends Command {
       systemDart(formatArgs);
     } else {
       // command is run from generated sidekick CLI which has its own Dart SDK
-      dart(formatArgs);
+      sidekickDartRuntime.dart(formatArgs);
     }
   }
 }
