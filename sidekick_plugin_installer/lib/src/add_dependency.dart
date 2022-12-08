@@ -1,18 +1,6 @@
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_plugin_installer/sidekick_plugin_installer.dart';
 
-/// Adds a dependency to a package as defined by [PluginContext]
-void addSelfAsDependencyFromPluginContext() => addDependency(
-      package: PluginContext.sidekickPackage,
-      dependency: PluginContext.name,
-      versionConstraint: PluginContext.versionConstraint,
-      localPath: PluginContext.localPath,
-      hostedUrl: PluginContext.hostedUrl,
-      gitUrl: PluginContext.gitUrl,
-      gitRef: PluginContext.gitRef,
-      gitPath: PluginContext.gitPath,
-    );
-
 /// Adds a dependency using [addDependency] compatibly with the old protocol
 void addSelfAsDependency() {
   final hasNewPluginContext = [
@@ -25,7 +13,16 @@ void addSelfAsDependency() {
     PluginContext.gitPath,
   ].whereNotNull().isNotEmpty;
   if (hasNewPluginContext) {
-    addSelfAsDependencyFromPluginContext();
+    addDependency(
+      package: PluginContext.sidekickPackage,
+      dependency: PluginContext.name,
+      versionConstraint: PluginContext.versionConstraint,
+      localPath: PluginContext.localPath,
+      hostedUrl: PluginContext.hostedUrl,
+      gitUrl: PluginContext.gitUrl,
+      gitRef: PluginContext.gitRef,
+      gitPath: PluginContext.gitPath,
+    );
     return;
   }
 
