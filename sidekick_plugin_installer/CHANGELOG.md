@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1
+
+- Make `PluginContext.name` nullable, because it is not available in protocol v1. (#137)
+
 ## 0.2.0
 
 - Deprecate `pubAddDependency` in favor of `addSelfAsDependency`and `addDependency` (#136)
