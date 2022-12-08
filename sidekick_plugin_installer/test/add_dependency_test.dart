@@ -1,5 +1,3 @@
-import 'package:pubspec/pubspec.dart'
-    show PathReference, HostedReference, GitReference;
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_plugin_installer/sidekick_plugin_installer.dart';
 import 'package:sidekick_test/sidekick_test.dart';
