@@ -3,7 +3,7 @@ import 'package:sidekick_core/sidekick_core.dart';
 /// This function is deprecated. Use [addSelfAsDependency] instead
 ///
 /// Adds dependency from a local [path] to [package]
-@Deprecated('Use `addSelfAsDependency` or `addSelfAsDependencyFromPluginContext` instead.')
+@Deprecated('Use `addSelfAsDependency` instead.')
 void pubAddLocalDependency(
   DartPackage package,
   String path,

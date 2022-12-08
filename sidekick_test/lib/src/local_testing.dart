@@ -23,7 +23,6 @@ void overrideSidekickCoreWithLocalPath(Directory package) {
   );
 }
 
-
 /// Changes the sidekick_plugin_installer dependency to a local override
 void overrideSidekickPluginInstallerWithLocalPath(Directory package) {
   if (!shouldUseLocalDeps) return;

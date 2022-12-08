@@ -48,7 +48,7 @@ environment:
   sdk: ^2.0.0
 ''');
 
-      addSelfAsDependency(
+      addDependency(
         package: package,
         dependency: 'bar',
         localPath: barDir.path,
@@ -64,7 +64,7 @@ environment:
     });
 
     test('adding a hosted dependency', () {
-      addSelfAsDependency(
+      addDependency(
         package: package,
         dependency: 'sidekick_core',
         versionConstraint: '^0.10.0',
@@ -84,7 +84,7 @@ environment:
     });
 
     test('adding a git dependency', () {
-      addSelfAsDependency(
+      addDependency(
         package: package,
         dependency: 'sidekick_core',
         gitUrl: 'https://github.com/phntmxyz/sidekick',
@@ -114,7 +114,7 @@ environment:
   group('throws error when arguments are not valid because', () {
     test('gitUrl is required but is missing', () {
       expect(
-        () => addSelfAsDependency(
+        () => addDependency(
           package: package,
           dependency: 'foo',
           gitPath: 'bar',
@@ -124,7 +124,7 @@ environment:
     });
     test('too many arguments are given', () {
       expect(
-        () => addSelfAsDependency(
+        () => addDependency(
           package: package,
           dependency: 'foo',
           gitPath: 'bar',
