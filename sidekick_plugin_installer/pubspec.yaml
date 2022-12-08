@@ -15,4 +15,6 @@ dependencies:
 dev_dependencies:
   lint: ^1.0.0
   pubspec: ^2.3.0
+  sidekick_test:
+    path: ../sidekick_test
   test: '>1.21.0 <2.0.0'
