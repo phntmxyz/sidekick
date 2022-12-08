@@ -2,7 +2,7 @@ import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sk_sidekick/sk_sidekick.dart';
 
 /// Updates the version in sidekick_core/lib/sidekick_core.dart
-void coreBundledVersionBump(
+void sidekickCoreBundledVersionBump(
   DartPackage package,
   Version oldVersion,
   Version newVersion,
@@ -11,7 +11,7 @@ void coreBundledVersionBump(
     return;
   }
 
-  // Update version for core package
+  // Update version for sidekick_core package
   final coreFile =
       skProject.sidekickCorePackage.root.file('lib/sidekick_core.dart');
   coreFile.replaceSectionWith(

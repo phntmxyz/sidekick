@@ -26,6 +26,9 @@ class PluginContext {
   static SidekickPackage? _sidekickPackage;
 
   /// Name of the plugin package to be installed
+  static String? get name => env['SIDEKICK_PLUGIN_NAME'];
+
+  /// Version constraint of the plugin package to be installed
   ///
   /// {@template installer_parameter}
   /// This is a parameter for installing a plugin package in a sidekick CLI
@@ -36,11 +39,6 @@ class PluginContext {
   ///
   /// Returns `null` when the plugin is installed from another source
   /// {@endtemplate}
-  static String get name => env['SIDEKICK_PLUGIN_NAME']!;
-
-  /// Version constraint of the plugin package to be installed
-  ///
-  /// {@macro installer_parameter}
   static String? get versionConstraint =>
       env['SIDEKICK_PLUGIN_VERSION_CONSTRAINT'];
 
