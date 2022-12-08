@@ -130,8 +130,9 @@ void main() {
       // override dependency, otherwise `dart analyze` fails when plugin uses unpublished API
       overrideSidekickPluginInstallerWithLocalPath(pluginDir);
 
-      run('dart pub get', workingDirectory: pluginPath);
       if (analyzeGeneratedCode) {
+        overrideSidekickPluginInstallerWithLocalPath(pluginDir);
+        run('dart pub get', workingDirectory: pluginPath);
         run('dart analyze --fatal-infos', workingDirectory: pluginPath);
         run('dart format --set-exit-if-changed $pluginPath');
       }

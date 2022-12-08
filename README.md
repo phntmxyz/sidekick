@@ -57,6 +57,18 @@ Run "flg help <command>" for more information about a command.
 
 ## Plugins
 
+### Our Favorite Plugins
+
+| Plugin                                                                          | Description                                                       |
+|---------------------------------------------------------------------------------|-------------------------------------------------------------------|
+| [sidekick_vault](https://pub.dev/packages/sidekick_vault)                       | Store project secrets encrypted in your repository                |
+| [dockerize_sidekick_plugin](https://pub.dev/packages/dockerize_sidekick_plugin) | Wrap your Flutter Web App in a docker container                   |
+| [flutterw_sidekick_plugin](https://pub.dev/packages/flutterw_sidekick_plugin)   | Pin a Flutter version to your project and share it with your team |
+
+See the [full list of available plugins](https://pub.dev/packages?q=dependency%3Asidekick_plugin_installer)
+
+To write your own plugin checkout the [docs](#sidekick-plugins-install).
+
 ### Install plugin
 
 To install more command, you can use install plugins with 
@@ -65,9 +77,6 @@ To install more command, you can use install plugins with
 $ <cli> sidekick plugins install <pub-package>
 ```
 
-Checkout the available plugins on [pub.dev](https://pub.dev/packages?q=dependency%3Asidekick_plugin_installer)
-
-You can write your own plugin. Checkout the [docs](#sidekick-plugins-install) 
 
 ## Preinstalled commands
 
