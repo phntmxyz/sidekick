@@ -23,6 +23,19 @@ void overrideSidekickCoreWithLocalPath(Directory package) {
   );
 }
 
+/// Changes the sidekick_plugin_installer dependency to a local override
+void overrideSidekickPluginInstallerWithLocalPath(Directory package) {
+  if (!shouldUseLocalDeps) return;
+  print('Overriding sidekick_plugin_installer dependency to local');
+  // assuming cwd when running those tests is in the sidekick package
+  final path = canonicalize('../sidekick_plugin_installer');
+  _overrideDependency(
+    package: package,
+    dependency: 'sidekick_plugin_installer',
+    path: path,
+  );
+}
+
 /// Set to true, when the code should be checked for lint warnings and code
 /// formatting
 ///

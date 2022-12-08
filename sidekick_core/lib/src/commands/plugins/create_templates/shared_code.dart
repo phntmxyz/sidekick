@@ -27,6 +27,13 @@ class SharedCodeTemplate extends PluginTemplateGenerator {
         .file('${props.pluginName.snakeCase}.dart')
         .writeAsStringSync(props.helpers);
 
+    final templateDirectory = pluginDirectory.directory('template')
+      ..createSync();
+    final pluginCommandTemplateFile = templateDirectory
+        .file('${props.pluginName.snakeCase}_command.template.dart')
+      ..createSync(recursive: true);
+    pluginCommandTemplateFile.writeAsStringSync(props.exampleCommand);
+
     super.generate(props);
   }
 }
@@ -64,22 +71,28 @@ Future<void> main() async {
   }
   pubGet(package);
   
-  final commandFile = package.root.file('lib/src/${pluginName.snakeCase}.dart');
-  commandFile.writeAsStringSync("""
-$exampleCommand
-""");
+  final cliCommandFile =
+      package.root.file('lib/src/${pluginName.snakeCase}_command.dart');
+
+  PluginContext
+      .installerPlugin
+      .root
+      .file('template/${pluginName.snakeCase}_command.template.dart')
+      .copySync(cliCommandFile.path);
   
   registerPlugin(
     sidekickCli: package,
-    import: "import 'package:\${package.name}/src/${pluginName.snakeCase}.dart';",
+    import: "import 'package:\${package.name}/src/${pluginName.snakeCase}_command.dart';",
     command: '${pluginName.pascalCase}Command()',
   );
 }
 ''';
 
   String get exampleCommand => '''
-import 'package:sidekick_core/sidekick_core.dart';
-import 'package:$pluginName/${pluginName.snakeCase}.dart';
+${[
+        "import 'package:sidekick_core/sidekick_core.dart';",
+        "import 'package:$pluginName/${pluginName.snakeCase}.dart';",
+      ].sorted().join('\n')}
 
 class ${pluginName.pascalCase}Command extends Command {
   @override
@@ -96,10 +109,10 @@ class ${pluginName.pascalCase}Command extends Command {
   Future<void> run() async {
     // please implement me
     final hello = getGreetings().shuffled().first;
-    print('\\\$hello from PHNTM!');
+    print('\$hello from PHNTM!');
     
     final bye = getFarewells().shuffled().first;
-    print('\\\$bye from PHNTM!');
+    print('\$bye from PHNTM!');
   }
 }
 ''';
