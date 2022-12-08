@@ -19,7 +19,7 @@ void addSelfAsDependency() {
   if (hasNewPluginContext) {
     addDependency(
       package: PluginContext.sidekickPackage,
-      dependency: PluginContext.name,
+      dependency: PluginContext.name!,
       versionConstraint: PluginContext.versionConstraint,
       localPath: PluginContext.localPath,
       hostedUrl: PluginContext.hostedUrl,

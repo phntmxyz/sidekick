@@ -36,7 +36,7 @@ class PluginContext {
   ///
   /// Returns `null` when the plugin is installed from another source
   /// {@endtemplate}
-  static String get name => env['SIDEKICK_PLUGIN_NAME']!;
+  static String? get name => env['SIDEKICK_PLUGIN_NAME'];
 
   /// Version constraint of the plugin package to be installed
   ///
