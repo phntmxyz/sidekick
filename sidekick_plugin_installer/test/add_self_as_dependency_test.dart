@@ -13,7 +13,7 @@ void main() {
 
   setUpAll(() {
     // it's necessary to use the same package path in every test because
-    // addDependency uses sidekickDartRuntime which is initialized only once
+    // addSelfAsDependency uses sidekickDartRuntime which is initialized only once
     // (final) with env.SIDEKICK_PACKAGE_HOME
     // if env.SIDEKICK_PACKAGE_HOME changes between tests,
     // sidekickDartRuntime breaks
@@ -48,7 +48,7 @@ environment:
   sdk: ^2.0.0
 ''');
 
-      addDependency(
+      addSelfAsDependency(
         package: package,
         dependency: 'bar',
         localPath: barDir.path,
@@ -64,7 +64,7 @@ environment:
     });
 
     test('adding a hosted dependency', () {
-      addDependency(
+      addSelfAsDependency(
         package: package,
         dependency: 'sidekick_core',
         versionConstraint: '^0.10.0',
@@ -84,7 +84,7 @@ environment:
     });
 
     test('adding a git dependency', () {
-      addDependency(
+      addSelfAsDependency(
         package: package,
         dependency: 'sidekick_core',
         gitUrl: 'https://github.com/phntmxyz/sidekick',
@@ -114,7 +114,7 @@ environment:
   group('throws error when arguments are not valid because', () {
     test('gitUrl is required but is missing', () {
       expect(
-        () => addDependency(
+        () => addSelfAsDependency(
           package: package,
           dependency: 'foo',
           gitPath: 'bar',
@@ -124,7 +124,7 @@ environment:
     });
     test('too many arguments are given', () {
       expect(
-        () => addDependency(
+        () => addSelfAsDependency(
           package: package,
           dependency: 'foo',
           gitPath: 'bar',

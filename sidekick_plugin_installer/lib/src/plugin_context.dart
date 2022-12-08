@@ -32,7 +32,7 @@ class PluginContext {
   ///
   /// The plugin installer needs to know the location of the plugin package
   /// which can either be a local path, a remote pub server, or a remote git
-  /// repository. See [addDependency]
+  /// repository. See [addSelfAsDependency]
   ///
   /// Returns `null` when the plugin is installed from another source
   /// {@endtemplate}

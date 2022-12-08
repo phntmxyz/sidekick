@@ -2,7 +2,7 @@ import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_plugin_installer/sidekick_plugin_installer.dart';
 
 /// Adds a dependency to a package as defined by [PluginContext]
-void addDependencyFromPluginContext() => addDependency(
+void addSelfAsDependencyFromPluginContext() => addSelfAsDependency(
       package: PluginContext.sidekickPackage,
       dependency: PluginContext.name,
       versionConstraint: PluginContext.versionConstraint,
@@ -13,9 +13,9 @@ void addDependencyFromPluginContext() => addDependency(
       gitPath: PluginContext.gitPath,
     );
 
-/// Adds a dependency using [addDependency] compatibly with the old protocol
-void addDependencyNonBreakingWrapper() {
-  final canUseNewAddDependencyFunction = [
+/// Adds a dependency using [addSelfAsDependency] compatibly with the old protocol
+void addSelfAsDependencyNonBreakingWrapper() {
+  final hasNewPluginContext = [
     PluginContext.name,
     PluginContext.versionConstraint,
     PluginContext.localPath,
@@ -24,24 +24,21 @@ void addDependencyNonBreakingWrapper() {
     PluginContext.gitRef,
     PluginContext.gitPath,
   ].whereNotNull().isNotEmpty;
-  if (canUseNewAddDependencyFunction) {
-    addDependencyFromPluginContext();
+  if (hasNewPluginContext) {
+    addSelfAsDependencyFromPluginContext();
     return;
   }
-  // addSelfAsDependency / addPluginAsDependency
-
-  // für plugin package eigenen PR nur für PluginContext einzelne PRs für plugin installer package
 
   final pluginName = PluginContext.installerPlugin.name;
   if (PluginContext.localPlugin == null) {
     // install from hosted source which is the default when given nothing else
-    addDependency(
+    addSelfAsDependency(
       package: PluginContext.sidekickPackage,
       dependency: pluginName,
     );
   } else {
     // install from local source
-    addDependency(
+    addSelfAsDependency(
       package: PluginContext.sidekickPackage,
       dependency: pluginName,
       localPath: PluginContext.localPlugin!.root.path,
@@ -53,7 +50,7 @@ void addDependencyNonBreakingWrapper() {
 ///
 /// If no additional parameters are specified, a dependency is added as
 /// hosted dependency by default.
-void addDependency({
+void addSelfAsDependency({
   required DartPackage package,
   required String dependency,
   String? versionConstraint,
