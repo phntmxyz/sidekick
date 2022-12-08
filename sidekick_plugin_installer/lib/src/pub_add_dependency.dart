@@ -1,6 +1,9 @@
 import 'package:sidekick_core/sidekick_core.dart';
 
+/// This function is deprecated. Use [addSelfAsDependency] instead
+///
 /// Adds the dependency to [package]
+@Deprecated('Use `addSelfAsDependency` or `addDependencyFromPluginContext` instead.')
 void pubAddDependency(
   DartPackage package,
   String dependency, {
