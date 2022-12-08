@@ -108,7 +108,7 @@ class PluginContext {
     final toolInstallScript = Platform.script;
     // build/plugins/<name>/tool/install.dart
     final relevantPath = toolInstallScript.pathSegments.takeLast(5).join('/');
-    final expectedPathPattern = RegExp('build/plugins/[^/]+/tool/install.dart');
+    final expectedPathPattern = RegExp('[^/]+/tool/install.dart');
 
     if (!expectedPathPattern.hasMatch(relevantPath)) {
       throw 'PluginContext.buildPlugin can only be accessed inside of a '
