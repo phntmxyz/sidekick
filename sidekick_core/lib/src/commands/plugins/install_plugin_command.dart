@@ -238,7 +238,7 @@ Directory _getPackageRootDirForHostedOrGitSource(ArgResults args) {
   } catch (e) {
     // TODO for git-ref and git-path args we could add a check way earlier:
     // when the sidekick Dart version is too low either throw if the arg is given or hide the arg
-    String _parameterNotAvailableErrorMessage(
+    String parameterNotAvailableErrorMessage(
       String parameter,
       String requiredVersion,
     ) =>
@@ -250,10 +250,10 @@ Directory _getPackageRootDirForHostedOrGitSource(ArgResults args) {
         'sidekick CLI in its pubspec.yaml. Then, execute the entrypoint of '
         'your sidekick CLI again to download the new Dart SDK version.';
     if (progress.lines.contains('Could not find an option named "git-path".')) {
-      throw _parameterNotAvailableErrorMessage('git-path', '2.17');
+      throw parameterNotAvailableErrorMessage('git-path', '2.17');
     }
     if (progress.lines.contains('Could not find an option named "git-ref".')) {
-      throw _parameterNotAvailableErrorMessage('git-ref', '2.19');
+      throw parameterNotAvailableErrorMessage('git-ref', '2.19');
     }
 
     print(progress.lines.join('\n'));
