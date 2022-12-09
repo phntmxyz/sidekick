@@ -2,35 +2,23 @@ import 'package:sidekick_core/sidekick_core.dart'
     hide cliName, repository, mainProject;
 import 'package:sidekick_plugin_installer/sidekick_plugin_installer.dart';
 
-Future<void> main(List<String> args) async {
+Future<void> main() async {
   final SidekickPackage package = PluginContext.sidekickPackage;
 
-  final commandFile = package.root.file('lib/src/minimal_sidekick_plugin.dart');
-  commandFile.writeAsStringSync("""
-import 'package:sidekick_core/sidekick_core.dart';
+  addSelfAsDependency();
+  pubGet(package);
 
-class MinimalSidekickPluginCommand extends Command {
-  @override
-  final String description = 'Sample command';
+  final cliCommandFile =
+      package.root.file('lib/src/minimal_sidekick_plugin_command.dart');
 
-  @override
-  final String name = 'minimal-sidekick-plugin';
-
-  MinimalSidekickPluginCommand() {
-    // add parameters here with argParser.addOption
-  }
-
-  @override
-  Future<void> run() async {
-    // please implement me
-    print('Greetings from PHNTM!');
-  }
-}""");
+  PluginContext.installerPlugin.root
+      .file('template/minimal_sidekick_plugin_command.template.dart')
+      .copySync(cliCommandFile.path);
 
   registerPlugin(
     sidekickCli: package,
     import:
-        "import 'package:${package.name}/src/minimal_sidekick_plugin.dart';",
+        "import 'package:${package.name}/src/minimal_sidekick_plugin_command.dart';",
     command: 'MinimalSidekickPluginCommand()',
   );
 }
