@@ -137,9 +137,22 @@ void overrideSidekickDartRuntimeWithSystemDartRuntime(Directory sidekick) {
     throw "Tried overriding Dart SDK of package '${sidekick.path}', but "
         "couldn't get path of system Dart SDK.";
   }
-  Link(sidekick.file('build/cache/dart-sdk').path).createSync(
-    systemDartSdkPath,
-    recursive: true,
+
+  final dartSdk = sidekick.directory('build/cache/dart-sdk');
+  if (dartSdk.existsSync()) {
+    // otherwise Link.createSync throws an exception
+    dartSdk.deleteSync(recursive: true);
+  }
+
+  final dartSdkLink = Link(dartSdk.path)
+    ..createSync(
+      systemDartSdkPath,
+      recursive: true,
+    );
+
+  print(
+    'Overrode Dart SDK at ${dartSdkLink.absolute.path} '
+    'to link to ${dartSdkLink.resolveSymbolicLinksSync()}',
   );
 }
 

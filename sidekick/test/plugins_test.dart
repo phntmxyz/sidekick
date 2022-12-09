@@ -12,7 +12,6 @@ import 'util/cli_runner.dart';
 void main() {
   late File entrypoint;
   late Directory projectRoot;
-  late SidekickPackage cliPackage;
 
   Future<void> runDashProcess(Iterable<String> arguments) async {
     final process = await TestProcess.start(
@@ -21,8 +20,8 @@ void main() {
       workingDirectory: projectRoot.path,
     );
 
-    process.stdoutStream().listen(printOnFailure);
-    process.stderrStream().listen(printOnFailure);
+    process.stdoutStream().listen(print);
+    process.stderrStream().listen(print);
     await process.shouldExit(0);
   }
 
@@ -33,7 +32,6 @@ void main() {
       ['init', '-n', 'dashi'],
       workingDirectory: projectRoot,
     );
-    cliPackage = SidekickPackage.fromDirectory(cli.root)!;
     await process.shouldExit(0);
     entrypoint = File("${projectRoot.path}/dashi");
     expect(entrypoint.existsSync(), isTrue);
@@ -59,7 +57,7 @@ void main() {
           'sidekick',
           'plugins',
           'install',
-          'sidekick_vault',
+          'flutterw_sidekick_plugin',
         ]);
         await runDashProcess(['vault', '-h']);
       },
@@ -96,7 +94,9 @@ void main() {
         // by default the `dash` sidekick CLI uses Dart 2.14
         // however, most sidekick plugins can't be installed with
         // Dart 2.14 because of dependency issues
-        overrideSidekickDartRuntimeWithSystemDartRuntime(cliPackage.root);
+        overrideSidekickDartRuntimeWithSystemDartRuntime(
+          projectRoot.directory('packages/dashi_sidekick'),
+        );
 
         await runDashProcess([
           'sidekick',
