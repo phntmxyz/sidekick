@@ -96,6 +96,11 @@ void main() {
         // sidekick CLI has sidekickDartRuntime @ Dart 2.14)
         final pluginDir =
             setupTemplateProject('test/templates/minimal_sidekick_plugin');
+
+        // without this, `git commit` crashes on CI
+        'git config user.email "foo@bar.test"'.start(workingDirectory: pluginDir.path);
+        'git config user.name "Foo Bar"'.start(workingDirectory: pluginDir.path);
+
         'git init'.start(workingDirectory: pluginDir.path);
         'git add .'.start(workingDirectory: pluginDir.path);
         'git commit -m "initial"'.start(workingDirectory: pluginDir.path);
