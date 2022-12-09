@@ -74,15 +74,17 @@ class InstallPluginCommand extends Command {
     final Directory pluginInstallerDir = () {
       switch (source) {
         case 'path':
-          env['SIDEKICK_PLUGIN_NAME'] = packageNameOrGitUrlOrLocalPath;
           final dir = Directory(packageNameOrGitUrlOrLocalPath);
           if (!dir.existsSync()) {
             throw "Directory at ${dir.absolute.path} does not exist";
           }
-          if (DartPackage.fromDirectory(dir) == null) {
+
+          final localPackage = DartPackage.fromDirectory(dir);
+          if (localPackage == null) {
             throw "Directory at ${dir.absolute.path} is not a dart package";
           }
 
+          env['SIDEKICK_PLUGIN_NAME'] = localPackage.name;
           env['SIDEKICK_PLUGIN_LOCAL_PATH'] = dir.absolute.path;
           env['SIDEKICK_LOCAL_PLUGIN_PATH'] = dir.absolute.path;
           return dir;
