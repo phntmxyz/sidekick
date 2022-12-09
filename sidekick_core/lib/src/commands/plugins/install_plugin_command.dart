@@ -161,8 +161,8 @@ class InstallPluginCommand extends Command {
 
     // ensure backwards compatibility where possible
     // new CLI installing old plugin: respect old protocol of sidekick_plugin_installer
-    if (pluginInstallerProtocolVersion <= Version(0, 1, 4)) {
-      // up until v0.1.4:
+    if (pluginInstallerProtocolVersion <= Version(0, 2, 0)) {
+      // up until v0.2.0:
       // - installation from git was not possible
       switch (source) {
         case 'path':
