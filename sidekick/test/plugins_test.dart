@@ -53,6 +53,10 @@ void main() {
     test(
       'with default hosted source',
       () async {
+        overrideSidekickDartRuntimeWithSystemDartRuntime(
+          projectRoot.directory('packages/dashi_sidekick'),
+        );
+
         await runDashProcess([
           'sidekick',
           'plugins',
