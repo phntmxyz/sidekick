@@ -12,6 +12,7 @@ import 'util/cli_runner.dart';
 void main() {
   late File entrypoint;
   late Directory projectRoot;
+  late SidekickPackage cliPackage;
 
   Future<void> runDashProcess(Iterable<String> arguments) async {
     final process = await TestProcess.start(
@@ -20,8 +21,8 @@ void main() {
       workingDirectory: projectRoot.path,
     );
 
-    process.stdoutStream().listen(print);
-    process.stderrStream().listen(print);
+    process.stdoutStream().listen(printOnFailure);
+    process.stderrStream().listen(printOnFailure);
     await process.shouldExit(0);
   }
 
@@ -32,6 +33,7 @@ void main() {
       ['init', '-n', 'dashi'],
       workingDirectory: projectRoot,
     );
+    cliPackage = SidekickPackage.fromDirectory(cli.root)!;
     await process.shouldExit(0);
     entrypoint = File("${projectRoot.path}/dashi");
     expect(entrypoint.existsSync(), isTrue);
@@ -42,6 +44,14 @@ void main() {
   });
 
   group('plugins install executes fine', () {
+    setUp(() {
+      printOnFailure(
+        'Did you forget to update the max parameter '
+        'of supportedInstallerVersions in install_plugin_command.dart '
+        'to the next breaking version of sidekick_plugin_installer? ',
+      );
+    });
+
     test(
       'with default hosted source',
       () async {
@@ -51,13 +61,13 @@ void main() {
           'install',
           'sidekick_vault',
         ]);
+        await runDashProcess(['vault', '-h']);
       },
       timeout: const Timeout(Duration(minutes: 5)),
-      skip: 'Wait for first plugin to be published',
     );
 
     test(
-      'with custom hosted source',
+      'with custom hosted source and version constraint',
       () async {
         await runDashProcess([
           'sidekick',
@@ -66,36 +76,44 @@ void main() {
           '--hosted-url',
           'https://pub.flutter-io.cn/',
           'sidekick_vault',
+          '>=0.6.0 <1.0.0'
         ]);
+        await runDashProcess(['vault', '-h']);
       },
       timeout: const Timeout(Duration(minutes: 5)),
-      skip: 'Wait for first plugin to be published',
     );
 
+    // TODO add similar test where --git-ref and --git-path are also used
+    // to do this the Dart SDK version of the `dash` sidekick CLI needs to be
+    // updated. It currently is using Dart 2.14 which neither contains
+    // support for `--git-ref` nor `--git-path` in `pub global activate`.
+    // `--git-path` is supported in today's Dart 2.18, but support for
+    // `--git-ref` will probably only be available from Dart 2.19
+    // once https://github.com/dart-lang/pub/pull/3656 is deployed
     test(
       'with git source',
       () async {
+        // by default the `dash` sidekick CLI uses Dart 2.14
+        // however, most sidekick plugins can't be installed with
+        // Dart 2.14 because of dependency issues
+        overrideSidekickDartRuntimeWithSystemDartRuntime(cliPackage.root);
+
         await runDashProcess([
           'sidekick',
           'plugins',
           'install',
           '--source',
           'git',
-          '--git-path',
-          'packages/umbra_cli',
-          'https://github.com/wolfenrain/umbra',
+          'https://github.com/passsy/flutterw_sidekick_plugin',
         ]);
+        await runDashProcess(['vault', '-h']);
       },
       timeout: const Timeout(Duration(minutes: 5)),
-      skip: 'Wait for first plugin to be published',
     );
 
     test(
       'with local source',
       () async {
-        printOnFailure(
-          'Did you forget to update the max parameter of supportedInstallerVersions in install_plugin_command.dart to the next breaking version of sidekick_plugin_installer? ',
-        );
         final pluginPath = Directory('test/templates/minimal_sidekick_plugin');
 
         await runDashProcess([
@@ -107,9 +125,7 @@ void main() {
           pluginPath.absolute.path,
         ]);
 
-        await runDashProcess(
-          ['minimal-sidekick-plugin'],
-        );
+        await runDashProcess(['minimal-sidekick-plugin']);
       },
       timeout: const Timeout(Duration(minutes: 5)),
     );
