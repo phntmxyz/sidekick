@@ -106,11 +106,8 @@ class PluginContext {
   /// otherwise it throws
   static DartPackage get installerPlugin {
     final toolInstallScript = Platform.script;
-    // build/plugins/<name>/tool/install.dart
-    final relevantPath = toolInstallScript.pathSegments.takeLast(5).join('/');
-    final expectedPathPattern = RegExp('build/plugins/[^/]+/tool/install.dart');
-
-    if (!expectedPathPattern.hasMatch(relevantPath)) {
+    final pathEnd = toolInstallScript.pathSegments.takeLast(2).join('/');
+    if (pathEnd != 'tool/install.dart') {
       throw 'PluginContext.buildPlugin can only be accessed inside of a '
           "plugin's tool/install.dart";
     }
