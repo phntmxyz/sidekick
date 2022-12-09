@@ -64,7 +64,7 @@ class InstallPluginCommand extends Command {
     final versionConstraint = args.rest.length > 1 ? args.rest[1] : null;
     print(
       white('Installing $packageNameOrGitUrlOrLocalPath '
-          '${gitPath != null ? "plugin in repository at path '$gitPath'" : ''} '
+          '${gitPath != null ? "plugin in git repository at path '$gitPath'" : ''} '
           '${gitRef != null ? "at git reference '$gitRef'" : ''} '
           '${versionConstraint != null ? '$versionConstraint ' : ''}'
           'for ${Repository.sidekickPackage!.cliName}'),
@@ -238,22 +238,22 @@ Directory _getPackageRootDirForHostedOrGitSource(ArgResults args) {
   } catch (e) {
     // TODO for git-ref and git-path args we could add a check way earlier:
     // when the sidekick Dart version is too low either throw if the arg is given or hide the arg
-
+    String _parameterNotAvailableErrorMessage(
+      String parameter,
+      String requiredVersion,
+    ) =>
+        'The --$parameter parameter is not yet supported by the pub tool in '
+        'the Dart SDK your sidekick CLI is using.\n'
+        'It is available from Dart $requiredVersion.\n'
+        'Try updating the Dart SDK of your sidekick CLI.\n'
+        'You can do this by increasing the minimum sdk constraint of your '
+        'sidekick CLI in its pubspec.yaml. Then, execute the entrypoint of '
+        'your sidekick CLI again to download the new Dart SDK version.';
     if (progress.lines.contains('Could not find an option named "git-path".')) {
-      throw 'The --git-path parameter is not yet supported by the pub tool in '
-          'the Dart SDK your sidekick CLI is using.\n'
-          // TODO add information on which version supports the --git-path argument
-          // TODO add information on how to update the sidekick Dart SDK
-          'Try updating the Dart SDK of your sidekick CLI.';
+      throw _parameterNotAvailableErrorMessage('git-path', '2.17');
     }
-
     if (progress.lines.contains('Could not find an option named "git-ref".')) {
-      throw 'The --git-ref parameter is not yet supported by the pub tool in '
-          'the Dart SDK your sidekick CLI is using.\n'
-          // TODO add information on which version supports the --git-ref argument
-          'It will probably be available in Dart 2.19 (more specifically: when this PR is deployed https://github.com/dart-lang/pub/pull/3656).\n'
-          // TODO add information on how to update the sidekick Dart SDK
-          'Try updating the Dart SDK of your sidekick CLI.';
+      throw _parameterNotAvailableErrorMessage('git-ref', '2.19');
     }
 
     print(progress.lines.join('\n'));

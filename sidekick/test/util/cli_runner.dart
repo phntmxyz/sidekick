@@ -9,9 +9,7 @@ import 'package:test_process/test_process.dart';
 Future<SidekickCli> buildSidekickCli() async {
   final original = Directory('.');
   final copy = Directory.systemTemp.createTempSync();
-  print('path to sidekick cli');
-  print(copy.path);
-  // TODO undo addTearDown(() => copy.deleteSync(recursive: true));
+  addTearDown(() => copy.deleteSync(recursive: true));
   await original.copyRecursively(copy);
 
   overrideSidekickCoreWithLocalPath(copy);

@@ -51,8 +51,6 @@ class SidekickDartRuntime {
       }
     }();
 
-    print('Running sidekickDartRuntime.dart with dart at ${dart.absolute.path}');
-
     dcli.startFromArgs(
       dart.path,
       args,
