@@ -95,12 +95,17 @@ void main() {
     test(
       'with git source',
       () async {
-        // by default the `dash` sidekick CLI uses Dart 2.14
-        // however, most sidekick plugins can't be installed with
-        // Dart 2.14 because of dependency issues
-        overrideSidekickDartRuntimeWithSystemDartRuntime(
-          projectRoot.directory('packages/dashi_sidekick'),
-        );
+        // TODO: this is a workaround because there currently is no published
+        // sidekick plugin which is installable with Dart 2.14 (the dash
+        // sidekick CLI has sidekickDartRuntime @ Dart 2.14)
+        final pluginDir =
+            setupTemplateProject('test/templates/minimal_sidekick_plugin');
+        'git init'.start(workingDirectory: pluginDir.path);
+        'git add .'.start(workingDirectory: pluginDir.path);
+        'git commit -m "initial"'.start(workingDirectory: pluginDir.path);
+        // Using `file://<path>` is required to mimick a remote repository more closely
+        // Otherwise, `git clone --depth 1` behaves differently: --depth is ignored in local clones; use file:// instead
+        final gitUrl = 'file://${pluginDir.absolute.path}';
 
         await runDashProcess([
           'sidekick',
@@ -108,9 +113,9 @@ void main() {
           'install',
           '--source',
           'git',
-          'https://github.com/passsy/flutterw_sidekick_plugin',
+          gitUrl,
         ]);
-        await runDashProcess(['vault', '-h']);
+        await runDashProcess(['minimal-sidekick-plugin']);
       },
       timeout: const Timeout(Duration(minutes: 5)),
     );
