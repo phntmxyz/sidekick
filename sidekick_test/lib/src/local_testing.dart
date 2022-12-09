@@ -48,9 +48,6 @@ final bool analyzeGeneratedCode = env['SIDEKICK_ANALYZE'] == 'true';
 /// Optional Parameters:
 /// - [overrideSidekickCoreWithLocalDependency] whether to add a dependency
 ///   override to use the local sidekick_core dependency
-/// - [overrideSidekickDartWithSystemDart] whether to link [SidekickDartRuntime]
-///   to [_systemDartSdkPath]. Useful when testing a command which depends
-///   on [SidekickDartRuntime.dart]
 /// - [sidekickCoreVersion] the dependency of sidekick_core in the pubspec.
 ///   Only written to pubspec if value is not null.
 /// - [sidekickCliVersion] sidekick: cli_version: <sidekickCliVersion> in the
@@ -58,7 +55,6 @@ final bool analyzeGeneratedCode = env['SIDEKICK_ANALYZE'] == 'true';
 R insideFakeProjectWithSidekick<R>(
   R Function(Directory projectDir) callback, {
   bool overrideSidekickCoreWithLocalDependency = false,
-  bool overrideSidekickDartWithSystemDart = false,
   String? sidekickCoreVersion,
   String? sidekickCliVersion,
 }) {
@@ -109,10 +105,6 @@ sidekick:
     overrideSidekickCoreWithLocalPath(fakeSidekickDir);
   }
 
-  if (overrideSidekickDartWithSystemDart) {
-    overrideSidekickDartRuntimeWithSystemDartRuntime(fakeSidekickDir);
-  }
-
   addTearDown(() {
     tempDir.deleteSync(recursive: true);
     env['SIDEKICK_PACKAGE_HOME'] = null;
@@ -129,6 +121,9 @@ sidekick:
 ///
 /// Use when testing a command which depends on [SidekickDartRuntime.dart] with
 /// a fake sidekick package
+///
+/// TODO doesn't work yet for functional sidekick CLI packages because
+/// their recompile will kick off and redownload its Dart runtime
 void overrideSidekickDartRuntimeWithSystemDartRuntime(Directory sidekick) {
   env['SIDEKICK_PACKAGE_HOME'] = sidekick.absolute.path;
 

@@ -79,7 +79,6 @@ void main() {
             );
           },
           overrideSidekickCoreWithLocalDependency: true,
-          overrideSidekickDartWithSystemDart: true,
           sidekickCliVersion: currentSidekickCliVersion,
         );
       });
@@ -122,7 +121,6 @@ void main() {
           );
         },
         overrideSidekickCoreWithLocalDependency: true,
-        overrideSidekickDartWithSystemDart: true,
         sidekickCliVersion: '0.5.0',
         sidekickCoreVersion: '0.5.0',
       );
