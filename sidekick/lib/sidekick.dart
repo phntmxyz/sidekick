@@ -20,7 +20,7 @@ Future<void> main(List<String> args) async {
   try {
     await runner.run(args);
   } on UsageException catch (e) {
-    print(e.usage);
+    print(e);
     exit(64); // usage error
   }
 }
