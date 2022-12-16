@@ -248,6 +248,7 @@ Directory _getPackageRootDirForHostedOrGitSource(ArgResults args) {
         'the Dart SDK your sidekick CLI is using.\n'
         'It is available from Dart $requiredVersion.\n'
         'Try updating the Dart SDK of your sidekick CLI.\n'
+        // TODO update instructions when https://github.com/phntmxyz/sidekick/issues/149 is resolved
         'You can do this by increasing the minimum sdk constraint of your '
         'sidekick CLI in its pubspec.yaml. Then, execute the entrypoint of '
         'your sidekick CLI again to download the new Dart SDK version.';
