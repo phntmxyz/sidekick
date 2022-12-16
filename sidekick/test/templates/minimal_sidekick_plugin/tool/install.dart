@@ -8,17 +8,32 @@ Future<void> main() async {
   addSelfAsDependency();
   pubGet(package);
 
-  final cliCommandFile =
-      package.root.file('lib/src/minimal_sidekick_plugin_command.dart');
+  final commandFile = package.root.file('lib/src/minimal_sidekick_plugin.dart');
+  commandFile.writeAsStringSync("""
+import 'package:sidekick_core/sidekick_core.dart';
 
-  PluginContext.installerPlugin.root
-      .file('template/minimal_sidekick_plugin_command.template.dart')
-      .copySync(cliCommandFile.path);
+class MinimalSidekickPluginCommand extends Command {
+  @override
+  final String description = 'Sample command';
+
+  @override
+  final String name = 'minimal-sidekick-plugin';
+
+  MinimalSidekickPluginCommand() {
+    // add parameters here with argParser.addOption
+  }
+
+  @override
+  Future<void> run() async {
+    // please implement me
+    print('Greetings from PHNTM!');
+  }
+}""");
 
   registerPlugin(
     sidekickCli: package,
     import:
-        "import 'package:${package.name}/src/minimal_sidekick_plugin_command.dart';",
+        "import 'package:${package.name}/src/minimal_sidekick_plugin.dart';",
     command: 'MinimalSidekickPluginCommand()',
   );
 }

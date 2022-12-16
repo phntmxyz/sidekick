@@ -1,9 +1,7 @@
 name: minimal_sidekick_plugin
-description: Generated sidekick plugin (template shared-code)
-version: 0.0.1
 
 environment:
-  sdk: '>=2.14.0 <3.0.0'
+  sdk: '>=2.12.0 <3.0.0'
 
 dev_dependencies:
   sidekick_plugin_installer: ^0.2.1
