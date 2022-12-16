@@ -29,6 +29,7 @@ void main() {
     projectRoot = setupTemplateProject('test/templates/minimal_dart_package');
     final cli = await buildSidekickCli();
     final process = await cli.run(
+      // TODO: speed up
       ['init', '-n', 'dashi'],
       workingDirectory: projectRoot,
     );
