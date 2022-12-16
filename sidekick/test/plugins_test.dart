@@ -97,15 +97,19 @@ void main() {
         final pluginDir =
             setupTemplateProject('test/templates/minimal_sidekick_plugin');
 
-        // without this, `git commit` crashes on CI
-        'git config user.email "foo@bar.test"'
-            .start(workingDirectory: pluginDir.path);
-        'git config user.name "Foo Bar"'
-            .start(workingDirectory: pluginDir.path);
-
         'git init'.start(workingDirectory: pluginDir.path);
         'git add .'.start(workingDirectory: pluginDir.path);
-        'git commit -m "initial"'.start(workingDirectory: pluginDir.path);
+        withEnvironment(
+          () =>
+              'git commit -m "initial"'.start(workingDirectory: pluginDir.path),
+          // without this, `git commit` crashes on CI
+          environment: {
+            'GIT_AUTHOR_NAME': 'Sidekick Test CI',
+            'GIT_AUTHOR_EMAIL': 'sidekick-ci@phntm.xyz',
+            'GIT_COMMITTER_NAME': 'Sidekick Test CI',
+            'GIT_COMMITTER_EMAIL': 'sidekick-ci@phntm.xyz',
+          },
+        );
         // Using `file://<path>` is required to mimick a remote repository more closely
         // Otherwise, `git clone --depth 1` behaves differently: --depth is ignored in local clones; use file:// instead
         final gitUrl = 'file://${pluginDir.absolute.path}';
