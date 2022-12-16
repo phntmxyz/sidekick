@@ -98,8 +98,10 @@ void main() {
             setupTemplateProject('test/templates/minimal_sidekick_plugin');
 
         // without this, `git commit` crashes on CI
-        'git config user.email "foo@bar.test"'.start(workingDirectory: pluginDir.path);
-        'git config user.name "Foo Bar"'.start(workingDirectory: pluginDir.path);
+        'git config user.email "foo@bar.test"'
+            .start(workingDirectory: pluginDir.path);
+        'git config user.name "Foo Bar"'
+            .start(workingDirectory: pluginDir.path);
 
         'git init'.start(workingDirectory: pluginDir.path);
         'git add .'.start(workingDirectory: pluginDir.path);
