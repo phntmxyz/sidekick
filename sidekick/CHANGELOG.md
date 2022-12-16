@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.8.0
+- `sidekick --version` now prints the version
+
+### sidekick init
+- cli entrypoint location (`--entrypointDirectory`) and cli package location (`--cliPackageDirectory `) are now individually configurable. Will be asked during `init` if not provided.
+- Allow project names with underscores #112
+
+- Cli template updates
+  - New `<cli> sidekick update` command (available since `sidekick_core: 0.13.0`), to update your existing sidekick cli to the latest version, like running `sidekick init` again #111
+  - Output when compiling the cli is now reduced (no pub get output) #109
+  - Analyzer now ignores the cli `build` dir #107
+
+### sidekick plugins
+- Updated plugin templates
+  - Using new `addSelfAsDependency()` method
+  - `shared-code` template now saves the template dart files in the `template` dir, not as plain string in code. #132
+
 ## 0.7.2
 
 - Add documentation

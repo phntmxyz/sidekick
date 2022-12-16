@@ -8,7 +8,7 @@ import 'package:sidekick_core/sidekick_core.dart' show Version;
 
 /// The version of package:sidekick
 // DO NOT MANUALLY EDIT THIS VERSION, instead run `sk bump-version sidekick`
-final Version version = Version.parse('0.7.2');
+final Version version = Version.parse('0.8.0');
 
 /// See the [README](https://github.com/phntmxyz/sidekick/blob/main/sidekick/README.md)
 /// for more information on sidekick
@@ -20,7 +20,7 @@ Future<void> main(List<String> args) async {
   try {
     await runner.run(args);
   } on UsageException catch (e) {
-    print(e.usage);
+    print(e);
     exit(64); // usage error
   }
 }

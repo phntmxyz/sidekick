@@ -7,123 +7,133 @@ import 'package:sidekick_test/sidekick_test.dart';
 import 'package:test/test.dart';
 
 void main() {
-  for (final currentSidekickCliVersion in [null, "0.0.0"]) {
+  for (final sidekickCliVersion in [null, "0.0.0"]) {
     test(
-        'UpdateCommand generates new files when current sidekick cli version is $currentSidekickCliVersion',
-        () async {
+        'UpdateCommand generates new files when current '
+        'sidekick cli version is $sidekickCliVersion', () async {
       final printLog = <String>[];
-      // override print to verify output
-      final spec = ZoneSpecification(
-        print: (_, __, ___, line) => printLog.add(line),
-      );
-      await Zone.current.fork(specification: spec).run(() async {
-        await insideFakeProjectWithSidekick(
-          (projectDir) async {
-            final sidekickDir = projectDir.directory('packages/dash');
-            final expectedFilesToGenerate = [
-              'tool/download_dart.sh',
-              'tool/install.sh',
-              'tool/run.sh',
-              'tool/sidekick_config.sh',
-            ].map(sidekickDir.file);
+      Future<void> code(Directory projectDir) async {
+        final sidekickDir = projectDir.directory('packages/dash');
+        final expectedFilesToGenerate = [
+          'tool/download_dart.sh',
+          'tool/install.sh',
+          'tool/run.sh',
+          'tool/sidekick_config.sh',
+        ].map(sidekickDir.file);
 
-            for (final file in expectedFilesToGenerate) {
-              expect(
-                !file.existsSync() || file.readAsStringSync().isEmpty,
-                isTrue,
-                reason: '${file.path} exists or is not empty',
-              );
-            }
+        for (final file in expectedFilesToGenerate) {
+          expect(
+            !file.existsSync() || file.readAsStringSync().isEmpty,
+            isTrue,
+            reason: '${file.path} exists or is not empty',
+          );
+        }
 
-            final runner = initializeSidekick(
-              name: 'dash',
-              dartSdkPath: systemDartSdkPath(),
-            );
-
-            final targetVersion = Version(0, 12, 0);
-
-            runner.addCommand(UpdateCommand());
-            await runner.run(['update', targetVersion.toString()]);
-
-            final versionChecker =
-                VersionChecker(Repository.requiredSidekickPackage);
-
-            final sidekickVersionAfterUpdate = versionChecker
-                .getMinimumVersionConstraint(['sidekick', 'cli_version']);
-            final sidekickCoreVersionAfterUpdate =
-                versionChecker.getMinimumVersionConstraint(
-              ['dependencies', 'sidekick_core'],
-            );
-
-            expect(sidekickVersionAfterUpdate, targetVersion);
-            expect(sidekickCoreVersionAfterUpdate, targetVersion);
-
-            for (final file in expectedFilesToGenerate) {
-              expect(
-                file.existsSync() && file.readAsStringSync().isNotEmpty,
-                isTrue,
-                reason: '${file.path} does not exist or is empty',
-              );
-            }
-
-            expect(
-              printLog,
-              containsAllInOrder([
-                grey(
-                  'Updating sidekick CLI dash from version 0.0.0 to $targetVersion ...',
-                ),
-                green(
-                  'Successfully updated sidekick CLI dash from version 0.0.0 to $targetVersion!',
-                ),
-              ]),
-            );
-          },
-          overrideSidekickCoreWithLocalDependency: true,
-          sidekickCliVersion: currentSidekickCliVersion,
+        final runner = initializeSidekick(
+          name: 'dash',
+          dartSdkPath: systemDartSdkPath(),
         );
-      });
+
+        final targetVersion = Version(0, 12, 0);
+
+        runner.addCommand(UpdateCommand());
+        await runner.run(['update', targetVersion.toString()]);
+
+        final versionChecker =
+            VersionChecker(Repository.requiredSidekickPackage);
+
+        final sidekickVersionAfterUpdate = versionChecker
+            .getMinimumVersionConstraint(['sidekick', 'cli_version']);
+        final sidekickCoreVersionAfterUpdate =
+            versionChecker.getMinimumVersionConstraint(
+          ['dependencies', 'sidekick_core'],
+        );
+
+        expect(sidekickVersionAfterUpdate, targetVersion);
+        expect(sidekickCoreVersionAfterUpdate, targetVersion);
+
+        for (final file in expectedFilesToGenerate) {
+          expect(
+            file.existsSync() && file.readAsStringSync().isNotEmpty,
+            isTrue,
+            reason: '${file.path} does not exist or is empty',
+          );
+        }
+
+        expect(
+          printLog,
+          containsAllInOrder([
+            grey(
+              'Updating sidekick CLI dash from version 0.0.0 to $targetVersion ...',
+            ),
+            green(
+              'Successfully updated sidekick CLI dash from version 0.0.0 to $targetVersion!',
+            ),
+          ]),
+        );
+      }
+
+      await runZoned(
+        () => insideFakeProjectWithSidekick(
+          code,
+          overrideSidekickCoreWithLocalDependency: true,
+          sidekickCliVersion: sidekickCliVersion,
+        ),
+        zoneSpecification: ZoneSpecification(
+          print: (_, __, ___, line) {
+            printLog.add(line);
+            stdout.writeln(line);
+          },
+        ),
+      );
     });
   }
 
   test('UpdateCommand does not downgrade', () async {
     final printLog = <String>[];
-    // override print to verify output
-    final spec = ZoneSpecification(
-      print: (_, __, ___, line) => printLog.add(line),
-    );
-    await Zone.current.fork(specification: spec).run(() async {
-      await insideFakeProjectWithSidekick(
-        (projectDir) async {
-          final runner = initializeSidekick(
-            name: 'dash',
-            dartSdkPath: systemDartSdkPath(),
-          );
 
-          runner.addCommand(UpdateCommand());
-          await runner.run(['update', '0.1.0']);
-
-          final versionChecker =
-              VersionChecker(Repository.requiredSidekickPackage);
-
-          final sidekickVersionAfterUpdate = versionChecker
-              .getMinimumVersionConstraint(['sidekick', 'cli_version']);
-          final sidekickCoreVersionAfterUpdate =
-              versionChecker.getMinimumVersionConstraint(
-            ['dependencies', 'sidekick_core'],
-          );
-          expect(sidekickVersionAfterUpdate, Version(0, 5, 0));
-          expect(sidekickCoreVersionAfterUpdate, Version(0, 5, 0));
-
-          expect(
-            printLog,
-            contains('No need to update because you are already using the '
-                'latest sidekick cli version.'),
-          );
-        },
-        overrideSidekickCoreWithLocalDependency: true,
-        sidekickCliVersion: '0.5.0',
-        sidekickCoreVersion: '0.5.0',
+    Future<void> code(Directory projectDir) async {
+      final runner = initializeSidekick(
+        name: 'dash',
+        dartSdkPath: systemDartSdkPath(),
       );
-    });
+
+      runner.addCommand(UpdateCommand());
+      await runner.run(['update', '0.1.0']);
+
+      final versionChecker = VersionChecker(Repository.requiredSidekickPackage);
+
+      final sidekickVersionAfterUpdate = versionChecker
+          .getMinimumVersionConstraint(['sidekick', 'cli_version']);
+      final sidekickCoreVersionAfterUpdate =
+          versionChecker.getMinimumVersionConstraint(
+        ['dependencies', 'sidekick_core'],
+      );
+      expect(sidekickVersionAfterUpdate, Version(0, 5, 0));
+      expect(sidekickCoreVersionAfterUpdate, Version(0, 5, 0));
+
+      expect(
+        printLog,
+        contains('No need to update because you are already using the '
+            'latest sidekick cli version.'),
+      );
+    }
+
+    await runZoned(
+      () async {
+        await insideFakeProjectWithSidekick(
+          code,
+          overrideSidekickCoreWithLocalDependency: true,
+          sidekickCliVersion: '0.5.0',
+          sidekickCoreVersion: '0.5.0',
+        );
+      },
+      zoneSpecification: ZoneSpecification(
+        print: (_, __, ___, line) {
+          printLog.add(line);
+          stdout.writeln(line);
+        },
+      ),
+    );
   });
 }
