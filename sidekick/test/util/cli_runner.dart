@@ -3,21 +3,16 @@ import 'dart:async';
 import 'package:dcli/dcli.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_test/sidekick_test.dart';
-import 'package:test/scaffolding.dart';
 import 'package:test_process/test_process.dart';
+
+/// Cached sidekick CLI to speed up tests on CI
+final cachedSidekickCli = waitForEx<SidekickCli>(_buildSidekickCli());
 
 /// Creates the sidekick cli in a separate temp directory with linked
 /// dependencies to the local sidekick_core
-///
-/// The sidekick CLI is cached to speed up tests on CI
-FutureOr<SidekickCli> buildSidekickCli() async {
-  if (_cachedSidekickCli != null) {
-    return Future.value(_cachedSidekickCli);
-  }
-
+Future<SidekickCli> _buildSidekickCli() async {
   final original = Directory('.');
   final copy = Directory.systemTemp.createTempSync();
-  tearDownAll(() => copy.deleteSync(recursive: true));
   await original.copyRecursively(copy);
 
   overrideSidekickCoreWithLocalPath(copy);
@@ -38,9 +33,7 @@ FutureOr<SidekickCli> buildSidekickCli() async {
   startFromArgs('dart', ['pub', 'get'], workingDirectory: copy.path);
   print('created sidekick cli in ${copy.path}');
 
-  final cli = SidekickCli._(copy);
-  _cachedSidekickCli = cli;
-  return cli;
+  return SidekickCli._(copy);
 }
 
 /// Copy of package:sidekick in temp directory.
@@ -63,5 +56,3 @@ class SidekickCli {
     );
   }
 }
-
-SidekickCli? _cachedSidekickCli;

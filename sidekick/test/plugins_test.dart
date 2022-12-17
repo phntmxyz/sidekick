@@ -27,7 +27,7 @@ void main() {
 
   setUp(() async {
     projectRoot = setupTemplateProject('test/templates/minimal_dart_package');
-    final cli = await buildSidekickCli();
+    final cli = cachedSidekickCli;
     final process = await cli.run(
       // TODO: speed up
       ['init', '-n', 'dashi'],
@@ -40,6 +40,12 @@ void main() {
     overrideSidekickCoreWithLocalPath(
       projectRoot.directory('packages/dashi_sidekick'),
     );
+  });
+
+  tearDownAll(() {
+    if (cachedSidekickCli.root.existsSync()) {
+      cachedSidekickCli.root.deleteSync(recursive: true);
+    }
   });
 
   group('plugins install executes fine', () {
@@ -206,7 +212,7 @@ void main() {
     () async {
       final tempDir = Directory.systemTemp.createTempSync();
       addTearDown(() => tempDir.deleteSync(recursive: true));
-      final cli = await buildSidekickCli();
+      final cli = cachedSidekickCli;
       final process = await cli.run(
         [
           'plugins',
