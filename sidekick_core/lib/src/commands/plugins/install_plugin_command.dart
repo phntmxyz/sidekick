@@ -13,9 +13,9 @@ class InstallPluginCommand extends Command {
   @override
   String get invocation =>
       // super.invocation returns e.g. '<command> <subcommand> [arguments]'
-      // insert '<package> [version-constraint]' before '[arguments]'
+      // insert '<package-name|local-path|git-url> [version-constraint]' before '[arguments]'
       '${super.invocation.removeSuffix(' [arguments]')} '
-      '<package> [version-constraint] [arguments]';
+      '<package-name|local-path|git-url> [version-constraint] [arguments]';
 
   @override
   final String name = 'install';
@@ -51,6 +51,8 @@ class InstallPluginCommand extends Command {
   Future<void> run() async {
     final args = argResults!;
     final source = args['source'] as String;
+    final gitRef = args['git-ref'] as String?;
+    final gitPath = args['git-path'] as String?;
 
     if (args.rest.isEmpty) {
       usageException(
@@ -58,39 +60,43 @@ class InstallPluginCommand extends Command {
       );
     }
 
-    final package = args.rest.first;
+    final packageNameOrGitUrlOrLocalPath = args.rest.first;
     final versionConstraint = args.rest.length > 1 ? args.rest[1] : null;
     print(
-      white('Installing $package '
+      white('Installing $packageNameOrGitUrlOrLocalPath '
+          '${gitPath != null ? "plugin in git repository at path '$gitPath'" : ''} '
+          '${gitRef != null ? "at git reference '$gitRef'" : ''} '
           '${versionConstraint != null ? '$versionConstraint ' : ''}'
           'for ${Repository.sidekickPackage!.cliName}'),
     );
-    env['SIDEKICK_PLUGIN_NAME'] = package;
     env['SIDEKICK_PLUGIN_VERSION_CONSTRAINT'] = versionConstraint;
 
     final Directory pluginInstallerDir = () {
       switch (source) {
         case 'path':
-          final dir = Directory(package);
+          final dir = Directory(packageNameOrGitUrlOrLocalPath);
           if (!dir.existsSync()) {
             throw "Directory at ${dir.absolute.path} does not exist";
           }
-          if (DartPackage.fromDirectory(dir) == null) {
+
+          final localPackage = DartPackage.fromDirectory(dir);
+          if (localPackage == null) {
             throw "Directory at ${dir.absolute.path} is not a dart package";
           }
 
+          env['SIDEKICK_PLUGIN_NAME'] = localPackage.name;
           env['SIDEKICK_PLUGIN_LOCAL_PATH'] = dir.absolute.path;
           env['SIDEKICK_LOCAL_PLUGIN_PATH'] = dir.absolute.path;
           return dir;
         case 'hosted':
           env['SIDEKICK_PLUGIN_HOSTED_URL'] = args['hosted-url'] as String?;
-          print('Downloading from pub $package...');
+          print('Downloading from pub $packageNameOrGitUrlOrLocalPath...');
           return _getPackageRootDirForHostedOrGitSource(args);
         case 'git':
-          env['SIDEKICK_PLUGIN_GIT_URL'] = args['git-url'] as String?;
-          env['SIDEKICK_PLUGIN_GIT_REF'] = args['git-ref'] as String?;
-          env['SIDEKICK_PLUGIN_GIT_PATH'] = args['git-path'] as String?;
-          print('Downloading from git $package...');
+          env['SIDEKICK_PLUGIN_GIT_URL'] = packageNameOrGitUrlOrLocalPath;
+          env['SIDEKICK_PLUGIN_GIT_REF'] = gitRef;
+          env['SIDEKICK_PLUGIN_GIT_PATH'] = gitPath;
+          print('Downloading from git $packageNameOrGitUrlOrLocalPath...');
           return _getPackageRootDirForHostedOrGitSource(args);
         default:
           throw StateError('unreachable');
@@ -157,8 +163,8 @@ class InstallPluginCommand extends Command {
 
     // ensure backwards compatibility where possible
     // new CLI installing old plugin: respect old protocol of sidekick_plugin_installer
-    if (pluginInstallerProtocolVersion <= Version(0, 1, 4)) {
-      // up until v0.1.4:
+    if (pluginInstallerProtocolVersion <= Version(0, 2, 0)) {
+      // up until v0.2.0:
       // - installation from git was not possible
       switch (source) {
         case 'path':
@@ -232,6 +238,27 @@ Directory _getPackageRootDirForHostedOrGitSource(ArgResults args) {
   try {
     sidekickDartRuntime.dart(pubGlobalActivateArgs, progress: progress);
   } catch (e) {
+    // TODO for git-ref and git-path args we could add a check way earlier:
+    // when the sidekick Dart version is too low either throw if the arg is given or hide the arg
+    String parameterNotAvailableErrorMessage(
+      String parameter,
+      String requiredVersion,
+    ) =>
+        'The --$parameter parameter is not yet supported by the pub tool in '
+        'the Dart SDK your sidekick CLI is using.\n'
+        'It is available from Dart $requiredVersion.\n'
+        'Try updating the Dart SDK of your sidekick CLI.\n'
+        // TODO update instructions when https://github.com/phntmxyz/sidekick/issues/149 is resolved
+        'You can do this by increasing the minimum sdk constraint of your '
+        'sidekick CLI in its pubspec.yaml. Then, execute the entrypoint of '
+        'your sidekick CLI again to download the new Dart SDK version.';
+    if (progress.lines.contains('Could not find an option named "git-path".')) {
+      throw parameterNotAvailableErrorMessage('git-path', '2.17');
+    }
+    if (progress.lines.contains('Could not find an option named "git-ref".')) {
+      throw parameterNotAvailableErrorMessage('git-ref', '2.19');
+    }
+
     print(progress.lines.join('\n'));
     rethrow;
   }
@@ -280,6 +307,7 @@ Directory _getPackageRootDirForHostedOrGitSource(ArgResults args) {
       progress.lines.map(activationRegExp.matchAsPrefix).whereNotNull().single;
   final packageName = activationInfo.group(1)!;
   final packageVersion = activationInfo.group(2)!;
+  env['SIDEKICK_PLUGIN_NAME'] = packageName;
 
   // TODO Don't deactivate when the package was already activated
   // The package was only activated to cache it and can be deactivated now

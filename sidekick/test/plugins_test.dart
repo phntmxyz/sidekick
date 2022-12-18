@@ -42,6 +42,14 @@ void main() {
   });
 
   group('plugins install executes fine', () {
+    setUp(() {
+      printOnFailure(
+        'Did you forget to update the max parameter '
+        'of supportedInstallerVersions in install_plugin_command.dart '
+        'to the next breaking version of sidekick_plugin_installer? ',
+      );
+    });
+
     test(
       'with default hosted source',
       () async {
@@ -51,13 +59,13 @@ void main() {
           'install',
           'sidekick_vault',
         ]);
+        await runDashProcess(['vault', '-h']);
       },
       timeout: const Timeout(Duration(minutes: 5)),
-      skip: 'Wait for first plugin to be published',
     );
 
     test(
-      'with custom hosted source',
+      'with custom hosted source and version constraint',
       () async {
         await runDashProcess([
           'sidekick',
@@ -66,36 +74,62 @@ void main() {
           '--hosted-url',
           'https://pub.flutter-io.cn/',
           'sidekick_vault',
+          '>=0.6.0 <1.0.0'
         ]);
+        await runDashProcess(['vault', '-h']);
       },
       timeout: const Timeout(Duration(minutes: 5)),
-      skip: 'Wait for first plugin to be published',
     );
 
+    // TODO add similar test where --git-ref and --git-path are also used
+    // to do this the Dart SDK version of the `dash` sidekick CLI needs to be
+    // updated. It currently is using Dart 2.14 which neither contains
+    // support for `--git-ref` nor `--git-path` in `pub global activate`.
+    // `--git-path` is supported in today's Dart 2.18, but support for
+    // `--git-ref` will probably only be available from Dart 2.19
+    // once https://github.com/dart-lang/pub/pull/3656 is deployed
     test(
       'with git source',
       () async {
+        // TODO: this is a workaround because there currently is no published
+        // sidekick plugin which is installable with Dart 2.14 (the dash
+        // sidekick CLI has sidekickDartRuntime @ Dart 2.14)
+        final pluginDir =
+            setupTemplateProject('test/templates/minimal_sidekick_plugin');
+
+        'git init'.start(workingDirectory: pluginDir.path);
+        'git add .'.start(workingDirectory: pluginDir.path);
+        withEnvironment(
+          () =>
+              'git commit -m "initial"'.start(workingDirectory: pluginDir.path),
+          // without this, `git commit` crashes on CI
+          environment: {
+            'GIT_AUTHOR_NAME': 'Sidekick Test CI',
+            'GIT_AUTHOR_EMAIL': 'sidekick-ci@phntm.xyz',
+            'GIT_COMMITTER_NAME': 'Sidekick Test CI',
+            'GIT_COMMITTER_EMAIL': 'sidekick-ci@phntm.xyz',
+          },
+        );
+        // Using `file://<path>` is required to mimick a remote repository more closely
+        // Otherwise, `git clone --depth 1` behaves differently: --depth is ignored in local clones; use file:// instead
+        final gitUrl = 'file://${pluginDir.absolute.path}';
+
         await runDashProcess([
           'sidekick',
           'plugins',
           'install',
           '--source',
           'git',
-          '--git-path',
-          'packages/umbra_cli',
-          'https://github.com/wolfenrain/umbra',
+          gitUrl,
         ]);
+        await runDashProcess(['minimal-sidekick-plugin']);
       },
       timeout: const Timeout(Duration(minutes: 5)),
-      skip: 'Wait for first plugin to be published',
     );
 
     test(
       'with local source',
       () async {
-        printOnFailure(
-          'Did you forget to update the max parameter of supportedInstallerVersions in install_plugin_command.dart to the next breaking version of sidekick_plugin_installer? ',
-        );
         final pluginPath = Directory('test/templates/minimal_sidekick_plugin');
 
         await runDashProcess([
@@ -107,9 +141,7 @@ void main() {
           pluginPath.absolute.path,
         ]);
 
-        await runDashProcess(
-          ['minimal-sidekick-plugin'],
-        );
+        await runDashProcess(['minimal-sidekick-plugin']);
       },
       timeout: const Timeout(Duration(minutes: 5)),
     );
