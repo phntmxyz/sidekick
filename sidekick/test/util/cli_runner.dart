@@ -7,11 +7,11 @@ import 'package:test_process/test_process.dart';
 
 /// Deletes cached versions of the sidekick executable and sidekick CLI
 void tearDownSidekickCache() {
-  if (cachedSidekickExecutable.root.existsSync()) {
-    cachedSidekickExecutable.root.deleteSync(recursive: true);
+  if (_cachedSidekickExecutableDir?.existsSync() ?? false) {
+    _cachedSidekickExecutableDir!.deleteSync(recursive: true);
   }
-  if (_cachedSidekickCli.root.existsSync()) {
-    _cachedSidekickCli.root.deleteSync(recursive: true);
+  if (_cachedSidekickCliDir?.existsSync() ?? false) {
+    _cachedSidekickCliDir!.deleteSync(recursive: true);
   }
 }
 
@@ -31,28 +31,33 @@ R withSidekickCli<R>(R Function(SidekickCli cli) callback) {
 
 /// Cached sidekick CLI. Don't use directly, use [withSidekickCli] instead.
 final _cachedSidekickCli = waitForEx(() async {
-  final sidekickCliDir = Directory.systemTemp.createTempSync();
+  _cachedSidekickCliDir = Directory.systemTemp.createTempSync();
   final process = await cachedSidekickExecutable.run(
     ['init', '-n', 'dashi'],
-    workingDirectory: sidekickCliDir,
+    workingDirectory: _cachedSidekickCliDir!,
   );
   if (await process.exitCode != 0) {
     process.stdoutStream().listen(print);
     process.stderrStream().listen(print);
   }
   await process.shouldExit(0);
-  return SidekickCli._(sidekickCliDir, 'dashi');
+  return SidekickCli._(_cachedSidekickCliDir!, 'dashi');
 }());
+
+Directory? _cachedSidekickCliDir;
 
 /// Cached sidekick executable to speed up tests on CI
 final cachedSidekickExecutable =
     waitForEx<SidekickExecutable>(_buildSidekickExecutable());
+
+Directory? _cachedSidekickExecutableDir;
 
 /// Creates the sidekick executable in a separate temp directory with linked
 /// dependencies to the local sidekick_core
 Future<SidekickExecutable> _buildSidekickExecutable() async {
   final original = Directory('.');
   final copy = Directory.systemTemp.createTempSync();
+  _cachedSidekickExecutableDir = copy;
   await original.copyRecursively(copy);
 
   overrideSidekickCoreWithLocalPath(copy);

@@ -28,8 +28,10 @@ void main() {
 
   // TODO i noticed that this test takes 7s even though another test already ran
   // which uses cachedSidekickExecutable so it should exist already,
-  // however I guess each test file isolate creates its own version
+  // however each test file creates its own version (because each file runs on fresh memory/isolate, even with the --concurrency option)
   // so to really create the sidekick CLI only once we could use sth like very_good test to run our tests
+  // just not sure whether its worth it because it also takes time to install very_good_cli
+  // but yes it should be worth it because we use cached sidekick in 3 files (init, plugins, recompile test) and this outweighs having to download very_good_cli
   test('--version flag prints sidekick and sidekick_core versions', () async {
     final process = await cachedSidekickExecutable
         .run(['--version'], workingDirectory: Directory.current);
@@ -203,88 +205,45 @@ void main() {
 
   // TODO do we really need groups for all of these layouts? we had them because in the past we had some ProjectStructureDetector
   group('sidekick init - simple layout', () {
-    // TODO kind of redundant to other tests -> delete?
-    test(
-      'entrypoint executes fine after sidekick init $localOrPubDepsLabel',
-      () async {
-        final projectRoot =
-            setupTemplateProject('test/templates/nested_package');
-        final nestedPackage = projectRoot.directory('foo/bar/nested');
-
-        final process = await cachedSidekickExecutable.run(
-          ['init', '-n', 'dashi'],
-          workingDirectory: nestedPackage,
-        );
-        process.stdoutStream().listen(print);
-        process.stderrStream().listen(print);
-        await process.shouldExit(0);
-        final entrypoint = File("${nestedPackage.path}/dashi");
-        expect(entrypoint.existsSync(), isTrue);
-
-        overrideSidekickCoreWithLocalPath(
-          nestedPackage.directory('packages/dashi_sidekick'),
-        );
-
-        final dashProcess = await TestProcess.start(
-          entrypoint.path,
-          [],
-          workingDirectory: nestedPackage.path,
-        );
-        printOnFailure(await dashProcess.stdoutStream().join('\n'));
-        printOnFailure(await dashProcess.stderrStream().join('\n'));
-        dashProcess.shouldExit(0);
-      },
-      timeout: const Timeout(Duration(minutes: 5)),
-    );
-
     test(
       'after sidekick init in dart package, CLI has a working dart command and no flutter command $localOrPubDepsLabel',
       () async {
-        final projectRoot =
-            setupTemplateProject('test/templates/minimal_dart_package');
-        final process = await cachedSidekickExecutable.run(
-          ['init', '-n', 'dashi'],
-          workingDirectory: projectRoot,
-        );
-        await process.shouldExit(0);
-        final entrypoint = File("${projectRoot.path}/dashi");
-        expect(entrypoint.existsSync(), isTrue);
+        await withSidekickCli((cli) async {
+          final entrypoint = File("${cli.root.path}/dashi");
+          expect(entrypoint.existsSync(), isTrue);
 
-        overrideSidekickCoreWithLocalPath(
-          projectRoot.directory('packages/dashi_sidekick'),
-        );
+          expect(
+            cli.root
+                .file('packages/dashi_sidekick/lib/dashi_sidekick.dart')
+                .readAsStringSync(),
+            contains('dartSdkPath:'),
+          );
 
-        expect(
-          projectRoot
-              .file('packages/dashi_sidekick/lib/dashi_sidekick.dart')
-              .readAsStringSync(),
-          contains('dartSdkPath:'),
-        );
+          expect(
+            cli.root
+                .file('packages/dashi_sidekick/lib/dashi_sidekick.dart')
+                .readAsStringSync(),
+            isNot(contains('flutterSdkPath:')),
+          );
 
-        expect(
-          projectRoot
-              .file('packages/dashi_sidekick/lib/dashi_sidekick.dart')
-              .readAsStringSync(),
-          isNot(contains('flutterSdkPath:')),
-        );
+          final dartDashProcess = await TestProcess.start(
+            entrypoint.path,
+            ['dart'],
+            workingDirectory: cli.root.path,
+          );
+          printOnFailure(await dartDashProcess.stdoutStream().join('\n'));
+          printOnFailure(await dartDashProcess.stderrStream().join('\n'));
+          dartDashProcess.shouldExit(0);
 
-        final dartDashProcess = await TestProcess.start(
-          entrypoint.path,
-          ['dart'],
-          workingDirectory: projectRoot.path,
-        );
-        printOnFailure(await dartDashProcess.stdoutStream().join('\n'));
-        printOnFailure(await dartDashProcess.stderrStream().join('\n'));
-        dartDashProcess.shouldExit(0);
-
-        final flutterDashProcess = await TestProcess.start(
-          entrypoint.path,
-          ['flutter'],
-          workingDirectory: projectRoot.path,
-        );
-        printOnFailure(await flutterDashProcess.stdoutStream().join('\n'));
-        printOnFailure(await flutterDashProcess.stderrStream().join('\n'));
-        flutterDashProcess.shouldExit(64);
+          final flutterDashProcess = await TestProcess.start(
+            entrypoint.path,
+            ['flutter'],
+            workingDirectory: cli.root.path,
+          );
+          printOnFailure(await flutterDashProcess.stdoutStream().join('\n'));
+          printOnFailure(await flutterDashProcess.stderrStream().join('\n'));
+          flutterDashProcess.shouldExit(64);
+        });
       },
       timeout: const Timeout(Duration(minutes: 5)),
     );
@@ -350,12 +309,11 @@ void main() {
     );
 
     test(
-      'entrypoint location and cli package location are modifiable',
+      'entrypoint & cli package location are modifiable, target can be given as absolute path',
       () async {
-        final projectRoot =
-            setupTemplateProject('test/templates/minimal_dart_package');
-        final entrypointDir = projectRoot
-            .directory('foo/custom/entrypointDirectory')
+        final cliDir = Directory.systemTemp.createTempSync();
+        addTearDown(() => cliDir.deleteSync(recursive: true));
+        final entrypointDir = cliDir.directory('foo/custom/entrypointDirectory')
           ..createSync(recursive: true);
         final process = await cachedSidekickExecutable.run(
           [
@@ -366,8 +324,9 @@ void main() {
             entrypointDir.path,
             '--cliPackageDirectory',
             entrypointDir.directory('my/custom/cliDir').path,
+            cliDir.absolute.path,
           ],
-          workingDirectory: projectRoot,
+          workingDirectory: Directory.current,
         );
         printOnFailure(await process.stdoutStream().join('\n'));
         printOnFailure(await process.stderrStream().join('\n'));
@@ -383,7 +342,7 @@ void main() {
         final dashProcess = await TestProcess.start(
           entrypoint.path,
           [],
-          workingDirectory: projectRoot.path,
+          workingDirectory: cliDir.path,
         );
         printOnFailure(await dashProcess.stdoutStream().join('\n'));
         printOnFailure(await dashProcess.stderrStream().join('\n'));
@@ -395,7 +354,7 @@ void main() {
 
   group('sidekick init - packages layout', () {
     test(
-      'init generates sidekick package + entrypoint',
+      'init generates sidekick package + entrypoint which executes fine',
       () async {
         final project =
             setupTemplateProject('test/templates/root_with_packages');
@@ -416,10 +375,20 @@ void main() {
         final git = Directory("${project.path}/.git");
         expect(git.existsSync(), isTrue);
 
-        // check entrypoint is executable
+        // check entrypoint executes fine
         final entrypoint = File("${project.path}/dashi");
         expect(entrypoint.existsSync(), isTrue);
-        expect(entrypoint.statSync().modeString(), 'rwxr-xr-x');
+        overrideSidekickCoreWithLocalPath(
+          project.directory('packages/dashi_sidekick'),
+        );
+        final dashProcess = await TestProcess.start(
+          entrypoint.path,
+          [],
+          workingDirectory: project.path,
+        );
+        dashProcess.stdoutStream().listen(printOnFailure);
+        dashProcess.stderrStream().listen(printOnFailure);
+        dashProcess.shouldExit(0);
 
         // root is mainProjectPath
         final runFunctionFile = File(
@@ -447,71 +416,6 @@ void main() {
             contains('packages/package_b'),
           ),
         );
-      },
-      timeout: const Timeout(Duration(minutes: 5)),
-    );
-
-    test(
-      'entrypoint executes fine after sidekick init $localOrPubDepsLabel',
-      () async {
-        final project =
-            setupTemplateProject('test/templates/root_with_packages');
-        final process = await cachedSidekickExecutable.run(
-          ['init', '-n', 'dashi'],
-          workingDirectory: project,
-        );
-        await process.shouldExit(0);
-        final entrypoint = File("${project.path}/dashi");
-        expect(entrypoint.existsSync(), isTrue);
-
-        overrideSidekickCoreWithLocalPath(
-          project.directory('packages/dashi_sidekick'),
-        );
-
-        final dashProcess = await TestProcess.start(
-          entrypoint.path,
-          [],
-          workingDirectory: project.path,
-        );
-        printOnFailure(await dashProcess.stdoutStream().join('\n'));
-        printOnFailure(await dashProcess.stderrStream().join('\n'));
-        dashProcess.shouldExit(0);
-      },
-      timeout: const Timeout(Duration(minutes: 5)),
-    );
-
-    test(
-      'init with path (absolute) $localOrPubDepsLabel',
-      () async {
-        final project =
-            setupTemplateProject('test/templates/root_with_packages');
-        final process = await cachedSidekickExecutable.run(
-          ['init', '-n', 'dashi', project.absolute.path],
-          workingDirectory: project.parent,
-        );
-        await process.shouldExit(0);
-
-        // check git is initialized
-        final git = Directory("${project.path}/.git");
-        expect(git.existsSync(), isTrue);
-
-        // check entrypoint is executable
-        final entrypoint = File("${project.path}/dashi");
-        expect(entrypoint.existsSync(), isTrue);
-        expect(entrypoint.statSync().modeString(), 'rwxr-xr-x');
-
-        overrideSidekickCoreWithLocalPath(
-          project.directory('packages/dashi_sidekick'),
-        );
-
-        final dashProcess = await TestProcess.start(
-          entrypoint.path,
-          [],
-          workingDirectory: project.path,
-        );
-        printOnFailure(await dashProcess.stdoutStream().join('\n'));
-        printOnFailure(await dashProcess.stderrStream().join('\n'));
-        dashProcess.shouldExit(0);
       },
       timeout: const Timeout(Duration(minutes: 5)),
     );
@@ -564,70 +468,6 @@ void main() {
             contains('packages/package_b'),
           ),
         );
-      },
-      timeout: const Timeout(Duration(minutes: 5)),
-    );
-
-    // TODO redundant test, recompile_test also executes entrypoint -> delete completely?
-    test(
-      'entrypoint executes fine after sidekick init $localOrPubDepsLabel',
-      () async {
-        final project = setupTemplateProject('test/templates/multi_package');
-        final process = await cachedSidekickExecutable.run(
-          ['init', '-n', 'dashi'],
-          workingDirectory: project,
-        );
-        await process.shouldExit(0);
-        final entrypoint = File("${project.path}/dashi");
-        expect(entrypoint.existsSync(), isTrue);
-
-        overrideSidekickCoreWithLocalPath(
-          project.directory('packages/dashi_sidekick'),
-        );
-
-        final dashProcess = await TestProcess.start(
-          entrypoint.path,
-          [],
-          workingDirectory: project.path,
-        );
-        printOnFailure(await dashProcess.stdoutStream().join('\n'));
-        printOnFailure(await dashProcess.stderrStream().join('\n'));
-        dashProcess.shouldExit(0);
-      },
-      timeout: const Timeout(Duration(minutes: 5)),
-    );
-
-    test(
-      'init with path (absolute) $localOrPubDepsLabel',
-      () async {
-        final project = setupTemplateProject('test/templates/multi_package');
-        final process = await cachedSidekickExecutable.run(
-          ['init', '-n', 'dashi', project.absolute.path],
-          workingDirectory: project.parent,
-        );
-        await process.shouldExit(0);
-
-        // check git is initialized
-        final git = Directory("${project.path}/.git");
-        expect(git.existsSync(), isTrue);
-
-        // check entrypoint is executable
-        final entrypoint = File("${project.path}/dashi");
-        expect(entrypoint.existsSync(), isTrue);
-        expect(entrypoint.statSync().modeString(), 'rwxr-xr-x');
-
-        overrideSidekickCoreWithLocalPath(
-          project.directory('packages/dashi_sidekick'),
-        );
-
-        final dashProcess = await TestProcess.start(
-          entrypoint.path,
-          [],
-          workingDirectory: project.path,
-        );
-        printOnFailure(await dashProcess.stdoutStream().join('\n'));
-        printOnFailure(await dashProcess.stderrStream().join('\n'));
-        dashProcess.shouldExit(0);
       },
       timeout: const Timeout(Duration(minutes: 5)),
     );
