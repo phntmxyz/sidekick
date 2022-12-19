@@ -26,6 +26,10 @@ void main() {
     expect(packageVersion, version);
   });
 
+  // TODO i noticed that this test takes 7s even though another test already ran
+  // which uses cachedSidekickExecutable so it should exist already,
+  // however I guess each test file isolate creates its own version
+  // so to really create the sidekick CLI only once we could use sth like very_good test to run our tests
   test('--version flag prints sidekick and sidekick_core versions', () async {
     final process = await cachedSidekickExecutable
         .run(['--version'], workingDirectory: Directory.current);
@@ -160,9 +164,46 @@ void main() {
       },
       timeout: const Timeout(Duration(minutes: 5)),
     );
+
+    test(
+      'throws error when cli name is invalid',
+      () async {
+        final process = await cachedSidekickExecutable.run(
+          ['init', '-n', '-42invalidName'],
+          workingDirectory: Directory.systemTemp.createTempSync(),
+        );
+
+        await process.shouldExit(255);
+        expect(
+          await process.stderr.rest.contains(invalidCliNameErrorMessage),
+          isTrue,
+        );
+      },
+    );
+
+    test(
+      'throws error when cli name collides with an system executable',
+      () async {
+        final process = await cachedSidekickExecutable.run(
+          ['init', '-n', 'rm'],
+          workingDirectory: Directory.systemTemp.createTempSync(),
+        );
+
+        await process.shouldExit(255);
+        final stderrText = await process.stderr.rest.toList();
+        expect(
+          stderrText,
+          contains(
+            'The CLI name rm is already taken by an executable on your system see [/bin/rm]',
+          ),
+        );
+      },
+    );
   });
 
+  // TODO do we really need groups for all of these layouts? we had them because in the past we had some ProjectStructureDetector
   group('sidekick init - simple layout', () {
+    // TODO kind of redundant to other tests -> delete?
     test(
       'entrypoint executes fine after sidekick init $localOrPubDepsLabel',
       () async {
@@ -194,49 +235,6 @@ void main() {
         dashProcess.shouldExit(0);
       },
       timeout: const Timeout(Duration(minutes: 5)),
-    );
-
-    test(
-      'throws error when cli name is invalid',
-      () async {
-        final projectRoot =
-            setupTemplateProject('test/templates/minimal_dart_package');
-        final process = await cachedSidekickExecutable.run(
-          ['init', '-n', '-42invalidName'],
-          workingDirectory: projectRoot,
-        );
-
-        await process.shouldExit(255);
-        expect(
-          await process.stderr.rest.contains(invalidCliNameErrorMessage),
-          isTrue,
-        );
-      },
-    );
-
-    test(
-      'throws error when cli name collides with an system executable',
-      () async {
-        final projectRoot =
-            setupTemplateProject('test/templates/minimal_dart_package');
-        final process = await cachedSidekickExecutable.run(
-          [
-            'init',
-            '-n',
-            'rm',
-          ],
-          workingDirectory: projectRoot,
-        );
-
-        await process.shouldExit(255);
-        final stderrText = await process.stderr.rest.toList();
-        expect(
-          stderrText,
-          contains(
-            'The CLI name rm is already taken by an executable on your system see [/bin/rm]',
-          ),
-        );
-      },
     );
 
     test(
@@ -570,6 +568,7 @@ void main() {
       timeout: const Timeout(Duration(minutes: 5)),
     );
 
+    // TODO redundant test, recompile_test also executes entrypoint -> delete completely?
     test(
       'entrypoint executes fine after sidekick init $localOrPubDepsLabel',
       () async {

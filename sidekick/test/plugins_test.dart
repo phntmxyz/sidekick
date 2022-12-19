@@ -20,6 +20,7 @@ void main() {
       );
     });
 
+    // TODO redundant to next test -> delete?
     test(
       'with default hosted source',
       () async {
@@ -126,10 +127,14 @@ void main() {
     );
   });
 
+  // TODO could also move this to plugin e2e test to save some time
   for (final template in CreatePluginCommand.templates.keys) {
     test('plugin template $template generates valid plugin code', () async {
-      await withSidekickCli((cli) async {
-        await cli.run([
+      final pluginDir = Directory.systemTemp.createTempSync();
+      final pluginPath = pluginDir.path;
+
+      await cachedSidekickExecutable.run(
+        [
           'sidekick',
           'plugins',
           'create',
@@ -137,37 +142,36 @@ void main() {
           template,
           '-n',
           'generated_plugin',
-        ]);
+        ],
+        workingDirectory: pluginDir,
+      );
 
-        final pluginDir = cli.root.directory('generated_plugin');
-        final pluginPath = pluginDir.path;
-        // override dependency, otherwise `dart analyze` fails when plugin uses unpublished API
+      // override dependency, otherwise `dart analyze` fails when plugin uses unpublished API
+      overrideSidekickPluginInstallerWithLocalPath(pluginDir);
+
+      if (analyzeGeneratedCode) {
         overrideSidekickPluginInstallerWithLocalPath(pluginDir);
+        run('dart pub get', workingDirectory: pluginPath);
+        run('dart analyze --fatal-infos', workingDirectory: pluginPath);
+        run('dart format --set-exit-if-changed $pluginPath');
+      }
 
-        if (analyzeGeneratedCode) {
-          overrideSidekickPluginInstallerWithLocalPath(pluginDir);
-          run('dart pub get', workingDirectory: pluginPath);
-          run('dart analyze --fatal-infos', workingDirectory: pluginPath);
-          run('dart format --set-exit-if-changed $pluginPath');
-        }
+      expect(
+        pluginDir.file('analysis_options.yaml').readAsStringSync(),
+        contains('package:lint/analysis_options.yaml'),
+      );
+      expect(
+        pluginDir.file('.gitignore').readAsStringSync(),
+        contains('\npubspec.lock'),
+      );
 
-        expect(
-          pluginDir.file('analysis_options.yaml').readAsStringSync(),
-          contains('package:lint/analysis_options.yaml'),
-        );
-        expect(
-          pluginDir.file('.gitignore').readAsStringSync(),
-          contains('\npubspec.lock'),
-        );
-
-        expect(
-          pluginDir.file('README.md').readAsStringSync(),
-          allOf([
-            contains('dashi sidekick plugins install'),
-            contains('generated_plugin sidekick plugin'),
-          ]),
-        );
-      });
+      expect(
+        pluginDir.file('README.md').readAsStringSync(),
+        allOf([
+          contains('dashi sidekick plugins install'),
+          contains('generated_plugin sidekick plugin'),
+        ]),
+      );
     });
   }
 
@@ -214,6 +218,7 @@ void main() {
 
   /// This test uses the global sidekick CLI while the previous tests
   /// first generate a custom sidekick CLI and then use that
+  // TODO redundant, uses the same underlying command -> delete?
   test(
     'create plugin with global sidekick',
     () async {
