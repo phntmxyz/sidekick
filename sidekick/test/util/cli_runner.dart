@@ -106,6 +106,7 @@ class SidekickCli {
 
   SidekickCli._(this.root, this.name);
 
+  /// Runs the CLI's entrypoint and verifies that it exits with exit code 0
   Future<void> run(
     List<String> args, {
     Directory? workingDirectory,
