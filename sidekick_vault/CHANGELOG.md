@@ -1,3 +1,8 @@
+## 0.7.0
+- Fix folder creation bug during install (missing `await`) #110
+- Improve error message when vault file doesn't exist #102
+- Pub points: Add example / better repo link on pub / constrain `dcli` #106
+
 ## 0.6.0
 - Added plugin installer. You can now install the sidekick_vault plugin with `<cli> sidekick plugin install sidekick_vault`
 

@@ -77,7 +77,6 @@ void main() {
         () => insideFakeProjectWithSidekick(
           code,
           overrideSidekickCoreWithLocalDependency: true,
-          overrideSidekickDartWithSystemDart: true,
           sidekickCliVersion: sidekickCliVersion,
         ),
         zoneSpecification: ZoneSpecification(
@@ -125,7 +124,6 @@ void main() {
         await insideFakeProjectWithSidekick(
           code,
           overrideSidekickCoreWithLocalDependency: true,
-          overrideSidekickDartWithSystemDart: true,
           sidekickCliVersion: '0.5.0',
           sidekickCoreVersion: '0.5.0',
         );

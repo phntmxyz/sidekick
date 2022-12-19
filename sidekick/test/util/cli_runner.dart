@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:dcli/dcli.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_test/sidekick_test.dart';
-import 'package:test/test.dart';
 import 'package:test_process/test_process.dart';
 
 /// Deletes cached versions of the sidekick executable and sidekick CLI
@@ -19,10 +18,10 @@ void tearDownSidekickCache() {
 /// Executes [callback] with copy of cached sidekick CLI to speed up CI tests
 ///
 /// sidekick_core dependency is linked to the local version
-R withSidekickCli<R>(R Function(SidekickCli cli) callback)  {
+R withSidekickCli<R>(R Function(SidekickCli cli) callback) {
   final copy = Directory.systemTemp.createTempSync();
- // addTearDown(() => copy.deleteSync(recursive: true));
-  waitForEx( _cachedSidekickCli.root.copyRecursively(copy));
+  // addTearDown(() => copy.deleteSync(recursive: true));
+  waitForEx(_cachedSidekickCli.root.copyRecursively(copy));
 
   overrideSidekickCoreWithLocalPath(copy.directory('packages/dashi_sidekick'));
 

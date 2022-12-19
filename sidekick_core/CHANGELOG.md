@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.13.1
+- Fix `sidekick plugins install` for git and local sources #144
+
 ## 0.13.0
 - New `sidekick update` command for updating your sidekick CLI (#111)
 - Add `excludeGlob` parameter to `DepsCommand` (#125)
