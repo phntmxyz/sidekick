@@ -10,54 +10,20 @@ import 'templates/templates.dart';
 import 'util/cli_runner.dart';
 
 void main() {
-  late File entrypoint;
-  late Directory projectRoot;
-
-  Future<void> runDashProcess(Iterable<String> arguments) async {
-    final process = await TestProcess.start(
-      entrypoint.path,
-      arguments,
-      workingDirectory: projectRoot.path,
-    );
-
-    process.stdoutStream().listen(print);
-    process.stderrStream().listen(print);
-    await process.shouldExit(0);
-  }
-
-  setUp(() async {
-    projectRoot = setupTemplateProject('test/templates/minimal_dart_package');
-    final cli = cachedSidekickCli;
-    final process = await cli.run(
-      // TODO: speed up
-      ['init', '-n', 'dashi'],
-      workingDirectory: projectRoot,
-    );
-    await process.shouldExit(0);
-    entrypoint = File("${projectRoot.path}/dashi");
-    expect(entrypoint.existsSync(), isTrue);
-
-    overrideSidekickCoreWithLocalPath(
-      projectRoot.directory('packages/dashi_sidekick'),
-    );
-  });
-
-  tearDownAll(() {
-    if (cachedSidekickCli.root.existsSync()) {
-      cachedSidekickCli.root.deleteSync(recursive: true);
-    }
-  });
+  tearDownAll(tearDownSidekickCache);
 
   group('plugins install executes fine', () {
     test(
       'with default hosted source',
       () async {
-        await runDashProcess([
-          'sidekick',
-          'plugins',
-          'install',
-          'sidekick_vault',
-        ]);
+        await withSidekickCli((cli) async {
+          await cli.run([
+            'sidekick',
+            'plugins',
+            'install',
+            'sidekick_vault',
+          ]);
+        });
       },
       timeout: const Timeout(Duration(minutes: 5)),
       skip: 'Wait for first plugin to be published',
@@ -66,14 +32,16 @@ void main() {
     test(
       'with custom hosted source',
       () async {
-        await runDashProcess([
-          'sidekick',
-          'plugins',
-          'install',
-          '--hosted-url',
-          'https://pub.flutter-io.cn/',
-          'sidekick_vault',
-        ]);
+        await withSidekickCli((cli) async {
+          await cli.run([
+            'sidekick',
+            'plugins',
+            'install',
+            '--hosted-url',
+            'https://pub.flutter-io.cn/',
+            'sidekick_vault',
+          ]);
+        });
       },
       timeout: const Timeout(Duration(minutes: 5)),
       skip: 'Wait for first plugin to be published',
@@ -82,16 +50,18 @@ void main() {
     test(
       'with git source',
       () async {
-        await runDashProcess([
-          'sidekick',
-          'plugins',
-          'install',
-          '--source',
-          'git',
-          '--git-path',
-          'packages/umbra_cli',
-          'https://github.com/wolfenrain/umbra',
-        ]);
+        await withSidekickCli((cli) async {
+          await cli.run([
+            'sidekick',
+            'plugins',
+            'install',
+            '--source',
+            'git',
+            '--git-path',
+            'packages/umbra_cli',
+            'https://github.com/wolfenrain/umbra',
+          ]);
+        });
       },
       timeout: const Timeout(Duration(minutes: 5)),
       skip: 'Wait for first plugin to be published',
@@ -103,20 +73,23 @@ void main() {
         printOnFailure(
           'Did you forget to update the max parameter of supportedInstallerVersions in install_plugin_command.dart to the next breaking version of sidekick_plugin_installer? ',
         );
-        final pluginPath = Directory('test/templates/minimal_sidekick_plugin');
 
-        await runDashProcess([
-          'sidekick',
-          'plugins',
-          'install',
-          '--source',
-          'path',
-          pluginPath.absolute.path,
-        ]);
+        await withSidekickCli((cli) async {
+          final pluginPath =
+              Directory('test/templates/minimal_sidekick_plugin');
+          await cli.run([
+            'sidekick',
+            'plugins',
+            'install',
+            '--source',
+            'path',
+            pluginPath.absolute.path,
+          ]);
 
-        await runDashProcess(
-          ['minimal-sidekick-plugin'],
-        );
+          await cli.run(
+            ['minimal-sidekick-plugin'],
+          );
+        });
       },
       timeout: const Timeout(Duration(minutes: 5)),
     );
@@ -124,45 +97,46 @@ void main() {
 
   for (final template in CreatePluginCommand.templates.keys) {
     test('plugin template $template generates valid plugin code', () async {
-      await runDashProcess([
-        'sidekick',
-        'plugins',
-        'create',
-        '-t',
-        template,
-        '-n',
-        'generated_plugin',
-        projectRoot.path,
-      ]);
+      await withSidekickCli((cli) async {
+        await cli.run([
+          'sidekick',
+          'plugins',
+          'create',
+          '-t',
+          template,
+          '-n',
+          'generated_plugin',
+        ]);
 
-      final pluginDir = projectRoot.directory('generated_plugin');
-      final pluginPath = pluginDir.path;
-      // override dependency, otherwise `dart analyze` fails when plugin uses unpublished API
-      overrideSidekickPluginInstallerWithLocalPath(pluginDir);
-
-      if (analyzeGeneratedCode) {
+        final pluginDir = cli.root.directory('generated_plugin');
+        final pluginPath = pluginDir.path;
+        // override dependency, otherwise `dart analyze` fails when plugin uses unpublished API
         overrideSidekickPluginInstallerWithLocalPath(pluginDir);
-        run('dart pub get', workingDirectory: pluginPath);
-        run('dart analyze --fatal-infos', workingDirectory: pluginPath);
-        run('dart format --set-exit-if-changed $pluginPath');
-      }
 
-      expect(
-        pluginDir.file('analysis_options.yaml').readAsStringSync(),
-        contains('package:lint/analysis_options.yaml'),
-      );
-      expect(
-        pluginDir.file('.gitignore').readAsStringSync(),
-        contains('\npubspec.lock'),
-      );
+        if (analyzeGeneratedCode) {
+          overrideSidekickPluginInstallerWithLocalPath(pluginDir);
+          run('dart pub get', workingDirectory: pluginPath);
+          run('dart analyze --fatal-infos', workingDirectory: pluginPath);
+          run('dart format --set-exit-if-changed $pluginPath');
+        }
 
-      expect(
-        pluginDir.file('README.md').readAsStringSync(),
-        allOf([
-          contains('dashi sidekick plugins install'),
-          contains('generated_plugin sidekick plugin'),
-        ]),
-      );
+        expect(
+          pluginDir.file('analysis_options.yaml').readAsStringSync(),
+          contains('package:lint/analysis_options.yaml'),
+        );
+        expect(
+          pluginDir.file('.gitignore').readAsStringSync(),
+          contains('\npubspec.lock'),
+        );
+
+        expect(
+          pluginDir.file('README.md').readAsStringSync(),
+          allOf([
+            contains('dashi sidekick plugins install'),
+            contains('generated_plugin sidekick plugin'),
+          ]),
+        );
+      });
     });
   }
 
@@ -170,36 +144,38 @@ void main() {
     test(
       'plugin e2e $template: create, install, run',
       () async {
-        await runDashProcess([
-          'sidekick',
-          'plugins',
-          'create',
-          '-t',
-          template,
-          '-n',
-          template.snakeCase,
-        ]);
-        overrideSidekickCoreWithLocalPath(
-          projectRoot.directory(template.snakeCase),
-        );
-        overrideSidekickPluginInstallerWithLocalPath(
-          projectRoot.directory(template.snakeCase),
-        );
-
-        await runDashProcess(
-          [
+        await withSidekickCli((cli) async {
+          await cli.run([
             'sidekick',
             'plugins',
-            'install',
-            '-s',
-            'path',
+            'create',
+            '-t',
+            template,
+            '-n',
             template.snakeCase,
-          ],
-        );
+          ]);
+          overrideSidekickCoreWithLocalPath(
+            cli.root.directory(template.snakeCase),
+          );
+          overrideSidekickPluginInstallerWithLocalPath(
+            cli.root.directory(template.snakeCase),
+          );
 
-        await runDashProcess(
-          [template.paramCase],
-        );
+          await cli.run(
+            [
+              'sidekick',
+              'plugins',
+              'install',
+              '-s',
+              'path',
+              template.snakeCase,
+            ],
+          );
+
+          await cli.run(
+            [template.paramCase],
+          );
+        });
       },
       timeout: const Timeout(Duration(minutes: 5)),
     );
@@ -212,7 +188,7 @@ void main() {
     () async {
       final tempDir = Directory.systemTemp.createTempSync();
       addTearDown(() => tempDir.deleteSync(recursive: true));
-      final cli = cachedSidekickCli;
+      final cli = cachedSidekickExecutable;
       final process = await cli.run(
         [
           'plugins',

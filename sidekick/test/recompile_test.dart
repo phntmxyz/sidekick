@@ -13,7 +13,7 @@ void main() {
       () async {
         final project =
             setupTemplateProject('test/templates/root_with_packages');
-        final process = await cachedSidekickCli.run(
+        final process = await cachedSidekickExecutable.run(
           ['init', '-n', 'dashi'],
           workingDirectory: project,
         );
