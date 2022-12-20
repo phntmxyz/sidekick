@@ -9,8 +9,6 @@ import 'templates/templates.dart';
 import 'util/cli_runner.dart';
 
 void main() {
-  tearDownAll(tearDownSidekickCache);
-
   group('plugins install executes fine', () {
     setUp(() {
       printOnFailure(

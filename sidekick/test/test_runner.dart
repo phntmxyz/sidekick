@@ -8,12 +8,15 @@ import 'directory_extension_test.dart' as directory_extension_test;
 import 'init_test.dart' as init_test;
 import 'plugins_test.dart' as plugins_test;
 import 'recompile_test.dart' as recompile_test;
+import 'util/cli_runner.dart';
 
 /// This file is a wrapper which contains all test files
 ///
 /// This speeds up execution of tests because e.g. cached sidekick CLI's are
 /// shared between all tests instead of each file needing its own instances
 void main() {
+  tearDownAll(tearDownSidekickCache);
+
   test('test_runner contains all tests', () {
     final testRunner = File(DartScript.self.pathToScript).readAsStringSync();
 

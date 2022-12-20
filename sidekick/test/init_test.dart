@@ -10,8 +10,6 @@ import 'templates/templates.dart';
 import 'util/cli_runner.dart';
 
 void main() {
-  tearDownAll(tearDownSidekickCache);
-
   test('version is correct', () {
     final pubspec = File('pubspec.yaml');
     expect(pubspec.existsSync(), isTrue);
