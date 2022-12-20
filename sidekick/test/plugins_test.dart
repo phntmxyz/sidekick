@@ -83,29 +83,6 @@ void main() {
       },
       timeout: const Timeout(Duration(minutes: 5)),
     );
-
-    test(
-      'with local source',
-      () async {
-        await withSidekickCli((cli) async {
-          final pluginPath =
-              Directory('test/templates/minimal_sidekick_plugin');
-          await cli.run([
-            'sidekick',
-            'plugins',
-            'install',
-            '--source',
-            'path',
-            pluginPath.absolute.path,
-          ]);
-
-          await cli.run(
-            ['minimal-sidekick-plugin'],
-          );
-        });
-      },
-      timeout: const Timeout(Duration(minutes: 5)),
-    );
   });
 
   for (final template in CreatePluginCommand.templates.keys) {
