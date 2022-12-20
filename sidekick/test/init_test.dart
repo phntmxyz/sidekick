@@ -26,6 +26,12 @@ void main() {
     expect(packageVersion, version);
   });
 
+  // TODO i noticed that this test takes 7s even though another test already ran
+  // which uses cachedSidekickExecutable so it should exist already,
+  // however each test file creates its own version (because each file runs on fresh memory/isolate, even with the --concurrency option)
+  // so to really create the sidekick CLI only once we could use sth like very_good test to run our tests
+  // just not sure whether its worth it because it also takes time to install very_good_cli
+  // but yes it should be worth it because we use cached sidekick in 3 files (init, plugins, recompile test) and this outweighs having to download very_good_cli
   test('--version flag prints sidekick and sidekick_core versions', () async {
     final process = await cachedSidekickExecutable
         .run(['--version'], workingDirectory: Directory.current);
