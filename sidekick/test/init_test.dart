@@ -197,6 +197,7 @@ void main() {
 
   // TODO do we really need groups for all of these layouts? we had them because in the past we had some ProjectStructureDetector
   group('sidekick init - simple layout', () {
+    // TODO move this test to test 'entrypoint & cli package location are modifiable, target can be given as absolute path'
     test(
       'after sidekick init in dart package, CLI has a working dart command and no flutter command $localOrPubDepsLabel',
       () async {

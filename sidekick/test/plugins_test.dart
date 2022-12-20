@@ -145,7 +145,7 @@ void main() {
           expect(
             pluginDir.file('README.md').readAsStringSync(),
             allOf([
-              contains('your_custom_sidekick_cli sidekick plugins install'),
+              contains('dashi sidekick plugins install'),
               contains('generated_plugin sidekick plugin'),
             ]),
           );
