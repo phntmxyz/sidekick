@@ -23,7 +23,7 @@ void main() {
         .where((it) => it.path.endsWith('_test.dart'))
         .map((e) => basenameWithoutExtension(e.path))
         .toSet();
-    final testsInTestRunner = RegExp(r"group\('(.*)', (.*).main\);")
+    final testsInTestRunner = RegExp(r"group\(\s*'(.*)',\s*(.*).main,?\s*\);")
         .allMatches(testRunner)
         .map((e) => {e.group(1)!, e.group(2)!}.single)
         .toSet();
