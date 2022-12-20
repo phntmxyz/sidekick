@@ -128,12 +128,13 @@ void main() {
   // TODO could also move this to plugin e2e test to save some time
   for (final template in CreatePluginCommand.templates.keys) {
     test('plugin template $template generates valid plugin code', () async {
-      final pluginDir = Directory.systemTemp.createTempSync();
+      final tempDir = Directory.systemTemp.createTempSync();
+      addTearDown(() => tempDir.deleteSync(recursive: true));
+      final pluginDir = tempDir.directory('generated_plugin');
       final pluginPath = pluginDir.path;
 
-      await cachedSidekickExecutable.run(
+      final process = await cachedSidekickExecutable.run(
         [
-          'sidekick',
           'plugins',
           'create',
           '-t',
@@ -141,8 +142,9 @@ void main() {
           '-n',
           'generated_plugin',
         ],
-        workingDirectory: pluginDir,
+        workingDirectory: tempDir,
       );
+      await process.shouldExit(0);
 
       // override dependency, otherwise `dart analyze` fails when plugin uses unpublished API
       overrideSidekickPluginInstallerWithLocalPath(pluginDir);
@@ -166,7 +168,7 @@ void main() {
       expect(
         pluginDir.file('README.md').readAsStringSync(),
         allOf([
-          contains('dashi sidekick plugins install'),
+          contains('your_custom_sidekick_cli sidekick plugins install'),
           contains('generated_plugin sidekick plugin'),
         ]),
       );
