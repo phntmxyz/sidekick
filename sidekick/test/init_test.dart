@@ -214,19 +214,12 @@ void main() {
           projectRoot.directory('packages/dashi_sidekick'),
         );
 
-        expect(
-          projectRoot
-              .file('packages/dashi_sidekick/lib/dashi_sidekick.dart')
-              .readAsStringSync(),
-          isNot(contains('dartSdkPath:')),
-        );
-
-        expect(
-          projectRoot
-              .file('packages/dashi_sidekick/lib/dashi_sidekick.dart')
-              .readAsStringSync(),
-          contains('flutterSdkPath:'),
-        );
+        final runFunctionFile = projectRoot
+            .file('packages/dashi_sidekick/lib/dashi_sidekick.dart')
+            .readAsStringSync();
+        expect(runFunctionFile, isNot(contains("mainProjectPath:")));
+        expect(runFunctionFile, isNot(contains('dartSdkPath:')));
+        expect(runFunctionFile, contains('flutterSdkPath:'));
 
         // fake flutter installation because we don't have flutter installed on CI
         final pathWithFakeFlutterSdk = [
@@ -297,17 +290,13 @@ void main() {
         printOnFailure(await dashProcess.stderrStream().join('\n'));
         dashProcess.shouldExit(0);
 
+        final runFunctionFile =
+            cliPackage.file('lib/dashi_sidekick.dart').readAsStringSync();
+        expect(runFunctionFile, isNot(contains("mainProjectPath:")));
+        expect(runFunctionFile, contains('dartSdkPath:'));
+        expect(runFunctionFile, isNot(contains('flutterSdkPath:')));
+
         // CLI has working dart command and no flutter command
-        expect(
-          cliPackage.file('lib/dashi_sidekick.dart').readAsStringSync(),
-          contains('dartSdkPath:'),
-        );
-
-        expect(
-          cliPackage.file('lib/dashi_sidekick.dart').readAsStringSync(),
-          isNot(contains('flutterSdkPath:')),
-        );
-
         final dartDashProcess = await TestProcess.start(
           entrypoint.path,
           ['dart'],
@@ -368,13 +357,13 @@ void main() {
         dashProcess.stderrStream().listen(printOnFailure);
         dashProcess.shouldExit(0);
 
-        // root is mainProjectPath
+        // no mainProjectPath
         final runFunctionFile = File(
           "${project.path}/packages/dashi_sidekick/lib/dashi_sidekick.dart",
         );
         expect(
           runFunctionFile.readAsStringSync(),
-          isNot(contains("mainProjectPath: 'packages/dashi_sidekick'")),
+          isNot(contains("mainProjectPath:")),
         );
 
         final projectFile = File(
@@ -401,11 +390,17 @@ void main() {
 
   group('sidekick init - multi package layout', () {
     test(
-      'init generates sidekick package + entrypoint',
+      'init with mainProjectPath generates sidekick package + entrypoint',
       () async {
         final project = setupTemplateProject('test/templates/multi_package');
         final process = await cachedSidekickExecutable.run(
-          ['init', '-n', 'dashi'],
+          [
+            'init',
+            '-n',
+            'dashi',
+            '--mainProjectPath',
+            project.directory('packages/package_a').path,
+          ],
           workingDirectory: project,
         );
 
@@ -432,58 +427,10 @@ void main() {
         );
         expect(
           runFunctionFile.readAsStringSync(),
-          isNot(contains('mainProjectPath')),
-        );
-
-        // contains references to all packages of template
-        final projectFile = File(
-          "${project.path}/packages/dashi_sidekick/lib/src/dashi_project.dart",
-        );
-        expect(
-          projectFile.readAsStringSync(),
-          allOf(
-            contains('packages/package_a'),
-            contains('packages/package_b'),
-          ),
-        );
-      },
-      timeout: const Timeout(Duration(minutes: 5)),
-    );
-
-    test(
-      'with mainProject',
-      () async {
-        final project = setupTemplateProject('test/templates/multi_package');
-        final process = await cachedSidekickExecutable.run(
-          [
-            'init',
-            '-n',
-            'dashi',
-            '--mainProjectPath',
-            project.directory('packages/package_a').path,
-            project.path
-          ],
-          workingDirectory: project.parent,
-        );
-        await process.shouldExit(0);
-
-        // check git is initialized
-        final git = Directory("${project.path}/.git");
-        expect(git.existsSync(), isTrue);
-
-        // check entrypoint is executable
-        final entrypoint = File("${project.path}/dashi");
-        expect(entrypoint.existsSync(), isTrue);
-        expect(entrypoint.statSync().modeString(), 'rwxr-xr-x');
-
-        final runFunctionFile = File(
-          "${project.path}/packages/dashi_sidekick/lib/dashi_sidekick.dart",
-        );
-        expect(
-          runFunctionFile.readAsStringSync(),
           contains("mainProjectPath: 'packages/package_a'"),
         );
 
+        // contains references to all packages of template
         final projectFile = File(
           "${project.path}/packages/dashi_sidekick/lib/src/dashi_project.dart",
         );
