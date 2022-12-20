@@ -29,7 +29,7 @@ jobs:
       - name: Install dependencies
         run: cd sidekick && dart pub get --no-precompile
       - name: Run tests
-        run: cd sidekick && dart test
+        run: cd sidekick && dart test test/test_runner.dart
         env:
           SIDEKICK_PUB_DEPS: "false"
           SIDEKICK_ANALYZE: "${{ matrix.version == '2.18' }}"
@@ -54,7 +54,7 @@ jobs:
       - name: Install dependencies
         run: cd sidekick && dart pub get --no-precompile
       - name: Run tests
-        run: cd sidekick && dart test
+        run: cd sidekick && dart test test/test_runner.dart
         env:
           SIDEKICK_PUB_DEPS: "true"
           SIDEKICK_ANALYZE: "${{ matrix.version == '2.18' }}"
@@ -70,4 +70,4 @@ jobs:
       - name: Install dependencies
         run: cd sidekick && dart pub get --no-precompile
       - name: Run tests
-        run: cd sidekick && dart test
+        run: cd sidekick && dart test test/test_runner.dart
