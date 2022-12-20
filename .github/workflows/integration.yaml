@@ -28,15 +28,8 @@ jobs:
       - uses: actions/checkout@v1
       - name: Install dependencies
         run: cd sidekick && dart pub get --no-precompile
-      - name: Install very_good_cli
-        run: |
-          dart pub global activate very_good_cli
-          echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
       - name: Run tests
-        run: |
-          cd sidekick
-          yes | dart pub global run very_good_cli:very_good
-          dart pub global run very_good_cli:very_good test
+        run: cd sidekick && dart pub global activate very_good_cli && very_good test
         env:
           SIDEKICK_PUB_DEPS: "false"
           SIDEKICK_ANALYZE: "${{ matrix.version == '2.18' }}"
@@ -60,15 +53,8 @@ jobs:
       - uses: actions/checkout@v1
       - name: Install dependencies
         run: cd sidekick && dart pub get --no-precompile
-      - name: Install very_good_cli
-        run: |
-          dart pub global activate very_good_cli
-          echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
       - name: Run tests
-        run: |
-          cd sidekick
-          yes | dart pub global run very_good_cli:very_good
-          dart pub global run very_good_cli:very_good test
+        run: cd sidekick && dart pub global activate very_good_cli && very_good test
         env:
           SIDEKICK_PUB_DEPS: "true"
           SIDEKICK_ANALYZE: "${{ matrix.version == '2.18' }}"
@@ -83,12 +69,5 @@ jobs:
       - uses: dart-lang/setup-dart@v1
       - name: Install dependencies
         run: cd sidekick && dart pub get --no-precompile
-      - name: Install very_good_cli
-        run: |
-          dart pub global activate very_good_cli
-          echo "$HOME/.pub-cache/bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
       - name: Run tests
-        run: |
-          cd sidekick
-          yes | dart pub global run very_good_cli:very_good
-          dart pub global run very_good_cli:very_good test
+        run: cd sidekick && dart pub global activate very_good_cli && very_good test
