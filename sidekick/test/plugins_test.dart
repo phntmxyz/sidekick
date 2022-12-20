@@ -146,7 +146,7 @@ void main() {
             pluginDir.file('README.md').readAsStringSync(),
             allOf([
               contains('dashi sidekick plugins install'),
-              contains('generated_plugin sidekick plugin'),
+              contains('${template.snakeCase} sidekick plugin'),
             ]),
           );
 
