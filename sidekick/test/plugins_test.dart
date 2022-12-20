@@ -18,23 +18,6 @@ void main() {
       );
     });
 
-    // TODO redundant to next test -> delete?
-    test(
-      'with default hosted source',
-      () async {
-        await withSidekickCli((cli) async {
-          await cli.run([
-            'sidekick',
-            'plugins',
-            'install',
-            'sidekick_vault',
-          ]);
-          await cli.run(['vault', '-h']);
-        });
-      },
-      timeout: const Timeout(Duration(minutes: 5)),
-    );
-
     test(
       'with custom hosted source and version constraint',
       () async {
@@ -53,7 +36,7 @@ void main() {
       timeout: const Timeout(Duration(minutes: 5)),
     );
 
-    // TODO add similar test where --git-ref and --git-path are also used
+    // TODO adapt this test to use --git-ref and --git-path as well
     // to do this the Dart SDK version of the `dash` sidekick CLI needs to be
     // updated. It currently is using Dart 2.14 which neither contains
     // support for `--git-ref` nor `--git-path` in `pub global activate`.
@@ -125,61 +108,12 @@ void main() {
     );
   });
 
-  // TODO could also move this to plugin e2e test to save some time
-  for (final template in CreatePluginCommand.templates.keys) {
-    test('plugin template $template generates valid plugin code', () async {
-      final tempDir = Directory.systemTemp.createTempSync();
-      addTearDown(() => tempDir.deleteSync(recursive: true));
-      final pluginDir = tempDir.directory('generated_plugin');
-      final pluginPath = pluginDir.path;
-
-      final process = await cachedSidekickExecutable.run(
-        [
-          'plugins',
-          'create',
-          '-t',
-          template,
-          '-n',
-          'generated_plugin',
-        ],
-        workingDirectory: tempDir,
-      );
-      await process.shouldExit(0);
-
-      // override dependency, otherwise `dart analyze` fails when plugin uses unpublished API
-      overrideSidekickPluginInstallerWithLocalPath(pluginDir);
-
-      if (analyzeGeneratedCode) {
-        overrideSidekickPluginInstallerWithLocalPath(pluginDir);
-        run('dart pub get', workingDirectory: pluginPath);
-        run('dart analyze --fatal-infos', workingDirectory: pluginPath);
-        run('dart format --set-exit-if-changed $pluginPath');
-      }
-
-      expect(
-        pluginDir.file('analysis_options.yaml').readAsStringSync(),
-        contains('package:lint/analysis_options.yaml'),
-      );
-      expect(
-        pluginDir.file('.gitignore').readAsStringSync(),
-        contains('\npubspec.lock'),
-      );
-
-      expect(
-        pluginDir.file('README.md').readAsStringSync(),
-        allOf([
-          contains('your_custom_sidekick_cli sidekick plugins install'),
-          contains('generated_plugin sidekick plugin'),
-        ]),
-      );
-    });
-  }
-
   for (final template in CreatePluginCommand.templates.keys) {
     test(
-      'plugin e2e $template: create, install, run',
+      'plugin e2e $template: create valid code, install in cli, run command',
       () async {
         await withSidekickCli((cli) async {
+          // create plugin
           await cli.run([
             'sidekick',
             'plugins',
@@ -189,13 +123,34 @@ void main() {
             '-n',
             template.snakeCase,
           ]);
-          overrideSidekickCoreWithLocalPath(
-            cli.root.directory(template.snakeCase),
+
+          final pluginDir = cli.root.directory(template.snakeCase);
+          overrideSidekickCoreWithLocalPath(pluginDir);
+          overrideSidekickPluginInstallerWithLocalPath(pluginDir);
+
+          // plugin code should be valid
+          if (analyzeGeneratedCode) {
+            run('dart pub get', workingDirectory: pluginDir.path);
+            run('dart analyze --fatal-infos', workingDirectory: pluginDir.path);
+            run('dart format --set-exit-if-changed ${pluginDir.path}');
+          }
+          expect(
+            pluginDir.file('analysis_options.yaml').readAsStringSync(),
+            contains('package:lint/analysis_options.yaml'),
           );
-          overrideSidekickPluginInstallerWithLocalPath(
-            cli.root.directory(template.snakeCase),
+          expect(
+            pluginDir.file('.gitignore').readAsStringSync(),
+            contains('\npubspec.lock'),
+          );
+          expect(
+            pluginDir.file('README.md').readAsStringSync(),
+            allOf([
+              contains('your_custom_sidekick_cli sidekick plugins install'),
+              contains('generated_plugin sidekick plugin'),
+            ]),
           );
 
+          // plugin can be installed
           await cli.run(
             [
               'sidekick',
@@ -207,6 +162,7 @@ void main() {
             ],
           );
 
+          // plugin command works
           await cli.run(
             [template.paramCase],
           );
@@ -215,37 +171,4 @@ void main() {
       timeout: const Timeout(Duration(minutes: 5)),
     );
   }
-
-  /// This test uses the global sidekick CLI while the previous tests
-  /// first generate a custom sidekick CLI and then use that
-  // TODO redundant, uses the same underlying command -> delete?
-  test(
-    'create plugin with global sidekick',
-    () async {
-      final tempDir = Directory.systemTemp.createTempSync();
-      addTearDown(() => tempDir.deleteSync(recursive: true));
-      final cli = cachedSidekickExecutable;
-      final process = await cli.run(
-        [
-          'plugins',
-          'create',
-          '-t',
-          'install-only',
-          '-n',
-          'install_only_plugin',
-        ],
-        workingDirectory: tempDir,
-      );
-      process.stdoutStream().listen(print);
-      process.stderrStream().listen(print);
-      await process.shouldExit(0);
-
-      final pluginPath = tempDir.directory('install_only_plugin').path;
-      run('dart pub get', workingDirectory: pluginPath);
-      if (analyzeGeneratedCode) {
-        run('dart analyze --fatal-infos', workingDirectory: pluginPath);
-        run('dart format --set-exit-if-changed $pluginPath');
-      }
-    },
-  );
 }
