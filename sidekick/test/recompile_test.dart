@@ -3,7 +3,6 @@ import 'package:sidekick_test/sidekick_test.dart';
 import 'package:test/test.dart';
 import 'package:test_process/test_process.dart';
 
-import 'templates/templates.dart';
 import 'util/cli_runner.dart';
 
 void main() {
