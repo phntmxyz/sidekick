@@ -197,52 +197,8 @@ void main() {
 
   // TODO do we really need groups for all of these layouts? we had them because in the past we had some ProjectStructureDetector
   group('sidekick init - simple layout', () {
-    // TODO move this test to test 'entrypoint & cli package location are modifiable, target can be given as absolute path'
     test(
-      'after sidekick init in dart package, CLI has a working dart command and no flutter command $localOrPubDepsLabel',
-      () async {
-        await withSidekickCli((cli) async {
-          final entrypoint = File("${cli.root.path}/dashi");
-          expect(entrypoint.existsSync(), isTrue);
-
-          expect(
-            cli.root
-                .file('packages/dashi_sidekick/lib/dashi_sidekick.dart')
-                .readAsStringSync(),
-            contains('dartSdkPath:'),
-          );
-
-          expect(
-            cli.root
-                .file('packages/dashi_sidekick/lib/dashi_sidekick.dart')
-                .readAsStringSync(),
-            isNot(contains('flutterSdkPath:')),
-          );
-
-          final dartDashProcess = await TestProcess.start(
-            entrypoint.path,
-            ['dart'],
-            workingDirectory: cli.root.path,
-          );
-          printOnFailure(await dartDashProcess.stdoutStream().join('\n'));
-          printOnFailure(await dartDashProcess.stderrStream().join('\n'));
-          dartDashProcess.shouldExit(0);
-
-          final flutterDashProcess = await TestProcess.start(
-            entrypoint.path,
-            ['flutter'],
-            workingDirectory: cli.root.path,
-          );
-          printOnFailure(await flutterDashProcess.stdoutStream().join('\n'));
-          printOnFailure(await flutterDashProcess.stderrStream().join('\n'));
-          flutterDashProcess.shouldExit(64);
-        });
-      },
-      timeout: const Timeout(Duration(minutes: 5)),
-    );
-
-    test(
-      'after sidekick init in flutter package, CLI has working dart and flutter commands $localOrPubDepsLabel',
+      'after sidekick init in flutter package, CLI has working dart and flutter commands',
       () async {
         final projectRoot =
             setupTemplateProject('test/templates/minimal_flutter_package');
@@ -302,7 +258,7 @@ void main() {
     );
 
     test(
-      'entrypoint & cli package location are modifiable, target can be given as absolute path',
+      'entrypoint & cli package location are modifiable, target can be given as absolute path, CLI has working dart command and no flutter command',
       () async {
         final cliDir = Directory.systemTemp.createTempSync();
         addTearDown(() => cliDir.deleteSync(recursive: true));
@@ -340,6 +296,35 @@ void main() {
         printOnFailure(await dashProcess.stdoutStream().join('\n'));
         printOnFailure(await dashProcess.stderrStream().join('\n'));
         dashProcess.shouldExit(0);
+
+        // CLI has working dart command and no flutter command
+        expect(
+          cliPackage.file('lib/dashi_sidekick.dart').readAsStringSync(),
+          contains('dartSdkPath:'),
+        );
+
+        expect(
+          cliPackage.file('lib/dashi_sidekick.dart').readAsStringSync(),
+          isNot(contains('flutterSdkPath:')),
+        );
+
+        final dartDashProcess = await TestProcess.start(
+          entrypoint.path,
+          ['dart'],
+          workingDirectory: cliDir.path,
+        );
+        printOnFailure(await dartDashProcess.stdoutStream().join('\n'));
+        printOnFailure(await dartDashProcess.stderrStream().join('\n'));
+        dartDashProcess.shouldExit(0);
+
+        final flutterDashProcess = await TestProcess.start(
+          entrypoint.path,
+          ['flutter'],
+          workingDirectory: cliDir.path,
+        );
+        printOnFailure(await flutterDashProcess.stdoutStream().join('\n'));
+        printOnFailure(await flutterDashProcess.stderrStream().join('\n'));
+        flutterDashProcess.shouldExit(64);
       },
       timeout: const Timeout(Duration(minutes: 5)),
     );
@@ -466,7 +451,7 @@ void main() {
     );
 
     test(
-      'with mainProject $localOrPubDepsLabel',
+      'with mainProject',
       () async {
         final project = setupTemplateProject('test/templates/multi_package');
         final process = await cachedSidekickExecutable.run(

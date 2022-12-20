@@ -1,5 +1,4 @@
 import 'package:sidekick_core/sidekick_core.dart';
-import 'package:sidekick_test/sidekick_test.dart';
 import 'package:test/test.dart';
 import 'package:test_process/test_process.dart';
 
@@ -7,7 +6,7 @@ import 'util/cli_runner.dart';
 
 void main() {
   test(
-    'init generates cli files $localOrPubDepsLabel',
+    'init generates cli files',
     () async {
       await withSidekickCli((cli) async {
         // check entrypoint is executable
