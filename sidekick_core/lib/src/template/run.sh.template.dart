@@ -48,14 +48,23 @@ if [[ $OS =~ Darwin.* ]]; then
   HASH_PROGRAM="shasum"
 fi
 
+# Creates a hash of files that should cause the cli to recompile
+#
+# Usually, this works just fine, but this technique is unable to detect changes
+# of path dependencies. Use the `<cli> sidekick recompile` command in those
+# cases, forcing a recompile.
+function computeHash() {
+  find \
+    "${SIDEKICK_PACKAGE_HOME}/bin" \
+    "${SIDEKICK_PACKAGE_HOME}/lib" \
+    "${SIDEKICK_PACKAGE_HOME}/tool" \
+    "${SIDEKICK_PACKAGE_HOME}/pubspec.yaml" \
+    "${SIDEKICK_PACKAGE_HOME}/pubspec.lock" \
+    -type f -print0 2>/dev/null | xargs -0 "$HASH_PROGRAM"
+}
+
 STAMP_FILE="${SIDEKICK_PACKAGE_HOME}/build/cli.stamp"
-HASH=$(find \
-  "${SIDEKICK_PACKAGE_HOME}/bin" \
-  "${SIDEKICK_PACKAGE_HOME}/lib" \
-  "${SIDEKICK_PACKAGE_HOME}/tool" \
-  "${SIDEKICK_PACKAGE_HOME}/pubspec.yaml" \
-  "${SIDEKICK_PACKAGE_HOME}/pubspec.lock" \
-  -type f -print0 | xargs -0 "$HASH_PROGRAM")
+HASH=$(computeHash)
 EXISTING_HASH=$(cat "$STAMP_FILE" 2> /dev/null) || true
 
 EXE="${SIDEKICK_PACKAGE_HOME}/build/cli.exe"
@@ -64,7 +73,9 @@ EXE="${SIDEKICK_PACKAGE_HOME}/build/cli.exe"
 if [ ! -f "$EXE" ] || [ "$HASH" != "$EXISTING_HASH" ]; then
   # different hash, recompile
   sh "${SIDEKICK_PACKAGE_HOME}/tool/install.sh"
-  echo "$HASH" > "$STAMP_FILE"
+  # pubspec.lock may have changed, recompute hash
+  NEW_HASH=$(computeHash)
+  echo "$NEW_HASH" > "$STAMP_FILE"
 fi
 
 "${EXE}" "$@"
