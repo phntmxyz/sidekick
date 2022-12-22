@@ -1,13 +1,11 @@
 import 'package:sidekick/sidekick.dart';
 import 'package:sidekick/src/util/dcli_ask_validators.dart';
 import 'package:sidekick_core/sidekick_core.dart' hide version;
-import 'package:sidekick_core/sidekick_core.dart' as pub_core show version;
 import 'package:sidekick_test/sidekick_test.dart';
 import 'package:test/test.dart';
 import 'package:test_process/test_process.dart';
-
 // ignore: avoid_relative_lib_imports
-import '../../sidekick_core/lib/sidekick_core.dart' as local_core show version;
+import '../../sidekick_core/lib/sidekick_core.dart' as core show version;
 
 import 'templates/templates.dart';
 import 'util/cli_runner.dart';
@@ -31,16 +29,7 @@ void main() {
     final process = await cachedGlobalSidekickCli
         .run(['--version'], workingDirectory: Directory.current);
     final output = await process.stdoutStream().join('\n');
-
-    final expectedCoreVersion = () {
-      if (shouldUseLocalDeps) {
-        return local_core.version;
-      }
-      printOnFailure('Did you run `dart pub upgrade` in sidekick?');
-      return pub_core.version;
-    }();
-
-    expect(output, 'sidekick: $version\nsidekick_core: $expectedCoreVersion');
+    expect(output, 'sidekick: $version\nsidekick_core: ${core.version}');
   });
 
   group('sidekick init - argument validation', () {
