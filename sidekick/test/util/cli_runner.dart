@@ -76,10 +76,18 @@ Future<GlobalSidekickCli> _buildGlobalSidekickCli() async {
     dartToolDir.deleteSync(recursive: true);
   }
 
+  final executable = copy.file('exe/global_sidekick_cli')
+    ..createSync(recursive: true);
   startFromArgs('dart', ['pub', 'get'], workingDirectory: copy.path);
+  startFromArgs(
+    'dart',
+    ['compile', 'exe', '-o', executable.path, 'bin/sidekick.dart'],
+    workingDirectory: copy.path,
+  );
+
   print('created sidekick cli in ${copy.path}');
 
-  return GlobalSidekickCli._(copy);
+  return GlobalSidekickCli._(copy, executable);
 }
 
 /// Copy of package:sidekick in temp directory.
@@ -88,16 +96,17 @@ Future<GlobalSidekickCli> _buildGlobalSidekickCli() async {
 /// local path dependencies
 class GlobalSidekickCli {
   final Directory root;
+  final File executable;
 
-  GlobalSidekickCli._(this.root);
+  GlobalSidekickCli._(this.root, this.executable);
 
   Future<TestProcess> run(
     List<String> args, {
     required Directory workingDirectory,
   }) async {
     return TestProcess.start(
-      'dart',
-      [root.file('bin/sidekick.dart').path, ...args],
+      executable.path,
+      args,
       workingDirectory: workingDirectory.path,
     );
   }
