@@ -45,7 +45,7 @@ void main() {
         // runs the main executable fine
         final dashProcess = await TestProcess.start(
           entrypoint.path,
-          [],
+          ['--no-compile'],
           workingDirectory: project.path,
         );
         printOnFailure(await dashProcess.stdoutStream().join('\n'));

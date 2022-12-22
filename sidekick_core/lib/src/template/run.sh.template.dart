@@ -42,6 +42,28 @@ if [ "$CACHED_DART_SDK_VERSION" != "$DART_VERSION" ] || [ ! -d "$DART_SDK" ]; th
   sh "${SIDEKICK_PACKAGE_HOME}/tool/download_dart.sh"
 fi
 
+# Parse argument --no-compile
+NO_COMPILE=false
+for arg in "$@"; do
+  if [ "$arg" = "--no-compile" ]; then
+    NO_COMPILE=true
+  fi
+done
+
+if [ "$NO_COMPILE" = true ]; then
+  # Find dart executable from embedded dart sdk
+  DART="$DART_SDK/bin/dart"
+  # If we're on Windows, invoke the batch script instead
+  OS="$(uname -s)"
+  if [[ $OS =~ MINGW.* || $OS =~ CYGWIN.* ]]; then
+    DART="$DART_SDK/bin/dart.exe"
+  fi
+  
+  ## Run without compilation
+  "${DART}" "${SIDEKICK_PACKAGE_HOME}/bin/main.dart" "$@"
+  exit $?
+fi
+
 HASH_PROGRAM='sha1sum'
 OS="$(uname -s)"
 if [[ $OS =~ Darwin.* ]]; then

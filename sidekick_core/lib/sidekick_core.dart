@@ -116,6 +116,12 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
       negatable: false,
       help: 'Print the sidekick version of this CLI.',
     );
+    argParser.addFlag(
+      'no-compile',
+      negatable: false,
+      help:
+          'Runs the cli on the Dart VM instead of compiling it to native code.',
+    );
   }
 
   final Repository repository;

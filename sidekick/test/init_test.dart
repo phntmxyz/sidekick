@@ -190,7 +190,7 @@ void main() {
 
         final dashProcess = await TestProcess.start(
           entrypoint.path,
-          [],
+          ['--no-compile'],
           workingDirectory: nestedPackage.path,
         );
         printOnFailure(await dashProcess.stdoutStream().join('\n'));
@@ -393,7 +393,7 @@ void main() {
 
         final dashProcess = await TestProcess.start(
           entrypoint.path,
-          [],
+          ['--no-compile'],
           workingDirectory: projectRoot.path,
         );
         printOnFailure(await dashProcess.stdoutStream().join('\n'));
@@ -483,7 +483,7 @@ void main() {
 
         final dashProcess = await TestProcess.start(
           entrypoint.path,
-          [],
+          ['--no-compile'],
           workingDirectory: project.path,
         );
         printOnFailure(await dashProcess.stdoutStream().join('\n'));
@@ -520,7 +520,7 @@ void main() {
 
         final dashProcess = await TestProcess.start(
           entrypoint.path,
-          [],
+          ['--no-compile'],
           workingDirectory: project.path,
         );
         printOnFailure(await dashProcess.stdoutStream().join('\n'));
@@ -602,7 +602,7 @@ void main() {
 
         final dashProcess = await TestProcess.start(
           entrypoint.path,
-          [],
+          ['--no-compile'],
           workingDirectory: project.path,
         );
         printOnFailure(await dashProcess.stdoutStream().join('\n'));
@@ -638,7 +638,7 @@ void main() {
 
         final dashProcess = await TestProcess.start(
           entrypoint.path,
-          [],
+          ['--no-compile'],
           workingDirectory: project.path,
         );
         printOnFailure(await dashProcess.stdoutStream().join('\n'));
@@ -700,7 +700,7 @@ void main() {
 
         final dashProcess = await TestProcess.start(
           entrypoint.path,
-          [],
+          ['--no-compile'],
           workingDirectory: project.path,
         );
         printOnFailure(await dashProcess.stdoutStream().join('\n'));
