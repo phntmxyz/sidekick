@@ -24,8 +24,6 @@ R withSidekickCli<R>(R Function(SidekickCli cli) callback) {
   addTearDown(() => copy.deleteSync(recursive: true));
   waitForEx(_cachedSidekickCli.root.copyRecursively(copy));
 
-  overrideSidekickCoreWithLocalPath(copy.directory('packages/dashi_sidekick'));
-
   final cli = SidekickCli._(copy, 'dashi');
   return callback(cli);
 }
@@ -42,7 +40,17 @@ final _cachedSidekickCli = waitForEx(() async {
     process.stderrStream().listen(print);
   }
   await process.shouldExit(0);
-  return SidekickCli._(_cachedSidekickCliDir!, 'dashi');
+
+  final cli = SidekickCli._(_cachedSidekickCliDir!, 'dashi');
+  overrideSidekickCoreWithLocalPath(
+    cli.root.directory('packages/dashi_sidekick'),
+  );
+
+  // run the entrypoint to kick off compilation
+  // this way each copy won't have to compile again
+  await cli.run([]);
+
+  return cli;
 }());
 
 Directory? _cachedSidekickCliDir;

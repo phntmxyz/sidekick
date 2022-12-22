@@ -54,13 +54,16 @@ fi
 # of path dependencies. Use the `<cli> sidekick recompile` command in those
 # cases, forcing a recompile.
 function computeHash() {
+  SAVED="$(pwd)"
+  cd "${SIDEKICK_PACKAGE_HOME}"
   find \
-    "${SIDEKICK_PACKAGE_HOME}/bin" \
-    "${SIDEKICK_PACKAGE_HOME}/lib" \
-    "${SIDEKICK_PACKAGE_HOME}/tool" \
-    "${SIDEKICK_PACKAGE_HOME}/pubspec.yaml" \
-    "${SIDEKICK_PACKAGE_HOME}/pubspec.lock" \
+    "bin" \
+    "lib" \
+    "tool" \
+    "pubspec.yaml" \
+    "pubspec.lock" \
     -type f -print0 2>/dev/null | xargs -0 "$HASH_PROGRAM"
+  cd "$SAVED" >/dev/null
 }
 
 STAMP_FILE="${SIDEKICK_PACKAGE_HOME}/build/cli.stamp"
