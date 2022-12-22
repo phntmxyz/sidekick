@@ -1,10 +1,11 @@
 import 'package:sidekick/sidekick.dart';
 import 'package:sidekick/src/util/dcli_ask_validators.dart';
 import 'package:sidekick_core/sidekick_core.dart' hide version;
-import 'package:sidekick_core/sidekick_core.dart' as core;
 import 'package:sidekick_test/sidekick_test.dart';
 import 'package:test/test.dart';
 import 'package:test_process/test_process.dart';
+// ignore: avoid_relative_lib_imports
+import '../../sidekick_core/lib/sidekick_core.dart' as core show version;
 
 import 'templates/templates.dart';
 import 'util/cli_runner.dart';
