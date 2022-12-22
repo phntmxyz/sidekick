@@ -217,7 +217,7 @@ void main() {
         final runFunctionFile = projectRoot
             .file('packages/dashi_sidekick/lib/dashi_sidekick.dart')
             .readAsStringSync();
-        expect(runFunctionFile, isNot(contains("mainProjectPath:")));
+        expect(runFunctionFile, contains("mainProjectPath: '.',"));
         expect(runFunctionFile, isNot(contains('dartSdkPath:')));
         expect(runFunctionFile, contains('flutterSdkPath:'));
 
@@ -292,7 +292,7 @@ void main() {
 
         final runFunctionFile =
             cliPackage.file('lib/dashi_sidekick.dart').readAsStringSync();
-        expect(runFunctionFile, isNot(contains("mainProjectPath:")));
+        expect(runFunctionFile, isNot(contains('mainProjectPath:')));
         expect(runFunctionFile, contains('dartSdkPath:'));
         expect(runFunctionFile, isNot(contains('flutterSdkPath:')));
 
@@ -357,14 +357,11 @@ void main() {
         dashProcess.stderrStream().listen(printOnFailure);
         dashProcess.shouldExit(0);
 
-        // no mainProjectPath
-        final runFunctionFile = File(
-          "${project.path}/packages/dashi_sidekick/lib/dashi_sidekick.dart",
-        );
-        expect(
-          runFunctionFile.readAsStringSync(),
-          isNot(contains("mainProjectPath:")),
-        );
+        // root is mainProjectPath
+        final runFunctionFile = project
+            .file('packages/dashi_sidekick/lib/dashi_sidekick.dart')
+            .readAsStringSync();
+        expect(runFunctionFile, contains("mainProjectPath: '.',"));
 
         final projectFile = File(
           "${project.path}/packages/dashi_sidekick/lib/src/dashi_project.dart",
@@ -399,7 +396,7 @@ void main() {
             '-n',
             'dashi',
             '--mainProjectPath',
-            project.directory('packages/package_a').path,
+            'packages/package_a',
           ],
           workingDirectory: project,
         );
@@ -421,12 +418,12 @@ void main() {
         expect(entrypoint.existsSync(), isTrue);
         expect(entrypoint.statSync().modeString(), 'rwxr-xr-x');
 
-        // no mainProjectPath defined, nothing is set
-        final runFunctionFile = File(
-          "${project.path}/packages/dashi_sidekick/lib/dashi_sidekick.dart",
-        );
+        // mainProjectPath is set as defined
+        final runFunctionFile = project
+            .file('packages/dashi_sidekick/lib/dashi_sidekick.dart')
+            .readAsStringSync();
         expect(
-          runFunctionFile.readAsStringSync(),
+          runFunctionFile,
           contains("mainProjectPath: 'packages/package_a'"),
         );
 
