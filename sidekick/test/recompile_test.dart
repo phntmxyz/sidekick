@@ -1,62 +1,33 @@
 import 'package:sidekick_core/sidekick_core.dart';
-import 'package:sidekick_test/sidekick_test.dart';
 import 'package:test/test.dart';
 import 'package:test_process/test_process.dart';
 
-import 'templates/templates.dart';
 import 'util/cli_runner.dart';
 
 void main() {
-  group('project type detection', () {
-    test(
-      'init generates cli files $localOrPubDepsLabel',
-      () async {
-        final project =
-            setupTemplateProject('test/templates/root_with_packages');
-        final cli = await buildSidekickCli();
-        final process = await cli.run(
-          ['init', '-n', 'dashi'],
-          workingDirectory: project,
-        );
-
-        await expectLater(
-          process.stdout,
-          emitsThrough('Generating dashi_sidekick'),
-        );
-        printOnFailure(await process.stdoutStream().join('\n'));
-        printOnFailure(await process.stderrStream().join('\n'));
-        await process.shouldExit(0);
-
+  test(
+    'init generates cli files',
+    () async {
+      await withSidekickCli((cli) async {
         // check entrypoint is executable
-        final entrypoint = File("${project.path}/dashi");
+        final entrypoint = File("${cli.root.path}/dashi");
         expect(entrypoint.existsSync(), isTrue);
         expect(entrypoint.statSync().modeString(), 'rwxr-xr-x');
 
         // check install.sh is executable
         final installSh =
-            File("${project.path}/packages/dashi_sidekick/tool/install.sh");
+            File("${cli.root.path}/packages/dashi_sidekick/tool/install.sh");
         expect(installSh.existsSync(), isTrue);
         expect(installSh.statSync().modeString(), 'rwxr-xr-x');
 
-        overrideSidekickCoreWithLocalPath(
-          project.directory('packages/dashi_sidekick'),
-        );
-
         // runs the main executable fine
-        final dashProcess = await TestProcess.start(
-          entrypoint.path,
-          [],
-          workingDirectory: project.path,
-        );
-        printOnFailure(await dashProcess.stdoutStream().join('\n'));
-        printOnFailure(await dashProcess.stderrStream().join('\n'));
-        dashProcess.shouldExit(0);
+        await cli.run([]);
 
         // recompile works
         final updateProcess = await TestProcess.start(
           entrypoint.path,
           ['sidekick', 'recompile'],
-          workingDirectory: project.path,
+          workingDirectory: cli.root.path,
         );
         final stdout = await updateProcess.stdoutStream().join('\n');
         printOnFailure(stdout);
@@ -68,8 +39,8 @@ void main() {
         expect(stderr, contains('Bundling assets'));
         expect(stderr, contains('Compiling sidekick cli'));
         expect(stderr, contains('Success!'));
-      },
-      timeout: const Timeout(Duration(minutes: 5)),
-    );
-  });
+      });
+    },
+    timeout: const Timeout(Duration(minutes: 5)),
+  );
 }

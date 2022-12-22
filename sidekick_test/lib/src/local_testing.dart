@@ -7,9 +7,6 @@ import 'package:test/test.dart';
 /// True when dependencies should be linked to local sidekick dependencies
 final bool shouldUseLocalDeps = env['SIDEKICK_PUB_DEPS'] != 'true';
 
-/// Add this to the test name
-final String localOrPubDepsLabel = shouldUseLocalDeps ? "(local)" : "(pub)";
-
 /// Changes the sidekick_core dependency to a local override
 void overrideSidekickCoreWithLocalPath(Directory package) {
   if (!shouldUseLocalDeps) return;
