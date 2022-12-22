@@ -78,7 +78,6 @@ void main() {
             'git',
             gitUrl,
           ]);
-          await cli.run(['minimal-sidekick-plugin']);
         });
       },
       timeout: const Timeout(Duration(minutes: 5)),
@@ -139,10 +138,14 @@ void main() {
             ],
           );
 
-          // plugin command works
-          await cli.run(
-            [template.paramCase],
-          );
+          // TODO if we add an option to execute the sidekick entrypoint without compiling it, we could speed up the tests a little bit here:
+          // after a plugin is installed, the hash values of the sidekick CLI
+          // change and thus the entrypoint has to be recompiled.
+          // however in this case, we don't gain anything time-wise from compiling
+          // because we use the entrypoint only once here.
+          // so if we ran the entrypoint without compiling it heree, these tests
+          // would be a little bit faster.
+          await cli.run([template.paramCase]);
         });
       },
       timeout: const Timeout(Duration(minutes: 5)),
