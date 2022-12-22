@@ -29,11 +29,6 @@ Future<void> main(List<String> args) async {
     final mainProjectPath = mainProject != null
         ? relative(mainProject!.root.path, from: repoRoot.absolute.path)
         : null;
-    final isMainProjectRoot =
-        mainProject?.root.absolute.path == repoRoot.absolute.path;
-    final hasNestedPackagesPath = mainProject != null &&
-        !relative(mainProject!.root.path, from: repoRoot.absolute.path)
-            .startsWith('packages');
 
     final props = SidekickTemplateProperties(
       name: Repository.requiredSidekickPackage.cliName,
@@ -41,8 +36,6 @@ Future<void> main(List<String> args) async {
       packageLocation: Repository.requiredCliPackage,
       mainProjectPath: mainProjectPath,
       shouldSetFlutterSdkPath: runner.commands.containsKey('flutter'),
-      isMainProjectRoot: isMainProjectRoot,
-      hasNestedPackagesPath: hasNestedPackagesPath,
       sidekickCliVersion: latestSidekickCoreVersion,
     );
 
