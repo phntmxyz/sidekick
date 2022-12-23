@@ -34,7 +34,7 @@ class UpdateCommand extends Command {
     // with, that sidekick_core version is written into the CLI's pubspec.yaml
     // at the path ['sidekick', 'cli_version']
     final currentSidekickCliVersion = versionChecker
-            .getMinimumVersionConstraintOrNull(['sidekick', 'cli_version']) ??
+            .getMinimumVersionConstraint(['sidekick', 'cli_version']) ??
         Version.none;
 
     if (versionToInstall <= currentSidekickCliVersion) {

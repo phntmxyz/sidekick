@@ -112,17 +112,16 @@ dependencies:
           ),
         );
       });
+    });
 
+    group('returns null when', () {
       test('path does not exist at all', () {
         pubspecYamlFile.writeAsStringSync('''
 name: dashi
 ''');
         expect(
-          () => versionChecker
-              .getMinimumVersionConstraint(['dependencies', 'foo']),
-          throwsA(
-            "Couldn't read path '['dependencies', 'foo']' from yaml file '${pubspecYamlFile.path}'",
-          ),
+          versionChecker.getMinimumVersionConstraint(['dependencies', 'foo']),
+          isNull,
         );
       });
 
@@ -132,11 +131,8 @@ name: dashi
 dependencies:
 ''');
         expect(
-          () => versionChecker
-              .getMinimumVersionConstraint(['dependencies', 'foo']),
-          throwsA(
-            "Couldn't read path '['dependencies', 'foo']' from yaml file '${pubspecYamlFile.path}'",
-          ),
+          versionChecker.getMinimumVersionConstraint(['dependencies', 'foo']),
+          isNull,
         );
       });
     });

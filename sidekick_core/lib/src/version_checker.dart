@@ -113,66 +113,37 @@ class VersionChecker {
   /// - ['dependencies', 'sidekick_core']
   /// - ['dev_dependencies', 'lint']
   /// - ['sidekick', 'cli_version']
-  /// Throws if pubspec.yaml does not contain [pubspecKeys]
-  Version getMinimumVersionConstraint(List<String> pubspecKeys) =>
-      VersionConstraint.parse(
-        _readFromYaml(package.pubspec, pubspecKeys) ?? 'any',
-      ).minVersion;
-
-  /// Returns the minimum version constraint of a dependency in [package]
-  /// or null if the package does not depend on the dependency
   ///
-  /// [pubspecKeys] is the path from which to retrieve the version in
-  /// the pubspec.yaml of [package], e.g.
-  /// - ['dependencies', 'sidekick_core']
-  /// - ['dev_dependencies', 'lint']
-  /// - ['sidekick', 'cli_version']
-  Version? getMinimumVersionConstraintOrNull(List<String> pubspecKeys) {
-    final result = _readFromYamlImpl(package.pubspec, pubspecKeys);
-    if (result == _pathNotFoundInYaml) {
-      return null;
-    }
-    // `dependency: ` is equivalent to `dependency: any`
-    return VersionConstraint.parse((result as String?) ?? 'any').minVersion;
-  }
+  /// Returns null if pubspec.yaml does not contain [pubspecKeys]
+  Version? getMinimumVersionConstraint(List<String> pubspecKeys) =>
+      _readFromYaml(package.pubspec, pubspecKeys).match(
+        () => null,
+        // `dependency: ` is equivalent to `dependency: any`
+        (t) => VersionConstraint.parse(t ?? 'any').minVersion,
+      );
 
-  Version getResolvedVersion(String dependency) {
+  /// Returns the resolved version of [dependency] as specified in the lock file
+  ///
+  /// Returns null if the lock file doesn't contain [dependency]
+  ///
+  /// Every dependency in pubspec.lock has a version,
+  /// even if a local dependency doesn't explicitly specify a version in their
+  /// pubspec.yaml, there always is an implicit version of 0.0.0
+  Version? getResolvedVersion(String dependency) {
     final pubspecLockFile = package.root.file('pubspec.lock');
     final resolvedVersion =
-        _readFromYaml(pubspecLockFile, ['packages', dependency, 'version'])
-        // the null assertion operator is safe to use here
-        // because every dependency in pubspec.lock has a version
-        // even if a local dependency doesn't explicitly specify a version in their
-        // pubspec.yaml, there is an implicit version of 0.0.0
-        !;
-    return Version.parse(resolvedVersion);
+        _readFromYaml(pubspecLockFile, ['packages', dependency, 'version']);
+    return resolvedVersion.match(
+      () => null,
+      (t) => t != null ? Version.parse(t) : null,
+    );
   }
 
   /// Returns the string specified by [path] in [yamlFile]
   ///
-  /// Returns null if the string is empty
-  ///
-  /// Throws if [throwWhenPathNotFound] is true and the [path] can't be found
-  /// in the [yamlFile]. Else returns null.
-  String? _readFromYaml(
-    File yamlFile,
-    List<Object> path, {
-    bool throwWhenPathNotFound = true,
-  }) {
-    final result = _readFromYamlImpl(yamlFile, path);
-
-    if (result == _pathNotFoundInYaml) {
-      if (throwWhenPathNotFound) {
-        throw "Couldn't read path '[${path.map((e) => "'$e'").join(', ')}]' from yaml file '${yamlFile.path}'";
-      }
-      return null;
-    }
-    return result as String?;
-  }
-
-  static const _pathNotFoundInYaml = Object();
-
-  dynamic _readFromYamlImpl(File yamlFile, List<Object> path) {
+  /// The string can be null, e.g. for the yaml `foo: ` and path `foo` returns null
+  /// If the [path] can't be found in the yaml, returns nothing
+  _Option<String?> _readFromYaml(File yamlFile, List<Object> path) {
     if (path.isEmpty) {
       throw 'Need at least one key in path parameter, but it was empty.';
     }
@@ -185,24 +156,24 @@ class VersionChecker {
 
     // ignore: avoid_dynamic_calls, pubspec currently is a [YamlMap] but will be a [HashMap] in future versions
     if (!(yaml.keys.contains(path.first) as bool)) {
-      return _pathNotFoundInYaml;
+      return const _None();
     }
 
     // ignore: avoid_dynamic_calls, pubspec currently is a [YamlMap] but will be a [HashMap] in future versions
-    Object? current = yaml[path.first];
+    Object? /* Map? | String? */ current = yaml[path.first];
     var i = 1;
     for (final key in path.sublist(1)) {
       if (current is Map) {
         current = current[key];
       } else {
         if (i != path.length) {
-          return _pathNotFoundInYaml;
+          return const _None();
         }
       }
       i++;
     }
 
-    return current as String?;
+    return _Some(current as String?);
   }
 
   /// Return regex matching a potentially nested yaml key
@@ -247,4 +218,30 @@ extension on VersionConstraint {
       throw 'Unknown $versionConstraint';
     }
   }
+}
+
+/// Functional programming classes [_Option], [_None], [_Some] are shortened
+/// versions copied from fpdart containing only the necessary functionality
+/// https://github.com/SandroMaglione/fpdart/blob/main/lib/src/option.dart
+
+abstract class _Option<T> {
+  const _Option();
+
+  B match<B>(B Function() onNone, B Function(T t) onSome);
+}
+
+class _Some<T> extends _Option<T> {
+  final T _value;
+
+  const _Some(this._value);
+
+  @override
+  B match<B>(B Function() onNone, B Function(T t) onSome) => onSome(_value);
+}
+
+class _None<T> extends _Option<T> {
+  const _None();
+
+  @override
+  B match<B>(B Function() onNone, B Function(T t) onSome) => onNone();
 }

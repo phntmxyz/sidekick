@@ -76,12 +76,12 @@ class InstallPluginCommand extends Command {
         case 'path':
           final dir = Directory(packageNameOrGitUrlOrLocalPath);
           if (!dir.existsSync()) {
-            throw "Directory at ${dir.absolute.path} does not exist";
+            error("Directory at ${dir.absolute.path} does not exist");
           }
 
           final localPackage = DartPackage.fromDirectory(dir);
           if (localPackage == null) {
-            throw "Directory at ${dir.absolute.path} is not a dart package";
+            error("Directory at ${dir.absolute.path} is not a dart package");
           }
 
           env['SIDEKICK_PLUGIN_NAME'] = localPackage.name;
@@ -143,6 +143,12 @@ class InstallPluginCommand extends Command {
 
     final pluginInstallerProtocolVersion =
         pluginVersionChecker.getResolvedVersion('sidekick_plugin_installer');
+
+    if (pluginInstallerProtocolVersion is! Version) {
+      error("The plugin you're trying to install isn't a valid sidekick plugin "
+          "because it doesn't have a dependency on sidekick_plugin_installer.");
+    }
+
     final supportedInstallerVersions = VersionRange(
       // update when sidekick_core removes support for old sidekick_plugin_installer protocol
       min: Version.none,
@@ -153,11 +159,11 @@ class InstallPluginCommand extends Command {
     // old CLIs shouldn't install new plugins
     if (!supportedInstallerVersions.allows(pluginInstallerProtocolVersion)) {
       if (pluginInstallerProtocolVersion < supportedInstallerVersions.max!) {
-        throw "The plugin doesn't support your CLI's version.\n"
-            'Please run ${yellow('$cliName sidekick update')} to update your CLI.';
+        error("The plugin doesn't support your CLI's version.\n"
+            'Please run ${yellow('$cliName sidekick update')} to update your CLI.');
       } else {
-        throw 'The plugin is too old to be installed to your CLI '
-            'because it depends on an outdated version of sidekick_plugin_installer.';
+        error('The plugin is too old to be installed to your CLI '
+            'because it depends on an outdated version of sidekick_plugin_installer.');
       }
     }
 
@@ -172,8 +178,8 @@ class InstallPluginCommand extends Command {
         case 'hosted':
           break;
         case 'git':
-          throw "The plugin's outdated sidekick_plugin_installer dependency "
-              "doesn't allow installation from git.";
+          error("The plugin's outdated sidekick_plugin_installer dependency "
+              "doesn't allow installation from git.");
         default:
           throw StateError('unreachable');
       }
@@ -253,10 +259,10 @@ Directory _getPackageRootDirForHostedOrGitSource(ArgResults args) {
         'sidekick CLI in its pubspec.yaml. Then, execute the entrypoint of '
         'your sidekick CLI again to download the new Dart SDK version.';
     if (progress.lines.contains('Could not find an option named "git-path".')) {
-      throw parameterNotAvailableErrorMessage('git-path', '2.17');
+      error(parameterNotAvailableErrorMessage('git-path', '2.17'));
     }
     if (progress.lines.contains('Could not find an option named "git-ref".')) {
-      throw parameterNotAvailableErrorMessage('git-ref', '2.19');
+      error(parameterNotAvailableErrorMessage('git-ref', '2.19'));
     }
 
     print(progress.lines.join('\n'));
