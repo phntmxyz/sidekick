@@ -201,6 +201,57 @@ class VersionChecker {
       multiLine: true,
     );
   }
+
+  /// Returns the minimum version constraint of a dependency in [package]
+  /// or null if the package does not depend on the dependency
+  ///
+  /// [pubspecKeys] is the path from which to retrieve the version in
+  /// the pubspec.yaml of [package], e.g.
+  /// - ['dependencies', 'sidekick_core']
+  /// - ['dev_dependencies', 'lint']
+  /// - ['sidekick', 'cli_version']
+  @Deprecated('Use `getMinimumVersionConstraint` instead.')
+  Version? getMinimumVersionConstraintOrNull(List<String> pubspecKeys) {
+    const pathNotFoundInYaml = Object();
+    dynamic deprecatedReadFromYaml(File yamlFile, List<Object> path) {
+      if (path.isEmpty) {
+        throw 'Need at least one key in path parameter, but it was empty.';
+      }
+      if (!yamlFile.existsSync()) {
+        throw "Tried reading '[${path.map((e) => "'$e'").join(', ')}]' "
+            "from yaml file '${yamlFile.path}', but that file doesn't exist.";
+      }
+      final yaml = loadYaml(yamlFile.readAsStringSync());
+
+      // ignore: avoid_dynamic_calls, pubspec currently is a [YamlMap] but will be a [HashMap] in future versions
+      if (!(yaml.keys.contains(path.first) as bool)) {
+        return pathNotFoundInYaml;
+      }
+
+      // ignore: avoid_dynamic_calls, pubspec currently is a [YamlMap] but will be a [HashMap] in future versions
+      Object? /* Map? | String? */ current = yaml[path.first];
+      var i = 1;
+      for (final key in path.sublist(1)) {
+        if (current is Map) {
+          current = current[key];
+        } else {
+          if (i != path.length) {
+            return pathNotFoundInYaml;
+          }
+        }
+        i++;
+      }
+
+      return current as String?;
+    }
+
+    final result = deprecatedReadFromYaml(package.pubspec, pubspecKeys);
+    if (result == pathNotFoundInYaml) {
+      return null;
+    }
+    // `dependency: ` is equivalent to `dependency: any`
+    return VersionConstraint.parse((result as String?) ?? 'any').minVersion;
+  }
 }
 
 extension on VersionConstraint {
