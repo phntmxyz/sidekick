@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:args/command_runner.dart';
 import 'package:sidekick/src/commands/init_command.dart';
 import 'package:sidekick/src/commands/plugins_command.dart';
+import 'package:sidekick/src/commands/update_command.dart';
 import 'package:sidekick_core/sidekick_core.dart' as core;
 import 'package:sidekick_core/sidekick_core.dart' show Version;
 
@@ -15,6 +16,7 @@ final Version version = Version.parse('0.8.0');
 Future<void> main(List<String> args) async {
   final runner = _SidekickCommandRunner()
     ..addCommand(InitCommand())
+    ..addCommand(UpdateCommand())
     ..addCommand(PluginsCommand());
 
   try {
