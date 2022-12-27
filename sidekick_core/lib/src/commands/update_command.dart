@@ -28,7 +28,7 @@ class UpdateCommand extends Command {
     final versionChecker = VersionChecker(Repository.requiredSidekickPackage);
 
     final versionToInstall = version ??
-        await versionChecker.getLatestDependencyVersion('sidekick_core');
+        await VersionChecker.getLatestDependencyVersion('sidekick_core');
 
     // to remember which sidekick_core version the sidekick CLI was generated
     // with, that sidekick_core version is written into the CLI's pubspec.yaml

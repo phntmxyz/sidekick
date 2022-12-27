@@ -11,12 +11,37 @@ class VersionChecker {
 
   final DartPackage package;
 
-  /// Checks whether the latest version of [dependency] is being used in the generated sidekick CLI
+  /// Returns the latest version of [dependency] available on pub.dev
+  static Future<Version> getLatestDependencyVersion(String dependency) async {
+    final response =
+        await get(Uri.parse('https://pub.dev/api/packages/$dependency'));
+
+    if (response.statusCode != HttpStatus.ok) {
+      throw "Package '$dependency' not found on pub.dev";
+    }
+
+    final latestVersion =
+        ((jsonDecode(response.body) as Map<String, dynamic>)['latest']
+            as Map<String, dynamic>)['version'] as String;
+
+    return Version.parse(latestVersion);
+  }
+
+  /// Checks whether the latest version of [package] is [version]
+  static Future<bool> isPackageUpToDate({
+    required String package,
+    required Version version,
+  }) async {
+    final latest = await getLatestDependencyVersion(package);
+    return latest == version;
+  }
+
+  /// Checks whether the latest version of [dependency] is being used in [package]
   ///
   /// [pubspecKeys] can be passed to override the default behavior of reading
   /// the current package version from the pubspec.yaml at ['dependencies'][dependency]
   /// E.g. ['dev_dependencies', 'some_dev_dependency'] or ['sidekick', 'cli_version']
-  Future<bool> isUpToDate({
+  Future<bool> isDependencyUpToDate({
     required String dependency,
     List<String>? pubspecKeys,
   }) async {
@@ -88,22 +113,6 @@ class VersionChecker {
             ).join('\n')} $newVersionConstraint',
       );
     }
-  }
-
-  /// Returns the latest version of [dependency] available on pub.dev
-  Future<Version> getLatestDependencyVersion(String dependency) async {
-    final response =
-        await get(Uri.parse('https://pub.dev/api/packages/$dependency'));
-
-    if (response.statusCode != HttpStatus.ok) {
-      throw "Package '$dependency' not found on pub.dev";
-    }
-
-    final latestVersion =
-        ((jsonDecode(response.body) as Map<String, dynamic>)['latest']
-            as Map<String, dynamic>)['version'] as String;
-
-    return Version.parse(latestVersion);
   }
 
   /// Returns the minimum version constraint of a dependency in [package]

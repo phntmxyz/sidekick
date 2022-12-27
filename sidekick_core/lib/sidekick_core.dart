@@ -39,6 +39,7 @@ export 'package:sidekick_core/src/git.dart';
 export 'package:sidekick_core/src/repository.dart';
 export 'package:sidekick_core/src/sidekick_package.dart';
 export 'package:sidekick_core/src/template/sidekick_package.template.dart';
+export 'package:sidekick_core/src/version_checker.dart';
 
 /// The version of package:sidekick_core
 ///
@@ -177,7 +178,7 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
   /// Print a warning if the CLI isn't up to date
   Future<void> _checkForUpdates() async {
     try {
-      final updateFuture = _versionChecker.isUpToDate(
+      final updateFuture = _versionChecker.isDependencyUpToDate(
         dependency: 'sidekick_core',
         pubspecKeys: ['sidekick', 'cli_version'],
       );
