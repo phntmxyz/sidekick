@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:dcli/dcli.dart';
+import 'package:process/process.dart';
 import 'package:sidekick/sidekick.dart';
 import 'package:sidekick_core/sidekick_core.dart' hide version;
 
@@ -9,6 +9,11 @@ import 'package:sidekick_core/sidekick_core.dart' hide version;
 /// A target version can be specified as positional argument. If no version is
 /// given, updates to the latest available version.
 class UpdateCommand extends Command {
+  UpdateCommand({
+    required this.versionChecker,
+    required this.processManager,
+  });
+
   @override
   final String description = 'Updates the global sidekick CLI';
 
@@ -21,9 +26,12 @@ class UpdateCommand extends Command {
         "[{<version>, 'latest'}]",
       );
 
+  final VersionChecker versionChecker;
+  final ProcessManager processManager;
+
   @override
   Future<void> run() async {
-    final targetVersion = await argResults!.version;
+    final targetVersion = await _versionFromArgs(argResults!);
 
     final isUpToDate = version == targetVersion;
     if (isUpToDate) {
@@ -33,11 +41,13 @@ class UpdateCommand extends Command {
     }
 
     try {
-      startFromArgs(
-        'dart',
-        ['pub', 'global', 'activate', 'sidekick', targetVersion.toString()],
-        progress: Progress.devNull(),
+      final process = processManager.runSync(
+        ['dart', 'pub', 'global', 'activate', 'sidekick', targetVersion],
       );
+      if (process.exitCode != 0) {
+        throw 'Updating sidekick failed, this is the stderr output of '
+            '`dart pub global activate`:\n${process.stderr}';
+      }
     } catch (_) {
       print(
         red('Update to $targetVersion failed. Please check your internet '
@@ -49,12 +59,11 @@ class UpdateCommand extends Command {
       green('Successfully updated sidekick from $version to $targetVersion!'),
     );
   }
-}
 
-extension on ArgResults {
-  FutureOr<Version> get version {
+  FutureOr<Version> _versionFromArgs(ArgResults args) {
+    final rest = args.rest;
     if (rest.isEmpty || rest.first == 'latest') {
-      return const VersionChecker().getLatestDependencyVersion('sidekick');
+      return versionChecker.getLatestDependencyVersion('sidekick');
     }
     try {
       return Version.parse(rest.first);

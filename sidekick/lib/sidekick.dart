@@ -1,6 +1,8 @@
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
+import 'package:meta/meta.dart';
+import 'package:process/process.dart';
 import 'package:sidekick/src/commands/init_command.dart';
 import 'package:sidekick/src/commands/plugins_command.dart';
 import 'package:sidekick/src/commands/update_command.dart';
@@ -14,10 +16,7 @@ final Version version = Version.parse('0.8.0');
 /// See the [README](https://github.com/phntmxyz/sidekick/blob/main/sidekick/README.md)
 /// for more information on sidekick
 Future<void> main(List<String> args) async {
-  final runner = _SidekickCommandRunner()
-    ..addCommand(InitCommand())
-    ..addCommand(UpdateCommand())
-    ..addCommand(PluginsCommand());
+  final runner = SidekickCommandRunner();
 
   try {
     await runner.run(args);
@@ -27,14 +26,30 @@ Future<void> main(List<String> args) async {
   }
 }
 
-class _SidekickCommandRunner extends CommandRunner {
-  _SidekickCommandRunner() : super('sidekick', _desc) {
+@visibleForTesting
+class SidekickCommandRunner extends CommandRunner {
+  SidekickCommandRunner({
+    this.versionChecker = const core.VersionChecker(),
+    this.processManager = const LocalProcessManager(),
+  }) : super('sidekick', _desc) {
     argParser.addFlag(
       'version',
       negatable: false,
       help: 'Print version information.',
     );
+
+    addCommand(InitCommand());
+    addCommand(
+      UpdateCommand(
+        versionChecker: versionChecker,
+        processManager: processManager,
+      ),
+    );
+    addCommand(PluginsCommand());
   }
+
+  final core.VersionChecker versionChecker;
+  final ProcessManager processManager;
 
   @override
   Future<void> run(Iterable<String> args) async {
