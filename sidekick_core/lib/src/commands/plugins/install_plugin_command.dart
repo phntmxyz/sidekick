@@ -106,13 +106,13 @@ class InstallPluginCommand extends Command {
     print('Installer downloaded');
 
     if (!pluginInstallerDir.existsSync()) {
-      error("Package directory doesn't exist");
+      throw "Package directory doesn't exist";
     }
 
     final pluginName = DartPackage.fromDirectory(pluginInstallerDir)?.name;
     if (pluginName == null) {
-      error('installer package at $pluginInstallerDir is '
-          'not a valid dart package');
+      throw 'installer package at $pluginInstallerDir is '
+          'not a valid dart package';
     }
 
     // The target where to install the plugin
@@ -128,8 +128,8 @@ class InstallPluginCommand extends Command {
     await pluginInstallerDir.copyRecursively(workingDir);
     final pluginInstallerCode = DartPackage.fromDirectory(workingDir);
     if (pluginInstallerCode == null) {
-      error('installer package at $workingDir is '
-          'not a valid dart package');
+      throw 'installer package at $workingDir is '
+          'not a valid dart package';
     }
 
     // get installer dependencies
@@ -143,6 +143,12 @@ class InstallPluginCommand extends Command {
 
     final pluginInstallerProtocolVersion =
         pluginVersionChecker.getResolvedVersion('sidekick_plugin_installer');
+
+    if (pluginInstallerProtocolVersion is! Version) {
+      throw "The plugin you're trying to install isn't a valid sidekick plugin "
+          "because it doesn't have a dependency on sidekick_plugin_installer.";
+    }
+
     final supportedInstallerVersions = VersionRange(
       // update when sidekick_core removes support for old sidekick_plugin_installer protocol
       min: Version.none,
@@ -183,9 +189,7 @@ class InstallPluginCommand extends Command {
     // Execute installer. Requires a tool/install.dart file to execute
     final installScript = workingDir.file('tool/install.dart');
     if (!installScript.existsSync()) {
-      error(
-        'No ${installScript.path} script found in package at $pluginInstallerDir',
-      );
+      throw 'No ${installScript.path} script found in package at $pluginInstallerDir';
     }
     sidekickDartRuntime.dart(
       [installScript.path],
