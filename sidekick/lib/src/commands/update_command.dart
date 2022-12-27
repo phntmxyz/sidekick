@@ -54,7 +54,7 @@ class UpdateCommand extends Command {
 extension on ArgResults {
   FutureOr<Version> get version {
     if (rest.isEmpty || rest.first == 'latest') {
-      return VersionChecker.getLatestDependencyVersion('sidekick');
+      return const VersionChecker().getLatestDependencyVersion('sidekick');
     }
     try {
       return Version.parse(rest.first);

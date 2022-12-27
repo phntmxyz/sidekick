@@ -1,5 +1,4 @@
 import 'package:sidekick_core/sidekick_core.dart';
-import 'package:sidekick_core/src/version_checker.dart';
 import 'package:sidekick_test/fake_stdio.dart';
 import 'package:sidekick_test/sidekick_test.dart';
 import 'package:test/test.dart';
@@ -28,15 +27,14 @@ void main() {
         await overrideIoStreams(
           stderr: () => fakeStderr,
           body: () async {
-            final runner = initializeSidekick(
-              name: 'dash',
-            );
-
             final fakeVersionChecker = _FakeVersionChecker(
-              package: Repository.requiredSidekickPackage,
               latestDependencyVersions: {'sidekick_core': '1.0.0'},
             );
-            runner.injectedVersionChecker = fakeVersionChecker;
+            final runner = initializeSidekick(
+              name: 'dash',
+              versionChecker: fakeVersionChecker,
+            );
+
             await runner.run(['-h']);
 
             final expectedWarnings = [
@@ -60,16 +58,15 @@ void main() {
         await overrideIoStreams(
           stderr: () => fakeStderr,
           body: () async {
-            final runner = initializeSidekick(
-              name: 'dash',
-            );
-
             final fakeVersionChecker = _FakeVersionChecker(
-              package: Repository.requiredSidekickPackage,
               // empty map is equivalent to being offline
               latestDependencyVersions: {},
             );
-            runner.injectedVersionChecker = fakeVersionChecker;
+            final runner = initializeSidekick(
+              name: 'dash',
+              versionChecker: fakeVersionChecker,
+            );
+
             await runner.run(['-h']);
 
             expect(fakeStderr.lines.isEmpty, isTrue);
@@ -89,16 +86,15 @@ void main() {
         await overrideIoStreams(
           stderr: () => fakeStderr,
           body: () async {
-            final runner = initializeSidekick(
-              name: 'dash',
-            );
-
             final fakeVersionChecker = _FakeVersionChecker(
-              package: Repository.requiredSidekickPackage,
               // empty map is equivalent to being offline
               latestDependencyVersions: {},
             );
-            runner.injectedVersionChecker = fakeVersionChecker;
+            final runner = initializeSidekick(
+              name: 'dash',
+              versionChecker: fakeVersionChecker,
+            );
+
             await runner.run(['-h']);
 
             expect(
@@ -187,10 +183,7 @@ class _UpdateCommand extends Command {
 }
 
 class _FakeVersionChecker extends VersionChecker {
-  _FakeVersionChecker({
-    required DartPackage package,
-    required this.latestDependencyVersions,
-  }) : super(package);
+  _FakeVersionChecker({required this.latestDependencyVersions}) : super();
 
   final Map<String, String> latestDependencyVersions;
 

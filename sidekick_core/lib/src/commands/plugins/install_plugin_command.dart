@@ -3,7 +3,6 @@ import 'package:pub_semver/pub_semver.dart';
 
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_core/src/pub/pub.dart' as pub;
-import 'package:sidekick_core/src/version_checker.dart';
 
 /// Installs a sidekick plugin
 class InstallPluginCommand extends Command {
@@ -139,10 +138,8 @@ class InstallPluginCommand extends Command {
       progress: Progress.printStdErr(),
     );
 
-    final pluginVersionChecker = VersionChecker(pluginInstallerCode);
-
-    final pluginInstallerProtocolVersion =
-        pluginVersionChecker.getResolvedVersion('sidekick_plugin_installer');
+    final pluginInstallerProtocolVersion = const VersionChecker()
+        .getResolvedVersion(pluginInstallerCode, 'sidekick_plugin_installer');
 
     if (pluginInstallerProtocolVersion is! Version) {
       throw "The plugin you're trying to install isn't a valid sidekick plugin "

@@ -72,6 +72,7 @@ SidekickCommandRunner initializeSidekick({
   String? mainProjectPath,
   String? flutterSdkPath,
   String? dartSdkPath,
+  @visibleForTesting VersionChecker? versionChecker,
 }) {
   DartPackage? mainProject;
 
@@ -96,6 +97,7 @@ SidekickCommandRunner initializeSidekick({
     workingDirectory: Directory.current,
     flutterSdk: _resolveSdkPath(flutterSdkPath, repo.root),
     dartSdk: _resolveSdkPath(dartSdkPath, repo.root),
+    versionChecker: versionChecker,
   );
   return runner;
 }
@@ -111,7 +113,9 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
     required this.workingDirectory,
     this.flutterSdk,
     this.dartSdk,
-  }) : super(cliName, description) {
+    VersionChecker? versionChecker,
+  })  : versionChecker = versionChecker ?? const VersionChecker(),
+        super(cliName, description) {
     argParser.addFlag(
       'version',
       negatable: false,
@@ -124,13 +128,7 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
   final Directory workingDirectory;
   final Directory? flutterSdk;
   final Directory? dartSdk;
-
-  VersionChecker get _versionChecker =>
-      injectedVersionChecker ??
-      VersionChecker(Repository.requiredSidekickPackage);
-
-  @visibleForTesting
-  VersionChecker? injectedVersionChecker;
+  final VersionChecker versionChecker;
 
   /// Mounts the sidekick related globals, returns a function to unmount them
   /// and restore the previous globals
@@ -178,7 +176,8 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
   /// Print a warning if the CLI isn't up to date
   Future<void> _checkForUpdates() async {
     try {
-      final updateFuture = _versionChecker.isDependencyUpToDate(
+      final updateFuture = versionChecker.isDependencyUpToDate(
+        package: Repository.requiredSidekickPackage,
         dependency: 'sidekick_core',
         pubspecKeys: ['sidekick', 'cli_version'],
       );
@@ -199,10 +198,14 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
   /// minimum version of their CLI and that version doesn't match with the
   /// CLI version listed in the pubspec at the path ['sidekick', 'cli_version']
   void _checkCliVersionIntegrity() {
-    final sidekickCoreVersion = _versionChecker
-        .getMinimumVersionConstraint(['dependencies', 'sidekick_core']);
-    final sidekickCliVersion = _versionChecker
-        .getMinimumVersionConstraint(['sidekick', 'cli_version']);
+    final sidekickCoreVersion = versionChecker.getMinimumVersionConstraint(
+      Repository.requiredSidekickPackage,
+      ['dependencies', 'sidekick_core'],
+    );
+    final sidekickCliVersion = versionChecker.getMinimumVersionConstraint(
+      Repository.requiredSidekickPackage,
+      ['sidekick', 'cli_version'],
+    );
 
     // old CLI which has no version information yet
     // _checkForUpdates will print a warning to update the CLI in this case
