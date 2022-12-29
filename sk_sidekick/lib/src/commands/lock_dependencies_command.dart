@@ -42,27 +42,29 @@ class LockDependenciesCommand extends Command {
     final Map<String, String> transitiveDependencies = {};
     for (final package in packages.entries) {
       final type = package.value['dependency'];
+      final packageName = package.key as String;
       final version = package.value['version'] as String;
+
+      if (type != 'direct dev' && package.value['source'] != 'hosted') {
+        throw "Can only handle dependencies from hosted sources, but $packageName violates this.";
+      }
+
       switch (type) {
         case 'transitive':
-          transitiveDependencies[package.key] = version;
+          transitiveDependencies[packageName] = version;
           break;
         case 'direct main':
-          directDependencies[package.key] = version;
+          directDependencies[packageName] = version;
           break;
         // case 'direct dev' is irrelevant
       }
     }
 
     final pinnedDirectDependencies = directDependencies
-        .mapEntries<String>(
-          (e) => '  ${e.key}: >=${e.value.lowestNonBreakingVersion} <=$version',
-        )
+        .mapEntries<String>((e) => "  ${e.key}: ${e.value.lockedConstraint}")
         .sorted();
     final pinnedTransitiveDependencies = transitiveDependencies
-        .mapEntries<String>(
-          (e) => '  ${e.key}: >=${e.value.lowestNonBreakingVersion} <=$version',
-        )
+        .mapEntries<String>((e) => "  ${e.key}: ${e.value.lockedConstraint}")
         .sorted();
 
     final lockedDependencies = [
@@ -88,12 +90,12 @@ class LockDependenciesCommand extends Command {
 }
 
 extension on String {
-  Version get lowestNonBreakingVersion {
+  String get lockedConstraint {
     final version = Version.parse(this);
-    if (version.major > 0) {
-      return Version(version.major, 0, 0);
-    } else {
-      return Version(0, version.minor, 0);
-    }
+    final lowerBound = version.major > 0
+        ? Version(version.major, 0, 0)
+        : Version(0, version.minor, 0);
+
+    return version == lowerBound ? '$version' : "'>=$lowerBound <=$version'";
   }
 }
