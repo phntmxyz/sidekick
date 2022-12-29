@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sk_sidekick/src/commands/bump_version_command.dart';
+import 'package:sk_sidekick/src/commands/lock_dependencies_command.dart';
 import 'package:sk_sidekick/src/release/sidekick_bundled_version_bump.dart';
 import 'package:sk_sidekick/src/release/sidekick_core_bundled_version_bump.dart';
 import 'package:sk_sidekick/src/sk_project.dart';
@@ -20,6 +21,7 @@ Future<void> runSk(List<String> args) async {
     // TODO: use `excludePackages: ['test/**']` when fix for https://github.com/phntmxyz/sidekick/issues/122 is available
     ..addCommand(DepsCommand(exclude: [...testPackages]))
     ..addCommand(DartAnalyzeCommand())
+    ..addCommand(LockDependenciesCommand())
     ..addCommand(
       BumpVersionCommand()
         ..addModification(sidekickCoreBundledVersionBump)

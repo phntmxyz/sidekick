@@ -3,6 +3,7 @@ import 'package:yaml/yaml.dart';
 
 class DartPackage {
   DartPackage(this.root, this.name) : isFlutterPackage = false;
+
   DartPackage.flutter(this.root, this.name) : isFlutterPackage = true;
 
   /// Returns [DartPackage] if a directory fulfils the requirements of a Dart/Flutter package
@@ -56,6 +57,8 @@ class DartPackage {
   Directory get toolDir => root.directory('tool');
 
   File get pubspec => root.file('pubspec.yaml');
+
+  File get lockfile => root.file('pubspec.lock');
 
   /// Set of directories containing dart source code
   Set<Directory> get srcDirs => {binDir, libDir, testDir, toolDir};

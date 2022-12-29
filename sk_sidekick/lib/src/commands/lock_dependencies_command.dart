@@ -1,0 +1,99 @@
+import 'package:sidekick_core/sidekick_core.dart';
+import 'package:sk_sidekick/src/commands/bump_version_command.dart';
+import 'package:yaml/yaml.dart';
+
+class LockDependenciesCommand extends Command {
+  LockDependenciesCommand() {}
+
+  @override
+  final String description = 'Locks all dependencies to their upper bounds';
+
+  @override
+  final String name = 'lock-dependencies';
+
+  @override
+  String get invocation => super.invocation.replaceFirst(
+        '[arguments]',
+        '[package-path]',
+      );
+
+  @override
+  Future<void> run() async {
+    final packagePath = argResults!.rest.firstOrNull ?? Directory.current.path;
+    final package = DartPackage.fromDirectory(Directory(packagePath));
+    if (package == null) {
+      throw 'Could not find a package in $packagePath';
+    }
+
+    final pubGet = systemDart(['pub', 'get'], workingDirectory: package.root);
+    if (pubGet != 0) {
+      throw "Couldn't get dependencies in ${package.root}";
+    }
+
+    final lockfile = package.lockfile;
+    if (!lockfile.existsSync()) {
+      throw "Lockfile doesn't exist in ${package.root}";
+    }
+
+    final packages = loadYaml(lockfile.readAsStringSync())['packages']
+        as Map<String, dynamic>;
+
+    final Map<String, String> directDependencies = {};
+    final Map<String, String> transitiveDependencies = {};
+    for (final package in packages.entries) {
+      final type = package.value['dependency'];
+      final version = package.value['version'] as String;
+      switch (type) {
+        case 'transitive':
+          transitiveDependencies[package.key] = version;
+          break;
+        case 'direct main':
+          directDependencies[package.key] = version;
+          break;
+        // case 'direct dev' is irrelevant
+      }
+    }
+
+    final pinnedDirectDependencies = directDependencies
+        .mapEntries<String>(
+          (e) => '  ${e.key}: >=${e.value.lowestNonBreakingVersion} <=$version',
+        )
+        .sorted();
+    final pinnedTransitiveDependencies = transitiveDependencies
+        .mapEntries<String>(
+          (e) => '  ${e.key}: >=${e.value.lowestNonBreakingVersion} <=$version',
+        )
+        .sorted();
+
+    final lockedDependencies = [
+      'dependencies:',
+      '  # direct dependencies',
+      ...pinnedDirectDependencies,
+      '  # transitive dependencies',
+      ...pinnedTransitiveDependencies,
+    ].join('\n');
+
+    final currentDependenciesBlock =
+        RegExp(r'^dependencies:.*((\n\s*#.*)|(\n {2}.*))*', multiLine: true)
+            .firstMatch(package.pubspec.readAsStringSync())
+            ?.group(0);
+    if (currentDependenciesBlock == null) {
+      throw "Couldn't parse current dependencies block in ${package.pubspec.path}: ${package.pubspec.readAsStringSync()}";
+    }
+
+    package.pubspec.replaceFirst(currentDependenciesBlock, lockedDependencies);
+
+    print(green('Locked dependencies of ${package.name}!'));
+  }
+}
+
+extension on String {
+  Version get lowestNonBreakingVersion {
+    final version = Version.parse(this);
+    if (version.major > 0) {
+      return Version(version.major, 0, 0);
+    } else {
+      return Version(0, version.minor, 0);
+    }
+  }
+}
