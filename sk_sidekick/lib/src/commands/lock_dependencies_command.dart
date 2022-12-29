@@ -35,8 +35,8 @@ class LockDependenciesCommand extends Command {
       throw "Lockfile doesn't exist in ${package.root}";
     }
 
-    final packages = loadYaml(lockfile.readAsStringSync())['packages']
-        as Map<String, dynamic>;
+    final packages =
+        loadYaml(lockfile.readAsStringSync())['packages'] as YamlMap;
 
     final Map<String, String> directDependencies = {};
     final Map<String, String> transitiveDependencies = {};
