@@ -42,7 +42,14 @@ class UpdateCommand extends Command {
 
     try {
       final process = processManager.runSync(
-        ['dart', 'pub', 'global', 'activate', 'sidekick', targetVersion],
+        [
+          'dart',
+          'pub',
+          'global',
+          'activate',
+          'sidekick',
+          targetVersion.toString(),
+        ],
       );
       if (process.exitCode != 0) {
         throw 'Updating sidekick failed, this is the stderr output of '

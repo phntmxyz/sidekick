@@ -16,7 +16,7 @@ final Version version = Version.parse('0.8.0');
 /// See the [README](https://github.com/phntmxyz/sidekick/blob/main/sidekick/README.md)
 /// for more information on sidekick
 Future<void> main(List<String> args) async {
-  final runner = SidekickCommandRunner();
+  final runner = GlobalSidekickCommandRunner();
 
   try {
     await runner.run(args);
@@ -27,8 +27,8 @@ Future<void> main(List<String> args) async {
 }
 
 @visibleForTesting
-class SidekickCommandRunner extends CommandRunner {
-  SidekickCommandRunner({
+class GlobalSidekickCommandRunner extends CommandRunner {
+  GlobalSidekickCommandRunner({
     this.versionChecker = const core.VersionChecker(),
     this.processManager = const LocalProcessManager(),
   }) : super('sidekick', _desc) {
