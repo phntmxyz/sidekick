@@ -1,0 +1,57 @@
+name: Prepare Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      package:
+        type: choice
+        required: true
+        description: Which package to prepare a release for
+        options:
+          - sidekick
+          - sidekick_core
+          - sidekick_plugin_installer
+          - sidekick_vault
+      version:
+        type: choice
+        required: true
+        default: minor
+        description: Which version to release (next major/next minor/next patch)
+        options:
+          - major
+          - minor
+          - patch
+
+
+
+jobs:
+  prepare_release:
+    runs-on: ubuntu-latest
+
+    container:
+      image: dart:latest
+
+    steps:
+      - uses: actions/checkout@v1
+      - name: Install dependencies
+        run: cd ${{ inputs.package }} && dart pub get --no-precompile
+      - name: Lock dependencies
+        run: ../sk lock-dependencies ${{ inputs.package }}
+      - name: Bump version
+        run: ../sk bump-version --${{ inputs.version }} ${{ inputs.package }}
+      - uses: stefanzweifel/git-auto-commit-action@v4
+      - name: Set version variable
+        id: get_version
+        uses: mikefarah/yq@master
+        with:
+          cmd: echo ${{ inputs.package }}-v$(yq '.version' pubspec.yaml)
+      - name: Create tag
+        uses: actions/github-script@v5
+        with:
+          script: |
+            github.rest.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: 'refs/tags/${{ steps.get_version.outputs.result }}',
+              sha: context.sha
+            })
