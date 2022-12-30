@@ -36,9 +36,9 @@ jobs:
       - name: Install dependencies
         run: cd ${{ inputs.package }} && dart pub get --no-precompile
       - name: Lock dependencies
-        run: ../sk lock-dependencies ${{ inputs.package }}
+        run: ./sk lock-dependencies ${{ inputs.package }}
       - name: Bump version
-        run: ../sk bump-version --${{ inputs.version }} ${{ inputs.package }}
+        run: ./sk bump-version --${{ inputs.version }} ${{ inputs.package }}
       - uses: stefanzweifel/git-auto-commit-action@v4
       - name: Set version variable
         id: get_version
