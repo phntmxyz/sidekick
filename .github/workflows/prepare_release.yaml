@@ -43,34 +43,16 @@ jobs:
       - name: Bump version
        # run: ./sk bump-version --${{ inputs.version }} ${{ inputs.package }}
         run: ./sk bump-version --patch sidekick
-      - uses: stefanzweifel/git-auto-commit-action@v4
       - name: Set version variable
         id: get_version
         uses: mikefarah/yq@master
         with:
         #  cmd: cd ${{ inputs.package }} && echo "${{ inputs.package }}-v$(yq '.version' pubspec.yaml)"
           cmd: cd sidekick && echo "TEST-sidekick-v$(yq '.version' pubspec.yaml)"
-      - name: Stage changes
-        run: git add .
-      - name: Commit changes
-        uses: actions/github-script@v5
+      - uses: stefanzweifel/git-auto-commit-action@v4
         with:
-          script: |
-            github.rest.git.createCommit({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              message: 'Prepare release ${{ steps.get_version.outputs.result }}',
-              tree: context.sha, #?
-              # author.name, ?
-              # author.email, ?
-            })
-      - name: Create tag
-        uses: actions/github-script@v5
-        with:
-          script: |
-            github.rest.git.createRef({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: 'refs/tags/${{ steps.get_version.outputs.result }}',
-              sha: context.sha
-            })
+          branch: ${GITHUB_REF##*/}
+          tagging_message: ${{ steps.get_version.outputs.result }}
+
+
+

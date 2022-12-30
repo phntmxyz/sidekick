@@ -83,6 +83,7 @@ class LockDependenciesCommand extends Command {
       throw "Couldn't parse current dependencies block in ${package.pubspec.path}: ${package.pubspec.readAsStringSync()}";
     }
 
+    package.pubspec.copySync('${package.pubspec.absolute.path}.unlocked');
     package.pubspec.replaceFirst(currentDependenciesBlock, lockedDependencies);
 
     print(green('Locked dependencies of ${package.name}!'));
