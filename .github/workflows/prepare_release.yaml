@@ -33,7 +33,7 @@ jobs:
       image: dart:latest
 
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - name: Install dependencies
        # run: cd ${{ inputs.package }} && dart pub get --no-precompile
         run: cd sidekick && dart pub get --no-precompile
@@ -53,6 +53,8 @@ jobs:
         with:
           branch: ${{ github.ref_name }}
           tagging_message: ${{ steps.get_version.outputs.result }}
+          add_options: '-A' # to add copy of pubspec.yaml with unlocked dependencies as well
+
 
 
 
