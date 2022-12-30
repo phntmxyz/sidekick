@@ -51,7 +51,7 @@ jobs:
           cmd: cd sidekick && echo "TEST-sidekick-v$(yq '.version' pubspec.yaml)"
       - uses: stefanzweifel/git-auto-commit-action@v4
         with:
-         # branch: ${GITHUB_REF##*/}
+          branch: ${{ github.ref_name }}
           tagging_message: ${{ steps.get_version.outputs.result }}
 
 
