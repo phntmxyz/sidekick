@@ -1,27 +1,26 @@
 name: Prepare Release
 
 on:
-  push:
-#  workflow_dispatch:
-#    inputs:
-#      package:
-#        type: choice
-#        required: true
-#        description: Which package to prepare a release for
-#        options:
-#          - sidekick
-#          - sidekick_core
-#          - sidekick_plugin_installer
-#          - sidekick_vault
-#      version:
-#        type: choice
-#        required: true
-#        default: minor
-#        description: Which version to release (next major/next minor/next patch)
-#        options:
-#          - major
-#          - minor
-#          - patch
+  workflow_dispatch:
+    inputs:
+      package:
+        type: choice
+        required: true
+        description: Which package to prepare a release for
+        options:
+          - sidekick
+          - sidekick_core
+          - sidekick_plugin_installer
+          - sidekick_vault
+      version:
+        type: choice
+        required: true
+        default: minor
+        description: Which version to release (next major/next minor/next patch)
+        options:
+          - major
+          - minor
+          - patch
 
 
 
@@ -35,25 +34,22 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Install dependencies
-       # run: cd ${{ inputs.package }} && dart pub get --no-precompile
-        run: cd sidekick && dart pub get --no-precompile
+        run: cd ${{ inputs.package }} && dart pub get --no-precompile
       - name: Lock dependencies
-       # run: ./sk lock-dependencies ${{ inputs.package }}
-        run: ./sk lock-dependencies sidekick
+        run: ./sk lock-dependencies ${{ inputs.package }}
       - name: Bump version
-       # run: ./sk bump-version --${{ inputs.version }} ${{ inputs.package }}
-        run: ./sk bump-version --patch sidekick
+        run: ./sk bump-version --${{ inputs.version }} ${{ inputs.package }}
       - name: Set version variable
-        id: get_version
+        id: get_version_tag
         uses: mikefarah/yq@master
         with:
-        #  cmd: cd ${{ inputs.package }} && echo "${{ inputs.package }}-v$(yq '.version' pubspec.yaml)"
-          cmd: cd sidekick && echo "TEST-sidekick-v$(yq '.version' pubspec.yaml)"
+          cmd: cd ${{ inputs.package }} && echo "${{ inputs.package }}-v$(yq '.version' pubspec.yaml)"
       - uses: stefanzweifel/git-auto-commit-action@v4
         with:
           branch: ${{ github.ref_name }}
-          tagging_message: ${{ steps.get_version.outputs.result }}
-          add_options: '-A' # to add copy of pubspec.yaml with unlocked dependencies as well
+          tagging_message: ${{ steps.get_version_tag.outputs.result }}
+          add_options: '-A' # adds copy of pubspec.yaml with unlocked dependencies as well
+          commit_message: 'Prepare release ${{ steps.get_version_tag.outputs.result }}'
 
 
 
