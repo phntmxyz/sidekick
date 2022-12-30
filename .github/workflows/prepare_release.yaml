@@ -1,26 +1,27 @@
 name: Prepare Release
 
 on:
-  workflow_dispatch:
-    inputs:
-      package:
-        type: choice
-        required: true
-        description: Which package to prepare a release for
-        options:
-          - sidekick
-          - sidekick_core
-          - sidekick_plugin_installer
-          - sidekick_vault
-      version:
-        type: choice
-        required: true
-        default: minor
-        description: Which version to release (next major/next minor/next patch)
-        options:
-          - major
-          - minor
-          - patch
+  push:
+#  workflow_dispatch:
+#    inputs:
+#      package:
+#        type: choice
+#        required: true
+#        description: Which package to prepare a release for
+#        options:
+#          - sidekick
+#          - sidekick_core
+#          - sidekick_plugin_installer
+#          - sidekick_vault
+#      version:
+#        type: choice
+#        required: true
+#        default: minor
+#        description: Which version to release (next major/next minor/next patch)
+#        options:
+#          - major
+#          - minor
+#          - patch
 
 
 
@@ -34,17 +35,35 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - name: Install dependencies
-        run: cd ${{ inputs.package }} && dart pub get --no-precompile
+       # run: cd ${{ inputs.package }} && dart pub get --no-precompile
+        run: cd sidekick && dart pub get --no-precompile
       - name: Lock dependencies
-        run: ./sk lock-dependencies ${{ inputs.package }}
+       # run: ./sk lock-dependencies ${{ inputs.package }}
+        run: ./sk lock-dependencies sidekick
       - name: Bump version
-        run: ./sk bump-version --${{ inputs.version }} ${{ inputs.package }}
+       # run: ./sk bump-version --${{ inputs.version }} ${{ inputs.package }}
+        run: ./sk bump-version --patch sidekick
       - uses: stefanzweifel/git-auto-commit-action@v4
       - name: Set version variable
         id: get_version
         uses: mikefarah/yq@master
         with:
-          cmd: echo ${{ inputs.package }}-v$(yq '.version' pubspec.yaml)
+        #  cmd: cd ${{ inputs.package }} && echo "${{ inputs.package }}-v$(yq '.version' pubspec.yaml)"
+          cmd: cd sidekick && echo "TEST-sidekick-v$(yq '.version' pubspec.yaml)"
+      - name: Stage changes
+        run: git add .
+      - name: Commit changes
+        uses: actions/github-script@v5
+        with:
+          script: |
+            github.rest.git.createCommit({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              message: 'Prepare release ${{ steps.get_version.outputs.result }}',
+              tree: context.sha, #?
+              # author.name, ?
+              # author.email, ?
+            })
       - name: Create tag
         uses: actions/github-script@v5
         with:
