@@ -63,9 +63,7 @@ void main() {
         expect(
           printLog,
           containsAllInOrder([
-            grey(
-              'Updating sidekick CLI dash from version 0.0.0 to $targetVersion ...',
-            ),
+            'Updating sidekick CLI dash from version 0.0.0 to $targetVersion ...',
             green(
               'Successfully updated sidekick CLI dash from version 0.0.0 to $targetVersion!',
             ),
