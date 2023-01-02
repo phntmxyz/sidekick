@@ -9,43 +9,22 @@ void main() {
 
     final List<Version> executed = [];
 
-    void doMigration(MigrationContext context) {
-      executed.add(context.step.oldVersion);
+    MigrationStep trackedMigrationTo(Version version) {
+      return MigrationStep.inline(
+        (context) => executed.add(context.step.targetVersion),
+        targetVersion: version,
+        name: version.canonicalizedVersion,
+      );
     }
 
     final migrations = [
-      MigrationStep(
-        doMigration,
-        oldVersion: Version.parse('0.3.0'),
-        name: '0.3.0',
-      ),
-      MigrationStep(
-        doMigration,
-        oldVersion: Version.parse('0.3.5'),
-        name: '0.3.5',
-      ),
-      MigrationStep(
-        doMigration,
-        oldVersion: Version.parse('0.4.1'),
-        name: '0.4.1',
-      ),
-      MigrationStep(
-        doMigration,
-        oldVersion: Version.parse('0.5.0'),
-        name: '0.5.0',
-      ),
-      MigrationStep(
-        doMigration,
-        oldVersion: Version.parse('0.6.0'),
-        name: '0.6.0',
-      ),
-      MigrationStep(
-        doMigration,
-        oldVersion: Version.parse('0.7.0'),
-        name: '0.7.0',
-      ),
+      trackedMigrationTo(Version(0, 3, 0)),
+      trackedMigrationTo(Version(0, 3, 5)),
+      trackedMigrationTo(Version(0, 4, 1)),
+      trackedMigrationTo(Version(0, 5, 0)),
+      trackedMigrationTo(Version(0, 6, 0)),
+      trackedMigrationTo(Version(0, 7, 0)),
     ];
-
     await migrate(
       from: currentVersion,
       to: updateTo,
@@ -53,8 +32,9 @@ void main() {
     );
 
     expect(executed, [
-      Version.parse('0.4.1'),
-      Version.parse('0.5.0'),
+      Version(0, 4, 1),
+      Version(0, 5, 0),
+      Version(0, 6, 0),
     ]);
   });
 
@@ -64,23 +44,23 @@ void main() {
 
     final List<Version> executed = [];
     void doMigration(MigrationContext context) {
-      executed.add(context.step.oldVersion);
+      executed.add(context.step.targetVersion);
     }
 
     final migrations = [
-      MigrationStep(
+      MigrationStep.inline(
         doMigration,
-        oldVersion: Version.parse('0.3.0'),
+        targetVersion: Version.parse('0.3.0'),
         name: '0.3.0',
       ),
-      MigrationStep(
+      MigrationStep.inline(
         (_) => throw "something went wrong",
-        oldVersion: Version.parse('0.3.5'),
+        targetVersion: Version.parse('0.3.5'),
         name: '0.3.5',
       ),
-      MigrationStep(
+      MigrationStep.inline(
         doMigration,
-        oldVersion: Version.parse('0.4.1'),
+        targetVersion: Version.parse('0.4.1'),
         name: '0.4.1',
       ),
     ];
@@ -89,7 +69,7 @@ void main() {
       from: currentVersion,
       to: updateTo,
       migrations: migrations,
-      onMigrationError: (context) => MigrationErrorHandling.skip,
+      onMigrationStepError: (context) => MigrationErrorHandling.skip,
     );
 
     expect(executed, isNot(contains(Version.parse('0.3.5'))));
@@ -106,23 +86,23 @@ void main() {
 
     final List<Version> executed = [];
     void doMigration(MigrationContext context) {
-      executed.add(context.step.oldVersion);
+      executed.add(context.step.targetVersion);
     }
 
     final migrations = [
-      MigrationStep(
+      MigrationStep.inline(
         doMigration,
-        oldVersion: Version.parse('0.3.0'),
+        targetVersion: Version.parse('0.3.0'),
         name: '0.3.0',
       ),
-      MigrationStep(
+      MigrationStep.inline(
         (_) => throw "something went wrong",
-        oldVersion: Version.parse('0.3.5'),
+        targetVersion: Version.parse('0.3.5'),
         name: '0.3.5',
       ),
-      MigrationStep(
+      MigrationStep.inline(
         doMigration,
-        oldVersion: Version.parse('0.4.1'),
+        targetVersion: Version.parse('0.4.1'),
         name: '0.4.1',
       ),
     ];
@@ -131,7 +111,7 @@ void main() {
         from: currentVersion,
         to: updateTo,
         migrations: migrations,
-        onMigrationError: (context) => MigrationErrorHandling.abort,
+        onMigrationStepError: (context) => MigrationErrorHandling.abort,
       );
       fail('should have thrown');
     } catch (e) {
@@ -149,23 +129,23 @@ void main() {
 
     final List<Version> executed = [];
     void doMigration(MigrationContext context) {
-      executed.add(context.step.oldVersion);
+      executed.add(context.step.targetVersion);
     }
 
     final migrations = [
-      MigrationStep(
+      MigrationStep.inline(
         doMigration,
-        oldVersion: Version.parse('0.3.0'),
+        targetVersion: Version.parse('0.3.0'),
         name: '0.3.0',
       ),
-      MigrationStep(
+      MigrationStep.inline(
         (_) => throw "something went wrong",
-        oldVersion: Version.parse('0.3.5'),
+        targetVersion: Version.parse('0.3.5'),
         name: '0.3.5',
       ),
-      MigrationStep(
+      MigrationStep.inline(
         doMigration,
-        oldVersion: Version.parse('0.4.1'),
+        targetVersion: Version.parse('0.4.1'),
         name: '0.4.1',
       ),
     ];
@@ -175,7 +155,7 @@ void main() {
       from: currentVersion,
       to: updateTo,
       migrations: migrations,
-      onMigrationError: (context) {
+      onMigrationStepError: (context) {
         retryCount++;
         if (retryCount < 10) {
           return MigrationErrorHandling.retry;

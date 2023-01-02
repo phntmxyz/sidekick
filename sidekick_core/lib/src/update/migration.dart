@@ -4,32 +4,74 @@ import 'package:dartx/dartx.dart';
 import 'package:dcli/dcli.dart';
 import 'package:pub_semver/pub_semver.dart';
 
-class MigrationStep {
-  /// The version after which this migration should be executed.
-  final Version oldVersion;
+/// A single migration that can be executed with [migrate]
+///
+/// This step is executed when a user updates to a version that is greater
+/// or equal to [targetVersion].
+abstract class MigrationStep {
+  /// The version this migration step will migrate to.
+  final Version targetVersion;
 
   /// A human readable name for this migration.
   final String name;
 
-  /// The code to execute for this migration.
+  /// Don't call this constructor directly, instead extend [MigrationStep] or
+  /// use [MigrationStep.inline].
+  const MigrationStep({
+    required this.name,
+    required this.targetVersion,
+  });
+
+  /// For simple steps a single function is enough
+  const factory MigrationStep.inline(
+    FutureOr<void> Function(MigrationContext) block, {
+    required String name,
+    required Version targetVersion,
+  }) = _InlineMigrationStep;
+
+  /// This method is called to do the action migration of this step.
+  Future<void> migrate(MigrationContext context);
+
+  @override
+  String toString() {
+    return 'MigrationStep{$name to $targetVersion}';
+  }
+}
+
+/// A version of MigrationStep that doesn't require extending the class
+class _InlineMigrationStep extends MigrationStep {
+  const _InlineMigrationStep(
+    this.block, {
+    required String name,
+    required Version targetVersion,
+  }) : super(name: name, targetVersion: targetVersion);
+
+  /// The code to execute for this migration step
   final FutureOr<void> Function(MigrationContext) block;
 
-  const MigrationStep(
-    this.block, {
-    required this.name,
-    required this.oldVersion,
-  });
+  @override
+  Future<void> migrate(MigrationContext context) async {
+    await block(context);
+  }
 }
 
 /// Information about the full migration while doing a migration.
 class MigrationContext {
+  /// The current step of the migration.
   final MigrationStep step;
+
+  /// The initial version where the migration has been started
   final Version from;
+
+  /// The version the migration is migrating to
   final Version to;
 
   Object? _exception;
+
+  /// In case of an error during this step, this will contain the exception
   Object? get exception => _exception;
 
+  /// In case of an error during this step, this will contain the stacktrace
   StackTrace? _stackTrace;
   StackTrace? get stackTrace => _stackTrace;
 
@@ -40,35 +82,48 @@ class MigrationContext {
   });
 }
 
+/// Starts a migration from [from] to [to] using the given [migrations].
+///
+/// Migrations are only executed if [MigrationStep.targetVersion] is greater
+/// than [from] and less than or equal to [to].
+///
+/// Use the [onMigrationStepStart] and [onMigrationStepEnd] callbacks to execute
+/// code before and after each step.
+///
+/// React to errors of each step with [onMigrationStepError], and decide whether
+/// to skip or retry individual steps or abort the whole migration.
 Future<void> migrate({
   required Version from,
   required Version to,
   required List<MigrationStep> migrations,
-  FutureOr<MigrationErrorHandling> Function(MigrationContext)? onMigrationError,
+  FutureOr<void> Function(MigrationContext)? onMigrationStepStart,
+  FutureOr<void> Function(MigrationContext)? onMigrationStepEnd,
+  FutureOr<MigrationErrorHandling> Function(MigrationContext)?
+      onMigrationStepError,
 }) async {
   final migrationsToExecute = migrations
-      .where((m) => m.oldVersion > from && m.oldVersion < to)
-      .sortedBy((m) => m.oldVersion)
+      .where((m) => m.targetVersion > from && m.targetVersion <= to)
+      .sortedBy((m) => m.targetVersion)
       .toList();
 
-  for (final migration in migrationsToExecute) {
-    final context = MigrationContext(step: migration, from: from, to: to);
+  for (final step in migrationsToExecute) {
+    final context = MigrationContext(step: step, from: from, to: to);
+    await onMigrationStepStart?.call(context);
     bool retry = true;
     while (retry) {
       retry = false;
       try {
-        await migration.block(context);
+        await step.migrate(context);
       } catch (e, s) {
         context._exception = e;
         context._stackTrace = s;
-        if (onMigrationError == null) {
-          printerr(
-              'Migration ${migration.name} (${migration.oldVersion}) failed:');
+        if (onMigrationStepError == null) {
+          printerr('Migration ${step.name} (${step.targetVersion}) failed:');
           printerr(e.toString());
           printerr(s.toString());
         }
         final handling =
-            onMigrationError?.call(context) ?? MigrationErrorHandling.skip;
+            onMigrationStepError?.call(context) ?? MigrationErrorHandling.skip;
         switch (handling) {
           case MigrationErrorHandling.skip:
             continue;
@@ -79,6 +134,8 @@ Future<void> migrate({
         }
       }
     }
+
+    await onMigrationStepEnd?.call(context);
   }
 }
 
