@@ -79,32 +79,31 @@ class SidekickTemplateProperties {
   final Directory packageLocation;
 
   /// When there's a flutter package that requires a flutter sdk
-  final bool shouldSetFlutterSdkPath;
+  final bool? shouldSetFlutterSdkPath;
 
   /// When the dart package is located in root of the repo
-  final bool isMainProjectRoot;
+  final bool? isMainProjectRoot;
 
   /// true when a /packages directory exists
-  final bool hasNestedPackagesPath;
+  final bool? hasNestedPackagesPath;
 
   /// Path to main project, relative from repo root
   final String? mainProjectPath;
 
-  /// The version of the generated sidekick CLI
+  /// The current version of sidekick_core which includes the project templates
   ///
-  /// This is set to the version of sidekick_core because sidekick_core contains
-  /// the template used for generation of the CLI.
-  final Version sidekickCliVersion;
+  /// This version should be written to pubspec.yaml as sidekick.cli_version
+  final Version? sidekickCliVersion;
 
   const SidekickTemplateProperties({
     required this.name,
     required this.entrypointLocation,
     required this.packageLocation,
-    required this.mainProjectPath,
-    required this.shouldSetFlutterSdkPath,
-    required this.isMainProjectRoot,
-    required this.hasNestedPackagesPath,
-    required this.sidekickCliVersion,
+    this.sidekickCliVersion,
+    this.mainProjectPath,
+    this.shouldSetFlutterSdkPath,
+    this.isMainProjectRoot,
+    this.hasNestedPackagesPath,
   });
 }
 
@@ -120,7 +119,7 @@ Future<void> main(List<String> arguments) async {
   }
 
   String cliProjectDart() {
-    if (isMainProjectRoot) {
+    if (isMainProjectRoot!) {
       return '''
 import 'package:sidekick_core/sidekick_core.dart';
 
@@ -139,13 +138,13 @@ class ${name.pascalCase}Project extends DartPackage {
   List<DartPackage>? _packages;
   List<DartPackage> get allPackages {
     return _packages ??= root
-        ${hasNestedPackagesPath ? ".directory('$mainProjectPath')" : ''}
+        ${hasNestedPackagesPath! ? ".directory('$mainProjectPath')" : ''}
         .directory('packages')
         .listSync()
         .whereType<Directory>()
         .mapNotNull((it) => DartPackage.fromDirectory(it))
         .toList()
-      ${isMainProjectRoot ? '..add(this)' : ''};
+      ${isMainProjectRoot! ? '..add(this)' : ''};
   }
 }
 ''';
@@ -164,13 +163,13 @@ class ${name.pascalCase}Project {
   List<DartPackage>? _packages;
   List<DartPackage> get allPackages {
     return _packages ??= root
-        ${hasNestedPackagesPath ? ".directory('$mainProjectPath')" : ''}
+        ${hasNestedPackagesPath! ? ".directory('$mainProjectPath')" : ''}
         .directory('packages')
         .listSync()
         .whereType<Directory>()
         .mapNotNull((it) => DartPackage.fromDirectory(it))
         .toList()
-        ${isMainProjectRoot ? '..add(this)' : ''};
+        ${isMainProjectRoot! ? '..add(this)' : ''};
   }
 }
 
@@ -180,7 +179,7 @@ class ${name.pascalCase}Project {
 
   String cliSidekickDart() {
     final commands = [
-      if (shouldSetFlutterSdkPath) 'FlutterCommand()',
+      if (shouldSetFlutterSdkPath!) 'FlutterCommand()',
       'DartCommand()',
       'DepsCommand()',
       'CleanCommand()',
@@ -205,7 +204,7 @@ Future<void> run${name.pascalCase}(List<String> args) async {
   final runner = initializeSidekick(
     name: '${name.snakeCase}',
     ${mainProjectPath != null ? "mainProjectPath: '$mainProjectPath'," : ''}
-    ${shouldSetFlutterSdkPath ? 'flutterSdkPath: systemFlutterSdkPath(),' : 'dartSdkPath: systemDartSdkPath(),'}
+    ${shouldSetFlutterSdkPath! ? 'flutterSdkPath: systemFlutterSdkPath(),' : 'dartSdkPath: systemDartSdkPath(),'}
   );
 
   ${name.snakeCase}Project = ${name.pascalCase}Project($projectRoot);
@@ -270,7 +269,7 @@ dev_dependencies:
 
 # generated code, do not edit this manually
 sidekick:
-  cli_version: ${sidekickCliVersion.canonicalizedVersion}
+  cli_version: ${sidekickCliVersion!.canonicalizedVersion}
 ''';
   }
 }
