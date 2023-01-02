@@ -1,6 +1,7 @@
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_core/src/commands/update_command.dart';
 import 'package:sidekick_core/src/update/migration.dart';
+import 'package:sidekick_core/src/update/patches/patch_migrations.dart';
 import 'package:sidekick_core/src/version_checker.dart';
 
 /// Updates a sidekick CLI
@@ -32,6 +33,8 @@ Future<void> main(List<String> args) async {
         // Always execute template updates
         UpdateToolsMigration(targetSidekickCoreVersion),
         UpdateEntryPointMigration(targetSidekickCoreVersion),
+        // Migration steps from git patches
+        ...getPatchMigrations(),
       ],
       onMigrationStepStart: (context) {
         print(' - ${context.step.name}');

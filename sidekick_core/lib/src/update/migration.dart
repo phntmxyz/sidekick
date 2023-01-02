@@ -1,8 +1,11 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:dartx/dartx.dart';
 import 'package:dcli/dcli.dart';
 import 'package:pub_semver/pub_semver.dart';
+import 'package:recase/recase.dart';
+import 'package:sidekick_core/sidekick_core.dart';
 
 /// A single migration that can be executed with [migrate]
 ///
@@ -28,6 +31,12 @@ abstract class MigrationStep {
     required String name,
     required Version targetVersion,
   }) = _InlineMigrationStep;
+
+  const factory MigrationStep.gitPatch(
+    String patch, {
+    required String name,
+    required Version targetVersion,
+  }) = _GitPatchMigrationStep;
 
   /// This method is called to do the action migration of this step.
   Future<void> migrate(MigrationContext context);
@@ -55,6 +64,39 @@ class _InlineMigrationStep extends MigrationStep {
   }
 }
 
+class _GitPatchMigrationStep extends MigrationStep {
+  const _GitPatchMigrationStep(
+    this.patch, {
+    required String name,
+    required Version targetVersion,
+  }) : super(name: name, targetVersion: targetVersion);
+
+  /// The git patch to be applied for this migration step
+  final String patch;
+
+  @override
+  Future<void> migrate(MigrationContext context) async {
+    final patchFile = Directory.systemTemp
+        .createTempSync()
+        .file('${name.snakeCase}.sidekick_patch');
+    patchFile.writeAsStringSync(patch);
+
+    try {
+      final exitCode = startFromArgs(
+            'git',
+            ['apply', patchFile.absolute.path],
+            workingDirectory: Repository.requiredCliPackage.path,
+          ).exitCode ??
+          -1;
+      if (exitCode != 0) {
+        throw "Couldn't apply patch for migration step $name:\n$patch";
+      }
+    } finally {
+      patchFile.deleteSync();
+    }
+  }
+}
+
 /// Information about the full migration while doing a migration.
 class MigrationContext {
   /// The current step of the migration.
@@ -73,6 +115,7 @@ class MigrationContext {
 
   /// In case of an error during this step, this will contain the stacktrace
   StackTrace? _stackTrace;
+
   StackTrace? get stackTrace => _stackTrace;
 
   MigrationContext({
