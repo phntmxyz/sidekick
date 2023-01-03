@@ -101,7 +101,7 @@ class GitPatchMigrationStep extends MigrationStep {
         ).exitCode ??
         -1;
     if (exitCode != 0) {
-      throw '${red("Couldn't apply git patch ${patchFile.absolute.path} for migration step $name.")}\n'
+      throw '${red("Couldn't apply git patch ${patchFile.absolute.path} for migration step $description.")}\n'
           '${pullRequestLink != null ? 'Check $pullRequestLink for further information.\n' : ''}'
           '${red('Try applying the patch manually if necessary.')}\n'
           'The patch content is:\n\n$patch\n';
