@@ -34,9 +34,10 @@ abstract class MigrationStep {
 
   const factory MigrationStep.gitPatch(
     String patch, {
-    required String name,
+    required String description,
+    String pullRequestLink,
     required Version targetVersion,
-  }) = _GitPatchMigrationStep;
+  }) = GitPatchMigrationStep;
 
   /// This method is called to do the action migration of this step.
   Future<void> migrate(MigrationContext context);
@@ -64,36 +65,50 @@ class _InlineMigrationStep extends MigrationStep {
   }
 }
 
-class _GitPatchMigrationStep extends MigrationStep {
-  const _GitPatchMigrationStep(
+class GitPatchMigrationStep extends MigrationStep {
+  const GitPatchMigrationStep(
     this.patch, {
-    required String name,
+    required this.description,
+    this.pullRequestLink,
     required Version targetVersion,
-  }) : super(name: name, targetVersion: targetVersion);
+  }) : super(
+          name:
+              '$description${pullRequestLink != null ? ' ($pullRequestLink)' : ''}',
+          targetVersion: targetVersion,
+        );
 
   /// The git patch to be applied for this migration step
   final String patch;
+
+  /// Description of the patch
+  final String description;
+
+  /// Link to the pull request on GitHub introducing this patch
+  final String? pullRequestLink;
 
   @override
   Future<void> migrate(MigrationContext context) async {
     final patchFile = Directory.systemTemp
         .createTempSync()
-        .file('${name.snakeCase}.sidekick_patch');
+        .file('${description.snakeCase}.sidekick.patch');
     patchFile.writeAsStringSync(patch);
 
-    try {
-      final exitCode = startFromArgs(
-            'git',
-            ['apply', patchFile.absolute.path],
-            workingDirectory: Repository.requiredCliPackage.path,
-          ).exitCode ??
-          -1;
-      if (exitCode != 0) {
-        throw "Couldn't apply patch for migration step $name:\n$patch";
-      }
-    } finally {
-      patchFile.deleteSync();
+    final exitCode = startFromArgs(
+          'git',
+          ['apply', patchFile.absolute.path],
+          workingDirectory: Repository.requiredCliPackage.path,
+          // A more detailed error will be thrown on exitCode != 0
+          nothrow: true,
+        ).exitCode ??
+        -1;
+    if (exitCode != 0) {
+      throw '${red("Couldn't apply git patch ${patchFile.absolute.path} for migration step $name.")}\n'
+          '${pullRequestLink != null ? 'Check $pullRequestLink for further information.\n' : ''}'
+          '${red('Try applying the patch manually if necessary.')}\n'
+          'The patch content is:\n\n$patch\n';
     }
+    // delete file only if patch was applied successfully
+    patchFile.deleteSync();
   }
 }
 

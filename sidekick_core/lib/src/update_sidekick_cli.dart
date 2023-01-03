@@ -34,7 +34,7 @@ Future<void> main(List<String> args) async {
         UpdateToolsMigration(targetSidekickCoreVersion),
         UpdateEntryPointMigration(targetSidekickCoreVersion),
         // Migration steps from git patches
-        ...getPatchMigrations(),
+        ...patchMigrations,
       ],
       onMigrationStepStart: (context) {
         print(' - ${context.step.name}');
@@ -42,6 +42,16 @@ Future<void> main(List<String> args) async {
       onMigrationStepError: (context) {
         printerr('Migration failed: ${context.step.name}');
         printerr(context.exception?.toString());
+
+        // Migrations from git patches are likely to fail (e.g. if the user
+        // already modified their sidekick CLI)
+        // Therefore git patch migrations are skipped by default,
+        // the printed error contains instructions to check the patch and
+        // apply it manually if necessary
+        if(context.step is GitPatchMigrationStep){
+          return MigrationErrorHandling.skip;
+        }
+
         printerr(context.stackTrace.toString());
         // TODO make errors interactive and allow skipping
         return MigrationErrorHandling.abort;
