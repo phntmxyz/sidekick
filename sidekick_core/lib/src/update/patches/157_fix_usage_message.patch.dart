@@ -13,14 +13,7 @@ final _gitPatch1 = MigrationStep.gitPatch(
   targetVersion: Version(0, 13, 2),
 );
 
-final _gitPatch2 = MigrationStep.gitPatch(
-  _patch2,
-  description: 'Fix usage message (2/2)',
-  pullRequestLink: 'https://github.com/phntmxyz/sidekick/pull/157',
-  targetVersion: Version(0, 13, 2),
-);
-
-final _patch1 = () {
+String _patch1() {
   final cliMainFilePath = relative(
     Repository.requiredSidekickPackage.cliMainFile.absolute.path,
     from: findRepository().root.path,
@@ -41,9 +34,16 @@ Subject: [PATCH] print all information on UsageException
 -  }
 
 ''';
-}();
+}
 
-final _patch2 = () {
+final _gitPatch2 = MigrationStep.gitPatch(
+  _patch2,
+  description: 'Fix usage message (2/2)',
+  pullRequestLink: 'https://github.com/phntmxyz/sidekick/pull/157',
+  targetVersion: Version(0, 13, 2),
+);
+
+String _patch2() {
   final cliMainFilePath = relative(
     Repository.requiredSidekickPackage.cliMainFile.absolute.path,
     from: findRepository().root.path,
@@ -65,4 +65,4 @@ Subject: [PATCH] print all information on UsageException
    }
  }
 ''';
-}();
+}

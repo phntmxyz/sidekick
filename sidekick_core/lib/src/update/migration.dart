@@ -31,7 +31,7 @@ abstract class MigrationStep {
   }) = _InlineMigrationStep;
 
   factory MigrationStep.gitPatch(
-    String patch, {
+    String Function() patch, {
     required String description,
     String pullRequestLink,
     required Version targetVersion,
@@ -75,8 +75,8 @@ class GitPatchMigrationStep extends MigrationStep {
           targetVersion: targetVersion,
         );
 
-  /// The git patch to be applied for this migration step
-  final String patch;
+  /// A function that returns the git patch to be applied for this migration step
+  final String Function() patch;
 
   /// Description of the patch
   final String description;
@@ -89,8 +89,8 @@ class GitPatchMigrationStep extends MigrationStep {
     final patchFile = Directory.systemTemp
         .createTempSync()
         .file('${description.snakeCase}.sidekick.patch');
-    patchFileForTest = patchFile;
-    patchFile.writeAsStringSync(patch);
+    final text = patch();
+    patchFile.writeAsStringSync(text);
 
     final exitCode = startFromArgs(
           'git',
@@ -104,7 +104,7 @@ class GitPatchMigrationStep extends MigrationStep {
       throw '${red("Couldn't apply git patch ${patchFile.absolute.path} for migration step $description.")}\n'
           '${pullRequestLink != null ? 'Check $pullRequestLink for further information.\n' : ''}'
           '${red('Try applying the patch manually if necessary.')}\n'
-          'The patch content is:\n\n$patch\n';
+          'The patch content is:\n\n$text\n';
     }
     // delete file only if patch was applied successfully
     patchFile.deleteSync();
