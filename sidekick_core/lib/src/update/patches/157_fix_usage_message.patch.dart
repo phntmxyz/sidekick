@@ -3,7 +3,7 @@ import 'package:sidekick_core/src/update/migration.dart';
 
 MigrationStep getPatch157() => MigrationStep.gitPatch(
       _getPatch(),
-      name: 'Fix usage message',
+      name: 'Fix usage message (https://github.com/phntmxyz/sidekick/pull/157)',
       targetVersion: Version(0, 13, 2),
     );
 
