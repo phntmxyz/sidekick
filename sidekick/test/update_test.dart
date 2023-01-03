@@ -50,8 +50,8 @@ void main() {
     Future<void> code() async {
       when(() => mockProcessManager.runSync(any()))
           .thenAnswer((_) => FakeProcessResult());
-      final latest = Version(13, 12, 1989);
-      fakeGetLatestDependencyVersion({'sidekick': latest});
+      const latest = '13.12.1989';
+      fakeGetLatestDependencyVersion({'sidekick': Version.parse(latest)});
       final runner =
           GlobalSidekickCommandRunner(processManager: mockProcessManager);
 
@@ -88,8 +88,8 @@ void main() {
       when(() => mockProcessManager.runSync(any()))
           .thenAnswer((_) => FakeProcessResult(exitCode: 1, stderr: 'foo'));
 
-      final latest = Version(13, 12, 1989);
-      fakeGetLatestDependencyVersion({'sidekick': latest});
+      const latest = '13.12.1989';
+      fakeGetLatestDependencyVersion({'sidekick': Version.parse(latest)});
       final runner =
           GlobalSidekickCommandRunner(processManager: mockProcessManager);
 
