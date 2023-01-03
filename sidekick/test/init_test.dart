@@ -5,9 +5,6 @@ import 'package:sidekick_test/sidekick_test.dart';
 import 'package:test/test.dart';
 import 'package:test_process/test_process.dart';
 
-// ignore: avoid_relative_lib_imports
-import '../../sidekick_core/lib/sidekick_core.dart' as core show version;
-
 import 'templates/templates.dart';
 import 'util/cli_runner.dart';
 
@@ -29,10 +26,16 @@ void main() {
   test(
     '--version flag prints sidekick and sidekick_core versions',
     () async {
+      final versionRegExp =
+          RegExp(r"final Version version = Version.parse\('(.*)'\);");
+      final sidekickCoreFile = File('../sidekick_core/lib/sidekick_core.dart');
+      final sidekickCoreVersion = versionRegExp
+          .firstMatch(sidekickCoreFile.readAsStringSync())!
+          .group(1)!;
       final process = await cachedGlobalSidekickCli
           .run(['--version'], workingDirectory: Directory.current);
       final output = await process.stdoutStream().join('\n');
-      expect(output, 'sidekick: $version\nsidekick_core: ${core.version}');
+      expect(output, 'sidekick: $version\nsidekick_core: $sidekickCoreVersion');
     },
     skip: !shouldUseLocalDeps,
   );
