@@ -28,8 +28,3 @@ dev_dependencies:
 
 executables:
   sidekick:
-
-dependency_overrides:
-  # remove when sidekick_core version with exposed VersionChecker is available as hosted dependency
-  sidekick_core:
-    path: ../sidekick_core
