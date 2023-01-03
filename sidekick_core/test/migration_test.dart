@@ -1,6 +1,3 @@
-import 'dart:io';
-
-import 'package:pub_semver/pub_semver.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_core/src/update/migration.dart';
 import 'package:sidekick_test/fake_stdio.dart';

@@ -48,7 +48,7 @@ Future<void> main(List<String> args) async {
         // Therefore git patch migrations are skipped by default,
         // the printed error contains instructions to check the patch and
         // apply it manually if necessary
-        if(context.step is GitPatchMigrationStep){
+        if (context.step is GitPatchMigrationStep) {
           return MigrationErrorHandling.skip;
         }
 
