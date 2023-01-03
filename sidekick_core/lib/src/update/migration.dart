@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:dartx/dartx.dart';
 import 'package:dcli/dcli.dart';
+import 'package:meta/meta.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:recase/recase.dart';
 import 'package:sidekick_core/sidekick_core.dart';
@@ -32,7 +33,7 @@ abstract class MigrationStep {
     required Version targetVersion,
   }) = _InlineMigrationStep;
 
-  const factory MigrationStep.gitPatch(
+  factory MigrationStep.gitPatch(
     String patch, {
     required String description,
     String pullRequestLink,
@@ -66,7 +67,7 @@ class _InlineMigrationStep extends MigrationStep {
 }
 
 class GitPatchMigrationStep extends MigrationStep {
-  const GitPatchMigrationStep(
+  GitPatchMigrationStep(
     this.patch, {
     required this.description,
     this.pullRequestLink,
@@ -91,6 +92,7 @@ class GitPatchMigrationStep extends MigrationStep {
     final patchFile = Directory.systemTemp
         .createTempSync()
         .file('${description.snakeCase}.sidekick.patch');
+    patchFileForTest = patchFile;
     patchFile.writeAsStringSync(patch);
 
     final exitCode = startFromArgs(
@@ -110,6 +112,9 @@ class GitPatchMigrationStep extends MigrationStep {
     // delete file only if patch was applied successfully
     patchFile.deleteSync();
   }
+
+  @visibleForTesting
+  File? patchFileForTest;
 }
 
 /// Information about the full migration while doing a migration.
