@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:dcli/dcli.dart';
-import 'package:meta/meta.dart';
 import 'package:recase/recase.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 
@@ -109,9 +108,6 @@ class GitPatchMigrationStep extends MigrationStep {
     // delete file only if patch was applied successfully
     patchFile.deleteSync();
   }
-
-  @visibleForTesting
-  File? patchFileForTest;
 }
 
 /// Information about the full migration while doing a migration.

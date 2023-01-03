@@ -1,6 +1,7 @@
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_core/src/update/migration.dart';
 import 'package:sidekick_test/fake_stdio.dart';
+import 'package:sidekick_test/file_creation_observer.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -176,20 +177,21 @@ void main() {
 
   group('GitPatchMigrationStep', () {
     test('patch is applied successfully', () async {
-      final tempDir = Directory.systemTemp.createTempSync();
-      env['SIDEKICK_PACKAGE_HOME'] = tempDir.absolute.path;
-      addTearDown(() {
-        tempDir.deleteSync(recursive: true);
-        env['SIDEKICK_PACKAGE_HOME'] = null;
-      });
-      final fileToBeChanged = tempDir.file('foo')..writeAsStringSync('''
+      await observeFileCreations((createdFiles) async {
+        final tempDir = Directory.systemTemp.createTempSync();
+        env['SIDEKICK_PACKAGE_HOME'] = tempDir.absolute.path;
+        addTearDown(() {
+          tempDir.deleteSync(recursive: true);
+          env['SIDEKICK_PACKAGE_HOME'] = null;
+        });
+        final fileToBeChanged = tempDir.file('foo')..writeAsStringSync('''
 void main(){
   print('foo');
 }
 ''');
-      'git init'.start(workingDirectory: tempDir.path);
+        'git init'.start(workingDirectory: tempDir.path);
 
-      const patchContent = '''
+        const patchContent = '''
 --- a/foo
 +++ b/foo
 @@ -1,3 +1,3 @@
@@ -198,72 +200,79 @@ void main(){
 +  print('bar');
  }
 ''';
-      final patch = GitPatchMigrationStep(
-        patchContent,
-        description: 'test patch',
-        targetVersion: Version(0, 0, 1),
-      );
+        final patch = GitPatchMigrationStep(
+          () => patchContent,
+          description: 'test patch',
+          targetVersion: Version(0, 0, 1),
+        );
 
-      await migrate(
-        from: Version(0, 0, 0),
-        to: Version(0, 0, 1),
-        migrations: [patch],
-      );
+        await migrate(
+          from: Version(0, 0, 0),
+          to: Version(0, 0, 1),
+          migrations: [patch],
+        );
 
-      expect(
-        fileToBeChanged.readAsStringSync(),
-        '''
+        expect(
+          fileToBeChanged.readAsStringSync(),
+          '''
 void main(){
   print('bar');
 }
 ''',
-      );
+        );
 
-      // patch file is deleted after patch was applied
-      final patchFile = patch.patchFileForTest!;
-      expect(patchFile.existsSync(), isFalse);
+        final patchFile =
+            createdFiles.firstWhere((f) => f.path.endsWith('.patch'));
+
+        // patch file is deleted after patch was applied
+        expect(patchFile.existsSync(), isFalse);
+      });
     });
 
     test('throws detailed error when applying patch fails', () async {
-      final tempDir = Directory.systemTemp.createTempSync();
-      env['SIDEKICK_PACKAGE_HOME'] = tempDir.absolute.path;
-      final patch = GitPatchMigrationStep(
-        'corrupt patch',
-        description: 'test patch',
-        targetVersion: Version(0, 0, 1),
-      );
-      addTearDown(() {
-        tempDir.deleteSync(recursive: true);
-        env['SIDEKICK_PACKAGE_HOME'] = null;
-        patch.patchFileForTest?.deleteSync();
-      });
+      await observeFileCreations((createdFiles) async {
+        final tempDir = Directory.systemTemp.createTempSync();
+        env['SIDEKICK_PACKAGE_HOME'] = tempDir.absolute.path;
+        final patch = GitPatchMigrationStep(
+          () => 'corrupt patch',
+          description: 'test patch',
+          targetVersion: Version(0, 0, 1),
+        );
+        File findPatchFile() =>
+            createdFiles.firstWhere((f) => f.path.endsWith('.patch'));
+        addTearDown(() {
+          tempDir.deleteSync(recursive: true);
+          env['SIDEKICK_PACKAGE_HOME'] = null;
+          findPatchFile().deleteSync();
+        });
 
-      final fakeStderr = FakeStdoutStream();
-      await overrideIoStreams(
-        stderr: () => fakeStderr,
-        body: () async {
-          await migrate(
-            from: Version(0, 0, 0),
-            to: Version(0, 0, 1),
-            migrations: [patch],
-          );
-        },
-      );
+        final fakeStderr = FakeStdoutStream();
+        await overrideIoStreams(
+          stderr: () => fakeStderr,
+          body: () async {
+            await migrate(
+              from: Version(0, 0, 0),
+              to: Version(0, 0, 1),
+              migrations: [patch],
+            );
+          },
+        );
 
-      // patch file is not deleted when applying patch fails
-      final patchFile = patch.patchFileForTest!;
-      expect(patchFile.existsSync(), isTrue);
-      expect(patchFile.readAsStringSync(), 'corrupt patch');
-      expect(
-        fakeStderr.lines,
-        contains('''
+        // patch file is not deleted when applying patch fails
+        final patchFile = findPatchFile();
+        expect(patchFile.existsSync(), isTrue);
+        expect(patchFile.readAsStringSync(), 'corrupt patch');
+        expect(
+          fakeStderr.lines,
+          contains('''
 ${red("Couldn't apply git patch ${patchFile.path} for migration step test patch.")}
 ${red('Try applying the patch manually if necessary.')}
 The patch content is:
 
 corrupt patch
 '''),
-      );
+        );
+      });
     });
   });
 }
