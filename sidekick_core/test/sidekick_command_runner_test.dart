@@ -22,21 +22,15 @@ void main() {
       'Run ${cyan('dash sidekick update')} to update your CLI.';
 
   test('prints warnings to update outdated CLI', () async {
+    fakeGetLatestDependencyVersion({'sidekick_core': Version(1, 0, 0)});
     final fakeStderr = FakeStdoutStream();
     await insideFakeProjectWithSidekick(
       (tempDir) async {
         await overrideIoStreams(
           stderr: () => fakeStderr,
           body: () async {
-            final runner = initializeSidekick(
-              name: 'dash',
-            );
+            final runner = initializeSidekick(name: 'dash');
 
-            final fakeVersionChecker = _FakeVersionChecker(
-              package: Repository.requiredSidekickPackage,
-              latestDependencyVersions: {'sidekick_core': '1.0.0'},
-            );
-            runner.injectedVersionChecker = fakeVersionChecker;
             await runner.run(['-h']);
 
             final expectedWarnings = [
@@ -54,22 +48,16 @@ void main() {
   });
 
   test('prints no warnings when offline and versions match', () async {
+    // empty map is equivalent to being offline
+    fakeGetLatestDependencyVersion({});
     final fakeStderr = FakeStdoutStream();
     await insideFakeProjectWithSidekick(
       (tempDir) async {
         await overrideIoStreams(
           stderr: () => fakeStderr,
           body: () async {
-            final runner = initializeSidekick(
-              name: 'dash',
-            );
+            final runner = initializeSidekick(name: 'dash');
 
-            final fakeVersionChecker = _FakeVersionChecker(
-              package: Repository.requiredSidekickPackage,
-              // empty map is equivalent to being offline
-              latestDependencyVersions: {},
-            );
-            runner.injectedVersionChecker = fakeVersionChecker;
             await runner.run(['-h']);
 
             expect(fakeStderr.lines.isEmpty, isTrue);
@@ -83,22 +71,16 @@ void main() {
 
   test('prints only warning to repair CLI when offline and versions mismatch',
       () async {
+    // empty map is equivalent to being offline
+    fakeGetLatestDependencyVersion({});
     final fakeStderr = FakeStdoutStream();
     await insideFakeProjectWithSidekick(
       (tempDir) async {
         await overrideIoStreams(
           stderr: () => fakeStderr,
           body: () async {
-            final runner = initializeSidekick(
-              name: 'dash',
-            );
+            final runner = initializeSidekick(name: 'dash');
 
-            final fakeVersionChecker = _FakeVersionChecker(
-              package: Repository.requiredSidekickPackage,
-              // empty map is equivalent to being offline
-              latestDependencyVersions: {},
-            );
-            runner.injectedVersionChecker = fakeVersionChecker;
             await runner.run(['-h']);
 
             expect(
@@ -186,15 +168,8 @@ class _UpdateCommand extends Command {
   final String name = 'update';
 }
 
-class _FakeVersionChecker extends VersionChecker {
-  _FakeVersionChecker({
-    required DartPackage package,
-    required this.latestDependencyVersions,
-  }) : super(package);
-
-  final Map<String, String> latestDependencyVersions;
-
-  @override
-  Future<Version> getLatestDependencyVersion(String dependency) async =>
-      Version.parse(latestDependencyVersions[dependency]!);
+void fakeGetLatestDependencyVersion(Map<String, Version> latestVersions) {
+  VersionChecker.testFakeGetLatestDependencyVersion =
+      (String dependency) async => latestVersions[dependency]!;
+  addTearDown(() => VersionChecker.testFakeGetLatestDependencyVersion = null);
 }

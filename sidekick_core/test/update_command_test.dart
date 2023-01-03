@@ -39,13 +39,15 @@ void main() {
         runner.addCommand(UpdateCommand());
         await runner.run(['update', targetVersion.toString()]);
 
-        final versionChecker =
-            VersionChecker(Repository.requiredSidekickPackage);
-
-        final sidekickVersionAfterUpdate = versionChecker
-            .getMinimumVersionConstraint(['sidekick', 'cli_version']);
+        final package = Repository.requiredSidekickPackage;
+        final sidekickVersionAfterUpdate =
+            VersionChecker.getMinimumVersionConstraint(
+          package,
+          ['sidekick', 'cli_version'],
+        );
         final sidekickCoreVersionAfterUpdate =
-            versionChecker.getMinimumVersionConstraint(
+            VersionChecker.getMinimumVersionConstraint(
+          package,
           ['dependencies', 'sidekick_core'],
         );
 
@@ -99,12 +101,15 @@ void main() {
       runner.addCommand(UpdateCommand());
       await runner.run(['update', '0.1.0']);
 
-      final versionChecker = VersionChecker(Repository.requiredSidekickPackage);
-
-      final sidekickVersionAfterUpdate = versionChecker
-          .getMinimumVersionConstraint(['sidekick', 'cli_version']);
+      final package = Repository.requiredSidekickPackage;
+      final sidekickVersionAfterUpdate =
+          VersionChecker.getMinimumVersionConstraint(
+        package,
+        ['sidekick', 'cli_version'],
+      );
       final sidekickCoreVersionAfterUpdate =
-          versionChecker.getMinimumVersionConstraint(
+          VersionChecker.getMinimumVersionConstraint(
+        package,
         ['dependencies', 'sidekick_core'],
       );
       expect(sidekickVersionAfterUpdate, Version(0, 5, 0));

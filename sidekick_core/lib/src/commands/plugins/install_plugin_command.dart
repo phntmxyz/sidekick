@@ -139,10 +139,10 @@ class InstallPluginCommand extends Command {
       progress: Progress.printStdErr(),
     );
 
-    final pluginVersionChecker = VersionChecker(pluginInstallerCode);
-
-    final pluginInstallerProtocolVersion =
-        pluginVersionChecker.getResolvedVersion('sidekick_plugin_installer');
+    final pluginInstallerProtocolVersion = VersionChecker.getResolvedVersion(
+      pluginInstallerCode,
+      'sidekick_plugin_installer',
+    );
 
     if (pluginInstallerProtocolVersion is! Version) {
       throw "The plugin you're trying to install isn't a valid sidekick plugin "

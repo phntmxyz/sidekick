@@ -57,6 +57,8 @@ class DartPackage {
 
   File get pubspec => root.file('pubspec.yaml');
 
+  File get lockfile => root.file('pubspec.lock');
+
   /// Set of directories containing dart source code
   Set<Directory> get srcDirs => {binDir, libDir, testDir, toolDir};
 

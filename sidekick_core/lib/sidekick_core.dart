@@ -5,7 +5,6 @@ import 'dart:io';
 import 'package:args/command_runner.dart';
 import 'package:dartx/dartx_io.dart';
 import 'package:dcli/dcli.dart';
-import 'package:meta/meta.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:sidekick_core/src/commands/update_command.dart';
 import 'package:sidekick_core/src/dart_package.dart';
@@ -124,13 +123,6 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
   final Directory? flutterSdk;
   final Directory? dartSdk;
 
-  VersionChecker get _versionChecker =>
-      injectedVersionChecker ??
-      VersionChecker(Repository.requiredSidekickPackage);
-
-  @visibleForTesting
-  VersionChecker? injectedVersionChecker;
-
   /// Mounts the sidekick related globals, returns a function to unmount them
   /// and restore the previous globals
   Unmount mount() {
@@ -177,7 +169,8 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
   /// Print a warning if the CLI isn't up to date
   Future<void> _checkForUpdates() async {
     try {
-      final updateFuture = _versionChecker.isUpToDate(
+      final updateFuture = VersionChecker.isDependencyUpToDate(
+        package: Repository.requiredSidekickPackage,
         dependency: 'sidekick_core',
         pubspecKeys: ['sidekick', 'cli_version'],
       );
@@ -198,10 +191,14 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
   /// minimum version of their CLI and that version doesn't match with the
   /// CLI version listed in the pubspec at the path ['sidekick', 'cli_version']
   void _checkCliVersionIntegrity() {
-    final sidekickCoreVersion = _versionChecker
-        .getMinimumVersionConstraint(['dependencies', 'sidekick_core']);
-    final sidekickCliVersion = _versionChecker
-        .getMinimumVersionConstraint(['sidekick', 'cli_version']);
+    final sidekickCoreVersion = VersionChecker.getMinimumVersionConstraint(
+      Repository.requiredSidekickPackage,
+      ['dependencies', 'sidekick_core'],
+    );
+    final sidekickCliVersion = VersionChecker.getMinimumVersionConstraint(
+      Repository.requiredSidekickPackage,
+      ['sidekick', 'cli_version'],
+    );
 
     // old CLI which has no version information yet
     // _checkForUpdates will print a warning to update the CLI in this case
