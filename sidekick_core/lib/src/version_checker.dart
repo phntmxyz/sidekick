@@ -1,16 +1,16 @@
 import 'dart:convert';
 
 import 'package:http/http.dart';
+import 'package:meta/meta.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:yaml/yaml.dart';
 
+// ignore: avoid_classes_with_only_static_members
 /// Checks and updates dependencies
-class VersionChecker {
-  const VersionChecker();
-
+abstract class VersionChecker {
   /// Checks whether the latest version of [package] is [version]
-  Future<bool> isPackageUpToDate({
+  static Future<bool> isPackageUpToDate({
     required String package,
     required Version version,
   }) async {
@@ -23,7 +23,7 @@ class VersionChecker {
   /// [pubspecKeys] can be passed to override the default behavior of reading
   /// the current package version from the pubspec.yaml at ['dependencies'][dependency]
   /// E.g. ['dev_dependencies', 'some_dev_dependency'] or ['sidekick', 'cli_version']
-  Future<bool> isDependencyUpToDate({
+  static Future<bool> isDependencyUpToDate({
     required DartPackage package,
     required String dependency,
     List<String>? pubspecKeys,
@@ -38,7 +38,7 @@ class VersionChecker {
   }
 
   /// Updates the version constraint of [dependency] to the latest version
-  Future<void> updateVersionConstraintToLatest(
+  static Future<void> updateVersionConstraintToLatest(
     DartPackage package,
     String dependency,
   ) async =>
@@ -52,7 +52,7 @@ class VersionChecker {
   ///
   /// If [pinVersion] is true, the new version constraint will only allow [newMinimumVersion]
   /// Else it will allow a version range from [newMinimumVersion] until the next breaking version
-  void updateVersionConstraint({
+  static void updateVersionConstraint({
     required DartPackage package,
     required List<String> pubspecKeys,
     required Version newMinimumVersion,
@@ -104,22 +104,6 @@ class VersionChecker {
     }
   }
 
-  /// Returns the latest version of [dependency] available on pub.dev
-  Future<Version> getLatestDependencyVersion(String dependency) async {
-    final response =
-        await get(Uri.parse('https://pub.dev/api/packages/$dependency'));
-
-    if (response.statusCode != HttpStatus.ok) {
-      throw "Package '$dependency' not found on pub.dev";
-    }
-
-    final latestVersion =
-        ((jsonDecode(response.body) as Map<String, dynamic>)['latest']
-            as Map<String, dynamic>)['version'] as String;
-
-    return Version.parse(latestVersion);
-  }
-
   /// Returns the minimum version constraint of a dependency in [package]
   ///
   /// [pubspecKeys] is the path from which to retrieve the version in
@@ -129,7 +113,7 @@ class VersionChecker {
   /// - ['sidekick', 'cli_version']
   ///
   /// Returns null if pubspec.yaml does not contain [pubspecKeys]
-  Version? getMinimumVersionConstraint(
+  static Version? getMinimumVersionConstraint(
     DartPackage package,
     List<String> pubspecKeys,
   ) =>
@@ -146,7 +130,7 @@ class VersionChecker {
   /// Every dependency in pubspec.lock has a version,
   /// even if a local dependency doesn't explicitly specify a version in their
   /// pubspec.yaml, there always is an implicit version of 0.0.0
-  Version? getResolvedVersion(DartPackage package, String dependency) {
+  static Version? getResolvedVersion(DartPackage package, String dependency) {
     final resolvedVersion =
         _readFromYaml(package.lockfile, ['packages', dependency, 'version']);
     return resolvedVersion.match(
@@ -155,68 +139,93 @@ class VersionChecker {
     );
   }
 
-  /// Returns the string specified by [path] in [yamlFile]
-  ///
-  /// The string can be null, e.g. for the yaml `foo: ` and path `foo` returns null
-  /// If the [path] can't be found in the yaml, returns nothing
-  _Option<String?> _readFromYaml(File yamlFile, List<Object> path) {
-    if (path.isEmpty) {
-      throw 'Need at least one key in path parameter, but it was empty.';
-    }
-    if (!yamlFile.existsSync()) {
-      throw "Tried reading '[${path.map((e) => "'$e'").join(', ')}]' "
-          "from yaml file '${yamlFile.path}', but that file doesn't exist.";
+  /// Returns the latest version of [dependency] available on pub.dev
+  static Future<Version> getLatestDependencyVersion(String dependency) async {
+    if (testFakeGetLatestDependencyVersion != null) {
+      return testFakeGetLatestDependencyVersion!(dependency);
     }
 
-    final yaml = loadYaml(yamlFile.readAsStringSync());
+    final response =
+        await get(Uri.parse('https://pub.dev/api/packages/$dependency'));
 
-    // ignore: avoid_dynamic_calls, pubspec currently is a [YamlMap] but will be a [HashMap] in future versions
-    if (!(yaml.keys.contains(path.first) as bool)) {
-      return const _None();
+    if (response.statusCode != HttpStatus.ok) {
+      throw "Package '$dependency' not found on pub.dev";
     }
 
-    // ignore: avoid_dynamic_calls, pubspec currently is a [YamlMap] but will be a [HashMap] in future versions
-    Object? /* Map? | String? */ current = yaml[path.first];
-    var i = 1;
-    for (final key in path.sublist(1)) {
-      if (current is Map) {
-        current = current[key];
-      } else {
-        if (i != path.length) {
-          return const _None();
-        }
-      }
-      i++;
-    }
+    final latestVersion =
+        ((jsonDecode(response.body) as Map<String, dynamic>)['latest']
+            as Map<String, dynamic>)['version'] as String;
 
-    return _Some(current as String?);
+    return Version.parse(latestVersion);
   }
 
-  /// Return regex matching a potentially nested yaml key
-  ///
-  /// Examples:
-  /// - createNestedVersionYamlRegex(['version'])
-  ///   -> '^dependencies:'
-  /// - createNestedVersionYamlRegex(['dependencies', 'foo'])
-  ///   -> '^dependencies:\\s*(\\n  .*)*\\n  foo:'
-  /// - createNestedVersionYamlRegex(['dependencies', 'foo', 'bar'])
-  ///   -> '^dependencies:\\s*(\\n  .*)*\\n  foo:\\s*(\\n    .*)*\\n    bar:'
-  RegExp _createNestedYamlKeyRegex(List<String> keys) {
-    final sb = StringBuffer('^');
-    for (int i = 0; i < keys.length; i++) {
-      final key = keys[i];
-      sb.write('$key:');
+  /// Set this to
+  @visibleForTesting
+  static Future<Version> Function(String dependency)?
+      testFakeGetLatestDependencyVersion;
+}
 
-      if (i < keys.length - 1) {
-        final indentation = '  ' * (i + 1);
-        sb.write('\\s*(\\n$indentation.*)*\\n$indentation');
+/// Returns the string specified by [path] in [yamlFile]
+///
+/// The string can be null, e.g. for the yaml `foo: ` and path `foo` returns null
+/// If the [path] can't be found in the yaml, returns nothing
+_Option<String?> _readFromYaml(File yamlFile, List<Object> path) {
+  if (path.isEmpty) {
+    throw 'Need at least one key in path parameter, but it was empty.';
+  }
+  if (!yamlFile.existsSync()) {
+    throw "Tried reading '[${path.map((e) => "'$e'").join(', ')}]' "
+        "from yaml file '${yamlFile.path}', but that file doesn't exist.";
+  }
+
+  final yaml = loadYaml(yamlFile.readAsStringSync());
+
+  // ignore: avoid_dynamic_calls, pubspec currently is a [YamlMap] but will be a [HashMap] in future versions
+  if (!(yaml.keys.contains(path.first) as bool)) {
+    return const _None();
+  }
+
+  // ignore: avoid_dynamic_calls, pubspec currently is a [YamlMap] but will be a [HashMap] in future versions
+  Object? /* Map? | String? */ current = yaml[path.first];
+  var i = 1;
+  for (final key in path.sublist(1)) {
+    if (current is Map) {
+      current = current[key];
+    } else {
+      if (i != path.length) {
+        return const _None();
       }
     }
-    return RegExp(
-      sb.toString(),
-      multiLine: true,
-    );
+    i++;
   }
+
+  return _Some(current as String?);
+}
+
+/// Return regex matching a potentially nested yaml key
+///
+/// Examples:
+/// - createNestedVersionYamlRegex(['version'])
+///   -> '^dependencies:'
+/// - createNestedVersionYamlRegex(['dependencies', 'foo'])
+///   -> '^dependencies:\\s*(\\n  .*)*\\n  foo:'
+/// - createNestedVersionYamlRegex(['dependencies', 'foo', 'bar'])
+///   -> '^dependencies:\\s*(\\n  .*)*\\n  foo:\\s*(\\n    .*)*\\n    bar:'
+RegExp _createNestedYamlKeyRegex(List<String> keys) {
+  final sb = StringBuffer('^');
+  for (int i = 0; i < keys.length; i++) {
+    final key = keys[i];
+    sb.write('$key:');
+
+    if (i < keys.length - 1) {
+      final indentation = '  ' * (i + 1);
+      sb.write('\\s*(\\n$indentation.*)*\\n$indentation');
+    }
+  }
+  return RegExp(
+    sb.toString(),
+    multiLine: true,
+  );
 }
 
 extension on VersionConstraint {

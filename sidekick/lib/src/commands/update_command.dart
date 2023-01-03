@@ -1,5 +1,8 @@
 import 'dart:async';
+import 'dart:convert';
 
+import 'package:http/http.dart';
+import 'package:meta/meta.dart';
 import 'package:process/process.dart';
 import 'package:sidekick/sidekick.dart';
 import 'package:sidekick_core/sidekick_core.dart' hide version;
@@ -9,10 +12,7 @@ import 'package:sidekick_core/sidekick_core.dart' hide version;
 /// A target version can be specified as positional argument. If no version is
 /// given, updates to the latest available version.
 class UpdateCommand extends Command {
-  UpdateCommand({
-    required this.versionChecker,
-    required this.processManager,
-  });
+  UpdateCommand({required this.processManager});
 
   @override
   final String description = 'Updates the global sidekick CLI';
@@ -26,7 +26,6 @@ class UpdateCommand extends Command {
         "[{<version>, 'latest'}]",
       );
 
-  final VersionChecker versionChecker;
   final ProcessManager processManager;
 
   @override
@@ -70,7 +69,7 @@ class UpdateCommand extends Command {
   FutureOr<Version> _versionFromArgs(ArgResults args) {
     final rest = args.rest;
     if (rest.isEmpty || rest.first == 'latest') {
-      return versionChecker.getLatestDependencyVersion('sidekick');
+      return _getLatestDependencyVersion('sidekick');
     }
     try {
       return Version.parse(rest.first);
@@ -79,3 +78,26 @@ class UpdateCommand extends Command {
     }
   }
 }
+
+/// Returns the latest version of [dependency] available on pub.dev
+Future<Version> _getLatestDependencyVersion(String dependency) async {
+  if (testFakeGetLatestDependencyVersion != null) {
+    return testFakeGetLatestDependencyVersion!(dependency);
+  }
+
+  final response =
+      await get(Uri.parse('https://pub.dev/api/packages/$dependency'));
+
+  if (response.statusCode != HttpStatus.ok) {
+    throw "Package '$dependency' not found on pub.dev";
+  }
+
+  final latestVersion =
+      ((jsonDecode(response.body) as Map<String, dynamic>)['latest']
+          as Map<String, dynamic>)['version'] as String;
+
+  return Version.parse(latestVersion);
+}
+
+@visibleForTesting
+Future<Version> Function(String dependency)? testFakeGetLatestDependencyVersion;

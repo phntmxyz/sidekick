@@ -47,7 +47,7 @@ Future<void> main(List<String> args) async {
 
     // update sidekick: cli_version: <version> in pubspec.yaml to signalize
     // that update has completed successfully
-    const VersionChecker().updateVersionConstraint(
+    VersionChecker.updateVersionConstraint(
       package: Repository.requiredSidekickPackage,
       pubspecKeys: ['sidekick', 'cli_version'],
       newMinimumVersion: targetSidekickCoreVersion,

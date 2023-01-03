@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:process/process.dart';
 import 'package:sidekick/sidekick.dart';
+import 'package:sidekick/src/commands/update_command.dart';
 import 'package:sidekick_core/sidekick_core.dart' hide version;
 import 'package:sidekick_test/sidekick_test.dart';
 import 'package:test/test.dart';
@@ -49,14 +50,10 @@ void main() {
     Future<void> code() async {
       when(() => mockProcessManager.runSync(any()))
           .thenAnswer((_) => FakeProcessResult());
-
-      const latest = '13.12.1989';
-      final runner = GlobalSidekickCommandRunner(
-        processManager: mockProcessManager,
-        versionChecker: _FakeVersionChecker(
-          latestDependencyVersions: {'sidekick': latest},
-        ),
-      );
+      final latest = Version(13, 12, 1989);
+      fakeGetLatestDependencyVersion({'sidekick': latest});
+      final runner =
+          GlobalSidekickCommandRunner(processManager: mockProcessManager);
 
       await runner.run(['update']);
 
@@ -91,13 +88,10 @@ void main() {
       when(() => mockProcessManager.runSync(any()))
           .thenAnswer((_) => FakeProcessResult(exitCode: 1, stderr: 'foo'));
 
-      const latest = '13.12.1989';
-      final runner = GlobalSidekickCommandRunner(
-        processManager: mockProcessManager,
-        versionChecker: _FakeVersionChecker(
-          latestDependencyVersions: {'sidekick': latest},
-        ),
-      );
+      final latest = Version(13, 12, 1989);
+      fakeGetLatestDependencyVersion({'sidekick': latest});
+      final runner =
+          GlobalSidekickCommandRunner(processManager: mockProcessManager);
 
       await expectLater(
         () => runner.run(['update']),
@@ -131,19 +125,6 @@ void main() {
   });
 }
 
-class _FakeVersionChecker implements VersionChecker {
-  _FakeVersionChecker({required this.latestDependencyVersions}) : super();
-
-  final Map<String, String> latestDependencyVersions;
-
-  @override
-  Future<Version> getLatestDependencyVersion(String dependency) async =>
-      Version.parse(latestDependencyVersions[dependency]!);
-
-  @override
-  void noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
-}
-
 class MockProcessManager extends Mock implements ProcessManager {}
 
 class FakeProcessResult extends Fake implements ProcessResult {
@@ -157,4 +138,10 @@ class FakeProcessResult extends Fake implements ProcessResult {
 
   @override
   final String? stderr;
+}
+
+void fakeGetLatestDependencyVersion(Map<String, Version> latestVersions) {
+  testFakeGetLatestDependencyVersion =
+      (String dependency) async => latestVersions[dependency]!;
+  addTearDown(() => testFakeGetLatestDependencyVersion = null);
 }

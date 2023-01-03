@@ -29,7 +29,6 @@ Future<void> main(List<String> args) async {
 @visibleForTesting
 class GlobalSidekickCommandRunner extends CommandRunner {
   GlobalSidekickCommandRunner({
-    this.versionChecker = const core.VersionChecker(),
     this.processManager = const LocalProcessManager(),
   }) : super('sidekick', _desc) {
     argParser.addFlag(
@@ -40,15 +39,11 @@ class GlobalSidekickCommandRunner extends CommandRunner {
 
     addCommand(InitCommand());
     addCommand(
-      UpdateCommand(
-        versionChecker: versionChecker,
-        processManager: processManager,
-      ),
+      UpdateCommand(processManager: processManager),
     );
     addCommand(PluginsCommand());
   }
 
-  final core.VersionChecker versionChecker;
   final ProcessManager processManager;
 
   @override

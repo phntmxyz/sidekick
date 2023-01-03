@@ -2,12 +2,11 @@ import 'dart:async';
 
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_core/src/commands/update_command.dart';
+import 'package:sidekick_core/src/version_checker.dart';
 import 'package:sidekick_test/sidekick_test.dart';
 import 'package:test/test.dart';
 
 void main() {
-  const versionChecker = VersionChecker();
-
   for (final sidekickCliVersion in [null, "0.0.0"]) {
     test(
         'UpdateCommand generates new files when current '
@@ -41,10 +40,13 @@ void main() {
         await runner.run(['update', targetVersion.toString()]);
 
         final package = Repository.requiredSidekickPackage;
-        final sidekickVersionAfterUpdate = versionChecker
-            .getMinimumVersionConstraint(package, ['sidekick', 'cli_version']);
+        final sidekickVersionAfterUpdate =
+            VersionChecker.getMinimumVersionConstraint(
+          package,
+          ['sidekick', 'cli_version'],
+        );
         final sidekickCoreVersionAfterUpdate =
-            versionChecker.getMinimumVersionConstraint(
+            VersionChecker.getMinimumVersionConstraint(
           package,
           ['dependencies', 'sidekick_core'],
         );
@@ -100,10 +102,13 @@ void main() {
       await runner.run(['update', '0.1.0']);
 
       final package = Repository.requiredSidekickPackage;
-      final sidekickVersionAfterUpdate = versionChecker
-          .getMinimumVersionConstraint(package, ['sidekick', 'cli_version']);
+      final sidekickVersionAfterUpdate =
+          VersionChecker.getMinimumVersionConstraint(
+        package,
+        ['sidekick', 'cli_version'],
+      );
       final sidekickCoreVersionAfterUpdate =
-          versionChecker.getMinimumVersionConstraint(
+          VersionChecker.getMinimumVersionConstraint(
         package,
         ['dependencies', 'sidekick_core'],
       );

@@ -5,7 +5,6 @@ import 'dart:io';
 import 'package:args/command_runner.dart';
 import 'package:dartx/dartx_io.dart';
 import 'package:dcli/dcli.dart';
-import 'package:meta/meta.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:sidekick_core/src/commands/update_command.dart';
 import 'package:sidekick_core/src/dart_package.dart';
@@ -39,7 +38,6 @@ export 'package:sidekick_core/src/git.dart';
 export 'package:sidekick_core/src/repository.dart';
 export 'package:sidekick_core/src/sidekick_package.dart';
 export 'package:sidekick_core/src/template/sidekick_package.template.dart';
-export 'package:sidekick_core/src/version_checker.dart';
 
 /// The version of package:sidekick_core
 ///
@@ -72,7 +70,6 @@ SidekickCommandRunner initializeSidekick({
   String? mainProjectPath,
   String? flutterSdkPath,
   String? dartSdkPath,
-  @visibleForTesting VersionChecker? versionChecker,
 }) {
   DartPackage? mainProject;
 
@@ -97,7 +94,6 @@ SidekickCommandRunner initializeSidekick({
     workingDirectory: Directory.current,
     flutterSdk: _resolveSdkPath(flutterSdkPath, repo.root),
     dartSdk: _resolveSdkPath(dartSdkPath, repo.root),
-    versionChecker: versionChecker,
   );
   return runner;
 }
@@ -113,9 +109,7 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
     required this.workingDirectory,
     this.flutterSdk,
     this.dartSdk,
-    VersionChecker? versionChecker,
-  })  : versionChecker = versionChecker ?? const VersionChecker(),
-        super(cliName, description) {
+  }) : super(cliName, description) {
     argParser.addFlag(
       'version',
       negatable: false,
@@ -128,7 +122,6 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
   final Directory workingDirectory;
   final Directory? flutterSdk;
   final Directory? dartSdk;
-  final VersionChecker versionChecker;
 
   /// Mounts the sidekick related globals, returns a function to unmount them
   /// and restore the previous globals
@@ -176,7 +169,7 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
   /// Print a warning if the CLI isn't up to date
   Future<void> _checkForUpdates() async {
     try {
-      final updateFuture = versionChecker.isDependencyUpToDate(
+      final updateFuture = VersionChecker.isDependencyUpToDate(
         package: Repository.requiredSidekickPackage,
         dependency: 'sidekick_core',
         pubspecKeys: ['sidekick', 'cli_version'],
@@ -198,11 +191,11 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
   /// minimum version of their CLI and that version doesn't match with the
   /// CLI version listed in the pubspec at the path ['sidekick', 'cli_version']
   void _checkCliVersionIntegrity() {
-    final sidekickCoreVersion = versionChecker.getMinimumVersionConstraint(
+    final sidekickCoreVersion = VersionChecker.getMinimumVersionConstraint(
       Repository.requiredSidekickPackage,
       ['dependencies', 'sidekick_core'],
     );
-    final sidekickCliVersion = versionChecker.getMinimumVersionConstraint(
+    final sidekickCliVersion = VersionChecker.getMinimumVersionConstraint(
       Repository.requiredSidekickPackage,
       ['sidekick', 'cli_version'],
     );

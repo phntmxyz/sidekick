@@ -1,4 +1,5 @@
 import 'package:sidekick_core/sidekick_core.dart';
+import 'package:sidekick_core/src/version_checker.dart';
 
 /// Updates the sidekick cli
 class UpdateCommand extends Command {
@@ -14,8 +15,6 @@ class UpdateCommand extends Command {
         "[{<version>, 'latest'}]",
       );
 
-  static const _versionChecker = VersionChecker();
-
   @override
   Future<void> run() async {
     final args = argResults!;
@@ -27,13 +26,13 @@ class UpdateCommand extends Command {
     );
 
     final versionToInstall = version ??
-        await _versionChecker.getLatestDependencyVersion('sidekick_core');
+        await VersionChecker.getLatestDependencyVersion('sidekick_core');
 
     // to remember which sidekick_core version the sidekick CLI was generated
     // with, that sidekick_core version is written into the CLI's pubspec.yaml
     // at the path ['sidekick', 'cli_version']
     final currentSidekickCliVersion =
-        _versionChecker.getMinimumVersionConstraint(
+        VersionChecker.getMinimumVersionConstraint(
               Repository.requiredSidekickPackage,
               ['sidekick', 'cli_version'],
             ) ??
@@ -56,7 +55,7 @@ class UpdateCommand extends Command {
   /// The update script is located at `lib/src/update_sidekick_cli.dart`
   void updateSidekickCli({required Version from, required Version to}) {
     // update sidekick_core to load the update script at the necessary version
-    _versionChecker.updateVersionConstraint(
+    VersionChecker.updateVersionConstraint(
       package: Repository.requiredSidekickPackage,
       pubspecKeys: ['dependencies', 'sidekick_core'],
       newMinimumVersion: to,
@@ -74,7 +73,7 @@ class UpdateCommand extends Command {
 
     // previously the version was pinned to get the correct version of the
     // update_sidekick_cli script, now we can allow newer versions again
-    _versionChecker.updateVersionConstraint(
+    VersionChecker.updateVersionConstraint(
       package: Repository.requiredSidekickPackage,
       pubspecKeys: ['dependencies', 'sidekick_core'],
       newMinimumVersion: to,
