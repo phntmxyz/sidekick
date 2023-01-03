@@ -182,7 +182,7 @@ class _UpdateCommand extends Command {
   final String name = 'update';
 }
 
-class _FakeVersionChecker extends VersionChecker {
+class _FakeVersionChecker implements VersionChecker {
   _FakeVersionChecker({required this.latestDependencyVersions}) : super();
 
   final Map<String, String> latestDependencyVersions;
@@ -190,4 +190,7 @@ class _FakeVersionChecker extends VersionChecker {
   @override
   Future<Version> getLatestDependencyVersion(String dependency) async =>
       Version.parse(latestDependencyVersions[dependency]!);
+
+  @override
+  void noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
