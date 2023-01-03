@@ -1,6 +1,7 @@
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_core/src/commands/update_command.dart';
 import 'package:sidekick_core/src/update/migration.dart';
+import 'package:sidekick_core/src/update/patches/patch_migrations.dart';
 import 'package:sidekick_core/src/version_checker.dart';
 
 /// Updates a sidekick CLI
@@ -32,6 +33,8 @@ Future<void> main(List<String> args) async {
         // Always execute template updates
         UpdateToolsMigration(targetSidekickCoreVersion),
         UpdateEntryPointMigration(targetSidekickCoreVersion),
+        // Migration steps from git patches
+        ...patchMigrations,
       ],
       onMigrationStepStart: (context) {
         print(' - ${context.step.name}');
@@ -39,6 +42,16 @@ Future<void> main(List<String> args) async {
       onMigrationStepError: (context) {
         printerr('Migration failed: ${context.step.name}');
         printerr(context.exception?.toString());
+
+        // Migrations from git patches are likely to fail (e.g. if the user
+        // already modified their sidekick CLI)
+        // Therefore git patch migrations are skipped by default,
+        // the printed error contains instructions to check the patch and
+        // apply it manually if necessary
+        if (context.step is GitPatchMigrationStep) {
+          return MigrationErrorHandling.skip;
+        }
+
         printerr(context.stackTrace.toString());
         // TODO make errors interactive and allow skipping
         return MigrationErrorHandling.abort;

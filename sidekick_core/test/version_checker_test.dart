@@ -74,8 +74,7 @@ dependencies:
     test('sets whole block when it does not yet exist in pubspec', () async {
       pubspecYamlFile.writeAsStringSync('''
 name: dashi
-# the pubspec does not have a dependencies block, it should be added by updateVersionConstraint
-''');
+# the pubspec does not have a dependencies block, it should be added by updateVersionConstraint''');
 
       VersionChecker.updateVersionConstraint(
         package: package,

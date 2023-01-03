@@ -85,7 +85,7 @@ abstract class VersionChecker {
     if (largestMatch == null) {
       // everything is missing, add it to the end of the file
       pubspec.writeAsStringSync(
-        '${missingKeys.mapIndexed(
+        '\n${missingKeys.mapIndexed(
               (index, key) => '${'  ' * index}$key:',
             ).join('\n')} $newVersionConstraint\n',
         mode: FileMode.append,
