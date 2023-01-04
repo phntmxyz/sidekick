@@ -65,8 +65,13 @@ ${changelog.readAsStringSync()}
     final commitMessage = 'Prepare release $tag';
     print('Creating commit "Prepare release "$commitMessage" '
         'and tagging release as $tag');
-    'git add -A && git commit -m "$commitMessage" && git tag $tag'
-        .start(workingDirectory: package.root.path);
+    for (final cmd in [
+      'git add -A',
+      'git commit -m "$commitMessage"',
+      'git tag $tag'
+    ]) {
+      cmd.start(workingDirectory: package.root.path);
+    }
 
     final publish =
         confirm('Do you want to publish $tag to pub.dev?', defaultValue: false);
