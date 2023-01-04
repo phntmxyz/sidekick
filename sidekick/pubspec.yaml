@@ -28,10 +28,3 @@ dev_dependencies:
 
 executables:
   sidekick:
-
-dependency_overrides:
-  # override necessary due to unreleased changes to sidekick_core which sidekick depends on
-  # remove dependency_override when new version of sidekick_core is released and lower bound of sidekick's dependency
-  # on sidekick_core is raised to that new version
-  sidekick_core:
-    path: ../sidekick_core

@@ -78,6 +78,14 @@ class SidekickTemplateProperties {
   /// When there's a flutter package that requires a flutter sdk
   final bool? shouldSetFlutterSdkPath;
 
+  /// When the dart package is located in root of the repo
+  @Deprecated('Not used anymore')
+  final bool? isMainProjectRoot;
+
+  /// true when a /packages directory exists
+  @Deprecated('Not used anymore')
+  final bool? hasNestedPackagesPath;
+
   /// Path to main project, relative from repo root
   final String? mainProjectPath;
 
@@ -90,9 +98,11 @@ class SidekickTemplateProperties {
     required this.name,
     required this.entrypointLocation,
     required this.packageLocation,
+    this.sidekickCliVersion,
     this.mainProjectPath,
     this.shouldSetFlutterSdkPath,
-    this.sidekickCliVersion,
+    @Deprecated('Not used anymore') this.isMainProjectRoot,
+    @Deprecated('Not used anymore') this.hasNestedPackagesPath,
   });
 }
 

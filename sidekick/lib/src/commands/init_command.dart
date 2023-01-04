@@ -177,6 +177,11 @@ class InitCommand extends Command {
       mainProjectPath: mainProject != null
           ? relative(mainProject.root.path, from: repoRoot.absolute.path)
           : null,
+      isMainProjectRoot:
+          mainProject?.root.absolute.path == repoRoot.absolute.path,
+      hasNestedPackagesPath: mainProject != null &&
+          !relative(mainProject.root.path, from: repoRoot.absolute.path)
+              .startsWith('packages'),
       shouldSetFlutterSdkPath: Repository(root: repoRoot)
           .findAllPackages()
           .any((package) => package.isFlutterPackage),
