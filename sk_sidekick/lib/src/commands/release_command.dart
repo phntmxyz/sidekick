@@ -52,8 +52,7 @@ class ReleaseCommand extends Command {
 
 ${nextReleaseChangelog.readAsStringSync()}
 
-${changelog.readAsStringSync()}
-''');
+${changelog.readAsStringSync()}''');
     nextReleaseChangelog.deleteSync();
 
     print('Locking dependencies ...');
