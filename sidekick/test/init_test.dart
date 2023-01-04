@@ -5,9 +5,6 @@ import 'package:sidekick_test/sidekick_test.dart';
 import 'package:test/test.dart';
 import 'package:test_process/test_process.dart';
 
-// ignore: avoid_relative_lib_imports
-import '../../sidekick_core/lib/sidekick_core.dart' as core show version;
-
 import 'templates/templates.dart';
 import 'util/cli_runner.dart';
 
@@ -29,10 +26,16 @@ void main() {
   test(
     '--version flag prints sidekick and sidekick_core versions',
     () async {
+      final versionRegExp =
+          RegExp(r"final Version version = Version.parse\('(.*)'\);");
+      final sidekickCoreFile = File('../sidekick_core/lib/sidekick_core.dart');
+      final sidekickCoreVersion = versionRegExp
+          .firstMatch(sidekickCoreFile.readAsStringSync())!
+          .group(1)!;
       final process = await cachedGlobalSidekickCli
           .run(['--version'], workingDirectory: Directory.current);
       final output = await process.stdoutStream().join('\n');
-      expect(output, 'sidekick: $version\nsidekick_core: ${core.version}');
+      expect(output, 'sidekick: $version\nsidekick_core: $sidekickCoreVersion');
     },
     skip: !shouldUseLocalDeps,
   );
@@ -369,94 +372,17 @@ void main() {
             .readAsStringSync();
         expect(runFunctionFile, contains("mainProjectPath: '.',"));
 
-        final projectFile = File(
-          "${project.path}/packages/dashi_sidekick/lib/src/dashi_project.dart",
-        );
-        // The project itself is a DartPackage
-        expect(
-          projectFile.readAsStringSync(),
-          contains('class DashiProject extends DartPackage'),
-        );
-
-        // contains references to all packages of template
-        expect(
-          projectFile.readAsStringSync(),
-          allOf(
-            contains('packages/package_a'),
-            contains('packages/package_b'),
+        final packages = Repository(root: project).findAllPackages();
+        final expectedPackages = {
+          DartPackage(project, 'root_with_packages'),
+          DartPackage(project.directory('packages/package_a'), 'package_a'),
+          DartPackage(project.directory('packages/package_b'), 'package_b'),
+          DartPackage(
+            project.directory('packages/dashi_sidekick'),
+            'dashi_sidekick',
           ),
-        );
-      },
-      timeout: const Timeout(Duration(minutes: 5)),
-    );
-  });
-
-  group('sidekick init - multi package layout', () {
-    test(
-      'init with mainProjectPath generates sidekick package + entrypoint',
-      () async {
-        final project = setupTemplateProject('test/templates/multi_package');
-        final process = await cachedGlobalSidekickCli.run(
-          [
-            'init',
-            '-n',
-            'dashi',
-            '--mainProjectPath',
-            'packages/package_a',
-          ],
-          workingDirectory: project,
-        );
-
-        await expectLater(
-          process.stdout,
-          emitsThrough('Generating dashi_sidekick'),
-        );
-        printOnFailure(await process.stdoutStream().join('\n'));
-        printOnFailure(await process.stderrStream().join('\n'));
-        await process.shouldExit(0);
-
-        // check git is initialized
-        final git = Directory("${project.path}/.git");
-        expect(git.existsSync(), isTrue);
-
-        // check entrypoint is executable
-        final entrypoint = File("${project.path}/dashi");
-        expect(entrypoint.existsSync(), isTrue);
-        expect(entrypoint.statSync().modeString(), 'rwxr-xr-x');
-
-        // mainProjectPath is set as defined
-        final runFunctionFile = project
-            .file('packages/dashi_sidekick/lib/dashi_sidekick.dart')
-            .readAsStringSync();
-        expect(
-          runFunctionFile,
-          contains("mainProjectPath: 'packages/package_a'"),
-        );
-
-        // contains references to all packages of template
-        final projectFile = File(
-          "${project.path}/packages/dashi_sidekick/lib/src/dashi_project.dart",
-        );
-        expect(
-          projectFile.readAsStringSync(),
-          allOf(
-            contains('packages/package_a'),
-            contains('packages/package_b'),
-          ),
-        );
-
-        overrideSidekickCoreWithLocalPath(
-          project.directory('packages/dashi_sidekick'),
-        );
-
-        final dashProcess = await TestProcess.start(
-          entrypoint.path,
-          [],
-          workingDirectory: project.path,
-        );
-        printOnFailure(await dashProcess.stdoutStream().join('\n'));
-        printOnFailure(await dashProcess.stderrStream().join('\n'));
-        dashProcess.shouldExit(0);
+        };
+        expect(packages.toSet(), expectedPackages);
       },
       timeout: const Timeout(Duration(minutes: 5)),
     );

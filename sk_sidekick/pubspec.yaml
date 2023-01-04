@@ -17,3 +17,6 @@ dependencies:
 
 dev_dependencies:
   lint: ^1.5.3
+
+sidekick:
+  cli_version: 0.13.1

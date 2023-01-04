@@ -23,8 +23,6 @@ void main() {
         packageLocation: tempDir,
         mainProjectPath: '.',
         shouldSetFlutterSdkPath: true,
-        isMainProjectRoot: true,
-        hasNestedPackagesPath: true,
         sidekickCliVersion: Version.none,
       );
 
@@ -49,7 +47,6 @@ void main() {
         'analysis_options.yaml',
         'bin/main.dart',
         'lib/src/commands/clean_command.dart',
-        'lib/src/${cliName}_project.dart',
         'lib/${cliName}_sidekick.dart',
         'tool/install.sh',
         'tool/run.sh',

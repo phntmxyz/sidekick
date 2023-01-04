@@ -1,4 +1,0 @@
-name: package_b
-
-environment:
-  sdk: '>=2.12.0 <3.0.0'
