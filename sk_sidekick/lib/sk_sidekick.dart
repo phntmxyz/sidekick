@@ -27,15 +27,10 @@ Future<void> runSk(List<String> args) async {
     )
     ..addCommand(SidekickCommand());
 
-  if (args.isEmpty) {
-    print(runner.usage);
-    return;
-  }
-
   try {
     return await runner.run(args);
   } on UsageException catch (e) {
-    print(e.usage);
+    print(e);
     exit(64); // usage error
   }
 }

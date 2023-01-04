@@ -1,27 +1,36 @@
 import 'dart:convert';
 
 import 'package:http/http.dart';
+import 'package:meta/meta.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:yaml/yaml.dart';
 
-/// Checks and updates dependencies of the given [package]
-class VersionChecker {
-  const VersionChecker(this.package);
+// ignore: avoid_classes_with_only_static_members
+/// Checks and updates dependencies
+abstract class VersionChecker {
+  /// Checks whether the latest version of [package] is [version]
+  static Future<bool> isPackageUpToDate({
+    required String package,
+    required Version version,
+  }) async {
+    final latest = await getLatestDependencyVersion(package);
+    return latest == version;
+  }
 
-  final DartPackage package;
-
-  /// Checks whether the latest version of [dependency] is being used in the generated sidekick CLI
+  /// Checks whether the latest version of [dependency] is being used in [package]
   ///
   /// [pubspecKeys] can be passed to override the default behavior of reading
   /// the current package version from the pubspec.yaml at ['dependencies'][dependency]
   /// E.g. ['dev_dependencies', 'some_dev_dependency'] or ['sidekick', 'cli_version']
-  Future<bool> isUpToDate({
+  static Future<bool> isDependencyUpToDate({
+    required DartPackage package,
     required String dependency,
     List<String>? pubspecKeys,
   }) async {
     final latest = await getLatestDependencyVersion(dependency);
     final current = getMinimumVersionConstraint(
+      package,
       pubspecKeys ?? ['dependencies', dependency],
     );
 
@@ -29,8 +38,12 @@ class VersionChecker {
   }
 
   /// Updates the version constraint of [dependency] to the latest version
-  Future<void> updateVersionConstraintToLatest(String dependency) async =>
+  static Future<void> updateVersionConstraintToLatest(
+    DartPackage package,
+    String dependency,
+  ) async =>
       updateVersionConstraint(
+        package: package,
         pubspecKeys: ['dependencies', dependency],
         newMinimumVersion: await getLatestDependencyVersion(dependency),
       );
@@ -39,7 +52,8 @@ class VersionChecker {
   ///
   /// If [pinVersion] is true, the new version constraint will only allow [newMinimumVersion]
   /// Else it will allow a version range from [newMinimumVersion] until the next breaking version
-  void updateVersionConstraint({
+  static void updateVersionConstraint({
+    required DartPackage package,
     required List<String> pubspecKeys,
     required Version newMinimumVersion,
     bool pinVersion = false,
@@ -71,7 +85,7 @@ class VersionChecker {
     if (largestMatch == null) {
       // everything is missing, add it to the end of the file
       pubspec.writeAsStringSync(
-        '${missingKeys.mapIndexed(
+        '\n${missingKeys.mapIndexed(
               (index, key) => '${'  ' * index}$key:',
             ).join('\n')} $newVersionConstraint\n',
         mode: FileMode.append,
@@ -90,8 +104,47 @@ class VersionChecker {
     }
   }
 
+  /// Returns the minimum version constraint of a dependency in [package]
+  ///
+  /// [pubspecKeys] is the path from which to retrieve the version in
+  /// the pubspec.yaml of [package], e.g.
+  /// - ['dependencies', 'sidekick_core']
+  /// - ['dev_dependencies', 'lint']
+  /// - ['sidekick', 'cli_version']
+  ///
+  /// Returns null if pubspec.yaml does not contain [pubspecKeys]
+  static Version? getMinimumVersionConstraint(
+    DartPackage package,
+    List<String> pubspecKeys,
+  ) =>
+      _readFromYaml(package.pubspec, pubspecKeys).match(
+        () => null,
+        // `dependency: ` is equivalent to `dependency: any`
+        (t) => VersionConstraint.parse(t ?? 'any').minVersion,
+      );
+
+  /// Returns the resolved version of [dependency] as specified in the lock file
+  ///
+  /// Returns null if the lock file doesn't contain [dependency]
+  ///
+  /// Every dependency in pubspec.lock has a version,
+  /// even if a local dependency doesn't explicitly specify a version in their
+  /// pubspec.yaml, there always is an implicit version of 0.0.0
+  static Version? getResolvedVersion(DartPackage package, String dependency) {
+    final resolvedVersion =
+        _readFromYaml(package.lockfile, ['packages', dependency, 'version']);
+    return resolvedVersion.match(
+      () => null,
+      (t) => t != null ? Version.parse(t) : null,
+    );
+  }
+
   /// Returns the latest version of [dependency] available on pub.dev
-  Future<Version> getLatestDependencyVersion(String dependency) async {
+  static Future<Version> getLatestDependencyVersion(String dependency) async {
+    if (testFakeGetLatestDependencyVersion != null) {
+      return testFakeGetLatestDependencyVersion!(dependency);
+    }
+
     final response =
         await get(Uri.parse('https://pub.dev/api/packages/$dependency'));
 
@@ -106,130 +159,73 @@ class VersionChecker {
     return Version.parse(latestVersion);
   }
 
-  /// Returns the minimum version constraint of a dependency in [package]
-  ///
-  /// [pubspecKeys] is the path from which to retrieve the version in
-  /// the pubspec.yaml of [package], e.g.
-  /// - ['dependencies', 'sidekick_core']
-  /// - ['dev_dependencies', 'lint']
-  /// - ['sidekick', 'cli_version']
-  /// Throws if pubspec.yaml does not contain [pubspecKeys]
-  Version getMinimumVersionConstraint(List<String> pubspecKeys) =>
-      VersionConstraint.parse(
-        _readFromYaml(package.pubspec, pubspecKeys) ?? 'any',
-      ).minVersion;
+  /// Set this to
+  @visibleForTesting
+  static Future<Version> Function(String dependency)?
+      testFakeGetLatestDependencyVersion;
+}
 
-  /// Returns the minimum version constraint of a dependency in [package]
-  /// or null if the package does not depend on the dependency
-  ///
-  /// [pubspecKeys] is the path from which to retrieve the version in
-  /// the pubspec.yaml of [package], e.g.
-  /// - ['dependencies', 'sidekick_core']
-  /// - ['dev_dependencies', 'lint']
-  /// - ['sidekick', 'cli_version']
-  Version? getMinimumVersionConstraintOrNull(List<String> pubspecKeys) {
-    final result = _readFromYamlImpl(package.pubspec, pubspecKeys);
-    if (result == _pathNotFoundInYaml) {
-      return null;
-    }
-    // `dependency: ` is equivalent to `dependency: any`
-    return VersionConstraint.parse((result as String?) ?? 'any').minVersion;
+/// Returns the string specified by [path] in [yamlFile]
+///
+/// The string can be null, e.g. for the yaml `foo: ` and path `foo` returns null
+/// If the [path] can't be found in the yaml, returns nothing
+_Option<String?> _readFromYaml(File yamlFile, List<Object> path) {
+  if (path.isEmpty) {
+    throw 'Need at least one key in path parameter, but it was empty.';
+  }
+  if (!yamlFile.existsSync()) {
+    throw "Tried reading '[${path.map((e) => "'$e'").join(', ')}]' "
+        "from yaml file '${yamlFile.path}', but that file doesn't exist.";
   }
 
-  Version getResolvedVersion(String dependency) {
-    final pubspecLockFile = package.root.file('pubspec.lock');
-    final resolvedVersion =
-        _readFromYaml(pubspecLockFile, ['packages', dependency, 'version'])
-        // the null assertion operator is safe to use here
-        // because every dependency in pubspec.lock has a version
-        // even if a local dependency doesn't explicitly specify a version in their
-        // pubspec.yaml, there is an implicit version of 0.0.0
-        !;
-    return Version.parse(resolvedVersion);
+  final yaml = loadYaml(yamlFile.readAsStringSync());
+
+  // ignore: avoid_dynamic_calls, pubspec currently is a [YamlMap] but will be a [HashMap] in future versions
+  if (!(yaml.keys.contains(path.first) as bool)) {
+    return const _None();
   }
 
-  /// Returns the string specified by [path] in [yamlFile]
-  ///
-  /// Returns null if the string is empty
-  ///
-  /// Throws if [throwWhenPathNotFound] is true and the [path] can't be found
-  /// in the [yamlFile]. Else returns null.
-  String? _readFromYaml(
-    File yamlFile,
-    List<Object> path, {
-    bool throwWhenPathNotFound = true,
-  }) {
-    final result = _readFromYamlImpl(yamlFile, path);
-
-    if (result == _pathNotFoundInYaml) {
-      if (throwWhenPathNotFound) {
-        throw "Couldn't read path '[${path.map((e) => "'$e'").join(', ')}]' from yaml file '${yamlFile.path}'";
-      }
-      return null;
-    }
-    return result as String?;
-  }
-
-  static const _pathNotFoundInYaml = Object();
-
-  dynamic _readFromYamlImpl(File yamlFile, List<Object> path) {
-    if (path.isEmpty) {
-      throw 'Need at least one key in path parameter, but it was empty.';
-    }
-    if (!yamlFile.existsSync()) {
-      throw "Tried reading '[${path.map((e) => "'$e'").join(', ')}]' "
-          "from yaml file '${yamlFile.path}', but that file doesn't exist.";
-    }
-
-    final yaml = loadYaml(yamlFile.readAsStringSync());
-
-    // ignore: avoid_dynamic_calls, pubspec currently is a [YamlMap] but will be a [HashMap] in future versions
-    if (!(yaml.keys.contains(path.first) as bool)) {
-      return _pathNotFoundInYaml;
-    }
-
-    // ignore: avoid_dynamic_calls, pubspec currently is a [YamlMap] but will be a [HashMap] in future versions
-    Object? current = yaml[path.first];
-    var i = 1;
-    for (final key in path.sublist(1)) {
-      if (current is Map) {
-        current = current[key];
-      } else {
-        if (i != path.length) {
-          return _pathNotFoundInYaml;
-        }
-      }
-      i++;
-    }
-
-    return current as String?;
-  }
-
-  /// Return regex matching a potentially nested yaml key
-  ///
-  /// Examples:
-  /// - createNestedVersionYamlRegex(['version'])
-  ///   -> '^dependencies:'
-  /// - createNestedVersionYamlRegex(['dependencies', 'foo'])
-  ///   -> '^dependencies:\\s*(\\n  .*)*\\n  foo:'
-  /// - createNestedVersionYamlRegex(['dependencies', 'foo', 'bar'])
-  ///   -> '^dependencies:\\s*(\\n  .*)*\\n  foo:\\s*(\\n    .*)*\\n    bar:'
-  RegExp _createNestedYamlKeyRegex(List<String> keys) {
-    final sb = StringBuffer('^');
-    for (int i = 0; i < keys.length; i++) {
-      final key = keys[i];
-      sb.write('$key:');
-
-      if (i < keys.length - 1) {
-        final indentation = '  ' * (i + 1);
-        sb.write('\\s*(\\n$indentation.*)*\\n$indentation');
+  // ignore: avoid_dynamic_calls, pubspec currently is a [YamlMap] but will be a [HashMap] in future versions
+  Object? /* Map? | String? */ current = yaml[path.first];
+  var i = 1;
+  for (final key in path.sublist(1)) {
+    if (current is Map) {
+      current = current[key];
+    } else {
+      if (i != path.length) {
+        return const _None();
       }
     }
-    return RegExp(
-      sb.toString(),
-      multiLine: true,
-    );
+    i++;
   }
+
+  return _Some(current as String?);
+}
+
+/// Return regex matching a potentially nested yaml key
+///
+/// Examples:
+/// - createNestedVersionYamlRegex(['version'])
+///   -> '^dependencies:'
+/// - createNestedVersionYamlRegex(['dependencies', 'foo'])
+///   -> '^dependencies:\\s*(\\n  .*)*\\n  foo:'
+/// - createNestedVersionYamlRegex(['dependencies', 'foo', 'bar'])
+///   -> '^dependencies:\\s*(\\n  .*)*\\n  foo:\\s*(\\n    .*)*\\n    bar:'
+RegExp _createNestedYamlKeyRegex(List<String> keys) {
+  final sb = StringBuffer('^');
+  for (int i = 0; i < keys.length; i++) {
+    final key = keys[i];
+    sb.write('$key:');
+
+    if (i < keys.length - 1) {
+      final indentation = '  ' * (i + 1);
+      sb.write('\\s*(\\n$indentation.*)*\\n$indentation');
+    }
+  }
+  return RegExp(
+    sb.toString(),
+    multiLine: true,
+  );
 }
 
 extension on VersionConstraint {
@@ -247,4 +243,30 @@ extension on VersionConstraint {
       throw 'Unknown $versionConstraint';
     }
   }
+}
+
+/// Functional programming classes [_Option], [_None], [_Some] are shortened
+/// versions copied from fpdart containing only the necessary functionality
+/// https://github.com/SandroMaglione/fpdart/blob/main/lib/src/option.dart
+
+abstract class _Option<T> {
+  const _Option();
+
+  B match<B>(B Function() onNone, B Function(T t) onSome);
+}
+
+class _Some<T> extends _Option<T> {
+  final T _value;
+
+  const _Some(this._value);
+
+  @override
+  B match<B>(B Function() onNone, B Function(T t) onSome) => onSome(_value);
+}
+
+class _None<T> extends _Option<T> {
+  const _None();
+
+  @override
+  B match<B>(B Function() onNone, B Function(T t) onSome) => onNone();
 }

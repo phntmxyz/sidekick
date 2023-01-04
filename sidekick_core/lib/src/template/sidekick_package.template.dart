@@ -76,24 +76,23 @@ class SidekickTemplateProperties {
   final Directory packageLocation;
 
   /// When there's a flutter package that requires a flutter sdk
-  final bool shouldSetFlutterSdkPath;
+  final bool? shouldSetFlutterSdkPath;
 
   /// Path to main project, relative from repo root
   final String? mainProjectPath;
 
-  /// The version of the generated sidekick CLI
+  /// The current version of sidekick_core which includes the project templates
   ///
-  /// This is set to the version of sidekick_core because sidekick_core contains
-  /// the template used for generation of the CLI.
-  final Version sidekickCliVersion;
+  /// This version should be written to pubspec.yaml as sidekick.cli_version
+  final Version? sidekickCliVersion;
 
   const SidekickTemplateProperties({
     required this.name,
     required this.entrypointLocation,
     required this.packageLocation,
-    required this.mainProjectPath,
-    required this.shouldSetFlutterSdkPath,
-    required this.sidekickCliVersion,
+    this.mainProjectPath,
+    this.shouldSetFlutterSdkPath,
+    this.sidekickCliVersion,
   });
 }
 
@@ -110,7 +109,7 @@ Future<void> main(List<String> arguments) async {
 
   String cliSidekickDart() {
     final commands = [
-      if (shouldSetFlutterSdkPath) 'FlutterCommand()',
+      if (shouldSetFlutterSdkPath!) 'FlutterCommand()',
       'DartCommand()',
       'DepsCommand()',
       'CleanCommand()',
@@ -128,21 +127,16 @@ Future<void> run${name.pascalCase}(List<String> args) async {
   final runner = initializeSidekick(
     name: '${name.snakeCase}',
     ${mainProjectPath != null ? "mainProjectPath: '$mainProjectPath'," : ''}
-    ${shouldSetFlutterSdkPath ? 'flutterSdkPath: systemFlutterSdkPath(),' : 'dartSdkPath: systemDartSdkPath(),'}
+    ${shouldSetFlutterSdkPath! ? 'flutterSdkPath: systemFlutterSdkPath(),' : 'dartSdkPath: systemDartSdkPath(),'}
   );
 
   runner
 ${commands.map((cmd) => '    ..addCommand($cmd)').join('\n')};
 
-  if (args.isEmpty) {
-    print(runner.usage);
-    return;
-  }
-
   try {
     return await runner.run(args);
   } on UsageException catch (e) {
-    print(e.usage);
+    print(e);
     exit(64); // usage error
   }
 }
@@ -192,7 +186,7 @@ dev_dependencies:
 
 # generated code, do not edit this manually
 sidekick:
-  cli_version: ${sidekickCliVersion.canonicalizedVersion}
+  cli_version: ${sidekickCliVersion!.canonicalizedVersion}
 ''';
   }
 }

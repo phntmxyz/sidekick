@@ -1,9 +1,10 @@
 import 'package:dcli/dcli.dart' as dcli;
 import 'package:recase/recase.dart';
-import 'package:sidekick/src/init/name_suggester.dart';
 import 'package:sidekick/src/util/dcli_ask_validators.dart';
 import 'package:sidekick/src/util/directory_extension.dart';
+import 'package:sidekick/src/util/name_suggester.dart';
 import 'package:sidekick_core/sidekick_core.dart';
+import 'package:sidekick_core/sidekick_core.dart' as core;
 
 class InitCommand extends Command {
   @override
@@ -181,7 +182,7 @@ class InitCommand extends Command {
           .any((package) => package.isFlutterPackage),
       entrypointLocation: entrypoint,
       packageLocation: cliPackage,
-      sidekickCliVersion: version,
+      sidekickCliVersion: core.version,
     );
     SidekickTemplate().generate(props);
 

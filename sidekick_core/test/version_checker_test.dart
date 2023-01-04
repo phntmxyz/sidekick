@@ -5,7 +5,7 @@ import 'package:test/test.dart';
 void main() {
   late File pubspecYamlFile;
   late File pubspecLockFile;
-  late VersionChecker versionChecker;
+  late DartPackage package;
 
   setUp(() {
     final temp = Directory.systemTemp.createTempSync();
@@ -13,7 +13,7 @@ void main() {
       ..writeAsStringSync('name: dashi');
     pubspecLockFile = temp.file('pubspec.lock');
     env['SIDEKICK_PACKAGE_HOME'] = temp.path;
-    versionChecker = VersionChecker(DartPackage.fromDirectory(temp)!);
+    package = DartPackage.fromDirectory(temp)!;
 
     addTearDown(() {
       env['SIDEKICK_PACKAGE_HOME'] = null;
@@ -29,7 +29,8 @@ dependencies:
   foo: 1.2.3
 ''');
 
-      versionChecker.updateVersionConstraint(
+      VersionChecker.updateVersionConstraint(
+        package: package,
         pubspecKeys: ['dependencies', 'foo'],
         newMinimumVersion: Version(1, 2, 4),
         pinVersion: true,
@@ -53,7 +54,8 @@ dependencies:
   bar: 0.0.0
 ''');
 
-      versionChecker.updateVersionConstraint(
+      VersionChecker.updateVersionConstraint(
+        package: package,
         pubspecKeys: ['dependencies', 'foo'],
         newMinimumVersion: Version(1, 2, 4),
         pinVersion: true,
@@ -72,10 +74,10 @@ dependencies:
     test('sets whole block when it does not yet exist in pubspec', () async {
       pubspecYamlFile.writeAsStringSync('''
 name: dashi
-# the pubspec does not have a dependencies block, it should be added by updateVersionConstraint
-''');
+# the pubspec does not have a dependencies block, it should be added by updateVersionConstraint''');
 
-      versionChecker.updateVersionConstraint(
+      VersionChecker.updateVersionConstraint(
+        package: package,
         pubspecKeys: ['dependencies', 'foo'],
         newMinimumVersion: Version(1, 2, 4),
         pinVersion: true,
@@ -93,11 +95,11 @@ dependencies:
     });
   });
 
-  group('getMinimumVersionConstraint', () {
+  group('VersionChecker.getMinimumVersionConstraint', () {
     group('throws when ', () {
       test('path is empty', () {
         expect(
-          () => versionChecker.getMinimumVersionConstraint([]),
+          () => VersionChecker.getMinimumVersionConstraint(package, []),
           throwsA("Need at least one key in path parameter, but it was empty."),
         );
       });
@@ -105,24 +107,28 @@ dependencies:
       test('yaml file does not exist', () {
         pubspecYamlFile.deleteSync();
         expect(
-          () => versionChecker
-              .getMinimumVersionConstraint(['dependencies', 'foo']),
+          () => VersionChecker.getMinimumVersionConstraint(
+            package,
+            ['dependencies', 'foo'],
+          ),
           throwsA(
             "Tried reading '['dependencies', 'foo']' from yaml file '${pubspecYamlFile.path}', but that file doesn't exist.",
           ),
         );
       });
+    });
 
+    group('returns null when', () {
       test('path does not exist at all', () {
         pubspecYamlFile.writeAsStringSync('''
 name: dashi
 ''');
         expect(
-          () => versionChecker
-              .getMinimumVersionConstraint(['dependencies', 'foo']),
-          throwsA(
-            "Couldn't read path '['dependencies', 'foo']' from yaml file '${pubspecYamlFile.path}'",
+          VersionChecker.getMinimumVersionConstraint(
+            package,
+            ['dependencies', 'foo'],
           ),
+          isNull,
         );
       });
 
@@ -132,11 +138,11 @@ name: dashi
 dependencies:
 ''');
         expect(
-          () => versionChecker
-              .getMinimumVersionConstraint(['dependencies', 'foo']),
-          throwsA(
-            "Couldn't read path '['dependencies', 'foo']' from yaml file '${pubspecYamlFile.path}'",
+          VersionChecker.getMinimumVersionConstraint(
+            package,
+            ['dependencies', 'foo'],
           ),
+          isNull,
         );
       });
     });
@@ -149,7 +155,7 @@ dependencies:
   foo: any
 ''');
 
-      final actual = versionChecker.getMinimumVersionConstraint([
+      final actual = VersionChecker.getMinimumVersionConstraint(package, [
         'dependencies',
         'foo',
       ]);
@@ -164,8 +170,10 @@ dependencies:
   foo: 
 ''');
 
-      final actual =
-          versionChecker.getMinimumVersionConstraint(['dependencies', 'foo']);
+      final actual = VersionChecker.getMinimumVersionConstraint(
+        package,
+        ['dependencies', 'foo'],
+      );
       expect(actual, Version.none);
     });
 
@@ -177,8 +185,10 @@ dependencies:
   foo: '>=0.5.0 <1.0.0'
 ''');
 
-      final actual =
-          versionChecker.getMinimumVersionConstraint(['dependencies', 'foo']);
+      final actual = VersionChecker.getMinimumVersionConstraint(
+        package,
+        ['dependencies', 'foo'],
+      );
       expect(actual, Version(0, 5, 0));
     });
 
@@ -190,8 +200,10 @@ dependencies:
   foo: '<1.0.0 >=0.5.0'
 ''');
 
-      final actual =
-          versionChecker.getMinimumVersionConstraint(['dependencies', 'foo']);
+      final actual = VersionChecker.getMinimumVersionConstraint(
+        package,
+        ['dependencies', 'foo'],
+      );
       expect(actual, Version(0, 5, 0));
     });
 
@@ -203,8 +215,10 @@ dependencies:
   foo: '>0.5.0 <1.0.0'
 ''');
 
-      final actual =
-          versionChecker.getMinimumVersionConstraint(['dependencies', 'foo']);
+      final actual = VersionChecker.getMinimumVersionConstraint(
+        package,
+        ['dependencies', 'foo'],
+      );
       expect(actual, Version(0, 5, 1));
     });
   });
@@ -222,7 +236,7 @@ packages:
     version: "42.0.0"
 ''');
 
-      final actual = versionChecker.getResolvedVersion('foo');
+      final actual = VersionChecker.getResolvedVersion(package, 'foo');
       expect(actual, Version(42, 0, 0));
     });
   });
