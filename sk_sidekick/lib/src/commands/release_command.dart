@@ -46,10 +46,14 @@ class ReleaseCommand extends Command {
     final nextVersion = _bumpVersion(package);
 
     print('Creating changelog ...');
-    package.root.file('CHANGELOG.md').addBefore(
-          tag: '## ${package.version}',
-          content: '${nextReleaseChangelog.readAsStringSync()}\n\n',
-        );
+    final changelog = package.root.file('CHANGELOG.md');
+    changelog.writeAsStringSync('''
+## $nextVersion
+
+${nextReleaseChangelog.readAsStringSync()}
+
+${changelog.readAsStringSync()}
+''');
     nextReleaseChangelog.deleteSync();
 
     print('Locking dependencies ...');
