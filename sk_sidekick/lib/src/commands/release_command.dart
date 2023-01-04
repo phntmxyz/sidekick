@@ -53,7 +53,7 @@ class ReleaseCommand extends Command {
     nextReleaseChangelog.deleteSync();
 
     print('Locking dependencies ...');
-    '${Repository.requiredSidekickPackage.cliMainFile.path} '
+    '${Repository.requiredEntryPoint.path} '
             'lock-dependencies ${package.root.path}'
         .run;
 
@@ -105,9 +105,9 @@ class ReleaseCommand extends Command {
     }();
 
     print('Bumping version to $nextVersion ...');
-    '${Repository.requiredSidekickPackage.cliMainFile.path} '
+    '${Repository.requiredEntryPoint.path} '
             'bump-version ${package.root.path} '
-            '--$releaseType '
+            '--${releaseType.split(' ').first.toLowerCase()} '
             '--no-commit'
         .run;
     return nextVersion;
@@ -143,26 +143,23 @@ class ReleaseCommand extends Command {
       ..writeAsStringSync(initialChangelog);
 
     print('''
-${nextReleaseChangelog.path} has been automatically created containing all relevant commits/PRs for this release. Please edit this before it will be used as Changelog for this release.
+${nextReleaseChangelog.path} has been automatically created containing all relevant commits/PRs for this release. Please edit this before it will be used as changelog for this release.
 - Combine connected commits into meaningful items
 - Remove commits that have been reverted
 - Add examples how to use the new APIs (check PRs for examples/tests)
 - Highlight breaking changes
 
-Please open NEXT_RELEASE_CHANGELOG.md with the editor of your choice and edit it accordingly to the instructions.
+${cyan('Please open NEXT_RELEASE_CHANGELOG.md with the editor of your choice and edit it according to the instructions.')}
 ''');
 
     while (initialChangelog == nextReleaseChangelog.readAsStringSync()) {
       sleep(1);
     }
 
-    final proceed = confirm(
+    while (!confirm(
       'Do you want to continue the release process with the changelog in NEXT_RELEASE_CHANGELOG.md?',
       defaultValue: false,
-    );
-    if (!proceed) {
-      exit(1);
-    }
+    )) {}
 
     return nextReleaseChangelog;
   }
@@ -234,9 +231,10 @@ List<String> _getChanges({
 
 void _warnIfNotOnDefaultBranch(Directory directory) {
   final path = directory.path;
-  final defaultBranch = 'git rev-parse --abrev-ref origin/HEAD'
+  final defaultBranch = 'git rev-parse --abbrev-ref origin/HEAD'
       .start(progress: Progress.capture(), workingDirectory: path)
-      .firstLine;
+      .firstLine
+      ?.removePrefix('origin/');
 
   if (defaultBranch == null) {
     throw "Couldn't determine default branch for git repository at $path";
@@ -244,8 +242,7 @@ void _warnIfNotOnDefaultBranch(Directory directory) {
 
   final currentBranch = 'git branch --show-current'
       .start(progress: Progress.capture(), workingDirectory: path)
-      .firstLine
-      ?.removePrefix('origin/');
+      .firstLine;
 
   if (currentBranch == null) {
     throw "Couldn't determine current branch for git repository at $path";
