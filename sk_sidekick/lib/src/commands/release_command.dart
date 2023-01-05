@@ -40,15 +40,20 @@ class ReleaseCommand extends Command {
       );
     }
 
+    // this needs to be executed before _bumpVersion, otherwise package.version already returns the next version
+    final currentPackageVersionTag = '${package.name}-v${package.version}';
     final nextReleaseChangelog = _prepareNextReleaseChangelog(package);
     final nextVersion = _bumpVersion(package);
+    final nextPackageVersionTag = '${package.name}-v$nextVersion';
 
     print('Creating changelog ...');
     final changelog = package.root.file('CHANGELOG.md');
+    final now = DateTime.now();
+    final date = '${now.year}-${now.month}-${now.day}';
     changelog.writeAsStringSync('''
 # Changelog
 
-## $nextVersion
+## [$nextVersion](https://github.com/phntmxyz/sidekick/compare/$currentPackageVersionTag..$nextPackageVersionTag) ($date)
 
 ${nextReleaseChangelog.trim()}
 
