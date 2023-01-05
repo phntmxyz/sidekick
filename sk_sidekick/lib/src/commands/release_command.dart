@@ -1,5 +1,6 @@
 import 'package:pub_semver/pub_semver.dart';
 import 'package:sidekick_core/sidekick_core.dart';
+import 'package:sk_sidekick/sk_sidekick.dart';
 import 'package:yaml/yaml.dart';
 
 class ReleaseCommand extends Command {
@@ -56,10 +57,10 @@ ${nextReleaseChangelog.readAsStringSync()}
 ${changelog.readAsStringSync()}''');
     nextReleaseChangelog.deleteSync();
 
-    print('Locking dependencies ...');
-    '${Repository.requiredEntryPoint.path} '
-            'lock-dependencies ${package.root.path}'
-        .run;
+    if (package == skProject.sidekickPackage) {
+      print('Locking dependencies ...');
+      await runSk(['lock-dependencies', package.root.path]);
+    }
 
     final tag = '${package.name}-v$nextVersion';
     final commitMessage = 'Prepare release $tag';
