@@ -261,14 +261,6 @@ String? _getGitUserName() =>
 
 void _warnIfNotOnDefaultBranch(Directory directory) {
   final path = directory.path;
-  final defaultBranch = 'git rev-parse --abbrev-ref origin/HEAD'
-      .start(progress: Progress.capture(), workingDirectory: path)
-      .firstLine
-      ?.removePrefix('origin/');
-
-  if (defaultBranch == null) {
-    throw "Couldn't determine default branch for git repository at $path";
-  }
 
   final currentBranch = 'git branch --show-current'
       .start(progress: Progress.capture(), workingDirectory: path)
@@ -277,6 +269,8 @@ void _warnIfNotOnDefaultBranch(Directory directory) {
   if (currentBranch == null) {
     throw "Couldn't determine current branch for git repository at $path";
   }
+
+  const defaultBranch = 'main';
 
   if (defaultBranch != currentBranch) {
     final proceed = confirm(
