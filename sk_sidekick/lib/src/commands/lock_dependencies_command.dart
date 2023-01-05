@@ -1,5 +1,4 @@
 import 'package:sidekick_core/sidekick_core.dart';
-import 'package:sk_sidekick/src/commands/bump_version_command.dart';
 import 'package:yaml/yaml.dart';
 
 class LockDependenciesCommand extends Command {
