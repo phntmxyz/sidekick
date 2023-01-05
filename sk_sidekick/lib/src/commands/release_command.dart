@@ -83,6 +83,9 @@ ${changelog.readAsStringSync()}''');
       exitCode = 1;
       return;
     }
+
+    'git push origin refs/tags/$tag'.start(workingDirectory: package.root.path);
+
     // TODO remove --dry-run when ready
     'dart pub lish --dry-run'.start(workingDirectory: package.root.path);
     print(
