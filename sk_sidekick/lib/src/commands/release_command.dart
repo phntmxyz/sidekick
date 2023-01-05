@@ -57,7 +57,8 @@ ${nextReleaseChangelog.readAsStringSync()}
 ${changelog.readAsStringSync()}''');
     nextReleaseChangelog.deleteSync();
 
-    if (package == skProject.sidekickPackage) {
+    final bool lock = package == skProject.sidekickPackage;
+    if (lock) {
       print('Locking dependencies ...');
       await runSk(['lock-dependencies', package.root.path]);
     }
@@ -67,7 +68,9 @@ ${changelog.readAsStringSync()}''');
     print('Creating commit "Prepare release "$commitMessage" '
         'and tagging release as $tag');
     for (final cmd in [
-      'git add -A',
+      'git add CHANGELOG.md',
+      if (lock) 'git add pubspec.lock',
+      if (lock) 'git add pubspec.lock.unlocked',
       'git commit -m "$commitMessage"',
       'git tag $tag'
     ]) {
