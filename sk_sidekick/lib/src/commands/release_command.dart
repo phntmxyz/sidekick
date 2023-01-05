@@ -231,10 +231,11 @@ ${cyan('Please open NEXT_RELEASE_CHANGELOG.md with the editor of your choice and
   }
 }
 
-bool gitRepoHasLocalChanges(Directory directory) => 'git status --porcelain'
-    .start(progress: Progress.capture(), workingDirectory: directory.path)
-    .lines
-    .isNotEmpty;
+bool gitRepoHasLocalChanges(Directory directory) =>
+    'git status --porcelain ${directory.path}'
+        .start(progress: Progress.capture(), workingDirectory: directory.path)
+        .lines
+        .isNotEmpty;
 
 /// Returns all changes in the history from [from] (default: HEAD) to [to]
 /// If [paths] is given, returns only commits which modified [paths]
