@@ -56,10 +56,10 @@ class LockDependenciesCommand extends Command {
     }
 
     final pinnedDirectDependencies = directDependencies
-        .mapEntries<String>((e) => "  ${e.key}: ${e.value.lockedConstraint}")
+        .mapEntries<String>((e) => "  ${e.key}: ${e.value.lockedConstraintRange}")
         .sorted();
     final pinnedTransitiveDependencies = transitiveDependencies
-        .mapEntries<String>((e) => "  ${e.key}: ${e.value.lockedConstraint}")
+        .mapEntries<String>((e) => "  ${e.key}: ${e.value.lockedConstraintRange}")
         .sorted();
 
     final lockedDependencies = [
@@ -86,7 +86,7 @@ class LockDependenciesCommand extends Command {
 }
 
 extension on String {
-  String get lockedConstraint {
+  String get lockedConstraintRange {
     final version = Version.parse(this);
     final lowerBound = version.major > 0
         ? Version(version.major, 0, 0)
