@@ -29,21 +29,24 @@ class ReleaseCommand extends Command {
     if (!proceed) {
       exitCode = 1;
       return;
+    } else {
+      print(' ');
     }
 
     _warnIfNotOnDefaultBranch(package.root);
 
     while (_gitRepoHasChangesIn(package.root)) {
       ask(
-        red('Your repository contains local changes. '
-            'Please remove them and hit enter to continue'),
+        red('package:${package.name} contains local changes. '
+            'Please remove/commit them, then hit enter to continue'),
         required: false,
       );
     }
 
+    final nextReleaseChangelog = _prepareNextReleaseChangelog(package);
+
     // this needs to be executed before _bumpVersion, otherwise package.version already returns the next version
     final currentPackageVersionTag = '${package.name}-v${package.version}';
-    final nextReleaseChangelog = _prepareNextReleaseChangelog(package);
     final nextVersion = await _bumpVersion(package);
     final nextPackageVersionTag = '${package.name}-v$nextVersion';
 
@@ -153,7 +156,7 @@ ${changelog.readAsStringSync().replaceFirst('# Changelog', '').trimLeft()}''');
   /// differs from the initially generated content and the user confirms it
   String _prepareNextReleaseChangelog(DartPackage package) {
     final currentPackageVersionTag = '${package.name}-v${package.version}';
-    print('Calculating diff between $currentPackageVersionTag and HEAD ...');
+    print('Auto-generating changelog for $currentPackageVersionTag...HEAD ...');
     final packageChanges =
         _getChanges(from: currentPackageVersionTag, paths: [package.root.path]);
     if (packageChanges.isEmpty) {
@@ -175,12 +178,20 @@ ${nextReleaseChangelog.path} has been automatically created containing all relev
 - Remove commits that have been reverted
 - Add examples how to use the new APIs (check PRs for examples/tests)
 - Highlight breaking changes
-
-${cyan('Please open NEXT_RELEASE_CHANGELOG.md with the editor of your choice and edit it according to the instructions.')}
 ''');
 
-    final editor = Platform.environment['EDITOR'] ?? 'code';
-    '$editor ${nextReleaseChangelog.path}'.start(nothrow: true);
+    final editor = Platform.environment['EDITOR'];
+    if (editor == null) {
+      print(
+        cyan(
+          'Please open NEXT_RELEASE_CHANGELOG.md with the editor of your choice and edit it according to the instructions.',
+        ),
+      );
+    } else {
+      print("Opening ${nextReleaseChangelog.path} with $editor ...");
+      '$editor ${nextReleaseChangelog.path}'.start(nothrow: true);
+      print("Waiting for your edits");
+    }
 
     while (initialChangelog == nextReleaseChangelog.readAsStringSync()) {
       sleep(1);
@@ -301,13 +312,15 @@ void _warnIfNotOnDefaultBranch(Directory directory) {
 
   if (defaultBranch != currentBranch) {
     final proceed = confirm(
-      "Are you sure you want to release a new version from "
-      "branch '$currentBranch'? This differs from the default "
-      "branch '$defaultBranch'.",
+      "\n"
+      "You are on branch '$currentBranch', but releases should be made on branch $defaultBranch.\n"
+      "Do you really want to continue?",
       defaultValue: false,
     );
     if (!proceed) {
       exit(1);
+    } else {
+      print('\n');
     }
   }
 }
