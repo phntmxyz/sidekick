@@ -44,7 +44,7 @@ class ReleaseCommand extends Command {
     // this needs to be executed before _bumpVersion, otherwise package.version already returns the next version
     final currentPackageVersionTag = '${package.name}-v${package.version}';
     final nextReleaseChangelog = _prepareNextReleaseChangelog(package);
-    final nextVersion = _bumpVersion(package);
+    final nextVersion = await _bumpVersion(package);
     final nextPackageVersionTag = '${package.name}-v$nextVersion';
 
     print('Creating changelog ...');
@@ -98,24 +98,32 @@ ${changelog.readAsStringSync().replaceFirst('# Changelog', '').trimLeft()}''');
     );
   }
 
-  Version _bumpVersion(DartPackage package) {
-    const major = 'Major (breaking changes)';
-    const minor = 'Minor (new features) (default)';
-    const patch = 'Patch (bug fixes)';
+  Future<Version> _bumpVersion(DartPackage package) async {
     print('Considering the changelog, what kind of release do you want to do?');
     final releaseType = menu(
       prompt: 'Please select a release type',
-      options: [major, minor, patch],
-      defaultOption: minor,
+      options: ['major', 'minor', 'patch'],
+      format: (option) {
+        switch (option) {
+          case 'major':
+            return 'Major (breaking changes)';
+          case 'minor':
+            return 'Minor (new features) (default)';
+          case 'patch':
+            return 'Patch (bug fixes)';
+        }
+        return option?.toString() ?? '';
+      },
+      defaultOption: 'minor',
     );
     final nextVersion = () {
       final current = Version.parse(package.version);
       switch (releaseType) {
-        case major:
+        case 'major':
           return current.nextMajor;
-        case minor:
+        case 'minor':
           return current.nextMinor;
-        case patch:
+        case 'patch':
           return current.nextPatch;
         default:
           throw StateError('unreachable');
@@ -123,11 +131,12 @@ ${changelog.readAsStringSync().replaceFirst('# Changelog', '').trimLeft()}''');
     }();
 
     print('Bumping version to $nextVersion ...');
-    '${Repository.requiredEntryPoint.path} '
-            'bump-version ${package.root.path} '
-            '--${releaseType.split(' ').first.toLowerCase()} '
-            '--no-commit'
-        .run;
+    await runSk([
+      'bump-version',
+      package.root.path,
+      '--$releaseType',
+      '--no-commit',
+    ]);
     return nextVersion;
   }
 
