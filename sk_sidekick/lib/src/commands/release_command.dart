@@ -20,7 +20,8 @@ class ReleaseCommand extends Command {
   Future<void> run() async {
     final package = argResults!.package;
 
-    print('You started the release process for package:${package.name}.');
+    print('Hey ${_getGitUserName() ?? 'developer'}, '
+        'you started the release process for package:${package.name}.');
     final proceed = confirm(
       'Do you want to release a new version?',
       defaultValue: false,
@@ -32,7 +33,7 @@ class ReleaseCommand extends Command {
 
     _warnIfNotOnDefaultBranch(package.root);
 
-    while (gitRepoHasLocalChanges(package.root)) {
+    while (_gitRepoHasChangesIn(package.root)) {
       ask(
         red('Your repository contains local changes. '
             'Please remove them and hit enter to continue'),
@@ -232,7 +233,10 @@ ${cyan('Please open NEXT_RELEASE_CHANGELOG.md with the editor of your choice and
   }
 }
 
-bool gitRepoHasLocalChanges(Directory directory) =>
+/// Whether the git repository has untracked changes in [directory]
+///
+/// Note that the repository may contain untracked changes in other directories
+bool _gitRepoHasChangesIn(Directory directory) =>
     'git status --porcelain ${directory.path}'
         .start(progress: Progress.capture(), workingDirectory: directory.path)
         .lines
@@ -251,6 +255,9 @@ List<String> _getChanges({
     "git log --format='%H %s' $from..$to -- ${paths.join(' ')}"
         .start(progress: Progress.capture())
         .lines;
+
+String? _getGitUserName() =>
+    'git config user.name'.start(progress: Progress.capture()).firstLine;
 
 void _warnIfNotOnDefaultBranch(Directory directory) {
   final path = directory.path;
