@@ -56,12 +56,7 @@ class BumpVersionCommand extends Command {
       bumpMinor = true;
     }
 
-    final packagePath = argResults!.rest.firstOrNull ?? Directory.current.path;
-    final package = DartPackage.fromDirectory(Directory(packagePath));
-    if (package == null) {
-      throw 'Could not find a package in $packagePath';
-    }
-
+    final package = argResults!.package;
     final pubspecFile = package.pubspec;
     final pubSpec = PubSpec.fromFile(pubspecFile.path);
     final version = pubSpec.version!;

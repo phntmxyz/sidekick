@@ -18,11 +18,7 @@ class LockDependenciesCommand extends Command {
 
   @override
   Future<void> run() async {
-    final packagePath = argResults!.rest.firstOrNull ?? Directory.current.path;
-    final package = DartPackage.fromDirectory(Directory(packagePath));
-    if (package == null) {
-      throw 'Could not find a package in $packagePath';
-    }
+    final package = argResults!.package;
 
     final pubGet = systemDart(['pub', 'get'], workingDirectory: package.root);
     if (pubGet != 0) {

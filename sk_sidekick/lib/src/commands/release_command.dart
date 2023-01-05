@@ -18,11 +18,7 @@ class ReleaseCommand extends Command {
 
   @override
   Future<void> run() async {
-    final packagePath = argResults!.rest.firstOrNull ?? Directory.current.path;
-    final package = DartPackage.fromDirectory(Directory(packagePath));
-    if (package == null) {
-      throw 'Could not find a package in $packagePath';
-    }
+    final package = argResults!.package;
 
     print('You started the release process for package:${package.name}.');
     final proceed = confirm(
