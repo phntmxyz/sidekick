@@ -45,12 +45,31 @@ class ReleaseCommand extends Command {
 
     final nextReleaseChangelog = _prepareNextReleaseChangelog(package);
 
-    // this needs to be executed before _bumpVersion, otherwise package.version already returns the next version
+    print("\nChangelog for this release:\n${grey(nextReleaseChangelog)}\n");
+
+    final versionBumpType = _askForBumpType(package);
+    final Version nextVersion = () {
+      final current = Version.parse(package.version);
+      switch (versionBumpType) {
+        case 'major':
+          return current.nextMajor;
+        case 'minor':
+          return current.nextMinor;
+        case 'patch':
+          return current.nextPatch;
+        default:
+          throw StateError('Unknown bump type: $versionBumpType');
+      }
+    }();
+
     final currentPackageVersionTag = '${package.name}-v${package.version}';
-    final nextVersion = await _bumpVersion(package);
     final nextPackageVersionTag = '${package.name}-v$nextVersion';
 
-    print('Creating changelog ...');
+    print("\nAlright, all information for this release is collected.\n"
+        "Let's prepare the release.");
+    sleep(1);
+
+    print(' - Updating CHANGELOG.md...');
     final changelog = package.root.file('CHANGELOG.md');
     final now = DateTime.now();
     final date = '${now.year}-${now.month}-${now.day}';
@@ -63,33 +82,46 @@ ${nextReleaseChangelog.trim()}
 
 ${changelog.readAsStringSync().replaceFirst('# Changelog', '').trimLeft()}''');
 
+    print(' - Bumping version...');
+    await runSk([
+      'bump-version',
+      package.root.path,
+      '--$versionBumpType',
+      '--no-commit',
+    ]);
+
     final bool lock = package == skProject.sidekickPackage;
     if (lock) {
-      print('Locking dependencies ...');
+      print(' - Locking dependencies...');
       await runSk(['lock-dependencies', package.root.path]);
     }
 
     final tag = '${package.name}-v$nextVersion';
+    print(' - Committing changes...');
+    'git add -A ${package.root.path}'
+        .start(workingDirectory: repository.root.path);
     final commitMessage = 'Prepare release $tag';
-    print('Creating commit "Prepare release "$commitMessage" '
-        'and tagging release as $tag');
-    for (final cmd in [
-      'git add -A ${package.root.path}',
-      'git commit -m "$commitMessage"',
-      'git tag $tag'
-    ]) {
-      cmd.start(workingDirectory: repository.root.path);
-    }
+    'git commit -m "$commitMessage"'
+        .start(workingDirectory: repository.root.path);
 
-    final publish =
-        confirm('Do you want to publish $tag to pub.dev?', defaultValue: false);
+    print(' - Tagging release ($tag)...');
+    'git tag $tag'.start(workingDirectory: repository.root.path);
+
+    print(green("\nRelease preparation complete\n"));
+
+    final publish = confirm(
+      'Do you want to publish release $tag to pub.dev?',
+      defaultValue: false,
+    );
     if (!publish) {
       exitCode = 1;
       return;
     }
 
+    print(' - Pushing tag $tag to origin...');
     'git push origin refs/tags/$tag'.start(workingDirectory: package.root.path);
 
+    print(' - Publishing ${package.name}:$nextVersion to pub.dev...');
     // TODO remove --dry-run when ready
     'dart pub lish --dry-run'.start(workingDirectory: package.root.path);
     print(
@@ -101,11 +133,16 @@ ${changelog.readAsStringSync().replaceFirst('# Changelog', '').trimLeft()}''');
     );
   }
 
-  Future<Version> _bumpVersion(DartPackage package) async {
-    print('Considering the changelog, what kind of release do you want to do?');
-    final releaseType = menu(
+  String _askForBumpType(DartPackage package) {
+    print(
+      green(
+        'Considering the changelog above, what kind of SemVer release is this?',
+      ),
+    );
+    return menu(
       prompt: 'Please select a release type',
       options: ['major', 'minor', 'patch'],
+      defaultOption: 'minor',
       format: (option) {
         switch (option) {
           case 'major':
@@ -115,32 +152,9 @@ ${changelog.readAsStringSync().replaceFirst('# Changelog', '').trimLeft()}''');
           case 'patch':
             return 'Patch (bug fixes)';
         }
-        return option?.toString() ?? '';
+        return option;
       },
-      defaultOption: 'minor',
     );
-    final nextVersion = () {
-      final current = Version.parse(package.version);
-      switch (releaseType) {
-        case 'major':
-          return current.nextMajor;
-        case 'minor':
-          return current.nextMinor;
-        case 'patch':
-          return current.nextPatch;
-        default:
-          throw StateError('unreachable');
-      }
-    }();
-
-    print('Bumping version to $nextVersion ...');
-    await runSk([
-      'bump-version',
-      package.root.path,
-      '--$releaseType',
-      '--no-commit',
-    ]);
-    return nextVersion;
   }
 
   /// Returns file `NEXT_RELEASE_CHANGELOG.md` which contains the changelog
