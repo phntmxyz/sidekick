@@ -29,7 +29,8 @@ class ReleaseCommand extends Command {
       defaultValue: false,
     );
     if (!proceed) {
-      exit(1);
+      exitCode = 1;
+      return;
     }
 
     _warnIfNotOnDefaultBranch(package.root);
@@ -75,7 +76,8 @@ ${changelog.readAsStringSync()}''');
     final publish =
         confirm('Do you want to publish $tag to pub.dev?', defaultValue: false);
     if (!publish) {
-      exit(1);
+      exitCode = 1;
+      return;
     }
     // TODO remove --dry-run when ready
     'dart pub lish --dry-run'.start(workingDirectory: package.root.path);
