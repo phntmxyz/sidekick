@@ -246,15 +246,33 @@ bool _gitRepoHasChangesIn(Directory directory) =>
 /// If [paths] is given, returns only commits which modified [paths]
 ///
 /// The format of each line is '<commit hash> <commit title>'
-List<String> _getChanges({
+Iterable<String> _getChanges({
   required String from,
   String? to = 'HEAD',
-  List<String> paths = const [],
+  Iterable<String> paths = const [],
 }) =>
     // %H = commit hash, %b = commit title
     "git log --format='%H %s' $from..$to -- ${paths.join(' ')}"
         .start(progress: Progress.capture())
-        .lines;
+        .lines
+        .map(_prLinkToMarkdownLink);
+
+/// Converts the last PR Link in [original] to a markdown link
+///
+/// E.g. '(#123)' -> '[(#123)](https://github.com/phntmxyz/sidekick/pull/123)'
+String _prLinkToMarkdownLink(String original) {
+  final prLinkRegExp = RegExp(r'\(#(\d+)\)');
+  final prLink = prLinkRegExp.allMatches(original).lastOrNull;
+  if (prLink == null) {
+    return original;
+  }
+  final prNumber = prLink.group(1)!;
+  return original.replaceRange(
+    prLink.start,
+    prLink.end,
+    '[(#$prNumber)](https://github.com/phntmxyz/sidekick/pull/$prNumber)',
+  );
+}
 
 String? _getGitUserName() =>
     'git config user.name'.start(progress: Progress.capture()).firstLine;
