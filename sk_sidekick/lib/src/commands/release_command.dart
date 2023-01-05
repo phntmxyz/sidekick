@@ -66,7 +66,7 @@ class ReleaseCommand extends Command {
     final nextPackageVersionTag = '${package.name}-v$nextVersion';
 
     print("\nAlright, all information for this release is collected.\n"
-        "Let's prepare the release.");
+        "Let's prepare the release:");
     sleep(1);
 
     print(' - Updating CHANGELOG.md...');
@@ -184,35 +184,55 @@ ${changelog.readAsStringSync().replaceFirst('# Changelog', '').trimLeft()}''');
     final initialChangelog =
         [...packageChanges, ...?sidekickCoreChanges].join('\n');
     final nextReleaseChangelog = package.root.file('NEXT_RELEASE_CHANGELOG.md')
-      ..writeAsStringSync(initialChangelog);
+      ..writeAsStringSync('''
+<!--
+Please edit this auto-generated changelog for the next release of package:${package.name}
+- [ ] Combine connected commits into meaningful items
+- [ ] Remove commits that have been reverted
+- [ ] Add examples of how to use the new APIs (check PRs for examples/tests)
+- [ ] Highlight breaking changes
+- [ ] Delete this header
+-->
+
+$initialChangelog
+''');
 
     print('''
-${nextReleaseChangelog.path} has been automatically created containing all relevant commits/PRs for this release. Please edit this before it will be used as changelog for this release.
-- Combine connected commits into meaningful items
-- Remove commits that have been reverted
-- Add examples how to use the new APIs (check PRs for examples/tests)
-- Highlight breaking changes
+Created changelog file ${relative(nextReleaseChangelog.path)}.
+
+
+Please follow the instructions in the auto-generated ${relative(nextReleaseChangelog.path)} header.
+You can continue once you completed all steps.
 ''');
 
     final editor = Platform.environment['EDITOR'];
     if (editor == null) {
       print(
         cyan(
-          'Please open NEXT_RELEASE_CHANGELOG.md with the editor of your choice and edit it according to the instructions.',
+          'Please open ${relative(nextReleaseChangelog.path)} with the editor of your choice',
         ),
       );
     } else {
-      print("Opening ${nextReleaseChangelog.path} with $editor ...");
+      print("Opening ${relative(nextReleaseChangelog.path)} with $editor ...");
       '$editor ${nextReleaseChangelog.path}'.start(nothrow: true);
-      print("Waiting for your edits");
     }
 
-    while (initialChangelog == nextReleaseChangelog.readAsStringSync()) {
+    print(
+      "Waiting for all steps to be completed (and header being removed)...",
+    );
+    bool allStepsCompleted() {
+      final text = nextReleaseChangelog.readAsStringSync();
+      return text.contains('Delete this header');
+    }
+
+    while (allStepsCompleted()) {
       sleep(1);
     }
 
+    print("Detected deletion of header.\n");
+
     while (!confirm(
-      'Do you want to continue the release process with the changelog in NEXT_RELEASE_CHANGELOG.md?',
+      'Do you want to continue the release process with the changelog in ${relative(nextReleaseChangelog.path)}?',
       defaultValue: false,
     )) {}
 
@@ -286,14 +306,14 @@ Iterable<String> _getChanges({
   Iterable<String> paths = const [],
 }) =>
     // %H = commit hash, %b = commit title
-    "git log --format='%H %s' $from..$to -- ${paths.join(' ')}"
+    "git log --format='- %s %h' $from..$to -- ${paths.join(' ')}"
         .start(progress: Progress.capture())
         .lines
         .map(_prLinkToMarkdownLink);
 
 /// Converts the last PR Link in [original] to a markdown link
 ///
-/// E.g. '(#123)' -> '[(#123)](https://github.com/phntmxyz/sidekick/pull/123)'
+/// E.g. '(#123)' -> '([#123](https://github.com/phntmxyz/sidekick/pull/123))'
 String _prLinkToMarkdownLink(String original) {
   final prLinkRegExp = RegExp(r'\(#(\d+)\)');
   final prLink = prLinkRegExp.allMatches(original).lastOrNull;
@@ -304,7 +324,7 @@ String _prLinkToMarkdownLink(String original) {
   return original.replaceRange(
     prLink.start,
     prLink.end,
-    '[(#$prNumber)](https://github.com/phntmxyz/sidekick/pull/$prNumber)',
+    '([#$prNumber](https://github.com/phntmxyz/sidekick/pull/$prNumber))',
   );
 }
 
