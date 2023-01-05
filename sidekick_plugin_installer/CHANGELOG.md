@@ -1,3 +1,5 @@
+# Changelog
+
 ## 0.2.1
 
 - Make `PluginContext.name` nullable, because it is not available in protocol v1. (#137)

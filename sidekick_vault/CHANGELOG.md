@@ -1,3 +1,5 @@
+# Changelog
+
 ## 0.7.0
 - Fix folder creation bug during install (missing `await`) #110
 - Improve error message when vault file doesn't exist #102

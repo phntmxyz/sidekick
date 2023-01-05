@@ -1,3 +1,5 @@
+# Changelog
+
 ## 0.13.1
 - Fix `sidekick plugins install` for git and local sources #144
 

@@ -1,3 +1,5 @@
+# Changelog
+
 ## 0.8.0
 - `sidekick --version` now prints the version
 

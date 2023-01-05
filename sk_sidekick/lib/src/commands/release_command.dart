@@ -50,11 +50,13 @@ class ReleaseCommand extends Command {
     print('Creating changelog ...');
     final changelog = package.root.file('CHANGELOG.md');
     changelog.writeAsStringSync('''
+# Changelog
+
 ## $nextVersion
 
-${nextReleaseChangelog.readAsStringSync()}
+${nextReleaseChangelog.readAsStringSync().trim()}
 
-${changelog.readAsStringSync()}''');
+${changelog.readAsStringSync().replaceFirst('# Changelog', '').trimLeft()}''');
     nextReleaseChangelog.deleteSync();
 
     final bool lock = package == skProject.sidekickPackage;
