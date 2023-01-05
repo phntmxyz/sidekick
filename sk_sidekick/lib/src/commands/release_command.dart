@@ -54,10 +54,9 @@ class ReleaseCommand extends Command {
 
 ## $nextVersion
 
-${nextReleaseChangelog.readAsStringSync().trim()}
+${nextReleaseChangelog.trim()}
 
 ${changelog.readAsStringSync().replaceFirst('# Changelog', '').trimLeft()}''');
-    nextReleaseChangelog.deleteSync();
 
     final bool lock = package == skProject.sidekickPackage;
     if (lock) {
@@ -141,7 +140,7 @@ ${changelog.readAsStringSync().replaceFirst('# Changelog', '').trimLeft()}''');
   ///
   /// The user is then asked to edit the file and it is returned once it
   /// differs from the initially generated content and the user confirms it
-  File _prepareNextReleaseChangelog(DartPackage package) {
+  String _prepareNextReleaseChangelog(DartPackage package) {
     final currentPackageVersionTag = '${package.name}-v${package.version}';
     print('Calculating diff between $currentPackageVersionTag and HEAD ...');
     final packageChanges =
@@ -178,7 +177,9 @@ ${cyan('Please open NEXT_RELEASE_CHANGELOG.md with the editor of your choice and
       defaultValue: false,
     )) {}
 
-    return nextReleaseChangelog;
+    final nextChangelogContent = nextReleaseChangelog.readAsStringSync();
+    nextReleaseChangelog.deleteSync();
+    return nextChangelogContent;
   }
 
   String? _getMinSidekickCoreVersion(String pubspec) {
