@@ -18,7 +18,7 @@ class LockDependenciesCommand extends Command {
 
   @override
   Future<void> run() async {
-    final package = argResults!.package;
+    final package = DartPackage.fromArgResults(argResults!);
 
     final pubGet = systemDart(['pub', 'get'], workingDirectory: package.root);
     if (pubGet != 0) {

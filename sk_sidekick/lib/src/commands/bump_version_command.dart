@@ -56,7 +56,7 @@ class BumpVersionCommand extends Command {
       bumpMinor = true;
     }
 
-    final package = argResults!.package;
+    final package = DartPackage.fromArgResults(argResults!);
     final pubspecFile = package.pubspec;
     final pubSpec = PubSpec.fromFile(pubspecFile.path);
     final version = pubSpec.version!;

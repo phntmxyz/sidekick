@@ -38,6 +38,19 @@ class DartPackage {
     }
   }
 
+  /// Returns [DartPackage] from first argument in [argResults.rest] or if [argResults.rest] is empty from [entryWorkingDirectory]
+  static DartPackage fromArgResults(ArgResults argResults) {
+    {
+      final packagePath =
+          argResults.rest.firstOrNull ?? entryWorkingDirectory.path;
+      final package = DartPackage.fromDirectory(Directory(packagePath));
+      if (package == null) {
+        throw 'Could not find a package in $packagePath';
+      }
+      return package;
+    }
+  }
+
   /// The directory the package is located on disk
   final Directory root;
 

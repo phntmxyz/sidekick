@@ -18,7 +18,7 @@ class ReleaseCommand extends Command {
 
   @override
   Future<void> run() async {
-    final package = argResults!.package;
+    final package = DartPackage.fromArgResults(argResults!);
 
     print('Hey ${_getGitUserName() ?? 'developer'}, '
         'you started the release process for package:${package.name}.');

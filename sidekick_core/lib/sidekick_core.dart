@@ -382,15 +382,3 @@ class OutOfCommandRunnerScopeException implements Exception {
     return "OutOfCommandRunnerScopeException{message: $message}";
   }
 }
-
-extension GetPackage on ArgResults {
-  /// Returns [DartPackage] from first argument in [rest] or if [rest] is empty from [entryWorkingDirectory]
-  DartPackage get package {
-    final packagePath = rest.firstOrNull ?? entryWorkingDirectory.path;
-    final package = DartPackage.fromDirectory(Directory(packagePath));
-    if (package == null) {
-      throw 'Could not find a package in $packagePath';
-    }
-    return package;
-  }
-}
