@@ -168,6 +168,9 @@ ${nextReleaseChangelog.path} has been automatically created containing all relev
 ${cyan('Please open NEXT_RELEASE_CHANGELOG.md with the editor of your choice and edit it according to the instructions.')}
 ''');
 
+    final editor = Platform.environment['EDITOR'] ?? 'code';
+    '$editor ${nextReleaseChangelog.path}'.start(nothrow: true);
+
     while (initialChangelog == nextReleaseChangelog.readAsStringSync()) {
       sleep(1);
     }
