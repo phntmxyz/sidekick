@@ -2,8 +2,6 @@ import 'package:sidekick_core/sidekick_core.dart';
 import 'package:yaml/yaml.dart';
 
 class LockDependenciesCommand extends Command {
-  LockDependenciesCommand() {}
-
   @override
   final String description = 'Locks all dependencies to their upper bounds';
 
@@ -56,10 +54,10 @@ class LockDependenciesCommand extends Command {
     }
 
     final pinnedDirectDependencies = directDependencies
-        .mapEntries<String>((e) => "  ${e.key}: ${e.value.lockedConstraintRange}")
+        .mapEntries((e) => "  ${e.key}: ${e.value.lockedConstraintRange}")
         .sorted();
     final pinnedTransitiveDependencies = transitiveDependencies
-        .mapEntries<String>((e) => "  ${e.key}: ${e.value.lockedConstraintRange}")
+        .mapEntries((e) => "  ${e.key}: ${e.value.lockedConstraintRange}")
         .sorted();
 
     final lockedDependencies = [
