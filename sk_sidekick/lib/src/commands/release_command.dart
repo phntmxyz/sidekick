@@ -68,13 +68,11 @@ ${changelog.readAsStringSync()}''');
     print('Creating commit "Prepare release "$commitMessage" '
         'and tagging release as $tag');
     for (final cmd in [
-      'git add CHANGELOG.md',
-      if (lock) 'git add pubspec.lock',
-      if (lock) 'git add pubspec.lock.unlocked',
+      'git add -A ${package.root.path}',
       'git commit -m "$commitMessage"',
       'git tag $tag'
     ]) {
-      cmd.start(workingDirectory: package.root.path);
+      cmd.start(workingDirectory: repository.root.path);
     }
 
     final publish =
