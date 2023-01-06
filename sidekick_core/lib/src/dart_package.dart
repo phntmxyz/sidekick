@@ -3,6 +3,7 @@ import 'package:yaml/yaml.dart';
 
 class DartPackage {
   DartPackage(this.root, this.name) : isFlutterPackage = false;
+
   DartPackage.flutter(this.root, this.name) : isFlutterPackage = true;
 
   /// Returns [DartPackage] if a directory fulfils the requirements of a Dart/Flutter package
@@ -34,6 +35,19 @@ class DartPackage {
       return DartPackage(normalizedDir, packageName);
     } on YamlException {
       return null;
+    }
+  }
+
+  /// Returns [DartPackage] from first argument in [argResults.rest] or if [argResults.rest] is empty from [entryWorkingDirectory]
+  static DartPackage fromArgResults(ArgResults argResults) {
+    {
+      final packagePath =
+          argResults.rest.firstOrNull ?? entryWorkingDirectory.path;
+      final package = DartPackage.fromDirectory(Directory(packagePath));
+      if (package == null) {
+        throw 'Could not find a package in $packagePath';
+      }
+      return package;
     }
   }
 

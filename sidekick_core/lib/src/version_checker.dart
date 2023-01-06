@@ -159,7 +159,33 @@ abstract class VersionChecker {
     return Version.parse(latestVersion);
   }
 
-  /// Set this to
+  /// Whether [dartExecutablePath] is the latest stable version of Dart
+  static Future<bool> isLatestStableDart(String dartExecutablePath) async {
+    final endpoint = Uri.parse(
+      'https://storage.googleapis.com/dart-archive/channels/stable/release/latest/VERSION',
+    );
+    // e.g. {"date": "2022-12-13", "version": "2.18.6", "revision": "f16b62ea92cc0f04cfd9166992f93419e425c809"}
+    final response = await get(endpoint);
+    final latestVersion = (jsonDecode(response.body)
+        as Map<String, dynamic>)['version'] as String;
+
+    // e.g. Dart SDK version: 2.18.4 (stable) (Tue Nov 1 15:15:07 2022 +0000) on "macos_arm64"
+    final dartVersionResult = '$dartExecutablePath --version'
+        .start(progress: Progress.capture())
+        .firstLine;
+    if (dartVersionResult == null) {
+      throw "Couldn't determine version of Dart executable $dartExecutablePath";
+    }
+
+    final dartVersionRegExp = RegExp(r'Dart SDK version: (\S+) \((\S+)\)');
+    final match = dartVersionRegExp.firstMatch(dartVersionResult)!;
+    final currentVersion = match.group(1)!;
+    final currentChannel = match.group(2)!;
+
+    return currentVersion == latestVersion && currentChannel == 'stable';
+  }
+
+  /// Set to override behavior of [getLatestDependencyVersion] in tests
   @visibleForTesting
   static Future<Version> Function(String dependency)?
       testFakeGetLatestDependencyVersion;

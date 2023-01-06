@@ -298,9 +298,9 @@ packages:
   sidekick_core:
     dependency: "direct main"
     description:
-      name: sidekick_core
-      url: "https://pub.dartlang.org"
-    source: hosted
+      path: "../sidekick_core"
+      relative: true
+    source: path
     version: "0.13.1"
   source_span:
     dependency: transitive
@@ -394,7 +394,7 @@ packages:
     source: hosted
     version: "2.3.6"
   yaml:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: yaml
       url: "https://pub.dartlang.org"
