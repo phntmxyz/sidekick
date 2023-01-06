@@ -18,6 +18,10 @@ jobs:
       - name: check formatting
         run: |
           dart format --fix --output none --set-exit-if-changed \
-          sidekick/bin sidekick/lib sidekick/test sidekick/tool \
+          sidekick/bin sidekick/lib sidekick/test \
           sidekick_core \
-          sidekick_vault 
+          sidekick_plugin_installer \
+          sidekick_test \
+          sidekick_vault \
+          sk_sidekick/lib
+          
