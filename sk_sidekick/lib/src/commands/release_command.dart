@@ -1,8 +1,8 @@
+import 'package:dcli/dcli.dart' as dcli;
 import 'package:pub_semver/pub_semver.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sk_sidekick/sk_sidekick.dart';
 import 'package:yaml/yaml.dart';
-import 'package:dcli/dcli.dart' as dcli;
 
 class ReleaseCommand extends Command {
   @override

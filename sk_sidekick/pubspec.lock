@@ -100,7 +100,7 @@ packages:
     source: hosted
     version: "1.1.0"
   dcli:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: dcli
       url: "https://pub.dartlang.org"
@@ -301,7 +301,7 @@ packages:
       path: "../sidekick_core"
       relative: true
     source: path
-    version: "0.13.1"
+    version: "0.14.0"
   source_span:
     dependency: transitive
     description:
