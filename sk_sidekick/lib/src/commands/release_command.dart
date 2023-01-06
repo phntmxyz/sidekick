@@ -109,6 +109,9 @@ ${changelog.readAsStringSync().replaceFirst('# Changelog', '').trimLeft()}''');
     final newChangelogAndVersionBranch = _getCurrentBranch(repository.root);
 
     // TODO locking + tagging on separate branch <package name>-release
+    final releaseBranch = '${package.name}-release';
+    // TODO correct command is: git checkout $releaseBranch || git checkout -b $releaseBranch
+    // TODO but '...'.start treats the first word ("git") as command and passes the rests as args to it; this isn't what I want to do though -> ||
 
     print(' - Tagging release ($tag)...');
     'git tag $tag'.start(workingDirectory: repository.root.path);
