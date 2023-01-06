@@ -299,7 +299,10 @@ You can continue once you completed all steps.
 /// Note that the repository may contain untracked changes in other directories
 bool _gitRepoHasChangesIn(Directory directory) =>
     'git status --porcelain ${directory.path}'
-        .start(progress: Progress.capture(), workingDirectory: directory.path)
+        .start(
+          progress: Progress.capture(),
+          workingDirectory: findRepository().root.path,
+        )
         .lines
         .isNotEmpty;
 
