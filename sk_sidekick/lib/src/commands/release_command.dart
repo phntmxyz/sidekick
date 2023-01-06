@@ -107,7 +107,9 @@ ${changelog.readAsStringSync().replaceFirst('# Changelog', '').trimLeft()}''');
     final releaseBranch = 'release/${package.name}-v$nextVersion';
     if (lock) {
       // locked pubspec files are committed to a separate branch
-      print(" - Create release branch '$releaseBranch' and tag ($tag)...");
+      print(
+        " - Create release branch '$releaseBranch' (locally) and tag ($tag)...",
+      );
       'git checkout -b $releaseBranch'.runInRepo;
 
       print(" - Committing changes and tag commit ($tag)...");
@@ -117,6 +119,13 @@ ${changelog.readAsStringSync().replaceFirst('# Changelog', '').trimLeft()}''');
 
     print(" - Tagging release ($tag)...");
     'git tag $tag'.runInRepo;
+
+    if (lock) {
+      // delete release branch, it was only necessary for the commit.
+      // The commit is still accessible with the tag
+      'git checkout $newChangelogAndVersionBranch'.runInRepo;
+      'git branch -D $releaseBranch'.runInRepo;
+    }
 
     print(green("\nRelease preparation complete\n"));
 
@@ -132,10 +141,6 @@ ${changelog.readAsStringSync().replaceFirst('# Changelog', '').trimLeft()}''');
     print(' - Pushing changelog and version bump ...');
     // push main
     'git push origin $newChangelogAndVersionBranch'.runInRepo;
-    if (lock) {
-      // push releaseBranch
-      'git push -u origin $releaseBranch'.runInRepo;
-    }
 
     print(' - Pushing tag $tag to origin...');
     'git push origin refs/tags/$tag'.start(workingDirectory: package.root.path);
