@@ -29,25 +29,47 @@ class ReleaseCommand extends Command {
     if (!proceed) {
       exitCode = 1;
       return;
+    } else {
+      print(' ');
     }
 
     _warnIfNotOnDefaultBranch(package.root);
 
     while (_gitRepoHasChangesIn(package.root)) {
       ask(
-        red('Your repository contains local changes. '
-            'Please remove them and hit enter to continue'),
+        red('package:${package.name} contains local changes. '
+            'Please remove/commit them, then hit enter to continue'),
         required: false,
       );
     }
 
-    // this needs to be executed before _bumpVersion, otherwise package.version already returns the next version
-    final currentPackageVersionTag = '${package.name}-v${package.version}';
     final nextReleaseChangelog = _prepareNextReleaseChangelog(package);
-    final nextVersion = await _bumpVersion(package);
+
+    print("\nChangelog for this release:\n${grey(nextReleaseChangelog)}\n");
+
+    final versionBumpType = _askForBumpType(package);
+    final Version nextVersion = () {
+      final current = Version.parse(package.version);
+      switch (versionBumpType) {
+        case 'major':
+          return current.nextMajor;
+        case 'minor':
+          return current.nextMinor;
+        case 'patch':
+          return current.nextPatch;
+        default:
+          throw StateError('Unknown bump type: $versionBumpType');
+      }
+    }();
+
+    final currentPackageVersionTag = '${package.name}-v${package.version}';
     final nextPackageVersionTag = '${package.name}-v$nextVersion';
 
-    print('Creating changelog ...');
+    print("\nAlright, all information for this release is collected.\n"
+        "Let's prepare the release:");
+    sleep(1);
+
+    print(' - Updating CHANGELOG.md...');
     final changelog = package.root.file('CHANGELOG.md');
     final now = DateTime.now();
     final date = '${now.year}-${now.month}-${now.day}';
@@ -60,35 +82,48 @@ ${nextReleaseChangelog.trim()}
 
 ${changelog.readAsStringSync().replaceFirst('# Changelog', '').trimLeft()}''');
 
+    print(' - Bumping version...');
+    await runSk([
+      'bump-version',
+      package.root.path,
+      '--$versionBumpType',
+      '--no-commit',
+    ]);
+
     final bool lock = package == skProject.sidekickPackage;
     if (lock) {
-      print('Locking dependencies ...');
+      print(' - Locking dependencies...');
       await runSk(
         ['lock-dependencies', '--check-dart-version', package.root.path],
       );
     }
 
     final tag = '${package.name}-v$nextVersion';
+    print(' - Committing changes...');
+    'git add -A ${package.root.path}'
+        .start(workingDirectory: repository.root.path);
     final commitMessage = 'Prepare release $tag';
-    print('Creating commit "Prepare release "$commitMessage" '
-        'and tagging release as $tag');
-    for (final cmd in [
-      'git add -A ${package.root.path}',
-      'git commit -m "$commitMessage"',
-      'git tag $tag'
-    ]) {
-      cmd.start(workingDirectory: repository.root.path);
-    }
+    'git commit -m "$commitMessage"'
+        .start(workingDirectory: repository.root.path);
 
-    final publish =
-        confirm('Do you want to publish $tag to pub.dev?', defaultValue: false);
+    print(' - Tagging release ($tag)...');
+    'git tag $tag'.start(workingDirectory: repository.root.path);
+
+    print(green("\nRelease preparation complete\n"));
+
+    final publish = confirm(
+      'Do you want to publish release $tag to pub.dev?',
+      defaultValue: false,
+    );
     if (!publish) {
       exitCode = 1;
       return;
     }
 
+    print(' - Pushing tag $tag to origin...');
     'git push origin refs/tags/$tag'.start(workingDirectory: package.root.path);
 
+    print(' - Publishing ${package.name}:$nextVersion to pub.dev...');
     // TODO remove --dry-run when ready
     'dart pub lish --dry-run'.start(workingDirectory: package.root.path);
     print(
@@ -100,11 +135,16 @@ ${changelog.readAsStringSync().replaceFirst('# Changelog', '').trimLeft()}''');
     );
   }
 
-  Future<Version> _bumpVersion(DartPackage package) async {
-    print('Considering the changelog, what kind of release do you want to do?');
-    final releaseType = menu(
+  String _askForBumpType(DartPackage package) {
+    print(
+      green(
+        'Considering the changelog above, what kind of SemVer release is this?',
+      ),
+    );
+    return menu(
       prompt: 'Please select a release type',
       options: ['major', 'minor', 'patch'],
+      defaultOption: 'minor',
       format: (option) {
         switch (option) {
           case 'major':
@@ -114,32 +154,9 @@ ${changelog.readAsStringSync().replaceFirst('# Changelog', '').trimLeft()}''');
           case 'patch':
             return 'Patch (bug fixes)';
         }
-        return option?.toString() ?? '';
+        return option;
       },
-      defaultOption: 'minor',
     );
-    final nextVersion = () {
-      final current = Version.parse(package.version);
-      switch (releaseType) {
-        case 'major':
-          return current.nextMajor;
-        case 'minor':
-          return current.nextMinor;
-        case 'patch':
-          return current.nextPatch;
-        default:
-          throw StateError('unreachable');
-      }
-    }();
-
-    print('Bumping version to $nextVersion ...');
-    await runSk([
-      'bump-version',
-      package.root.path,
-      '--$releaseType',
-      '--no-commit',
-    ]);
-    return nextVersion;
   }
 
   /// Returns file `NEXT_RELEASE_CHANGELOG.md` which contains the changelog
@@ -155,7 +172,7 @@ ${changelog.readAsStringSync().replaceFirst('# Changelog', '').trimLeft()}''');
   /// differs from the initially generated content and the user confirms it
   String _prepareNextReleaseChangelog(DartPackage package) {
     final currentPackageVersionTag = '${package.name}-v${package.version}';
-    print('Calculating diff between $currentPackageVersionTag and HEAD ...');
+    print('Auto-generating changelog for $currentPackageVersionTag...HEAD ...');
     final packageChanges =
         _getChanges(from: currentPackageVersionTag, paths: [package.root.path]);
     if (packageChanges.isEmpty) {
@@ -169,27 +186,55 @@ ${changelog.readAsStringSync().replaceFirst('# Changelog', '').trimLeft()}''');
     final initialChangelog =
         [...packageChanges, ...?sidekickCoreChanges].join('\n');
     final nextReleaseChangelog = package.root.file('NEXT_RELEASE_CHANGELOG.md')
-      ..writeAsStringSync(initialChangelog);
+      ..writeAsStringSync('''
+<!--
+Please edit this auto-generated changelog for the next release of package:${package.name}
+- [ ] Combine connected commits into meaningful items
+- [ ] Remove commits that have been reverted
+- [ ] Add examples of how to use the new APIs (check PRs for examples/tests)
+- [ ] Highlight breaking changes
+- [ ] Delete this header
+-->
 
-    print('''
-${nextReleaseChangelog.path} has been automatically created containing all relevant commits/PRs for this release. Please edit this before it will be used as changelog for this release.
-- Combine connected commits into meaningful items
-- Remove commits that have been reverted
-- Add examples how to use the new APIs (check PRs for examples/tests)
-- Highlight breaking changes
-
-${cyan('Please open NEXT_RELEASE_CHANGELOG.md with the editor of your choice and edit it according to the instructions.')}
+$initialChangelog
 ''');
 
-    final editor = Platform.environment['EDITOR'] ?? 'code';
-    '$editor ${nextReleaseChangelog.path}'.start(nothrow: true);
+    print('''
+Created changelog file ${relative(nextReleaseChangelog.path)}.
 
-    while (initialChangelog == nextReleaseChangelog.readAsStringSync()) {
+
+Please follow the instructions in the auto-generated ${relative(nextReleaseChangelog.path)} header.
+You can continue once you completed all steps.
+''');
+
+    final editor = Platform.environment['EDITOR'];
+    if (editor == null) {
+      print(
+        cyan(
+          'Please open ${relative(nextReleaseChangelog.path)} with the editor of your choice',
+        ),
+      );
+    } else {
+      print("Opening ${relative(nextReleaseChangelog.path)} with $editor ...");
+      '$editor ${nextReleaseChangelog.path}'.start(nothrow: true);
+    }
+
+    print(
+      "Waiting for all steps to be completed (and header being removed)...",
+    );
+    bool allStepsCompleted() {
+      final text = nextReleaseChangelog.readAsStringSync();
+      return text.contains('Delete this header');
+    }
+
+    while (allStepsCompleted()) {
       sleep(1);
     }
 
+    print("Detected deletion of header.\n");
+
     while (!confirm(
-      'Do you want to continue the release process with the changelog in NEXT_RELEASE_CHANGELOG.md?',
+      'Do you want to continue the release process with the changelog in ${relative(nextReleaseChangelog.path)}?',
       defaultValue: false,
     )) {}
 
@@ -263,14 +308,14 @@ Iterable<String> _getChanges({
   Iterable<String> paths = const [],
 }) =>
     // %H = commit hash, %b = commit title
-    "git log --format='%H %s' $from..$to -- ${paths.join(' ')}"
+    "git log --format='- %s %h' $from..$to -- ${paths.join(' ')}"
         .start(progress: Progress.capture())
         .lines
         .map(_prLinkToMarkdownLink);
 
 /// Converts the last PR Link in [original] to a markdown link
 ///
-/// E.g. '(#123)' -> '[(#123)](https://github.com/phntmxyz/sidekick/pull/123)'
+/// E.g. '(#123)' -> '([#123](https://github.com/phntmxyz/sidekick/pull/123))'
 String _prLinkToMarkdownLink(String original) {
   final prLinkRegExp = RegExp(r'\(#(\d+)\)');
   final prLink = prLinkRegExp.allMatches(original).lastOrNull;
@@ -281,7 +326,7 @@ String _prLinkToMarkdownLink(String original) {
   return original.replaceRange(
     prLink.start,
     prLink.end,
-    '[(#$prNumber)](https://github.com/phntmxyz/sidekick/pull/$prNumber)',
+    '([#$prNumber](https://github.com/phntmxyz/sidekick/pull/$prNumber))',
   );
 }
 
@@ -303,13 +348,15 @@ void _warnIfNotOnDefaultBranch(Directory directory) {
 
   if (defaultBranch != currentBranch) {
     final proceed = confirm(
-      "Are you sure you want to release a new version from "
-      "branch '$currentBranch'? This differs from the default "
-      "branch '$defaultBranch'.",
+      "\n"
+      "You are on branch '$currentBranch', but releases should be made on branch $defaultBranch.\n"
+      "Do you really want to continue?",
       defaultValue: false,
     );
     if (!proceed) {
       exit(1);
+    } else {
+      print('\n');
     }
   }
 }
