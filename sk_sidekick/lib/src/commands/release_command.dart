@@ -2,6 +2,7 @@ import 'package:pub_semver/pub_semver.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sk_sidekick/sk_sidekick.dart';
 import 'package:yaml/yaml.dart';
+import 'package:dcli/dcli.dart' as dcli;
 
 class ReleaseCommand extends Command {
   @override
@@ -150,12 +151,32 @@ ${changelog.readAsStringSync().replaceFirst('# Changelog', '').trimLeft()}''');
       workingDirectory: package.root.path,
       terminal: true,
     );
+
     print(
       green(
         '🎉 Success!\n'
         '${package.name}:$nextVersion has been released to pub '
         'https://pub.dev/packages/${package.name}/versions/$nextVersion',
       ),
+    );
+
+    print(' - Publishing release $tag on GitHub...');
+
+    while (!isProgramInstalled('gh')) {
+      confirm(
+        yellow(
+          'Please install the gh cli (GitHub CLI, `brew install gh`) and hit enter to continue',
+        ),
+        defaultValue: false,
+      );
+    }
+
+    dcli.startFromArgs(
+      'gh',
+      ['release', 'create', tag, '--notes', nextReleaseChangelog],
+      terminal: true,
+      workingDirectory: package.root.path,
+      nothrow: true,
     );
   }
 
