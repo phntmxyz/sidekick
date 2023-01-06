@@ -13,7 +13,7 @@ late SkProject skProject;
 Future<void> runSk(List<String> args) async {
   final runner = initializeSidekick(
     name: 'sk',
-    flutterSdkPath: systemFlutterSdkPath(),
+    dartSdkPath: systemDartSdkPath(),
   );
 
   skProject = SkProject(runner.repository.root);
