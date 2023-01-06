@@ -106,8 +106,7 @@ ${changelog.readAsStringSync().replaceFirst('# Changelog', '').trimLeft()}''');
     final commitMessage = 'Prepare release $tag';
     'git commit -m "$commitMessage"'
         .start(workingDirectory: repository.root.path);
-    print(' - Pushing changelog and version bump ...');
-    'git push'.start(workingDirectory: repository.root.path);
+    final newChangelogAndVersionBranch = _getCurrentBranch(repository.root);
 
     // TODO locking + tagging on separate branch <package name>-release
 
@@ -124,6 +123,10 @@ ${changelog.readAsStringSync().replaceFirst('# Changelog', '').trimLeft()}''');
       exitCode = 1;
       return;
     }
+
+    print(' - Pushing changelog and version bump ...');
+    'git push $newChangelogAndVersionBranch'
+        .start(workingDirectory: repository.root.path);
 
     print(' - Pushing tag $tag to origin...');
     'git push origin refs/tags/$tag'.start(workingDirectory: package.root.path);
@@ -301,7 +304,7 @@ bool _gitRepoHasChangesIn(Directory directory) =>
     'git status --porcelain ${directory.path}'
         .start(
           progress: Progress.capture(),
-          workingDirectory: findRepository().root.path,
+          workingDirectory: repository.root.path,
         )
         .lines
         .isNotEmpty;
@@ -342,15 +345,7 @@ String? _getGitUserName() =>
     'git config user.name'.start(progress: Progress.capture()).firstLine;
 
 void _warnIfNotOnDefaultBranch(Directory directory) {
-  final path = directory.path;
-
-  final currentBranch = 'git branch --show-current'
-      .start(progress: Progress.capture(), workingDirectory: path)
-      .firstLine;
-
-  if (currentBranch == null) {
-    throw "Couldn't determine current branch for git repository at $path";
-  }
+  final currentBranch = _getCurrentBranch(directory);
 
   const defaultBranch = 'main';
 
@@ -367,6 +362,18 @@ void _warnIfNotOnDefaultBranch(Directory directory) {
       print('\n');
     }
   }
+}
+
+String _getCurrentBranch(Directory directory) {
+  final path = directory.path;
+  final currentBranch = 'git branch --show-current'
+      .start(progress: Progress.capture(), workingDirectory: path)
+      .firstLine;
+
+  if (currentBranch == null) {
+    throw "Couldn't determine current branch for git repository at $path";
+  }
+  return currentBranch;
 }
 
 extension on VersionConstraint {
