@@ -10,23 +10,14 @@ jobs:
   lint:
     runs-on: ubuntu-latest
 
-    strategy:
-      fail-fast: false
-      matrix:
-        package: [ "sidekick", "sidekick_core", "sidekick_vault" ]
-
     container:
-      image: dart:2.18.2
+      image: dart:2.18.6
 
     steps:
       - uses: actions/checkout@v1
       - name: Install dependencies
-        run: cd "${{ matrix.package }}" && dart pub get --no-precompile
+        run: ./sk deps
       - name: lint
-        run: cd "${{ matrix.package }}" && dart analyze --fatal-infos
-      - name: docs
-        run: |
-             dart pub global activate dartdoc 5.0.1
-             cd "${{ matrix.package }}" && $HOME/.pub-cache/bin/dartdoc
-      - name: Verify package completeness
-        run: cd "${{ matrix.package }}" && dart pub publish -n
+        run: ./sk analyze
+      - name: publishable
+        run: ./sk verify-publish-state
