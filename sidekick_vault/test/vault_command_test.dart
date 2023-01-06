@@ -1,6 +1,10 @@
-import 'package:sidekick_core/sidekick_core.dart';
+import 'package:sidekick_core/sidekick_core.dart' hide withEnvironment;
 import 'package:sidekick_vault/sidekick_vault.dart';
 import 'package:test/test.dart';
+
+// withEnvironment doesn't support async callbacks. core does. Fixed in dcli:2.0.0-beta.14
+// ignore: directives_ordering, depend_on_referenced_packages
+import 'package:dcli_core/dcli_core.dart' show withEnvironment;
 
 void main() {
   late CommandRunner runner;
