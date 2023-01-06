@@ -1,4 +1,3 @@
-import 'package:dcli/dcli.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sk_sidekick/sk_sidekick.dart';
@@ -415,5 +414,5 @@ extension on DartPackage {
 }
 
 extension on String {
-  void get runInRepo => this.start(workingDirectory: repository.root.path);
+  void get runInRepo => start(workingDirectory: repository.root.path);
 }
