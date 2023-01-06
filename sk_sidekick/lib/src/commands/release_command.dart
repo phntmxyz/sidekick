@@ -99,12 +99,17 @@ ${changelog.readAsStringSync().replaceFirst('# Changelog', '').trimLeft()}''');
     }
 
     final tag = '${package.name}-v$nextVersion';
-    print(' - Committing changes...');
-    'git add -A ${package.root.path}'
+    print(' - Committing changelog and version bump ...');
+    // locked pubspec files are committed to a separate branch
+    "git add -A ${package.root.path} -- ':!*pubspec*'"
         .start(workingDirectory: repository.root.path);
     final commitMessage = 'Prepare release $tag';
     'git commit -m "$commitMessage"'
         .start(workingDirectory: repository.root.path);
+    print(' - Pushing changelog and version bump ...');
+    'git push'.start(workingDirectory: repository.root.path);
+
+    // TODO locking + tagging on separate branch <package name>-release
 
     print(' - Tagging release ($tag)...');
     'git tag $tag'.start(workingDirectory: repository.root.path);
