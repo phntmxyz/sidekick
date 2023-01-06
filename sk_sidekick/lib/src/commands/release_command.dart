@@ -91,6 +91,12 @@ ${changelog.readAsStringSync().replaceFirst('# Changelog', '').trimLeft()}''');
       '--no-commit',
     ]);
 
+    print(' - Committing changelog and version bump ...');
+    final tag = '${package.name}-v$nextVersion';
+    "git add -A ${package.root.path}".runInRepo;
+    'git commit -m "Prepare release $tag"'.runInRepo;
+    final newChangelogAndVersionBranch = _getCurrentBranch(repository.root);
+
     final bool lock = package == skProject.sidekickPackage;
     if (lock) {
       print(' - Locking dependencies...');
@@ -99,27 +105,18 @@ ${changelog.readAsStringSync().replaceFirst('# Changelog', '').trimLeft()}''');
       );
     }
 
-    print(' - Committing changelog and version bump ...');
-    // locked pubspec files are committed to a separate branch
-    "git add -A ${package.root.path} -- ':!*pubspec*'".runInRepo;
-    final tag = '${package.name}-v$nextVersion';
-    final commitMessage = 'Prepare release $tag';
-    'git commit -m "$commitMessage"'.runInRepo;
-    final newChangelogAndVersionBranch = _getCurrentBranch(repository.root);
+    final releaseBranch = 'release/${package.name}-v$nextVersion';
+    if (lock) {
+      // locked pubspec files are committed to a separate branch
+      print(" - Create release branch '$releaseBranch' and tag ($tag)...");
+      'git checkout -b $releaseBranch'.runInRepo;
 
-    // locking + tagging on separate branch <package name>-release
-    final releaseBranch = '${package.name}-release';
-    print(' - Update release branch $releaseBranch and tag ($tag)...');
-    // This is a workaround because '<cmd1> <args1> || <cmd2> <args2>'.run
-    // actually executes cmd1 with the arguments [<args1>, <cmd2>, ||, <args2>]
-    final shell = env['SHELL'];
-    if (shell == null) {
-      throw "Couldn't determine which shell to run";
+      print(" - Committing changes and tag commit ($tag)...");
+      'git add -A ${package.root.path}'.runInRepo;
+      'git commit -m "Locking dependencies"'.runInRepo;
     }
-    '$shell git checkout $releaseBranch || git checkout -b $releaseBranch'
-        .runInRepo;
-    'git add -A ${package.root.path}'.runInRepo;
-    'git commit -m "$commitMessage"'.runInRepo;
+
+    print(" - Tagging release ($tag)...");
     'git tag $tag'.runInRepo;
 
     print(green("\nRelease preparation complete\n"));
@@ -136,8 +133,10 @@ ${changelog.readAsStringSync().replaceFirst('# Changelog', '').trimLeft()}''');
     print(' - Pushing changelog and version bump ...');
     // push main
     'git push origin $newChangelogAndVersionBranch'.runInRepo;
-    // push releaseBranch
-    'git push'.runInRepo;
+    if (lock) {
+      // push releaseBranch
+      'git push -u origin $releaseBranch'.runInRepo;
+    }
 
     print(' - Pushing tag $tag to origin...');
     'git push origin refs/tags/$tag'.start(workingDirectory: package.root.path);
