@@ -125,7 +125,7 @@ ${changelog.readAsStringSync().replaceFirst('# Changelog', '').trimLeft()}''');
     }
 
     print(' - Pushing changelog and version bump ...');
-    'git push $newChangelogAndVersionBranch'
+    'git push origin $newChangelogAndVersionBranch'
         .start(workingDirectory: repository.root.path);
 
     print(' - Pushing tag $tag to origin...');
