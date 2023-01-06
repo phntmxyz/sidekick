@@ -101,16 +101,14 @@ ${changelog.readAsStringSync().replaceFirst('# Changelog', '').trimLeft()}''');
 
     print(' - Committing changelog and version bump ...');
     // locked pubspec files are committed to a separate branch
-    "git add -A ${package.root.path} -- ':!*pubspec*'"
-        .start(workingDirectory: repository.root.path);
+    "git add -A ${package.root.path} -- ':!*pubspec*'".runInRepo;
+    final tag = '${package.name}-v$nextVersion';
     final commitMessage = 'Prepare release $tag';
-    'git commit -m "$commitMessage"'
-        .start(workingDirectory: repository.root.path);
+    'git commit -m "$commitMessage"'.runInRepo;
     final newChangelogAndVersionBranch = _getCurrentBranch(repository.root);
 
     // locking + tagging on separate branch <package name>-release
     final releaseBranch = '${package.name}-release';
-    final tag = '${package.name}-v$nextVersion';
     print(' - Update release branch $releaseBranch and tag ($tag)...');
     // This is a workaround because '<cmd1> <args1> || <cmd2> <args2>'.run
     // actually executes cmd1 with the arguments [<args1>, <cmd2>, ||, <args2>]
@@ -119,12 +117,10 @@ ${changelog.readAsStringSync().replaceFirst('# Changelog', '').trimLeft()}''');
       throw "Couldn't determine which shell to run";
     }
     '$shell git checkout $releaseBranch || git checkout -b $releaseBranch'
-        .start(workingDirectory: repository.root.path);
-    'git add -A ${package.root.path}'
-        .start(workingDirectory: repository.root.path);
-    'git commit -m "$commitMessage"'
-        .start(workingDirectory: repository.root.path);
-    'git tag $tag'.start(workingDirectory: repository.root.path);
+        .runInRepo;
+    'git add -A ${package.root.path}'.runInRepo;
+    'git commit -m "$commitMessage"'.runInRepo;
+    'git tag $tag'.runInRepo;
 
     print(green("\nRelease preparation complete\n"));
 
@@ -139,10 +135,9 @@ ${changelog.readAsStringSync().replaceFirst('# Changelog', '').trimLeft()}''');
 
     print(' - Pushing changelog and version bump ...');
     // push main
-    'git push origin $newChangelogAndVersionBranch'
-        .start(workingDirectory: repository.root.path);
+    'git push origin $newChangelogAndVersionBranch'.runInRepo;
     // push releaseBranch
-    'git push'.start(workingDirectory: repository.root.path);
+    'git push'.runInRepo;
 
     print(' - Pushing tag $tag to origin...');
     'git push origin refs/tags/$tag'.start(workingDirectory: package.root.path);
@@ -419,4 +414,8 @@ extension on DartPackage {
     }
     return version;
   }
+}
+
+extension on String {
+  void get runInRepo => this.start(workingDirectory: repository.root.path);
 }
