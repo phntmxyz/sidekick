@@ -20,8 +20,7 @@ Future<void> runSk(List<String> args) async {
   skProject = SkProject(runner.repository.root);
   runner
     ..addCommand(DartCommand())
-    // TODO: use `excludePackages: ['test/**']` when fix for https://github.com/phntmxyz/sidekick/issues/122 is available
-    ..addCommand(DepsCommand(exclude: [...testPackages]))
+    ..addCommand(DepsCommand(excludeGlob: ['**/templates/**']))
     ..addCommand(DartAnalyzeCommand())
     ..addCommand(LockDependenciesCommand())
     ..addCommand(ReleaseCommand())
@@ -40,15 +39,3 @@ Future<void> runSk(List<String> args) async {
     exit(64); // usage error
   }
 }
-
-/// sample packages for testing that should be ignored by deps command
-final testPackages = [
-  'sidekick/test/templates/minimal_dart_package',
-  'sidekick/test/templates/root_with_packages',
-  'sidekick/test/templates/root_with_packages/packages/package_b',
-  'sidekick/test/templates/root_with_packages/packages/package_a',
-  'sidekick/test/templates/minimal_flutter_package',
-  'sidekick/test/templates/nested_package/foo/bar/nested',
-  'sidekick/test/templates/multi_package/packages/package_b',
-  'sidekick/test/templates/multi_package/packages/package_a',
-].mapNotNull((it) => DartPackage.fromDirectory(skProject.root.directory(it)));
