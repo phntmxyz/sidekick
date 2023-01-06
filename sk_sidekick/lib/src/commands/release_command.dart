@@ -63,7 +63,9 @@ ${changelog.readAsStringSync().replaceFirst('# Changelog', '').trimLeft()}''');
     final bool lock = package == skProject.sidekickPackage;
     if (lock) {
       print('Locking dependencies ...');
-      await runSk(['lock-dependencies', package.root.path]);
+      await runSk(
+        ['lock-dependencies', '--check-dart-version', package.root.path],
+      );
     }
 
     final tag = '${package.name}-v$nextVersion';

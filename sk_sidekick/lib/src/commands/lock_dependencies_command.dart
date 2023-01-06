@@ -1,4 +1,7 @@
 import 'package:sidekick_core/sidekick_core.dart';
+
+// ignore: implementation_imports, sk_sidekick is not a published package and already depends on sidekick_core from path
+import 'package:sidekick_core/src/version_checker.dart';
 import 'package:yaml/yaml.dart';
 
 class LockDependenciesCommand extends Command {
@@ -11,12 +14,34 @@ class LockDependenciesCommand extends Command {
   @override
   String get invocation => super.invocation.replaceFirst(
         '[arguments]',
-        '[package-path]',
+        '[package-path] [--[no]-check-dart-version]',
       );
+
+  LockDependenciesCommand() {
+    argParser.addFlag(
+      'check-dart-version',
+      defaultsTo: true,
+      help: 'Whether to check that Dart is at the latest stable version. '
+          'Depending on the Dart version, different upper bounds are resolved.',
+    );
+  }
 
   @override
   Future<void> run() async {
     final package = DartPackage.fromArgResults(argResults!);
+
+    if (argResults!['check-dart-version'] as bool) {
+      final systemDartExecutablePath = systemDartExecutable();
+      if (systemDartExecutablePath == null) {
+        throw "Couldn't find dart executable on PATH.";
+      }
+      if (!await VersionChecker.isLatestStableDart(systemDartExecutablePath)) {
+        throw 'Aborting because Dart is not at the latest stable version.\n'
+            'This is important because depending on the Dart version, '
+            'different upper bounds are resolved.\n'
+            '${red('Please update Dart to the latest stable version and try again.')}';
+      }
+    }
 
     final pubGet = systemDart(['pub', 'get'], workingDirectory: package.root);
     if (pubGet != 0) {
