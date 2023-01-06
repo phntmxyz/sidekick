@@ -1,3 +1,4 @@
+import 'package:dcli/dcli.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sk_sidekick/sk_sidekick.dart';
@@ -98,7 +99,6 @@ ${changelog.readAsStringSync().replaceFirst('# Changelog', '').trimLeft()}''');
       );
     }
 
-    final tag = '${package.name}-v$nextVersion';
     print(' - Committing changelog and version bump ...');
     // locked pubspec files are committed to a separate branch
     "git add -A ${package.root.path} -- ':!*pubspec*'"
@@ -108,12 +108,21 @@ ${changelog.readAsStringSync().replaceFirst('# Changelog', '').trimLeft()}''');
         .start(workingDirectory: repository.root.path);
     final newChangelogAndVersionBranch = _getCurrentBranch(repository.root);
 
-    // TODO locking + tagging on separate branch <package name>-release
+    // locking + tagging on separate branch <package name>-release
     final releaseBranch = '${package.name}-release';
-    // TODO correct command is: git checkout $releaseBranch || git checkout -b $releaseBranch
-    // TODO but '...'.start treats the first word ("git") as command and passes the rests as args to it; this isn't what I want to do though -> ||
-
-    print(' - Tagging release ($tag)...');
+    final tag = '${package.name}-v$nextVersion';
+    print(' - Update release branch $releaseBranch and tag ($tag)...');
+    // This is a workaround because '<cmd1> <args1> || <cmd2> <args2>'.run
+    // actually executes cmd1 with the arguments [<args1>, <cmd2>, ||, <args2>]
+    final shell = env['SHELL'];
+    if (shell == null) {
+      throw "Couldn't determine which shell to run";
+    }
+    '$shell git checkout $releaseBranch || git checkout -b $releaseBranch'.run;
+    'git add -A ${package.root.path}'
+        .start(workingDirectory: repository.root.path);
+    'git commit -m "$commitMessage"'
+        .start(workingDirectory: repository.root.path);
     'git tag $tag'.start(workingDirectory: repository.root.path);
 
     print(green("\nRelease preparation complete\n"));
@@ -128,8 +137,11 @@ ${changelog.readAsStringSync().replaceFirst('# Changelog', '').trimLeft()}''');
     }
 
     print(' - Pushing changelog and version bump ...');
+    // push main
     'git push origin $newChangelogAndVersionBranch'
         .start(workingDirectory: repository.root.path);
+    // push releaseBranch
+    'git push'.start(workingDirectory: repository.root.path);
 
     print(' - Pushing tag $tag to origin...');
     'git push origin refs/tags/$tag'.start(workingDirectory: package.root.path);
