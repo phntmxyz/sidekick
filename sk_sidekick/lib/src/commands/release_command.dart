@@ -146,7 +146,10 @@ ${changelog.readAsStringSync().replaceFirst('# Changelog', '').trimLeft()}''');
     'git push origin refs/tags/$tag'.start(workingDirectory: package.root.path);
 
     print(' - Publishing ${package.name}:$nextVersion to pub.dev...');
-    'dart pub publish'.start(workingDirectory: package.root.path);
+    'dart pub publish'.start(
+      workingDirectory: package.root.path,
+      terminal: true,
+    );
     print(
       green(
         '🎉 Success!\n'
