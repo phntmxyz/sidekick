@@ -118,7 +118,8 @@ ${changelog.readAsStringSync().replaceFirst('# Changelog', '').trimLeft()}''');
     if (shell == null) {
       throw "Couldn't determine which shell to run";
     }
-    '$shell git checkout $releaseBranch || git checkout -b $releaseBranch'.run;
+    '$shell git checkout $releaseBranch || git checkout -b $releaseBranch'
+        .start(workingDirectory: repository.root.path);
     'git add -A ${package.root.path}'
         .start(workingDirectory: repository.root.path);
     'git commit -m "$commitMessage"'
