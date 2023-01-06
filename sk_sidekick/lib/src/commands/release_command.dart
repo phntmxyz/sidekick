@@ -212,6 +212,8 @@ Please edit this auto-generated changelog for the next release of package:${pack
 - [ ] Delete this header
 -->
 
+Full diff: https://github.com/phntmxyz/sidekick/compare/$currentPackageVersionTag...main
+
 $initialChangelog
 ''');
 
@@ -294,11 +296,12 @@ You can continue once you completed all steps.
           paths: ['sidekick_core'],
         );
 
-        final message = '\nAlso package:sidekick_core updated '
+        final message = '\n<!--\nAlso package:sidekick_core updated '
             '($oldSidekickCoreVersionTag -> $currentSidekickCoreVersionTag), '
-            'please consider those changes as well.\n';
-
-        return [message, ...newSidekickCoreCommits];
+            'please consider those changes as well.\n-->\n';
+        final diffLink =
+            'sidekick_core diff: https://github.com/phntmxyz/sidekick/compare/sidekick_core-v$oldSidekickCoreVersion...sidekick_core-v$currentSidekickCoreVersion\n';
+        return [message, diffLink, ...newSidekickCoreCommits];
       }
     }
     return null;
