@@ -38,6 +38,7 @@ export 'package:sidekick_core/src/git.dart';
 export 'package:sidekick_core/src/repository.dart';
 export 'package:sidekick_core/src/sidekick_package.dart';
 export 'package:sidekick_core/src/template/sidekick_package.template.dart';
+export 'package:sidekick_core/src/version_checker.dart';
 
 /// The version of package:sidekick_core
 ///
@@ -75,8 +76,7 @@ SidekickCommandRunner initializeSidekick({
 
   final repo = findRepository();
   if (mainProjectPath != null) {
-    mainProject =
-        DartPackage.fromDirectory(repo.root.directory(mainProjectPath));
+    mainProject = DartPackage.fromDirectory(repo.root.directory(mainProjectPath));
   }
 
   if (flutterSdkPath != null && dartSdkPath != null) {
@@ -87,8 +87,7 @@ SidekickCommandRunner initializeSidekick({
 
   final runner = SidekickCommandRunner._(
     cliName: name,
-    description: description ??
-        'A sidekick CLI to equip Dart/Flutter projects with custom tasks',
+    description: description ?? 'A sidekick CLI to equip Dart/Flutter projects with custom tasks',
     repository: repo,
     mainProject: mainProject,
     workingDirectory: Directory.current,
@@ -259,8 +258,7 @@ void deinitializeSidekick() {}
 SidekickCommandRunner? _activeRunner;
 
 /// The working directory (cwd) from which the cli was started
-Directory get entryWorkingDirectory =>
-    _entryWorkingDirectory ?? Directory.current;
+Directory get entryWorkingDirectory => _entryWorkingDirectory ?? Directory.current;
 Directory? _entryWorkingDirectory;
 
 /// Name of the cli program
@@ -327,8 +325,7 @@ class SdkNotFoundException implements Exception {
   final String sdkPath;
   final Directory repoRoot;
 
-  late final String message =
-      "Dart or Flutter SDK set to '$sdkPath', but that directory doesn't exist. "
+  late final String message = "Dart or Flutter SDK set to '$sdkPath', but that directory doesn't exist. "
       "Please fix the path in `initializeSidekick` (dartSdkPath/flutterSdkPath). "
       "Note that relative sdk paths are resolved relative to the project root, "
       "which in this case is '${repoRoot.path}'.";
