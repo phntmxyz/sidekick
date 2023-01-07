@@ -25,10 +25,10 @@ runSilent() {
   output=$("$@" 2>&1)
   local EXIT_CODE=$?;
   if [ $EXIT_CODE -ne 0 ]; then
-    printerr "$output"
-    exit $EXIT_CODE
+    echoerr "$output"
   fi
   set -e
+  return $EXIT_CODE
 }
 
 cd "${CLI_PACKAGE_DIR}" || exit
