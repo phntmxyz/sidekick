@@ -23,8 +23,7 @@ class InitCommand extends Command {
     argParser.addOption(
       'entrypointDirectory',
       abbr: 'e',
-      help:
-          'The directory in which the CLI entrypoint script should be created.',
+      help: 'The directory in which the CLI entrypoint script should be created.',
     );
     argParser.addOption(
       'cliPackageDirectory',
@@ -37,8 +36,7 @@ class InitCommand extends Command {
     argParser.addOption(
       'mainProjectPath',
       abbr: 'm',
-      help:
-          'Optionally sets the mainProject, the package that ultimately builds your app. \n'
+      help: 'Optionally sets the mainProject, the package that ultimately builds your app. \n'
           'This directory must be within the entrypointDirectory, '
           'or if the entrypointDirectory is inside a git repository, '
           'the mainProjectPath must be within the same git repository.',
@@ -50,6 +48,48 @@ class InitCommand extends Command {
     print(
       "Welcome to sidekick. You're about to initialize a sidekick project\n",
     );
+
+    // Initial versions
+    Version versionToInstall = core.version;
+    Version newestVersion = Version.none;
+
+    final currentSidekickCliVersion = VersionChecker.getMinimumVersionConstraint(
+          Repository.requiredSidekickPackage,
+          ['sidekick', 'cli_version'],
+        ) ??
+        Version.none;
+
+    // Check for existing project
+    if (currentSidekickCliVersion != Version.none) {
+      final confirmNewProject =
+          dcli.confirm('You already have a sidekick project initialized. Do you wish to proceed?');
+      if (!confirmNewProject) {
+        throw 'Initialization aborted by user.';
+      }
+    }
+
+    final lookForUpdate = dcli.confirm('Do you want to check for the latest version of sidekick before proceeding?');
+
+    if (lookForUpdate) {
+      newestVersion = await VersionChecker.getLatestDependencyVersion('sidekick');
+      if (currentSidekickCliVersion < newestVersion) {
+        final confirmUpdate =
+            dcli.confirm('A newer version ($newestVersion) of sidekick is available. Use latest version for project?');
+        if (confirmUpdate) {
+          versionToInstall = newestVersion;
+        }
+      }
+    }
+
+    if (versionToInstall == core.version && currentSidekickCliVersion > core.version) {
+      final keepCurrentVersion = dcli.confirm(
+        'Your current sidekick version would be downgraded from ${currentSidekickCliVersion.toString()} \n'
+        'to ${core.version.toString()}. Keep current version?',
+      );
+      if (keepCurrentVersion) {
+        versionToInstall = currentSidekickCliVersion;
+      }
+    }
 
     final entrypointDir = Directory(
       argResults!['entrypointDirectory'] as String? ??
@@ -88,8 +128,7 @@ class InitCommand extends Command {
         ? DartPackage.fromDirectory(
             Directory(mainProjectPath),
           )
-        : (DartPackage.fromDirectory(entrypointDir) ??
-            DartPackage.fromDirectory(repoRoot));
+        : (DartPackage.fromDirectory(entrypointDir) ?? DartPackage.fromDirectory(repoRoot));
     if (mainProjectPath != null && mainProject == null) {
       throw 'mainProjectPath was given, but no DartPackage could be found at the given path $mainProjectPath';
     }
@@ -145,6 +184,7 @@ class InitCommand extends Command {
       entrypointDir: entrypointDir,
       mainProject: mainProject,
       packages: packages,
+      version: versionToInstall,
     );
   }
 
@@ -164,6 +204,7 @@ class InitCommand extends Command {
     required Directory packageDir,
     required Directory entrypointDir,
     DartPackage? mainProject,
+    Version? version,
     List<DartPackage> packages = const [],
   }) async {
     // init git, required for flutterw
@@ -174,26 +215,20 @@ class InitCommand extends Command {
     final entrypoint = entrypointDir.file(cliName.snakeCase);
     final props = SidekickTemplateProperties(
       name: cliName,
-      mainProjectPath: mainProject != null
-          ? relative(mainProject.root.path, from: repoRoot.absolute.path)
-          : null,
-      isMainProjectRoot:
-          mainProject?.root.absolute.path == repoRoot.absolute.path,
-      hasNestedPackagesPath: mainProject != null &&
-          !relative(mainProject.root.path, from: repoRoot.absolute.path)
-              .startsWith('packages'),
-      shouldSetFlutterSdkPath: Repository(root: repoRoot)
-          .findAllPackages()
-          .any((package) => package.isFlutterPackage),
+      mainProjectPath: mainProject != null ? relative(mainProject.root.path, from: repoRoot.absolute.path) : null,
+      isMainProjectRoot: mainProject?.root.absolute.path == repoRoot.absolute.path,
+      hasNestedPackagesPath:
+          mainProject != null && !relative(mainProject.root.path, from: repoRoot.absolute.path).startsWith('packages'),
+      shouldSetFlutterSdkPath: Repository(root: repoRoot).findAllPackages().any((package) => package.isFlutterPackage),
       entrypointLocation: entrypoint,
       packageLocation: cliPackage,
-      sidekickCliVersion: core.version,
+      sidekickCliVersion: version ?? core.version,
     );
     SidekickTemplate().generate(props);
 
     // Install flutterw when a Flutter project is detected
-    final flutterPackages = [if (mainProject != null) mainProject, ...packages]
-        .filter((package) => package.isFlutterPackage);
+    final flutterPackages =
+        [if (mainProject != null) mainProject, ...packages].filter((package) => package.isFlutterPackage);
 
     if (flutterPackages.isNotEmpty) {
       print('We detected Flutter packages in your project:');
@@ -244,8 +279,7 @@ Future<void> gitInit(Directory directory) async {
     // no need to initialize
     return;
   }
-  final Process process =
-      await Process.start('git', ['init'], workingDirectory: directory.path);
+  final Process process = await Process.start('git', ['init'], workingDirectory: directory.path);
   stdout.addStream(process.stdout);
   stderr.addStream(process.stderr);
   await process.exitCode;
