@@ -174,7 +174,7 @@ Future<void> migrate({
         context._exception = e;
         context._stackTrace = s;
         if (onMigrationStepError == null) {
-          printerr('Migration ${step.name} (${step.targetVersion}) failed:');
+          printerr("Migration '${step.name}' (${step.targetVersion}) failed:");
           printerr(e.toString());
           printerr(s.toString());
         }
