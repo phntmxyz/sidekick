@@ -1,8 +1,10 @@
+import 'package:pub_semver/pub_semver.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_core/src/commands/update_command.dart';
 import 'package:sidekick_core/src/update/migration.dart';
 import 'package:sidekick_core/src/update/patches/patch_migrations.dart';
 import 'package:sidekick_core/src/version_checker.dart';
+import 'package:yaml_edit/yaml_edit.dart';
 
 /// Updates a sidekick CLI
 ///
@@ -33,6 +35,8 @@ Future<void> main(List<String> args) async {
         // Always execute template updates
         UpdateToolsMigration(targetSidekickCoreVersion),
         UpdateEntryPointMigration(targetSidekickCoreVersion),
+        // Always check for latest stable dart version
+        UseLatestDartVersionMigration(targetSidekickCoreVersion),
         // Migration steps from git patches
         ...patchMigrations,
       ],
@@ -120,5 +124,53 @@ class UpdateEntryPointMigration extends MigrationStep {
       packageLocation: Repository.requiredCliPackage,
     );
     template.generateEntrypoint(props);
+  }
+}
+
+/// Update the embedded dart sdk to the latest stable version
+class UseLatestDartVersionMigration extends MigrationStep {
+  UseLatestDartVersionMigration(Version targetVersion)
+      : super(
+          name: 'Update embedded dart version',
+          targetVersion: targetVersion,
+        );
+
+  @override
+  Future<void> migrate(MigrationContext context) async {
+    final package = Repository.requiredSidekickPackage;
+
+    final pubspec = YamlEditor(package.pubspec.readAsStringSync());
+    final String? sdkConstraints =
+        pubspec.parseAt(['environment', 'sdk']).value as String?;
+    final currentDartVersion = () {
+      try {
+        final range = VersionConstraint.parse(sdkConstraints!) as VersionRange;
+        return range.min;
+      } catch (_) {
+        return null;
+      }
+    }();
+
+    if (currentDartVersion == null) {
+      throw 'Could not find dart version pubspec.yaml (environment.sdk)';
+    }
+    final latestDartVersion = await VersionChecker.getLatestStableDartVersion();
+
+    if (latestDartVersion >= Version(3, 0, 0)) {
+      // Do not upgrade to Dart 3 unless explicitly enabled
+      return;
+    }
+
+    if (currentDartVersion >= latestDartVersion) {
+      // Already using latest dart version
+      return;
+    }
+
+    // Update dart version to latest stable
+    pubspec.update(
+      ['environment', 'sdk'],
+      '>=$latestDartVersion <${latestDartVersion.nextMajor}',
+    );
+    package.pubspec.writeAsStringSync(pubspec.toString());
   }
 }

@@ -161,14 +161,6 @@ abstract class VersionChecker {
 
   /// Whether [dartExecutablePath] is the latest stable version of Dart
   static Future<bool> isLatestStableDart(String dartExecutablePath) async {
-    final endpoint = Uri.parse(
-      'https://storage.googleapis.com/dart-archive/channels/stable/release/latest/VERSION',
-    );
-    // e.g. {"date": "2022-12-13", "version": "2.18.6", "revision": "f16b62ea92cc0f04cfd9166992f93419e425c809"}
-    final response = await get(endpoint);
-    final latestVersion = (jsonDecode(response.body)
-        as Map<String, dynamic>)['version'] as String;
-
     // e.g. Dart SDK version: 2.18.4 (stable) (Tue Nov 1 15:15:07 2022 +0000) on "macos_arm64"
     final dartVersionResult = '$dartExecutablePath --version'
         .start(progress: Progress.capture())
@@ -179,10 +171,30 @@ abstract class VersionChecker {
 
     final dartVersionRegExp = RegExp(r'Dart SDK version: (\S+) \((\S+)\)');
     final match = dartVersionRegExp.firstMatch(dartVersionResult)!;
-    final currentVersion = match.group(1)!;
     final currentChannel = match.group(2)!;
+    if (currentChannel != 'stable') {
+      return false;
+    }
 
-    return currentVersion == latestVersion && currentChannel == 'stable';
+    final currentVersion = Version.parse(match.group(1)!);
+    final latestVersion = await getLatestStableDartVersion();
+
+    return currentVersion == latestVersion;
+  }
+
+  static Future<Version> getLatestStableDartVersion() async {
+    final endpoint = Uri.parse(
+      'https://storage.googleapis.com/dart-archive/channels/stable/release/latest/VERSION',
+    );
+    final response = await get(endpoint);
+    if (response.statusCode != HttpStatus.ok) {
+      throw 'Failed to get latest stable Dart version from $endpoint: ${response.body}';
+    }
+
+    // e.g. {"date": "2022-12-13", "version": "2.18.6", "revision": "f16b62ea92cc0f04cfd9166992f93419e425c809"}
+    final json = jsonDecode(response.body) as Map<String, dynamic>;
+    final version = json['version'] as String;
+    return Version.parse(version);
   }
 
   /// Set to override behavior of [getLatestDependencyVersion] in tests
