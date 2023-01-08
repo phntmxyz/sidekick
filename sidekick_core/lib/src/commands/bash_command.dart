@@ -47,6 +47,7 @@ class BashCommand extends ForwardCommand {
     required this.description,
     required this.name,
     this.workingDirectory,
+    this.withStdIn = true,
   });
 
   @override
@@ -63,6 +64,9 @@ class BashCommand extends ForwardCommand {
   /// The directory the bash script is running in.
   final Directory? workingDirectory;
 
+  /// Whether to forward stdin to the bash script, default to true
+  final bool withStdIn;
+
   @override
   Future<void> run() async {
     final bashScript = await script();
@@ -70,7 +74,7 @@ class BashCommand extends ForwardCommand {
       bashScript,
       args: argResults!.arguments,
       workingDirectory: workingDirectory,
-      terminal: true,
+      terminal: withStdIn,
     );
   }
 }
