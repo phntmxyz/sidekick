@@ -154,11 +154,12 @@ class UseLatestDartVersionMigration extends MigrationStep {
     if (currentDartVersion == null) {
       throw 'Could not find dart version pubspec.yaml (environment.sdk)';
     }
-    final latestDartVersion = await VersionChecker.getLatestStableDartVersion();
+    var latestDartVersion = await VersionChecker.getLatestStableDartVersion();
 
     if (latestDartVersion >= Version(3, 0, 0)) {
       // Do not upgrade to Dart 3 unless explicitly enabled
-      return;
+      // fallback to latest 2.x version
+      latestDartVersion = Version(2, 19, 0);
     }
 
     if (currentDartVersion >= latestDartVersion) {

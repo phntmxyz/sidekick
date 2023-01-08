@@ -42,7 +42,7 @@ environment:
 """);
   });
 
-  test('Ignore Dart 3.0 update', () async {
+  test('Fallback to 2.19 instead of 3.0', () async {
     final pubspec = tempDir.file('pubspec.yaml')
       ..createSync(recursive: true)
       ..writeAsStringSync("""
@@ -56,7 +56,25 @@ environment:
     expect(pubspec.readAsStringSync(), """
 name: some_package
 environment:
-  sdk: ">=2.18.0 <3.0.0"
+  sdk: ">=2.19.0 <3.0.0"
+""");
+  });
+
+  test('Do not fallback when beyond 3.0', () async {
+    final pubspec = tempDir.file('pubspec.yaml')
+      ..createSync(recursive: true)
+      ..writeAsStringSync("""
+name: some_package
+environment:
+  sdk: ">=3.1.0 <4.0.0"
+""");
+
+    await _migrate(latestDartVersion: '3.0.0');
+
+    expect(pubspec.readAsStringSync(), """
+name: some_package
+environment:
+  sdk: ">=3.1.0 <4.0.0"
 """);
   });
 }
