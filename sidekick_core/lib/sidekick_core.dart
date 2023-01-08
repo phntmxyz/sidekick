@@ -20,6 +20,7 @@ export 'package:dcli/dcli.dart' hide run, start, startFromArgs, absolute;
 export 'package:pub_semver/pub_semver.dart' show Version;
 export 'package:sidekick_core/src/cli_util.dart';
 export 'package:sidekick_core/src/commands/analyze_command.dart';
+export 'package:sidekick_core/src/commands/bash_command.dart';
 export 'package:sidekick_core/src/commands/dart_command.dart';
 export 'package:sidekick_core/src/commands/deps_command.dart';
 export 'package:sidekick_core/src/commands/flutter_command.dart';
