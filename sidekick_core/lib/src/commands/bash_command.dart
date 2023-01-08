@@ -9,21 +9,37 @@ import 'package:sidekick_core/sidekick_core.dart';
 /// This makes it easy to handle paths within the bash script. You can define a
 /// static [workingDirectory] and always know where the script is executed.
 ///
-/// Usage:
+/// Usage as plain text
 /// ```dart
 /// runner
-///    ..addCommand(
-///       BashCommand(
-///         name: 'test-bash-command',
-///         description: 'Prints inputs of a sidekick BashCommand',
-///         workingDirectory: runner.repository.root,
-///         script: () => '''
+///   ..addCommand(
+///      BashCommand(
+///        name: 'test-bash-command',
+///        description: 'Prints inputs of a sidekick BashCommand',
+///        workingDirectory: runner.repository.root,
+///        script: () => '''
 /// echo "arguments: \$@"
 /// echo "workingDirectory: \$(pwd)"
 /// # Access paths from sidekick
 /// ${systemFlutterSdkPath()}/bin/flutter --version
-///       ''',
-///       );
+/// ''',
+///     ),
+///   );
+/// ```
+///
+/// Or load your script from a file
+/// ```dart
+/// runner
+///   ..addCommand(
+///     BashCommand(
+///       name: 'test-bash-command',
+///       description: 'Prints inputs of a sidekick BashCommand',
+///       workingDirectory: runner.repository.root,
+///       script: () => runner.repository.root
+///           .file('scripts/test-bash-command.sh')
+///           .readAsString(),
+///     ),
+///   )
 /// ```
 class BashCommand extends ForwardCommand {
   BashCommand({
