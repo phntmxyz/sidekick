@@ -41,13 +41,16 @@ import 'package:sidekick_core/sidekick_core.dart';
 ///     ),
 ///   )
 /// ```
+///
+/// If your script is interactive, set [withStdIn] to `true` to allow stdin to
+/// be connected to the script.
 class BashCommand extends ForwardCommand {
   BashCommand({
     required this.script,
     required this.description,
     required this.name,
     this.workingDirectory,
-    this.withStdIn = true,
+    this.withStdIn = false,
   });
 
   @override
