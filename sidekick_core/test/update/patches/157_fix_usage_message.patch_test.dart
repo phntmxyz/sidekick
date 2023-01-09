@@ -7,7 +7,7 @@ void main() {
   for (final testCase in _testCases) {
     test('patch 157 works (${testCase.name})', () async {
       final tempDir = Directory.systemTemp.createTempSync();
-      'git init'.start(workingDirectory: tempDir.path);
+      'git init -q'.start(workingDirectory: tempDir.path);
       env['SIDEKICK_PACKAGE_HOME'] = tempDir.absolute.path;
       addTearDown(() {
         tempDir.deleteSync(recursive: true);
@@ -18,27 +18,37 @@ void main() {
         ..createSync(recursive: true)
         ..writeAsStringSync(testCase.fileContentBefore);
 
+      Object? error;
       await migrate(
         from: Version(0, 13, 1),
         to: Version(0, 13, 2),
         migrations: fixUsageMessage157Patches,
+        onMigrationStepError: (context) {
+          error = context.exception;
+          return MigrationErrorHandling.skip;
+        },
       );
 
       expect(cliMainFile.readAsStringSync(), testCase.fileContentAfter);
+      if (testCase.errorMatcher != null) {
+        expect(error, testCase.errorMatcher);
+      }
     });
   }
 }
 
 class _TestCase {
-  const _TestCase({
+  _TestCase({
     required this.name,
     required this.fileContentBefore,
     required this.fileContentAfter,
+    this.errorMatcher,
   });
 
   final String name;
   final String fileContentBefore;
   final String fileContentAfter;
+  final Matcher? errorMatcher;
 }
 
 const _expectedResult = '''
@@ -63,7 +73,7 @@ Future<void> runTest(List<String> args) async {
 }
 ''';
 
-const _testCases = [
+final _testCases = [
   _TestCase(
     name: 'default case',
     fileContentBefore: '''
@@ -151,5 +161,15 @@ Future<void> runTest(List<String> args) async {
     name: 'patch was already applied',
     fileContentBefore: _expectedResult,
     fileContentAfter: _expectedResult,
+    errorMatcher: isA<String>().having(
+      (e) => e,
+      'error',
+      allOf(
+        contains("Couldn't apply git patch"),
+        contains('Fix usage message (2/2)'),
+        contains('} on UsageException catch (e) {'),
+        contains('github.com/phntmxyz/sidekick/pull/157'),
+      ),
+    ),
   ),
 ];
