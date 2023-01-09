@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:sidekick_core/sidekick_core.dart';
+import 'package:dcli/dcli.dart' as dcli;
 
 /// A Command that wraps a bash script
 ///
@@ -73,11 +74,29 @@ class BashCommand extends ForwardCommand {
   @override
   Future<void> run() async {
     final bashScript = await script();
-    writeAndRunShellScript(
-      bashScript,
-      args: argResults!.arguments,
-      workingDirectory: workingDirectory,
-      terminal: withStdIn,
-    );
+
+    final scriptFile = tempExecutableScriptFile(bashScript);
+    final Progress progress =
+        Progress(print, stderr: printerr, captureStderr: true);
+
+    try {
+      dcli.startFromArgs(
+        scriptFile.absolute.path,
+        argResults!.arguments,
+        workingDirectory:
+            workingDirectory?.absolute.path ?? entryWorkingDirectory.path,
+        progress: progress,
+        terminal: withStdIn,
+      );
+    } catch (e) {
+      printerr(
+        "\nError executing script '$name' (exitCode=${progress.exitCode}):\n"
+        "$bashScript\n\n"
+        "Error executing script '$name' (exitCode=${progress.exitCode})",
+      );
+      rethrow;
+    } finally {
+      scriptFile.deleteSync(recursive: true);
+    }
   }
 }

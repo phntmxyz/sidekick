@@ -15,7 +15,6 @@ void main() {
           script: () => 'echo \$@',
           description: 'description',
           name: 'script',
-          withStdIn: false,
         ),
       );
       final fakeStdOut = FakeStdoutStream();
@@ -39,7 +38,6 @@ void main() {
           script: () => 'echo \$PWD',
           description: 'description',
           name: 'script',
-          withStdIn: false,
         ),
       );
       final fakeStdOut = FakeStdoutStream();
@@ -64,7 +62,6 @@ void main() {
           script: () => 'echo \$PWD',
           description: 'description',
           name: 'script',
-          withStdIn: false,
           workingDirectory: subDir,
         ),
       );
@@ -75,6 +72,46 @@ void main() {
       );
 
       expect(fakeStdOut.lines.join(), endsWith(subDir.path));
+    });
+  });
+
+  test('print error code and script on error', () async {
+    await insideFakeProjectWithSidekick((dir) async {
+      final runner = initializeSidekick(
+        name: 'dash',
+        dartSdkPath: fakeDartSdk().path,
+      );
+      runner.addCommand(
+        BashCommand(
+          script: () => '#scriptContent\nexit 34',
+          description: 'description',
+          name: 'script',
+        ),
+      );
+      final fakeStdOut = FakeStdoutStream();
+      final fakeStdErr = FakeStdoutStream();
+      try {
+        await overrideIoStreams(
+          stdout: () => fakeStdOut,
+          stderr: () => fakeStdErr,
+          body: () => runner.run(['script']),
+        );
+        fail('should throw');
+      } catch (e) {
+        expect(
+          e,
+          isA<RunException>().having((it) => it.exitCode, 'exitCode', 34),
+        );
+      }
+
+      expect(fakeStdErr.lines.join(), contains('exitCode=34'));
+      expect(fakeStdErr.lines.join(), contains('#scriptContent'));
+      expect(fakeStdErr.lines.join(), contains('exit 34'));
+      expect(
+        fakeStdErr.lines.join(),
+        contains("Error executing script 'script'"),
+      );
+      expect(fakeStdOut.lines.join(), "");
     });
   });
 }
