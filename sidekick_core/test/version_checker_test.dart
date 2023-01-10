@@ -65,9 +65,9 @@ dependencies:
         pubspecYamlFile.readAsStringSync(),
         '''
 name: dashi
-dependencies:
-  foo: 1.2.4
+dependencies: 
   bar: 0.0.0
+  foo: 1.2.4
 ''',
       );
     });
@@ -87,9 +87,9 @@ name: dashi
         pubspecYamlFile.readAsStringSync(),
         '''
 name: dashi
-# the pubspec does not have a dependencies block, it should be added by updateVersionConstraint
 dependencies:
   foo: 1.2.4
+# the pubspec does not have a dependencies block, it should be added by updateVersionConstraint
 ''',
       );
     });

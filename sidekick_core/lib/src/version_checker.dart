@@ -61,6 +61,7 @@ abstract class VersionChecker {
   }) {
     final pubspec = package.pubspec;
     final pubspecContent = pubspec.readAsStringSync();
+
     final editor = YamlEditor(pubspecContent);
 
     final newVersionConstraint = pinVersion
@@ -69,8 +70,48 @@ abstract class VersionChecker {
             ? '^${newMinimumVersion.canonicalizedVersion}'
             : ">=${newMinimumVersion.canonicalizedVersion} <1.0.0";
 
+    final growingKey = [];
+    for (final key in pubspecKeys) {
+      growingKey.add(key);
+      const nothing = '\$\$nothing\$\$';
+      final parent = editor.parseAt(growingKey.dropLast(1));
+      final node =
+          editor.parseAt(growingKey, orElse: () => wrapAsYamlNode(nothing));
+      if (node.value == nothing) {
+        final missingKeys = pubspecKeys.sublist(growingKey.length - 1);
+
+        YamlMap missing = missingKeys.reversed.fold(
+          YamlMap.wrap({}, style: CollectionStyle.BLOCK),
+          (previousValue, element) {
+            return YamlMap.wrap(
+              {element: previousValue},
+              style: CollectionStyle.BLOCK,
+            );
+          },
+        );
+
+        if (parent is YamlMap) {
+          missing = YamlMap.wrap({
+            ...parent,
+            ...missing,
+          });
+        }
+
+        // invalid key, insert scalar
+        editor.update(
+          growingKey.dropLast(1),
+          missing,
+        );
+        break;
+      }
+    }
+
     editor.update(pubspecKeys, newVersionConstraint);
-    pubspec.writeAsStringSync(editor.toString());
+    String generatedYaml = editor.toString();
+    if (!generatedYaml.endsWith('\n')) {
+      generatedYaml += '\n';
+    }
+    pubspec.writeAsStringSync(generatedYaml);
   }
 
   /// Returns the minimum version constraint of a dependency in [package]
