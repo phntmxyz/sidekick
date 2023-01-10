@@ -1,8 +1,9 @@
+import 'dart:io';
+
 import 'package:sidekick_core/sidekick_core.dart';
 
-@Deprecated('Use SidekickContext')
-
 /// Finds the root of the repo
+@Deprecated('Use SidekickContext') // TODO be more precise
 Repository findRepository() {
   final Directory packageHome =
       // Usually the dir is injected
@@ -28,11 +29,10 @@ Repository findRepository() {
   return Repository(root: gitRoot);
 }
 
-@Deprecated('Use SidekickContext')
-
 /// The Git repository of the project
 ///
 /// Might contain a single dart project or multiple packages, or even non dart packages
+@Deprecated('Use SidekickContext') // TODO be more precise
 class Repository {
   Repository({
     required this.root,

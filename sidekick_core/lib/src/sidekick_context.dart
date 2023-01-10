@@ -7,15 +7,95 @@ import 'package:sidekick_core/src/sidekick_package.dart';
 class SidekickContext {
   SidekickContext._();
 
-  // The Plan
+  /// The location of the sidekick package
+  static final Directory sidekickPackageDir = sidekickPackage.root;
 
-  // Called via entrypoint (bash)
-  // - repo root (search up)
-  // - entrypoint (env var)
-  // - sidekick package
+  /// The sidekick package inside the repository
+  static final SidekickPackage sidekickPackage = () {
+    // Platform.script returns
+    // - when CLI is run with `dart bin/main.dart`: /Users/pepe/repos/sidekick/sk_sidekick/bin/main.dart
+    // - when CLI is run with compiled entrypoint: /Users/pepe/repos/sidekick/sk_sidekick/build/cli.exe
+    // - in `UpdateCommand` when the latest `update_sidekick_cli.dart` written to build/update.dart to be executed
+    final script = File.fromUri(Platform.script);
+    if (['bin/main.dart', 'build/cli.exe', 'build/update.dart']
+        .contains(script.uri.pathSegments.takeLast(2).join('/'))) {
+      return SidekickPackage.fromDirectory(script.parent.parent)!;
+    }
 
-  // Executed for debugging
-  // - repo root (search up)
-  // - entrypoint !!! missing !!! TODO dumb search in repo
-  // - sidekick package !!! missing !!! TODO dart vm Script location?
+    final scriptDirectory = script.parent;
+    Directory current = Directory(scriptDirectory.path);
+
+    while (true) {
+      final sidekickPackage = SidekickPackage.fromDirectory(current);
+      if (sidekickPackage != null) {
+        return sidekickPackage;
+      }
+
+      final parent = current.parent;
+      if (parent.path == current.path) {
+        throw "Can't find sidekickPackage from ${scriptDirectory.path}";
+      }
+      current = parent;
+    }
+  }();
+
+  /// The location of the entrypoint
+  ///
+  /// Usually injected from the entrypoint itself via `env.SIDEKICK_ENTRYPOINT_HOME`
+  static final File entryPoint = () {
+    if (_calledViaEntrypoint) {
+      final injectedEntryPointPath = env['SIDEKICK_ENTRYPOINT_HOME'];
+      if (injectedEntryPointPath == null || injectedEntryPointPath.isBlank) {
+        throw 'Injected entrypoint was not set (env.SIDEKICK_ENTRYPOINT_HOME)';
+      }
+      final entrypoint = File(normalize('$injectedEntryPointPath/$cliName'));
+      if (!entrypoint.existsSync()) {
+        throw 'Injected entrypoint does not exist ${entrypoint.absolute.path}';
+      }
+      return entrypoint;
+    } else {
+      Directory current = sidekickPackageDir;
+      final entrypointName = '${cliNameOrNull ?? sidekickPackage.cliName}.sh';
+      while (true) {
+        final entrypoint = current
+            .listSync()
+            .whereType<File>()
+            .where((it) => it.name == entrypointName);
+        if (entrypoint.isNotEmpty) {
+          return entrypoint.single;
+        }
+
+        final parent = current.parent;
+        if (parent.path == current.path) {
+          throw "Can't find entrypoint $entrypointName from ${sidekickPackageDir.path}";
+        }
+        current = parent;
+      }
+    }
+  }();
+
+  /// The git repository root the [sidekickPackage] is located in
+  static final Directory repository = () {
+    bool isGitDir(Directory dir) => dir.directory('.git').existsSync();
+
+    final gitRoot = sidekickPackageDir.findParent(isGitDir);
+
+    if (gitRoot == null) {
+      throw 'Could not find the root of the repository. Searched in '
+          '${entryWorkingDirectory.absolute.path} and '
+          '${sidekickPackageDir.absolute.path}';
+    }
+
+    return gitRoot;
+  }();
+
+  /// Whether the sidekick CLI is currently running through the shell entrypoint
+  ///
+  /// User's run their sidekick CLIs by executing their shell entrypoint,
+  /// [_calledViaEntrypoint] is true in that case
+  ///
+  /// For debugging purposes one may want to run the CLI not through the
+  /// compiled entrypoint but through `dart bin/main.dart`,
+  /// [_calledViaEntrypoint] is false in that case
+  static final _calledViaEntrypoint = env.exists('SIDEKICK_PACKAGE_HOME');
 }
