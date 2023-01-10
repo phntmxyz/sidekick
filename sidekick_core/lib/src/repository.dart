@@ -1,33 +1,11 @@
 import 'dart:io';
 
 import 'package:sidekick_core/sidekick_core.dart';
+import 'package:sidekick_core/src/sidekick_context.dart';
 
 /// Finds the root of the repo
 @Deprecated('Use SidekickContext') // TODO be more precise
-Repository findRepository() {
-  final Directory packageHome =
-      // Usually the dir is injected
-      Repository.cliPackageDir ??
-          // the actual dart .exe located in `build`
-          File.fromUri(Platform.script).parent.parent;
-
-  // Platform.executable can be used to detect if the script was executed
-  // from the run script or via debugger
-
-  bool isGitDir(Directory dir) => dir.directory('.git').existsSync();
-
-  Directory? gitRoot = packageHome.findParent(isGitDir);
-  // fallback to CWD
-  gitRoot ??= entryWorkingDirectory.findParent(isGitDir);
-  if (gitRoot == null) {
-    error(
-      'Could not find the root of the repository. Searched in '
-      '${entryWorkingDirectory.absolute.path} and '
-      '${packageHome.absolute.path}',
-    );
-  }
-  return Repository(root: gitRoot);
-}
+Repository findRepository() => Repository(root: SidekickContext.repository);
 
 /// The Git repository of the project
 ///
@@ -47,84 +25,40 @@ class Repository {
   /// `null` when not executed with [entrypoint]
   ///
   /// Usually you want to use [sidekickPackage]
-  @Deprecated('Use SidekickContext') // TODO be more precise
-  static Directory? get cliPackageDir {
-    final injectedEntryPointPath = env['SIDEKICK_PACKAGE_HOME'];
-    if (injectedEntryPointPath == null || injectedEntryPointPath.isBlank) {
-      return null;
-    }
-    final packageHome = Directory(normalize(injectedEntryPointPath));
-    if (!packageHome.existsSync()) {
-      error(
-        'injected package home does not exist ${packageHome.absolute.path}',
-      );
-    }
-    return packageHome;
-  }
+  @Deprecated('Use SidekickContext.sidekickPackageDir')
+  static Directory? get cliPackageDir => SidekickContext.sidekickPackageDir;
 
   /// The location of the sidekick package
   ///
   /// Throws when not executed with [entrypoint]
-  @Deprecated('Use SidekickContext') // TODO be more precise
-  static Directory get requiredCliPackage {
-    final dir = cliPackageDir;
-    if (dir == null) {
-      throw "env.SIDEKICK_PACKAGE_HOME is not set";
-    }
-    return dir;
-  }
+  @Deprecated('Use SidekickContext.sidekickPackageDir')
+  static Directory get requiredCliPackage => SidekickContext.sidekickPackageDir;
 
   /// The sidekick package inside the repository
   ///
   /// `null` when not executed with [entrypoint]
-  @Deprecated('Use SidekickContext') // TODO be more precise
-  static SidekickPackage? get sidekickPackage {
-    final dir = cliPackageDir;
-    if (dir == null) {
-      return null;
-    }
-    return SidekickPackage.fromDirectory(dir);
-  }
+  @Deprecated('Use SidekickContext.sidekickPackage')
+  static SidekickPackage? get sidekickPackage =>
+      SidekickContext.sidekickPackage;
 
   /// The sidekick package inside the repository
   ///
   /// Throws when not executed with [entrypoint]
-  @Deprecated('Use SidekickContext') // TODO be more precise
-  static SidekickPackage get requiredSidekickPackage {
-    final package = sidekickPackage;
-    if (package == null) {
-      throw "env.SIDEKICK_PACKAGE_HOME is not set";
-    }
-    return package;
-  }
+  @Deprecated('Use SidekickContext.sidekickPackage')
+  static SidekickPackage get requiredSidekickPackage =>
+      SidekickContext.sidekickPackage;
 
   /// The location of the entrypoint
   ///
   /// Usually injected from the entrypoint itself via `env.SIDEKICK_ENTRYPOINT_HOME`
-  @Deprecated('Use SidekickContext') // TODO be more precise
-  static File? get entryPoint {
-    final injectedEntryPointPath = env['SIDEKICK_ENTRYPOINT_HOME'];
-    if (injectedEntryPointPath == null || injectedEntryPointPath.isBlank) {
-      return null;
-    }
-    final entrypoint = File(normalize('$injectedEntryPointPath/$cliName'));
-    if (!entrypoint.existsSync()) {
-      error('injected entrypoint does not exist ${entrypoint.absolute.path}');
-    }
-    return entrypoint;
-  }
+  @Deprecated('Use SidekickContext.entryPoint')
+  static File? get entryPoint => SidekickContext.entryPoint;
 
   /// The location of the entrypoint
   ///
   /// Throws when not executed with [entrypoint]
-  @Deprecated('Use SidekickContext') // TODO be more precise
-  static File get requiredEntryPoint {
-    final file = entryPoint;
-    if (file == null) {
-      throw "env.SIDEKICK_ENTRYPOINT_HOME is not set";
-    }
-    return file;
-  }
+  @Deprecated('Use SidekickContext.entryPoint')
+  static File get requiredEntryPoint => SidekickContext.entryPoint;
 
   /// Returns the list of all packages in the repository
   @Deprecated('Use SidekickContext') // TODO be more precise
