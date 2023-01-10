@@ -5,6 +5,7 @@ import 'package:meta/meta.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:yaml/yaml.dart';
+import 'package:yaml_edit/yaml_edit.dart';
 
 // ignore: avoid_classes_with_only_static_members
 /// Checks and updates dependencies
@@ -60,48 +61,16 @@ abstract class VersionChecker {
   }) {
     final pubspec = package.pubspec;
     final pubspecContent = pubspec.readAsStringSync();
+    final editor = YamlEditor(pubspecContent);
 
     final newVersionConstraint = pinVersion
         ? newMinimumVersion.canonicalizedVersion
         : newMinimumVersion.major > 0
             ? '^${newMinimumVersion.canonicalizedVersion}'
-            : "'>=${newMinimumVersion.canonicalizedVersion} <1.0.0'";
+            : ">=${newMinimumVersion.canonicalizedVersion} <1.0.0";
 
-    // get startTag which matches as many parts of [pubspecKeys] as possible
-    String? largestMatch;
-    final List<String> missingKeys = () {
-      for (int i = 0; i < pubspecKeys.length; i++) {
-        final regex = _createNestedYamlKeyRegex(pubspecKeys.sublist(0, i + 1));
-        final match = regex.firstMatch(pubspecContent);
-        if (match == null) {
-          // no match
-          return pubspecKeys.sublist(i);
-        }
-        largestMatch = match.group(0);
-      }
-      return <String>[];
-    }();
-
-    if (largestMatch == null) {
-      // everything is missing, add it to the end of the file
-      pubspec.writeAsStringSync(
-        '\n${missingKeys.mapIndexed(
-              (index, key) => '${'  ' * index}$key:',
-            ).join('\n')} $newVersionConstraint\n',
-        mode: FileMode.append,
-      );
-    } else {
-      // only a part of the nested block is missing
-      // add the missing part under the existing part
-      pubspec.replaceSectionWith(
-        startTag: largestMatch!,
-        endTag: '\n',
-        content: '${missingKeys.isNotEmpty ? '\n' : ''}${missingKeys.mapIndexed(
-              (index, key) =>
-                  '${'  ' * (index + pubspecKeys.length - missingKeys.length)}$key:',
-            ).join('\n')} $newVersionConstraint',
-      );
-    }
+    editor.update(pubspecKeys, newVersionConstraint);
+    pubspec.writeAsStringSync(editor.toString());
   }
 
   /// Returns the minimum version constraint of a dependency in [package]
@@ -238,32 +207,6 @@ _Option<String?> _readFromYaml(File yamlFile, List<Object> path) {
   }
 
   return _Some(current as String?);
-}
-
-/// Return regex matching a potentially nested yaml key
-///
-/// Examples:
-/// - createNestedVersionYamlRegex(['version'])
-///   -> '^dependencies:'
-/// - createNestedVersionYamlRegex(['dependencies', 'foo'])
-///   -> '^dependencies:\\s*(\\n  .*)*\\n  foo:'
-/// - createNestedVersionYamlRegex(['dependencies', 'foo', 'bar'])
-///   -> '^dependencies:\\s*(\\n  .*)*\\n  foo:\\s*(\\n    .*)*\\n    bar:'
-RegExp _createNestedYamlKeyRegex(List<String> keys) {
-  final sb = StringBuffer('^');
-  for (int i = 0; i < keys.length; i++) {
-    final key = keys[i];
-    sb.write('$key:');
-
-    if (i < keys.length - 1) {
-      final indentation = '  ' * (i + 1);
-      sb.write('\\s*(\\n$indentation.*)*\\n$indentation');
-    }
-  }
-  return RegExp(
-    sb.toString(),
-    multiLine: true,
-  );
 }
 
 extension on VersionConstraint {
