@@ -70,16 +70,22 @@ abstract class VersionChecker {
             ? '^${newMinimumVersion.canonicalizedVersion}'
             : ">=${newMinimumVersion.canonicalizedVersion} <1.0.0";
 
-    final growingKey = [];
+    // This whole ceremony creates missing keys until reaching the actual key to update
+    final existingKeys = [];
     for (final key in pubspecKeys) {
-      growingKey.add(key);
+      existingKeys.add(key);
+      // use this pseudo object as fallback when a value is absent
       const nothing = '\$\$nothing\$\$';
-      final parent = editor.parseAt(growingKey.dropLast(1));
+      final parent = editor.parseAt(existingKeys.dropLast(1));
       final node =
-          editor.parseAt(growingKey, orElse: () => wrapAsYamlNode(nothing));
+          editor.parseAt(existingKeys, orElse: () => wrapAsYamlNode(nothing));
       if (node.value == nothing) {
-        final missingKeys = pubspecKeys.sublist(growingKey.length - 1);
+        // The node is missing beginning at this point in the tree
+        final missingKeys = pubspecKeys.sublist(existingKeys.length - 1);
 
+        // Create the complete missing object and insert it as a single block
+        // This helps YamlEditor to actually use the BLOCK syntax. Adding the
+        // nodes one at a time falls back to FLOW syntax
         YamlMap missing = missingKeys.reversed.fold(
           YamlMap.wrap({}, style: CollectionStyle.BLOCK),
           (previousValue, element) {
@@ -90,24 +96,29 @@ abstract class VersionChecker {
           },
         );
 
+        // We don't want to replace the complete parent node, only add new keys
         if (parent is YamlMap) {
+          // YamlMap is unmodifiable, therefore create a new one
           missing = YamlMap.wrap({
             ...parent,
             ...missing,
           });
         }
 
-        // invalid key, insert scalar
+        // insert the full missing nodes and exit
         editor.update(
-          growingKey.dropLast(1),
+          existingKeys.dropLast(1),
           missing,
         );
         break;
       }
     }
 
+    // All parent nodes have been added, finally replace the value.
     editor.update(pubspecKeys, newVersionConstraint);
     String generatedYaml = editor.toString();
+
+    // Best practice, close the file with \n (which YamlEditor removed)
     if (!generatedYaml.endsWith('\n')) {
       generatedYaml += '\n';
     }
