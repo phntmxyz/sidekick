@@ -8,10 +8,10 @@ class SidekickContext {
   SidekickContext._();
 
   /// The location of the sidekick package
-  static final Directory sidekickPackageDir = sidekickPackage.root;
+  static Directory get sidekickPackageDir => sidekickPackage.root;
 
   /// The sidekick package inside the repository
-  static final SidekickPackage sidekickPackage = () {
+  static SidekickPackage get sidekickPackage {
     final injectedPackageHome = env['SIDEKICK_PACKAGE_HOME'];
     if (injectedPackageHome != null && injectedPackageHome.isNotBlank) {
       return SidekickPackage.fromDirectory(Directory(injectedPackageHome))!;
@@ -41,12 +41,12 @@ class SidekickContext {
       }
       current = parent;
     }
-  }();
+  }
 
   /// The location of the entrypoint
   ///
   /// Usually injected from the entrypoint itself via `env.SIDEKICK_ENTRYPOINT_HOME`
-  static final File entryPoint = () {
+  static File get entryPoint {
     if (_calledViaEntrypoint) {
       final injectedEntryPointPath = env['SIDEKICK_ENTRYPOINT_HOME'];
       if (injectedEntryPointPath == null || injectedEntryPointPath.isBlank) {
@@ -76,10 +76,10 @@ class SidekickContext {
         current = parent;
       }
     }
-  }();
+  }
 
   /// The git repository root the [sidekickPackage] is located in
-  static final Directory repository = () {
+  static Directory get repository {
     bool isGitDir(Directory dir) => dir.directory('.git').existsSync();
 
     final gitRoot = sidekickPackageDir.findParent(isGitDir);
@@ -91,7 +91,7 @@ class SidekickContext {
     }
 
     return gitRoot;
-  }();
+  }
 
   /// Whether the sidekick CLI is currently running through the shell entrypoint
   ///
