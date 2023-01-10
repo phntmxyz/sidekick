@@ -1,5 +1,7 @@
 import 'package:sidekick_core/sidekick_core.dart';
 
+@Deprecated('Use SidekickContext')
+
 /// Finds the root of the repo
 Repository findRepository() {
   final Directory packageHome =
@@ -26,6 +28,8 @@ Repository findRepository() {
   return Repository(root: gitRoot);
 }
 
+@Deprecated('Use SidekickContext')
+
 /// The Git repository of the project
 ///
 /// Might contain a single dart project or multiple packages, or even non dart packages
@@ -43,6 +47,7 @@ class Repository {
   /// `null` when not executed with [entrypoint]
   ///
   /// Usually you want to use [sidekickPackage]
+  @Deprecated('Use SidekickContext') // TODO be more precise
   static Directory? get cliPackageDir {
     final injectedEntryPointPath = env['SIDEKICK_PACKAGE_HOME'];
     if (injectedEntryPointPath == null || injectedEntryPointPath.isBlank) {
@@ -60,6 +65,7 @@ class Repository {
   /// The location of the sidekick package
   ///
   /// Throws when not executed with [entrypoint]
+  @Deprecated('Use SidekickContext') // TODO be more precise
   static Directory get requiredCliPackage {
     final dir = cliPackageDir;
     if (dir == null) {
@@ -71,6 +77,7 @@ class Repository {
   /// The sidekick package inside the repository
   ///
   /// `null` when not executed with [entrypoint]
+  @Deprecated('Use SidekickContext') // TODO be more precise
   static SidekickPackage? get sidekickPackage {
     final dir = cliPackageDir;
     if (dir == null) {
@@ -82,6 +89,7 @@ class Repository {
   /// The sidekick package inside the repository
   ///
   /// Throws when not executed with [entrypoint]
+  @Deprecated('Use SidekickContext') // TODO be more precise
   static SidekickPackage get requiredSidekickPackage {
     final package = sidekickPackage;
     if (package == null) {
@@ -93,6 +101,7 @@ class Repository {
   /// The location of the entrypoint
   ///
   /// Usually injected from the entrypoint itself via `env.SIDEKICK_ENTRYPOINT_HOME`
+  @Deprecated('Use SidekickContext') // TODO be more precise
   static File? get entryPoint {
     final injectedEntryPointPath = env['SIDEKICK_ENTRYPOINT_HOME'];
     if (injectedEntryPointPath == null || injectedEntryPointPath.isBlank) {
@@ -108,6 +117,7 @@ class Repository {
   /// The location of the entrypoint
   ///
   /// Throws when not executed with [entrypoint]
+  @Deprecated('Use SidekickContext') // TODO be more precise
   static File get requiredEntryPoint {
     final file = entryPoint;
     if (file == null) {
@@ -117,6 +127,7 @@ class Repository {
   }
 
   /// Returns the list of all packages in the repository
+  @Deprecated('Use SidekickContext') // TODO be more precise
   List<DartPackage> findAllPackages() {
     return root
         .allSubDirectories((dir) {

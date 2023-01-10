@@ -279,6 +279,7 @@ String get cliName {
 String? get cliNameOrNull => _activeRunner?.executableName;
 
 /// The root of the repository which contains all projects
+// TODO can this be replaced with SidekickContext?
 Repository get repository {
   if (_activeRunner == null) {
     throw OutOfCommandRunnerScopeException('repository');
