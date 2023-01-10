@@ -18,7 +18,6 @@ Future<void> main(List<String> args) async {
   final currentSidekickCliVersion = Version.parse(args[1]);
   final targetSidekickCoreVersion = Version.parse(args[2]);
 
-
   // TODO: verify that the package is named `<cliName>_sidekick`
 
   print(

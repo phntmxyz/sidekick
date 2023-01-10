@@ -184,6 +184,7 @@ void main() {
           tempDir.deleteSync(recursive: true);
           env['SIDEKICK_PACKAGE_HOME'] = null;
         });
+        tempDir.file('pubspec.yaml').writeAsStringSync('name: placeholder');
         final fileToBeChanged = tempDir.file('foo')..writeAsStringSync('''
 void main(){
   print('foo');
@@ -233,6 +234,7 @@ void main(){
       await observeFileCreations((createdFiles) async {
         final tempDir = Directory.systemTemp.createTempSync();
         env['SIDEKICK_PACKAGE_HOME'] = tempDir.absolute.path;
+        tempDir.file('pubspec.yaml').writeAsStringSync('name: placeholder');
         final patch = GitPatchMigrationStep(
           () => 'corrupt patch',
           description: 'test patch',
