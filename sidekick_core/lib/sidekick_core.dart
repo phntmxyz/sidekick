@@ -192,28 +192,33 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
   /// minimum version of their CLI and that version doesn't match with the
   /// CLI version listed in the pubspec at the path ['sidekick', 'cli_version']
   void _checkCliVersionIntegrity() {
-    final sidekickCoreVersion = VersionChecker.getMinimumVersionConstraint(
-      Repository.requiredSidekickPackage,
-      ['dependencies', 'sidekick_core'],
-    );
-    final sidekickCliVersion = VersionChecker.getMinimumVersionConstraint(
-      Repository.requiredSidekickPackage,
-      ['sidekick', 'cli_version'],
-    );
-
-    // old CLI which has no version information yet
-    // _checkForUpdates will print a warning to update the CLI in this case
-    if (sidekickCliVersion == Version.none) {
-      return;
-    }
-
-    if (sidekickCliVersion != sidekickCoreVersion) {
-      printerr(
-        'The sidekick_core version is incompatible with the bash scripts '
-        'in /tool and entrypoint because you probably updated the '
-        'sidekick_core dependency of your CLI package manually.\n'
-        'Please run ${cyan('$cliName sidekick update')} to repair your CLI.',
+    try {
+      final sidekickCoreVersion = VersionChecker.getMinimumVersionConstraint(
+        Repository.requiredSidekickPackage,
+        ['dependencies', 'sidekick_core'],
       );
+      final sidekickCliVersion = VersionChecker.getMinimumVersionConstraint(
+        Repository.requiredSidekickPackage,
+        ['sidekick', 'cli_version'],
+      );
+
+      // old CLI which has no version information yet
+      // _checkForUpdates will print a warning to update the CLI in this case
+      if (sidekickCliVersion == Version.none) {
+        return;
+      }
+
+      if (sidekickCliVersion != sidekickCoreVersion) {
+        printerr(
+          'The sidekick_core version is incompatible with the bash scripts '
+          'in /tool and entrypoint because you probably updated the '
+          'sidekick_core dependency of your CLI package manually.\n'
+          'Please run ${cyan('$cliName sidekick update')} to repair your CLI.',
+        );
+      }
+    } catch (e, s) {
+      printerr(e.toString());
+      printerr(s.toString());
     }
   }
 
