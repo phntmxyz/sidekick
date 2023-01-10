@@ -93,6 +93,31 @@ dependencies:
 ''',
       );
     });
+
+    test('replace path dependency with pub version', () async {
+      pubspecYamlFile.writeAsStringSync('''
+name: dashi
+dependencies:
+  sidekick_core:
+    path: ../sidekick_core
+''');
+
+      VersionChecker.updateVersionConstraint(
+        package: package,
+        pubspecKeys: ['dependencies', 'sidekick_core'],
+        newMinimumVersion: Version(0, 14, 0),
+        pinVersion: true,
+      );
+
+      expect(
+        pubspecYamlFile.readAsStringSync(),
+        '''
+name: dashi
+dependencies:
+  sidekick_core: 0.14.0
+''',
+      );
+    });
   });
 
   group('VersionChecker.getMinimumVersionConstraint', () {
