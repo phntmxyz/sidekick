@@ -36,21 +36,33 @@ io.File tempExecutableScriptFile(String content, {Directory? tempDir}) {
 }
 
 /// Executes a script by first writing it as file and then running it as shell script
+///
+/// Use [args] to pass arguments to the script
+///
+/// Use [workingDirectory] to set the working directory of the script, default
+/// to current working directory
+///
+/// When [terminal] is `true` (default: `false`) Stdio handles are inherited by
+/// the child process. This allows stdin to read by the script
 dcli.Progress writeAndRunShellScript(
   String scriptContent, {
+  List<String> args = const [],
   Directory? workingDirectory,
   dcli.Progress? progress,
+  bool terminal = false,
 }) {
   final script = tempExecutableScriptFile(scriptContent);
   final Progress scriptProgress =
       progress ?? Progress(print, stderr: printerr, captureStderr: true);
 
   try {
-    return dcli.start(
+    return dcli.startFromArgs(
       script.absolute.path,
+      args,
       workingDirectory:
           workingDirectory?.absolute.path ?? entryWorkingDirectory.path,
       progress: scriptProgress,
+      terminal: terminal,
     );
   } catch (e) {
     print(
