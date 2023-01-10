@@ -254,7 +254,10 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
 }
 
 /// Enables the [SidekickCommandRunner] to check for `sidekick` updates
-bool get _isUpdateCheckEnabled => env['SIDEKICK_ENABLE_UPDATE_CHECK'] == 'true';
+///
+/// default to false, unless `export SIDEKICK_ENABLE_UPDATE_CHECK=true` is set
+bool get _isUpdateCheckEnabled =>
+    env['SIDEKICK_ENABLE_UPDATE_CHECK'] != 'false';
 
 typedef Unmount = void Function();
 
