@@ -122,7 +122,7 @@ class BashCommandException implements Exception {
   final StackTrace stack;
 
   /// The original exception from dcli
-  final Object? cause;
+  final Object cause;
 
   const BashCommandException({
     required this.script,

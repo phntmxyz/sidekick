@@ -88,14 +88,8 @@ void main() {
           name: 'script',
         ),
       );
-      final fakeStdOut = FakeStdoutStream();
-      final fakeStdErr = FakeStdoutStream();
       try {
-        await overrideIoStreams(
-          stdout: () => fakeStdOut,
-          stderr: () => fakeStdErr,
-          body: () => runner.run(['script']),
-        );
+        await runner.run(['script']);
         fail('should throw');
       } catch (e) {
         expect(
@@ -103,6 +97,17 @@ void main() {
           isA<BashCommandException>()
               .having((it) => it.exitCode, 'exitCode', 34)
               .having((it) => it.script, 'script', contains('#scriptContent'))
+              .having((it) => it.commandName, 'commandName', 'script')
+              .having((it) => it.arguments, 'arguments', [])
+              .having((it) => it.cause, 'cause', isA<RunException>())
+              .having(
+                  (it) => it.stack,
+                  'stack',
+                  isA<StackTrace>().having(
+                    (it) => it.toString(),
+                    'toString',
+                    contains('bash_command_test.dart'),
+                  ))
               .having(
                 (it) => it.toString(),
                 'toString()',
@@ -115,8 +120,6 @@ void main() {
               ),
         );
       }
-      expect(fakeStdOut.lines.join(), "");
-      expect(fakeStdErr.lines.join(), "");
     });
   });
 
@@ -133,35 +136,22 @@ void main() {
           name: 'script',
         ),
       );
-      final fakeStdOut = FakeStdoutStream();
-      final fakeStdErr = FakeStdoutStream();
       try {
-        await overrideIoStreams(
-          stdout: () => fakeStdOut,
-          stderr: () => fakeStdErr,
-          body: () => runner.run(['script', 'asdf', 'qwer']),
-        );
+        await runner.run(['script', 'asdf', 'qwer']);
         fail('should throw');
       } catch (e) {
         expect(
           e,
           isA<BashCommandException>()
               .having((it) => it.exitCode, 'exitCode', 34)
-              .having((it) => it.script, 'script', contains('#scriptContent'))
               .having(
-                (it) => it.toString(),
-                'toString()',
-                contains('exitCode=34'),
-              )
-              .having(
-                (it) => it.toString(),
-                'toString()',
-                contains('asdf qwer'),
-              ),
+                  (it) => it.arguments, 'arguments', ['asdf', 'qwer']).having(
+            (it) => it.toString(),
+            'toString()',
+            contains('asdf qwer'),
+          ),
         );
       }
-      expect(fakeStdOut.lines.join(), "");
-      expect(fakeStdErr.lines.join(), "");
     });
   });
 }
