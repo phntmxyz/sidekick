@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:sidekick_core/sidekick_core.dart';
 import 'package:dcli/dcli.dart' as dcli;
+import 'package:sidekick_core/sidekick_core.dart';
 
 /// A Command that wraps a bash script
 ///
@@ -135,8 +135,10 @@ class BashCommandException implements Exception {
 
   @override
   String toString() {
-    String args = arguments.joinToString();
-    if (args.isBlank) {
+    String args = arguments.joinToString(separator: ' ');
+    if (!args.isBlank) {
+      args = "($args)";
+    } else {
       args = '<no arguments>';
     }
     return "Error (exitCode=$exitCode) executing script of command '$commandName' "

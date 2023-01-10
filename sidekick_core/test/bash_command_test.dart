@@ -75,7 +75,7 @@ void main() {
     });
   });
 
-  test('print error code and script on error', () async {
+  test('throw BashCommandException on error', () async {
     await insideFakeProjectWithSidekick((dir) async {
       final runner = initializeSidekick(
         name: 'dash',
@@ -104,9 +104,60 @@ void main() {
               .having((it) => it.exitCode, 'exitCode', 34)
               .having((it) => it.script, 'script', contains('#scriptContent'))
               .having(
-                  (it) => it.toString(), 'toString()', contains('exitCode=34'))
-              .having((it) => it.toString(), 'toString()',
-                  contains('<no arguments>')),
+                (it) => it.toString(),
+                'toString()',
+                contains('exitCode=34'),
+              )
+              .having(
+                (it) => it.toString(),
+                'toString()',
+                contains('<no arguments>'),
+              ),
+        );
+      }
+      expect(fakeStdOut.lines.join(), "");
+      expect(fakeStdErr.lines.join(), "");
+    });
+  });
+
+  test('BashCommandException contains arguments', () async {
+    await insideFakeProjectWithSidekick((dir) async {
+      final runner = initializeSidekick(
+        name: 'dash',
+        dartSdkPath: fakeDartSdk().path,
+      );
+      runner.addCommand(
+        BashCommand(
+          script: () => '#scriptContent\nexit 34',
+          description: 'description',
+          name: 'script',
+        ),
+      );
+      final fakeStdOut = FakeStdoutStream();
+      final fakeStdErr = FakeStdoutStream();
+      try {
+        await overrideIoStreams(
+          stdout: () => fakeStdOut,
+          stderr: () => fakeStdErr,
+          body: () => runner.run(['script', 'asdf', 'qwer']),
+        );
+        fail('should throw');
+      } catch (e) {
+        expect(
+          e,
+          isA<BashCommandException>()
+              .having((it) => it.exitCode, 'exitCode', 34)
+              .having((it) => it.script, 'script', contains('#scriptContent'))
+              .having(
+                (it) => it.toString(),
+                'toString()',
+                contains('exitCode=34'),
+              )
+              .having(
+                (it) => it.toString(),
+                'toString()',
+                contains('asdf qwer'),
+              ),
         );
       }
       expect(fakeStdOut.lines.join(), "");
