@@ -118,6 +118,33 @@ dependencies:
 ''',
       );
     });
+
+    test('replace path dependency with pub version', () async {
+      pubspecYamlFile.writeAsStringSync('''
+name: dashi
+dependencies:
+  some_sidekick_plugin:
+    git:
+      url: git@github.com:phntmxyz/some_sidekick_plugin.git
+      ref: main
+''');
+
+      VersionChecker.updateVersionConstraint(
+        package: package,
+        pubspecKeys: ['dependencies', 'some_sidekick_plugin'],
+        newMinimumVersion: Version(0, 14, 0),
+        pinVersion: true,
+      );
+
+      expect(
+        pubspecYamlFile.readAsStringSync(),
+        '''
+name: dashi
+dependencies:
+  some_sidekick_plugin: 0.14.0
+''',
+      );
+    });
   });
 
   group('VersionChecker.getMinimumVersionConstraint', () {
