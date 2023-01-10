@@ -18,7 +18,8 @@ Future<void> addImport(File file, String import) async {
   if (parsed is ParsedUnitResult) {
     final imports = parsed.unit.directives.whereType<ImportDirective>();
     // find position to insert import alphabetically
-    final after = imports.firstOrNullWhere((line) => line.toSource().compareTo(import) > 0);
+    final after = imports
+        .firstOrNullWhere((line) => line.toSource().compareTo(import) > 0);
     final position = after?.end ?? imports.lastOrNull?.end ?? 0;
     final content = file.readAsStringSync();
     if (content.contains(import)) {
