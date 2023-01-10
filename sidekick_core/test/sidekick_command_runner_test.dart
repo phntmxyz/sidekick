@@ -13,11 +13,11 @@ void main() {
     addTearDown(() => env['SIDEKICK_ENABLE_UPDATE_CHECK'] = null);
   });
 
-  final expectedCliVersionIntegrityWarning =
-      'The sidekick_core version is incompatible with the bash scripts '
-      'in /tool and entrypoint because you probably updated the '
-      'sidekick_core dependency of your CLI package manually.\n'
-      'Please run ${cyan('dash sidekick update')} to repair your CLI.';
+  final expectedCliVersionIntegrityWarnings = [
+    contains('sidekick_core:0.0.2'),
+    contains('sidekick.cli_version 0.0.1'),
+    contains('dash sidekick update'),
+  ];
   final expectedOutdatedWarning = '${yellow('Update available!')}\n'
       'Run ${cyan('dash sidekick update')} to update your CLI.';
 
@@ -34,11 +34,11 @@ void main() {
             await runner.run(['-h']);
 
             final expectedWarnings = [
-              expectedCliVersionIntegrityWarning,
-              expectedOutdatedWarning,
+              ...expectedCliVersionIntegrityWarnings,
+              contains(expectedOutdatedWarning),
             ];
 
-            expect(fakeStderr.lines, containsAll(expectedWarnings));
+            expect(fakeStderr.lines.join('\n'), allOf(expectedWarnings));
           },
         );
       },
@@ -83,10 +83,8 @@ void main() {
 
             await runner.run(['-h']);
 
-            expect(
-              fakeStderr.lines,
-              contains(expectedCliVersionIntegrityWarning),
-            );
+            expect(fakeStderr.lines.join('\n'),
+                allOf(expectedCliVersionIntegrityWarnings));
           },
         );
       },
@@ -132,13 +130,12 @@ void main() {
             runner.addCommand(_WrapperCommand());
 
             await runner.run(['wrapper', 'update', '-h']);
-
             final expectedWarnings = [
-              expectedCliVersionIntegrityWarning,
-              expectedOutdatedWarning,
+              ...expectedCliVersionIntegrityWarnings,
+              contains(expectedOutdatedWarning),
             ];
 
-            expect(fakeStderr.lines, containsAll(expectedWarnings));
+            expect(fakeStderr.lines.join('\n'), allOf(expectedWarnings));
           },
         );
       },
