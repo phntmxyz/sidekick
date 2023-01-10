@@ -12,6 +12,11 @@ class SidekickContext {
 
   /// The sidekick package inside the repository
   static final SidekickPackage sidekickPackage = () {
+    final injectedPackageHome = env['SIDEKICK_PACKAGE_HOME'];
+    if (injectedPackageHome != null && injectedPackageHome.isNotBlank) {
+      return SidekickPackage.fromDirectory(Directory(injectedPackageHome))!;
+    }
+
     // - when CLI is run with `dart bin/main.dart`: /Users/pepe/repos/sidekick/sk_sidekick/bin/main.dart
     // - when CLI is run with compiled entrypoint: /Users/pepe/repos/sidekick/sk_sidekick/build/cli.exe
     // - in `UpdateCommand` when the latest `update_sidekick_cli.dart` written to build/update.dart to be executed
