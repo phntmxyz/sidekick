@@ -32,7 +32,6 @@ io.File tempExecutableScriptFile(String content, {Directory? tempDir}) {
   script.writeAsStringSync(content);
   posix.chmod(script.path, permission: '755');
   return script;
-  // TODO add teardown and remove it again
 }
 
 /// Executes a script by first writing it as file and then running it as shell script
