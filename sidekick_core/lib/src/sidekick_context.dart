@@ -12,11 +12,10 @@ class SidekickContext {
 
   /// The sidekick package inside the repository
   static final SidekickPackage sidekickPackage = () {
-    // Platform.script returns
     // - when CLI is run with `dart bin/main.dart`: /Users/pepe/repos/sidekick/sk_sidekick/bin/main.dart
     // - when CLI is run with compiled entrypoint: /Users/pepe/repos/sidekick/sk_sidekick/build/cli.exe
     // - in `UpdateCommand` when the latest `update_sidekick_cli.dart` written to build/update.dart to be executed
-    final script = File.fromUri(Platform.script);
+    final script = File(DartScript.self.pathToScript);
     if (['bin/main.dart', 'build/cli.exe', 'build/update.dart']
         .contains(script.uri.pathSegments.takeLast(2).join('/'))) {
       return SidekickPackage.fromDirectory(script.parent.parent)!;
