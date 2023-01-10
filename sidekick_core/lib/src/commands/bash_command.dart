@@ -88,15 +88,61 @@ class BashCommand extends ForwardCommand {
         progress: progress,
         terminal: withStdIn,
       );
-    } catch (e) {
-      printerr(
-        "\nError executing script '$name' (exitCode=${progress.exitCode}):\n"
-        "$bashScript\n\n"
-        "Error executing script '$name' (exitCode=${progress.exitCode})",
+    } catch (e, stack) {
+      throw BashCommandException(
+        script: bashScript,
+        commandName: name,
+        arguments: argResults!.arguments,
+        exitCode: progress.exitCode!,
+        cause: e,
+        stack: stack,
       );
-      rethrow;
     } finally {
       scriptFile.deleteSync(recursive: true);
     }
+  }
+}
+
+/// Exception thrown when a [BashCommand] fails containing all the information
+/// about the script and its error
+class BashCommandException implements Exception {
+  /// The actual script content that was executed
+  final String script;
+
+  /// The name of the command that executed this script
+  final String commandName;
+
+  /// The arguments passed into the command
+  final List<String> arguments;
+
+  /// The exit code of the script that caused the error. (Always != `0`)
+  final int exitCode;
+
+  /// The complete stacktrace, going into dcli which was ultimately executing this script
+  final StackTrace stack;
+
+  /// The original exception from dcli
+  final Object? cause;
+
+  const BashCommandException({
+    required this.script,
+    required this.commandName,
+    required this.arguments,
+    required this.exitCode,
+    required this.stack,
+    required this.cause,
+  });
+
+  @override
+  String toString() {
+    String args = arguments.joinToString();
+    if (args.isBlank) {
+      args = '<no arguments>';
+    }
+    return "Error (exitCode=$exitCode) executing script of command '$commandName' "
+        "with arguments: $args\n\n"
+        "'''bash\n"
+        "${script.trimRight()}\n"
+        "'''\n\n";
   }
 }

@@ -100,18 +100,17 @@ void main() {
       } catch (e) {
         expect(
           e,
-          isA<RunException>().having((it) => it.exitCode, 'exitCode', 34),
+          isA<BashCommandException>()
+              .having((it) => it.exitCode, 'exitCode', 34)
+              .having((it) => it.script, 'script', contains('#scriptContent'))
+              .having(
+                  (it) => it.toString(), 'toString()', contains('exitCode=34'))
+              .having((it) => it.toString(), 'toString()',
+                  contains('<no arguments>')),
         );
       }
-
-      expect(fakeStdErr.lines.join(), contains('exitCode=34'));
-      expect(fakeStdErr.lines.join(), contains('#scriptContent'));
-      expect(fakeStdErr.lines.join(), contains('exit 34'));
-      expect(
-        fakeStdErr.lines.join(),
-        contains("Error executing script 'script'"),
-      );
       expect(fakeStdOut.lines.join(), "");
+      expect(fakeStdErr.lines.join(), "");
     });
   });
 }
