@@ -56,5 +56,6 @@ class GlobalSidekickCommandRunner extends CommandRunner {
     return super.run(args);
   }
 
-  static const _desc = 'Generator for a sidekick command line application (cli)';
+  static const _desc =
+      'Generator for a sidekick command line application (cli)';
 }
