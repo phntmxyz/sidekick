@@ -113,7 +113,6 @@ class SidekickContext {
 
     if (gitRoot == null) {
       throw 'Could not find the root of the repository. Searched in '
-          '${entryWorkingDirectory.absolute.path} and '
           '${sidekickPackageDir.absolute.path}';
     }
 
