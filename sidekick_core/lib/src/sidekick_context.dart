@@ -69,19 +69,20 @@ class SidekickContext {
 
     final script = File(DartScript.self.pathToScript);
     final scriptPath = script.uri.path;
+    final pathSep = Platform.pathSeparator;
 
-    // When CLI is run with compiled entryPoint: /Users/pepe/repos/sidekick/sk_sidekick/build/cli.exe
-    if (scriptPath.endsWith('build/cli.exe')) {
+    // When CLI is run with compiled entryPoint: <sidekick package>/build/cli.exe
+    if (scriptPath.endsWith('${pathSep}build${pathSep}cli.exe')) {
       return SidekickPackage.fromDirectory(script.parent.parent)!;
     }
 
-    // When CLI is run with `dart bin/main.dart`: /Users/pepe/repos/sidekick/sk_sidekick/bin/main.dart
-    if (scriptPath.endsWith('/bin/main.dart')) {
+    // When CLI is run with `dart bin/main.dart`: <sidekick package>/bin/main.dart
+    if (scriptPath.endsWith('${pathSep}bin${pathSep}main.dart')) {
       return SidekickPackage.fromDirectory(script.parent.parent)!;
     }
 
-    // in `UpdateCommand` when the latest `update_sidekick_cli.dart` written to build/update.dart to be executed
-    if (scriptPath.endsWith('/build/update.dart')) {
+    // in `UpdateCommand` when the latest `update_sidekick_cli.dart` is written to <sidekick package>/build/update.dart to be executed
+    if (scriptPath.endsWith('${pathSep}bin${pathSep}update.dart')) {
       return SidekickPackage.fromDirectory(script.parent.parent)!;
     }
 
