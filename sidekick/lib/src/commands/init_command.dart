@@ -98,7 +98,7 @@ class InitCommand extends Command {
         print(
           '\n'
           'Your current sidekick version would be downgraded '
-          'from ${sidekickPackageCliVersion.toString()} to ${core.version.toString()}',
+          'from $packageVersion to ${core.version}',
         );
         final downgrade =
             dcli.confirm('Do you want to downgrade?', defaultValue: false);
