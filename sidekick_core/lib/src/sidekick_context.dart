@@ -68,8 +68,12 @@ class SidekickContext {
       }
       return entrypoint;
     } else {
+      // Fallback strategy: Search all parents directories for the entrypoint
+      // This case is used when debugging the cli and the dart program is
+      // started on the DartVM, and not called and compiled with the entrypoint
+      final entrypointName = cliNameOrNull ?? sidekickPackage.cliName;
+
       Directory current = sidekickPackageDir;
-      final entrypointName = '${cliNameOrNull ?? sidekickPackage.cliName}.sh';
       while (true) {
         final entrypoint = current
             .listSync()
