@@ -101,13 +101,14 @@ void main() {
               .having((it) => it.arguments, 'arguments', [])
               .having((it) => it.cause, 'cause', isA<RunException>())
               .having(
-                  (it) => it.stack,
-                  'stack',
-                  isA<StackTrace>().having(
-                    (it) => it.toString(),
-                    'toString',
-                    contains('bash_command_test.dart'),
-                  ))
+                (it) => it.stack,
+                'stack',
+                isA<StackTrace>().having(
+                  (it) => it.toString(),
+                  'toString',
+                  contains('bash_command_test.dart'),
+                ),
+              )
               .having(
                 (it) => it.toString(),
                 'toString()',
@@ -145,7 +146,10 @@ void main() {
           isA<BashCommandException>()
               .having((it) => it.exitCode, 'exitCode', 34)
               .having(
-                  (it) => it.arguments, 'arguments', ['asdf', 'qwer']).having(
+            (it) => it.arguments,
+            'arguments',
+            ['asdf', 'qwer'],
+          ).having(
             (it) => it.toString(),
             'toString()',
             contains('asdf qwer'),
