@@ -46,15 +46,24 @@ class DepsCommand extends Command {
 
     final errorBuffer = StringBuffer();
 
-    final excluded = excludeGlob
+    final globExcludes = excludeGlob
         .expand((rule) {
           // start search at repo root
           final root = repository.root.path;
           return Glob("$root/$rule").listSync(root: root);
         })
         .whereType<Directory>()
-        .mapNotNull((e) => DartPackage.fromDirectory(e))
-        .append(exclude);
+        .mapNotNull((e) => DartPackage.fromDirectory(e));
+
+    final excluded = [
+      ...exclude,
+      ...globExcludes,
+      // exclude the sidekick package, because it should load it's dependencies
+      // using the embedded sdk.
+      // Since this command is already running, the deps are already loaded.
+      DartPackage.fromDirectory(Repository.requiredCliPackage)!,
+    ];
+
     for (final package in allPackages.whereNot(excluded.contains)) {
       try {
         _getDependencies(package);

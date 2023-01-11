@@ -42,7 +42,6 @@ environment:
           expect(exitCode, 0);
 
           final expectedPackages = [
-            'dash',
             'main_project',
             'foo_a',
             'foo_b',
@@ -80,7 +79,6 @@ environment:
           final includedPackages = [
             'test_a',
             'test_b',
-            'dash',
           ].map((e) => yellow('=== package $e ==='));
           expect(fakeStdOut.lines, containsAll(includedPackages));
 
@@ -129,7 +127,6 @@ environment:
             'main_project',
             'test_a',
             'test_b',
-            'dash',
             'foo_a',
             'foo_b',
           ].map((e) => yellow('=== package $e ==='));
@@ -177,7 +174,6 @@ environment:
             'main_project',
             'test_a',
             'test_b',
-            'dash',
           ].map((e) => yellow('=== package $e ==='));
           expect(fakeStdOut.lines, containsAll(includedPackages));
 
