@@ -25,7 +25,9 @@ class SidekickContext {
   // SidekickContextCache cache;
 
   /// Returns the name of the CLI
-  static String get cliName => throw 'TODO';
+  static String get cliName {
+    return sidekickPackage.cliName;
+  }
 
   /// Returns the directory of the Flutter SDK sidekick uses for the [flutter] command
   ///
@@ -43,9 +45,6 @@ class SidekickContext {
   /// The dartSdkPath can be set in [initializeSidekick].
   static Directory? get dartSdk => throw 'TODO';
 
-  /// The location of the sidekick package
-  static Directory get sidekickPackageDir => sidekickPackage.root;
-
   /// The main package/app which should be executed by the [flutter] command
   ///
   /// The mainProjectPath can be set in [initializeSidekick].
@@ -53,6 +52,9 @@ class SidekickContext {
   /// It's optional, not every project has a mainProject, there are repositories
   /// with zero or multiple projects.
   static DartPackage? get mainProject => throw 'TODO';
+
+  /// The location of the sidekick package
+  static Directory get sidekickPackageDir => sidekickPackage.root;
 
   /// The sidekick package inside the repository
   static SidekickPackage get sidekickPackage {
