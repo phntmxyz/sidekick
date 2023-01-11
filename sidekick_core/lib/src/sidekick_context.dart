@@ -23,6 +23,19 @@ class SidekickContext {
   //  Command to prevent multiple (expensive) lookups
   // SidekickContextCache cache;
 
+  /// Returns the name of the CLI
+  static String get cliName => throw 'TODO';
+
+  /// Returns the Directory of the Flutter SDK, which the [flutter] and [dart]
+  /// functions connect to.
+  static Directory? get flutterSdk => throw 'TODO';
+
+  /// Returns the Directory of the Flutter SDK, which the [dart] functions
+  /// connect to.
+  ///
+  /// Overrides the Dart SDK of [flutterSdk] when set
+  static Directory? get dartSdk => throw 'TODO';
+
   /// The location of the sidekick package
   static Directory get sidekickPackageDir => sidekickPackage.root;
 
