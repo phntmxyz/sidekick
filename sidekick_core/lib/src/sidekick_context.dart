@@ -19,6 +19,10 @@ const String _envPackageHome = 'SIDEKICK_PACKAGE_HOME';
 class SidekickContext {
   SidekickContext._();
 
+  // TODO add context cache that SidekickRunner can inject while executing a
+  //  Command to prevent multiple (expensive) lookups
+  // SidekickContextCache cache;
+
   /// The location of the sidekick package
   static Directory get sidekickPackageDir => sidekickPackage.root;
 
