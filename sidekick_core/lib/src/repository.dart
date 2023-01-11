@@ -22,7 +22,7 @@ class Repository {
   ///
   /// Usually injected from the tool/run.sh script itself via `env.SIDEKICK_PACKAGE_HOME`
   ///
-  /// `null` when not executed with [entrypoint]
+  /// `null` when not executed with [entryPoint]
   ///
   /// Usually you want to use [sidekickPackage]
   @Deprecated('Use SidekickContext.sidekickPackageDir')
@@ -30,20 +30,20 @@ class Repository {
 
   /// The location of the sidekick package
   ///
-  /// Throws when not executed with [entrypoint]
+  /// Throws when not executed with [entryPoint]
   @Deprecated('Use SidekickContext.sidekickPackageDir')
   static Directory get requiredCliPackage => SidekickContext.sidekickPackageDir;
 
   /// The sidekick package inside the repository
   ///
-  /// `null` when not executed with [entrypoint]
+  /// `null` when not executed with [entryPoint]
   @Deprecated('Use SidekickContext.sidekickPackage')
   static SidekickPackage? get sidekickPackage =>
       SidekickContext.sidekickPackage;
 
   /// The sidekick package inside the repository
   ///
-  /// Throws when not executed with [entrypoint]
+  /// Throws when not executed with [entryPoint]
   @Deprecated('Use SidekickContext.sidekickPackage')
   static SidekickPackage get requiredSidekickPackage =>
       SidekickContext.sidekickPackage;
@@ -56,7 +56,7 @@ class Repository {
 
   /// The location of the entrypoint
   ///
-  /// Throws when not executed with [entrypoint]
+  /// Throws when not executed with [entryPoint]
   @Deprecated('Use SidekickContext.entryPoint')
   static File get requiredEntryPoint => SidekickContext.entryPoint;
 
