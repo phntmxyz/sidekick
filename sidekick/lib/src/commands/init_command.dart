@@ -83,33 +83,6 @@ class InitCommand extends Command {
       throw 'CLI package directory ${cliPackageDir.path} is not within or equal to ${repoRoot.path}';
     }
 
-    if (cliPackageDir.existsSync()) {
-      print('\nYou already have an existing sidekick project initialized.\n'
-          'In order to update your existing project run ${dcli.cyan('<cli> sidekick update')} instead.');
-      final override = dcli.confirm(
-        'Do you want to override your existing CLI?',
-        defaultValue: false,
-      );
-      if (!override) {
-        return;
-      }
-      final packageVersion = sidekickPackageCliVersion();
-      if (packageVersion != null && packageVersion > core.version) {
-        print(
-          '\n'
-          'Your current sidekick version would be downgraded '
-          'from $packageVersion to ${core.version}',
-        );
-        final downgrade =
-            dcli.confirm('Do you want to downgrade?', defaultValue: false);
-        if (!downgrade) {
-          print(
-              'In order to update sidekick run ${dcli.cyan('sidekick update')}.');
-          return;
-        }
-      }
-    }
-
     final mainProjectPath = argResults!['mainProjectPath'] as String?;
     DartPackage? mainProject = mainProjectPath != null
         ? DartPackage.fromDirectory(
@@ -146,6 +119,35 @@ class InitCommand extends Command {
       ..removeWhere((element) => element.contains('.sidekick/bin/$cliName'));
     if (cliNameCollisions.isNotEmpty) {
       throw 'The CLI name $cliName is already taken by an executable on your system see $cliNameCollisions';
+    }
+
+    final packageDirectory = cliPackageDir.directory("${cliName}_sidekick");
+    if (packageDirectory.existsSync()) {
+      print(
+          '\nYou already have an existing sidekick project initialized in ${relative(packageDirectory.path)}.\n'
+          'In order to update your existing project run ${dcli.cyan('<cli> sidekick update')} instead.');
+      final override = dcli.confirm(
+        'Do you want to override your existing CLI?',
+        defaultValue: false,
+      );
+      if (!override) {
+        return;
+      }
+      final packageVersion = sidekickPackageCliVersion();
+      if (packageVersion != null && packageVersion > core.version) {
+        print(
+          '\n'
+          'Your current sidekick version would be downgraded '
+          'from $packageVersion to ${core.version}',
+        );
+        final downgrade =
+            dcli.confirm('Do you want to downgrade?', defaultValue: false);
+        if (!downgrade) {
+          print(
+              'In order to update sidekick run ${dcli.cyan('sidekick update')}.');
+          return;
+        }
+      }
     }
 
     print("\nGenerating ${cliName}_sidekick");
