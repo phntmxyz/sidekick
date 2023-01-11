@@ -4,6 +4,18 @@ import 'package:dcli/dcli.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_core/src/sidekick_package.dart';
 
+/// Environment variable containing the location of the shell `entrypoint`, when
+/// executing the sidekick CLI with the shell entrypoint
+///
+/// May be not set when debugging where the CLI is executed directly on the
+/// DartVM by calling `dart bin/main.dart` without the entrypoint
+const String _envEntrypointHome = 'SIDEKICK_ENTRYPOINT_HOME';
+
+/// Environment variable containing the location of the dart package of this
+/// sidekick CLI. It contains the source code and tool scripts of this sidekick
+/// CLI.
+const String _envPackageHome = 'SIDEKICK_PACKAGE_HOME';
+
 class SidekickContext {
   SidekickContext._();
 
@@ -12,7 +24,7 @@ class SidekickContext {
 
   /// The sidekick package inside the repository
   static SidekickPackage get sidekickPackage {
-    final injectedPackageHome = env['SIDEKICK_PACKAGE_HOME'];
+    final injectedPackageHome = env[_envPackageHome];
     if (injectedPackageHome != null && injectedPackageHome.isNotBlank) {
       return SidekickPackage.fromDirectory(Directory(injectedPackageHome))!;
     }
@@ -57,10 +69,11 @@ class SidekickContext {
   ///
   /// Usually injected from the entrypoint itself via `env.SIDEKICK_ENTRYPOINT_HOME`
   static File get entryPoint {
-    if (_calledViaEntrypoint) {
-      final injectedEntryPointPath = env['SIDEKICK_ENTRYPOINT_HOME'];
+    if (env.exists(_envEntrypointHome)) {
+      // CLI is called via entrypoint
+      final injectedEntryPointPath = env[_envEntrypointHome];
       if (injectedEntryPointPath == null || injectedEntryPointPath.isBlank) {
-        throw 'Injected entrypoint was not set (env.SIDEKICK_ENTRYPOINT_HOME)';
+        throw 'Injected entrypoint was not set (env.$_envEntrypointHome)';
       }
       final entrypoint = File(normalize('$injectedEntryPointPath/$cliName'));
       if (!entrypoint.existsSync()) {
@@ -106,14 +119,4 @@ class SidekickContext {
 
     return gitRoot;
   }
-
-  /// Whether the sidekick CLI is currently running through the shell entrypoint
-  ///
-  /// User's run their sidekick CLIs by executing their shell entrypoint,
-  /// [_calledViaEntrypoint] is true in that case
-  ///
-  /// For debugging purposes one may want to run the CLI not through the
-  /// compiled entrypoint but through `dart bin/main.dart`,
-  /// [_calledViaEntrypoint] is false in that case
-  static final _calledViaEntrypoint = env.exists('SIDEKICK_PACKAGE_HOME');
 }
