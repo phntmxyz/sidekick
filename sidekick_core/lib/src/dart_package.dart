@@ -28,7 +28,7 @@ class DartPackage {
 
       // Check for (optional) flutter dependency
       final deps = pubspec['dependencies'] as YamlMap?;
-      final withFlutter = deps?.containsKey('flutter') == true;
+      final withFlutter = deps?.containsKey('flutter') ?? false;
       if (withFlutter) {
         return DartPackage.flutter(normalizedDir, packageName);
       }
