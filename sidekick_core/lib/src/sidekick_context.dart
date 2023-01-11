@@ -17,15 +17,25 @@ class SidekickContext {
       return SidekickPackage.fromDirectory(Directory(injectedPackageHome))!;
     }
 
-    // - when CLI is run with `dart bin/main.dart`: /Users/pepe/repos/sidekick/sk_sidekick/bin/main.dart
-    // - when CLI is run with compiled entrypoint: /Users/pepe/repos/sidekick/sk_sidekick/build/cli.exe
-    // - in `UpdateCommand` when the latest `update_sidekick_cli.dart` written to build/update.dart to be executed
     final script = File(DartScript.self.pathToScript);
-    if (['bin/main.dart', 'build/cli.exe', 'build/update.dart']
-        .contains(script.uri.pathSegments.takeLast(2).join('/'))) {
+    final scriptPath = script.uri.path;
+
+    // When CLI is run with compiled entrypoint: /Users/pepe/repos/sidekick/sk_sidekick/build/cli.exe
+    if (scriptPath.endsWith('build/cli.exe')) {
       return SidekickPackage.fromDirectory(script.parent.parent)!;
     }
 
+    // When CLI is run with `dart bin/main.dart`: /Users/pepe/repos/sidekick/sk_sidekick/bin/main.dart
+    if (scriptPath.endsWith('/bin/main.dart')) {
+      return SidekickPackage.fromDirectory(script.parent.parent)!;
+    }
+
+    // in `UpdateCommand` when the latest `update_sidekick_cli.dart` written to build/update.dart to be executed
+    if (scriptPath.endsWith('/build/update.dart')) {
+      return SidekickPackage.fromDirectory(script.parent.parent)!;
+    }
+
+    // Fallback strategy: searching all parent folders until we find a dart package root
     final scriptDirectory = script.parent;
     Directory current = Directory(scriptDirectory.path);
 
