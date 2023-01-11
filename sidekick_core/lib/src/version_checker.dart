@@ -258,7 +258,12 @@ _Option<String?> _readFromYaml(File yamlFile, List<Object> path) {
     i++;
   }
 
-  return _Some(current as String?);
+  if (current is String?) {
+    return _Some(current);
+  }
+
+  // most likely still a YamlMap or YamlList
+  return const _None();
 }
 
 extension on VersionConstraint {
