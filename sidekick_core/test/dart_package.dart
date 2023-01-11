@@ -30,4 +30,62 @@ void main() {
       expect(isValidPubPackageName('no-dash'), isFalse);
     });
   });
+
+  group('DartPackage.fromDirectory', () {
+    test('detect dart package', () {
+      final tempDir = Directory.systemTemp.createTempSync();
+      addTearDown(() => tempDir.deleteSync(recursive: true));
+      tempDir.file('pubspec.yaml')
+        ..createSync()
+        ..writeAsStringSync('''
+name: package_name
+
+''');
+
+      final package = DartPackage.fromDirectory(tempDir);
+      expect(package, isNotNull);
+      expect(package!.name, 'package_name');
+      expect(package.isFlutterPackage, isFalse);
+    });
+
+    test('detect minimal flutter package', () {
+      final tempDir = Directory.systemTemp.createTempSync();
+      addTearDown(() => tempDir.deleteSync(recursive: true));
+      tempDir.file('pubspec.yaml')
+        ..createSync()
+        ..writeAsStringSync('''
+name: package_name
+
+dependencies:
+  flutter:
+''');
+
+      final package = DartPackage.fromDirectory(tempDir);
+      expect(package, isNotNull);
+      expect(package!.name, 'package_name');
+      expect(package.isFlutterPackage, isTrue);
+    });
+
+    test('detect usually looking flutter package', () {
+      final tempDir = Directory.systemTemp.createTempSync();
+      addTearDown(() => tempDir.deleteSync(recursive: true));
+      tempDir.file('pubspec.yaml')
+        ..createSync()
+        ..writeAsStringSync('''
+name: package_name
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
+''');
+
+      final package = DartPackage.fromDirectory(tempDir);
+      expect(package, isNotNull);
+      expect(package!.name, 'package_name');
+      expect(package.isFlutterPackage, isTrue);
+    });
+  });
 }
