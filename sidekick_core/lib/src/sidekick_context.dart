@@ -56,10 +56,10 @@ class SidekickContext {
   /// with zero or multiple projects.
   static DartPackage? get mainProject => throw 'TODO';
 
-  /// The location of the sidekick package
+  /// The location of the sidekick package inside the [repository]
   static Directory get sidekickPackageDir => sidekickPackage.root;
 
-  /// The sidekick package inside the repository
+  /// The sidekick package inside the [repository]
   static SidekickPackage get sidekickPackage {
     final injectedPackageHome = env[_envPackageHome];
     if (injectedPackageHome != null && injectedPackageHome.isNotBlank) {
@@ -89,22 +89,20 @@ class SidekickContext {
     // Fallback strategy: searching all parent folders until we find a dart package root
     final scriptDirectory = script.parent;
     Directory current = Directory(scriptDirectory.path);
+    final repoRoot = repository;
 
-    while (true) {
+    while (current.isWithin(repoRoot)) {
       final sidekickPackage = SidekickPackage.fromDirectory(current);
       if (sidekickPackage != null) {
         return sidekickPackage;
       }
 
-      final parent = current.parent;
-      if (parent.path == current.path) {
-        throw "Can't find sidekickPackage from ${scriptDirectory.path}";
-      }
-      current = parent;
+      current = current.parent;
     }
+    throw "Can't find sidekickPackage from ${scriptDirectory.path}";
   }
 
-  /// The location of the entryPoint
+  /// The location of the entryPoint inside the [repository]
   ///
   /// Usually injected from the entryPoint itself via `env.SIDEKICK_ENTRYPOINT_HOME`
   static File get entryPoint {
@@ -127,7 +125,9 @@ class SidekickContext {
       final entryPointName = core.cliNameOrNull ?? sidekickPackage.cliName;
 
       Directory current = sidekickPackageDir;
-      while (true) {
+      final repoRoot = repository;
+
+      while (current.isWithin(repoRoot)) {
         final entryPoint = current
             .listSync()
             .whereType<File>()
@@ -136,12 +136,9 @@ class SidekickContext {
           return entryPoint.single;
         }
 
-        final parent = current.parent;
-        if (parent.path == current.path) {
-          throw "Can't find entryPoint $entryPointName from ${sidekickPackageDir.path}";
-        }
-        current = parent;
+        current = current.parent;
       }
+      throw "Can't find entryPoint $entryPointName from ${sidekickPackageDir.path}";
     }
   }
 
