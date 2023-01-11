@@ -1,3 +1,4 @@
+import 'package:dcli/dcli.dart' as dcli;
 import 'package:sidekick/sidekick.dart';
 import 'package:sidekick/src/util/dcli_ask_validators.dart';
 import 'package:sidekick_core/sidekick_core.dart' hide version;
@@ -198,6 +199,53 @@ void main() {
           stderrText,
           contains(
             'The CLI name rm is already taken by an executable on your system see [/bin/rm]',
+          ),
+        );
+      },
+    );
+
+    test(
+      'Warns about an already existing project in the current path',
+      () async {
+        final projectRoot =
+            setupTemplateProject('test/templates/minimal_flutter_package');
+
+        // Create initial sidekick
+        final firstProcess = await cachedGlobalSidekickCli.run(
+          ['init', '-n', 'dashi'],
+          workingDirectory: projectRoot,
+        );
+        await firstProcess.shouldExit(0);
+        final entrypoint = File("${projectRoot.path}/dashi");
+        expect(entrypoint.existsSync(), isTrue);
+
+        // Create sidekick again in the same directory
+        final TestProcess secondProcess = await cachedGlobalSidekickCli.run(
+          ['init', '-n', 'dashi'],
+          workingDirectory: projectRoot,
+        );
+
+        await expectLater(
+          secondProcess.stdout,
+          emitsThrough(
+            "Welcome to sidekick. You're about to initialize a sidekick project",
+          ),
+        );
+        printOnFailure(await secondProcess.stdoutStream().join('\n'));
+        printOnFailure(await secondProcess.stdoutStream().join('\n'));
+
+        await expectLater(
+          secondProcess.stdout,
+          emitsThrough(
+            "You already have an existing sidekick project initialized in packages/dashi_sidekick.",
+          ),
+        );
+        printOnFailure(await secondProcess.stdoutStream().join('\n'));
+
+        await expectLater(
+          secondProcess.stdout,
+          emitsThrough(
+            "In order to update your existing project run ${dcli.cyan('<cli> sidekick update')} instead.",
           ),
         );
       },
