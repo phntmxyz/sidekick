@@ -97,8 +97,7 @@ abstract class VersionChecker {
         startTag: largestMatch!,
         endTag: '\n',
         content: '${missingKeys.isNotEmpty ? '\n' : ''}${missingKeys.mapIndexed(
-              (index, key) =>
-                  '${'  ' * (index + pubspecKeys.length - missingKeys.length)}$key:',
+              (index, key) => '${'  ' * (index + pubspecKeys.length - missingKeys.length)}$key:',
             ).join('\n')} $newVersionConstraint',
       );
     }
@@ -131,8 +130,7 @@ abstract class VersionChecker {
   /// even if a local dependency doesn't explicitly specify a version in their
   /// pubspec.yaml, there always is an implicit version of 0.0.0
   static Version? getResolvedVersion(DartPackage package, String dependency) {
-    final resolvedVersion =
-        _readFromYaml(package.lockfile, ['packages', dependency, 'version']);
+    final resolvedVersion = _readFromYaml(package.lockfile, ['packages', dependency, 'version']);
     return resolvedVersion.match(
       () => null,
       (t) => t != null ? Version.parse(t) : null,
@@ -145,16 +143,14 @@ abstract class VersionChecker {
       return testFakeGetLatestDependencyVersion!(dependency);
     }
 
-    final response =
-        await get(Uri.parse('https://pub.dev/api/packages/$dependency'));
+    final response = await get(Uri.parse('https://pub.dev/api/packages/$dependency'));
 
     if (response.statusCode != HttpStatus.ok) {
       throw "Package '$dependency' not found on pub.dev";
     }
 
     final latestVersion =
-        ((jsonDecode(response.body) as Map<String, dynamic>)['latest']
-            as Map<String, dynamic>)['version'] as String;
+        ((jsonDecode(response.body) as Map<String, dynamic>)['latest'] as Map<String, dynamic>)['version'] as String;
 
     return Version.parse(latestVersion);
   }
@@ -166,13 +162,10 @@ abstract class VersionChecker {
     );
     // e.g. {"date": "2022-12-13", "version": "2.18.6", "revision": "f16b62ea92cc0f04cfd9166992f93419e425c809"}
     final response = await get(endpoint);
-    final latestVersion = (jsonDecode(response.body)
-        as Map<String, dynamic>)['version'] as String;
+    final latestVersion = (jsonDecode(response.body) as Map<String, dynamic>)['version'] as String;
 
     // e.g. Dart SDK version: 2.18.4 (stable) (Tue Nov 1 15:15:07 2022 +0000) on "macos_arm64"
-    final dartVersionResult = '$dartExecutablePath --version'
-        .start(progress: Progress.capture())
-        .firstLine;
+    final dartVersionResult = '$dartExecutablePath --version'.start(progress: Progress.capture()).firstLine;
     if (dartVersionResult == null) {
       throw "Couldn't determine version of Dart executable $dartExecutablePath";
     }
@@ -187,8 +180,17 @@ abstract class VersionChecker {
 
   /// Set to override behavior of [getLatestDependencyVersion] in tests
   @visibleForTesting
-  static Future<Version> Function(String dependency)?
-      testFakeGetLatestDependencyVersion;
+  static Future<Version> Function(String dependency)? testFakeGetLatestDependencyVersion;
+}
+
+/// To remember which sidekick_core version the sidekick CLI was generated
+/// with, that sidekick_core version is written into the CLI's pubspec.yaml
+/// at the path ['sidekick', 'cli_version']
+Version? sidekickPackageCliVersion() {
+  return VersionChecker.getMinimumVersionConstraint(
+    Repository.requiredSidekickPackage,
+    ['sidekick', 'cli_version'],
+  );
 }
 
 /// Returns the string specified by [path] in [yamlFile]

@@ -49,48 +49,6 @@ class InitCommand extends Command {
       "Welcome to sidekick. You're about to initialize a sidekick project\n",
     );
 
-    // Initial versions
-    Version versionToInstall = core.version;
-    Version newestVersion = Version.none;
-
-    final currentSidekickCliVersion = VersionChecker.getMinimumVersionConstraint(
-          Repository.requiredSidekickPackage,
-          ['sidekick', 'cli_version'],
-        ) ??
-        Version.none;
-
-    // Check for existing project
-    if (currentSidekickCliVersion != Version.none) {
-      final confirmNewProject =
-          dcli.confirm('You already have a sidekick project initialized. Do you wish to proceed?');
-      if (!confirmNewProject) {
-        throw 'Initialization aborted by user.';
-      }
-    }
-
-    final lookForUpdate = dcli.confirm('Do you want to check for the latest version of sidekick before proceeding?');
-
-    if (lookForUpdate) {
-      newestVersion = await VersionChecker.getLatestDependencyVersion('sidekick');
-      if (currentSidekickCliVersion < newestVersion) {
-        final confirmUpdate =
-            dcli.confirm('A newer version ($newestVersion) of sidekick is available. Use latest version for project?');
-        if (confirmUpdate) {
-          versionToInstall = newestVersion;
-        }
-      }
-    }
-
-    if (versionToInstall == core.version && currentSidekickCliVersion > core.version) {
-      final keepCurrentVersion = dcli.confirm(
-        'Your current sidekick version would be downgraded from ${currentSidekickCliVersion.toString()} \n'
-        'to ${core.version.toString()}. Keep current version?',
-      );
-      if (keepCurrentVersion) {
-        versionToInstall = currentSidekickCliVersion;
-      }
-    }
-
     final entrypointDir = Directory(
       argResults!['entrypointDirectory'] as String? ??
           argResults!.rest.firstOrNull ??
@@ -121,6 +79,31 @@ class InitCommand extends Command {
     );
     if (!cliPackageDir.isWithinOrEqual(repoRoot)) {
       throw 'CLI package directory ${cliPackageDir.path} is not within or equal to ${repoRoot.path}';
+    }
+
+    if (cliPackageDir.existsSync()) {
+      print('\nYou already have an existing sidekick project initialized.\n'
+          'In order to update your existing project run ${dcli.cyan('<cli> sidekick update')} instead.');
+      final override = dcli.confirm(
+        'Do you want to override your existing CLI?',
+        defaultValue: false,
+      );
+      if (!override) {
+        return;
+      }
+      final packageVersion = sidekickPackageCliVersion();
+      if (packageVersion != null && packageVersion > core.version) {
+        print(
+          '\n'
+          'Your current sidekick version would be downgraded '
+          'from ${sidekickPackageCliVersion.toString()} to ${core.version.toString()}',
+        );
+        final downgrade = dcli.confirm('Do you want to downgrade?', defaultValue: false);
+        if (!downgrade) {
+          print('In order to update sidekick run ${dcli.cyan('sidekick update')}.');
+          return;
+        }
+      }
     }
 
     final mainProjectPath = argResults!['mainProjectPath'] as String?;
@@ -184,7 +167,6 @@ class InitCommand extends Command {
       entrypointDir: entrypointDir,
       mainProject: mainProject,
       packages: packages,
-      version: versionToInstall,
     );
   }
 
@@ -204,7 +186,6 @@ class InitCommand extends Command {
     required Directory packageDir,
     required Directory entrypointDir,
     DartPackage? mainProject,
-    Version? version,
     List<DartPackage> packages = const [],
   }) async {
     // init git, required for flutterw
@@ -222,7 +203,7 @@ class InitCommand extends Command {
       shouldSetFlutterSdkPath: Repository(root: repoRoot).findAllPackages().any((package) => package.isFlutterPackage),
       entrypointLocation: entrypoint,
       packageLocation: cliPackage,
-      sidekickCliVersion: version ?? core.version,
+      sidekickCliVersion: core.version,
     );
     SidekickTemplate().generate(props);
 

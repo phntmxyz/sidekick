@@ -38,7 +38,7 @@ export 'package:sidekick_core/src/git.dart';
 export 'package:sidekick_core/src/repository.dart';
 export 'package:sidekick_core/src/sidekick_package.dart';
 export 'package:sidekick_core/src/template/sidekick_package.template.dart';
-export 'package:sidekick_core/src/version_checker.dart';
+export 'package:sidekick_core/src/version_checker.dart' show sidekickPackageCliVersion;
 
 /// The version of package:sidekick_core
 ///
