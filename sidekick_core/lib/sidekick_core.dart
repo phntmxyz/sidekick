@@ -261,7 +261,9 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
 
 /// Enables the [SidekickCommandRunner] to check for `sidekick` updates
 ///
-/// default to false, unless `export SIDEKICK_ENABLE_UPDATE_CHECK=true` is set
+/// Enables checking for `sidekick` updates in [SidekickCommandRunner]
+///
+/// Defaults to true, unless `export SIDEKICK_ENABLE_UPDATE_CHECK=false` is set
 bool get _isUpdateCheckEnabled =>
     env['SIDEKICK_ENABLE_UPDATE_CHECK'] != 'false';
 
