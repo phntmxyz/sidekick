@@ -108,9 +108,11 @@ sidekick:
     env['SIDEKICK_ENTRYPOINT_HOME'] = null;
   });
 
+  Directory cwd = tempDir;
   return IOOverrides.runZoned<R>(
     () => callback(tempDir),
-    getCurrentDirectory: () => tempDir,
+    getCurrentDirectory: () => cwd,
+    setCurrentDirectory: (dir) => cwd = Directory(dir),
   );
 }
 

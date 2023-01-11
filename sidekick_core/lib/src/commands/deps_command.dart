@@ -47,14 +47,11 @@ class DepsCommand extends Command {
     final errorBuffer = StringBuffer();
 
     final excluded = excludeGlob
-        .map((p) => Glob(p))
-        .map(
-          (e) => e.listSync(
-            // See https://github.com/dart-lang/glob/issues/52
-            root: Directory.current.path,
-          ),
-        )
-        .expand((e) => e) // flattens nested list
+        .expand((rule) {
+          // start search at repo root
+          final root = repository.root.path;
+          return Glob("$root/$rule").listSync(root: root);
+        })
         .whereType<Directory>()
         .mapNotNull((e) => DartPackage.fromDirectory(e))
         .append(exclude);
