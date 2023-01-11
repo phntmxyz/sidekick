@@ -119,7 +119,7 @@ dependencies:
       );
     });
 
-    test('replace path dependency with pub version', () async {
+    test('replace git dependency with pub version', () async {
       pubspecYamlFile.writeAsStringSync('''
 name: dashi
 dependencies:
