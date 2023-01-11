@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:dcli/dcli.dart';
 import 'package:sidekick_core/sidekick_core.dart';
+import 'package:sidekick_core/sidekick_core.dart' as core;
 import 'package:sidekick_core/src/sidekick_package.dart';
 
 /// Environment variable containing the location of the shell `entrypoint`, when
@@ -106,7 +107,8 @@ class SidekickContext {
       if (injectedEntryPointPath == null || injectedEntryPointPath.isBlank) {
         throw 'Injected entrypoint was not set (env.$_envEntrypointHome)';
       }
-      final entrypoint = File(normalize('$injectedEntryPointPath/$cliName'));
+      final entrypoint =
+          File(normalize('$injectedEntryPointPath/${core.cliName}'));
       if (!entrypoint.existsSync()) {
         throw 'Injected entrypoint does not exist ${entrypoint.absolute.path}';
       }
@@ -115,7 +117,7 @@ class SidekickContext {
       // Fallback strategy: Search all parents directories for the entrypoint
       // This case is used when debugging the cli and the dart program is
       // started on the DartVM, and not called and compiled with the entrypoint
-      final entrypointName = cliNameOrNull ?? sidekickPackage.cliName;
+      final entrypointName = core.cliNameOrNull ?? sidekickPackage.cliName;
 
       Directory current = sidekickPackageDir;
       while (true) {
