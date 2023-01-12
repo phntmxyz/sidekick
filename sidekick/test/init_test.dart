@@ -41,216 +41,249 @@ void main() {
     skip: !shouldUseLocalDeps,
   );
 
-  group('sidekick init - argument validation', () {
-    test(
-      'throws when entrypointDirectory does not exist',
-      () async {
-        final tempDir = Directory.systemTemp.createTempSync();
-        addTearDown(() => tempDir.deleteSync());
+  group(
+    'sidekick init - argument validation',
+    () {
+      test(
+        'throws when entrypointDirectory does not exist',
+        () async {
+          final tempDir = Directory.systemTemp.createTempSync();
+          addTearDown(() => tempDir.deleteSync());
 
-        final projectRoot =
-            setupTemplateProject('test/templates/minimal_dart_package');
-        final process = await cachedGlobalSidekickCli.run(
-          [
-            'init',
-            '-n',
-            'dashi',
-            '--entrypointDirectory',
-            tempDir.directory('foo').path,
-          ],
-          workingDirectory: projectRoot,
-        );
-        process.stderrStream().listen(printOnFailure);
-        await process.shouldExit(255);
-        expect(
-          await process.stderrStream().contains(
-                'Entrypoint directory ${tempDir.directory('foo').path} does not exist',
+          final projectRoot =
+              setupTemplateProject('test/templates/minimal_dart_package');
+          final process = await cachedGlobalSidekickCli.run(
+            [
+              'init',
+              '-n',
+              'dashi',
+              '--entrypointDirectory',
+              tempDir.directory('foo').path,
+            ],
+            workingDirectory: projectRoot,
+          );
+          process.stderrStream().listen(printOnFailure);
+          await process.shouldExit(255);
+          expect(
+            await process.stderrStream().contains(
+                  'Entrypoint directory ${tempDir.directory('foo').path} does not exist',
+                ),
+            isTrue,
+          );
+        },
+        timeout: const Timeout(Duration(minutes: 5)),
+      );
+
+      test(
+        'throws when cliPackageDirectory is not inside entrypointDirectory',
+        () async {
+          final tempDir = Directory.systemTemp.createTempSync();
+          addTearDown(() => tempDir.deleteSync());
+
+          final projectRoot =
+              setupTemplateProject('test/templates/minimal_dart_package');
+          final process = await cachedGlobalSidekickCli.run(
+            [
+              'init',
+              '-n',
+              'dashi',
+              '--entrypointDirectory',
+              projectRoot.path,
+              '--cliPackageDirectory',
+              tempDir.path
+            ],
+            workingDirectory: projectRoot,
+          );
+          process.stderrStream().listen(printOnFailure);
+          await process.shouldExit(255);
+          expect(
+            await process.stderrStream().contains(
+                  'CLI package directory ${tempDir.path} is not within or equal to ${projectRoot.path}',
+                ),
+            isTrue,
+          );
+        },
+        timeout: const Timeout(Duration(minutes: 5)),
+      );
+
+      test(
+        'throws when mainProjectPath is not inside entrypointDirectory',
+        () async {
+          final tempDir = Directory.systemTemp.createTempSync();
+          addTearDown(() => tempDir.deleteSync(recursive: true));
+          tempDir.file('pubspec.yaml').writeAsStringSync('name: fake');
+
+          final projectRoot =
+              setupTemplateProject('test/templates/minimal_dart_package');
+          final process = await cachedGlobalSidekickCli.run(
+            [
+              'init',
+              '-n',
+              'dashi',
+              '--entrypointDirectory',
+              projectRoot.path,
+              '--mainProjectPath',
+              tempDir.path
+            ],
+            workingDirectory: projectRoot,
+          );
+          process.stderrStream().listen(printOnFailure);
+          await process.shouldExit(255);
+          expect(
+            await process.stderrStream().contains(
+                  'Main project ${tempDir.path} is not within or equal to ${projectRoot.path}',
+                ),
+            isTrue,
+          );
+        },
+        timeout: const Timeout(Duration(minutes: 5)),
+      );
+
+      test(
+        'throws when mainProjectPath is given but it does not contain a DartPackage',
+        () async {
+          final tempDir = Directory.systemTemp.createTempSync();
+          addTearDown(() => tempDir.deleteSync());
+
+          final projectRoot =
+              setupTemplateProject('test/templates/minimal_dart_package');
+          final process = await cachedGlobalSidekickCli.run(
+            [
+              'init',
+              '-n',
+              'dashi',
+              '--entrypointDirectory',
+              projectRoot.path,
+              '--mainProjectPath',
+              tempDir.path
+            ],
+            workingDirectory: projectRoot,
+          );
+          process.stderrStream().listen(printOnFailure);
+          await process.shouldExit(255);
+          expect(
+            await process.stderrStream().contains(
+                  'mainProjectPath was given, but no DartPackage could be found at the given path ${tempDir.path}',
+                ),
+            isTrue,
+          );
+        },
+        timeout: const Timeout(Duration(minutes: 5)),
+      );
+
+      test(
+        'throws error when cli name is invalid',
+        () async {
+          final process = await cachedGlobalSidekickCli.run(
+            ['init', '-n', '-42invalidName'],
+            workingDirectory: Directory.systemTemp.createTempSync(),
+          );
+
+          await process.shouldExit(255);
+          expect(
+            await process.stderr.rest.contains(invalidCliNameErrorMessage),
+            isTrue,
+          );
+        },
+      );
+
+      test(
+        'throws error when cli name collides with an system executable',
+        () async {
+          final process = await cachedGlobalSidekickCli.run(
+            ['init', '-n', 'rm'],
+            workingDirectory: Directory.systemTemp.createTempSync(),
+          );
+
+          await process.shouldExit(255);
+          final stderrText = await process.stderr.rest.toList();
+          expect(
+            stderrText,
+            contains(
+              'The CLI name rm is already taken by an executable on your system see [/bin/rm]',
+            ),
+          );
+        },
+      );
+      group('Case of pre-existing sidekick in directory', () {
+        test(
+          'Warning',
+          () async {
+            final tempDir = Directory.systemTemp.createTempSync();
+            addTearDown(() => tempDir.deleteSync(recursive: true));
+            final package = tempDir.directory('dashi_sidekick')..createSync();
+            package.file('pubspec.yaml').writeAsStringSync("""
+name: dashi_sidekick
+environment:
+  sdk: '>=2.14.0 <3.0.0'
+sidekick:
+  cli_version: 0.13.1
+            """);
+
+            // Create sidekick again in the same directory
+            final TestProcess process = await cachedGlobalSidekickCli.run(
+              ['init', '-n', 'dashi', '-c', '.'],
+              workingDirectory: package.parent,
+            );
+            await process.shouldExit(0);
+
+            await expectLater(
+              process.stdout,
+              emitsThrough(
+                "Welcome to sidekick. You're about to initialize a sidekick project",
               ),
-          isTrue,
-        );
-      },
-      timeout: const Timeout(Duration(minutes: 5)),
-    );
+            );
 
-    test(
-      'throws when cliPackageDirectory is not inside entrypointDirectory',
-      () async {
-        final tempDir = Directory.systemTemp.createTempSync();
-        addTearDown(() => tempDir.deleteSync());
-
-        final projectRoot =
-            setupTemplateProject('test/templates/minimal_dart_package');
-        final process = await cachedGlobalSidekickCli.run(
-          [
-            'init',
-            '-n',
-            'dashi',
-            '--entrypointDirectory',
-            projectRoot.path,
-            '--cliPackageDirectory',
-            tempDir.path
-          ],
-          workingDirectory: projectRoot,
-        );
-        process.stderrStream().listen(printOnFailure);
-        await process.shouldExit(255);
-        expect(
-          await process.stderrStream().contains(
-                'CLI package directory ${tempDir.path} is not within or equal to ${projectRoot.path}',
+            await expectLater(
+              process.stdout,
+              emitsThrough(
+                "You already have an existing sidekick project initialized in dashi_sidekick.",
               ),
-          isTrue,
-        );
-      },
-      timeout: const Timeout(Duration(minutes: 5)),
-    );
-
-    test(
-      'throws when mainProjectPath is not inside entrypointDirectory',
-      () async {
-        final tempDir = Directory.systemTemp.createTempSync();
-        addTearDown(() => tempDir.deleteSync(recursive: true));
-        tempDir.file('pubspec.yaml').writeAsStringSync('name: fake');
-
-        final projectRoot =
-            setupTemplateProject('test/templates/minimal_dart_package');
-        final process = await cachedGlobalSidekickCli.run(
-          [
-            'init',
-            '-n',
-            'dashi',
-            '--entrypointDirectory',
-            projectRoot.path,
-            '--mainProjectPath',
-            tempDir.path
-          ],
-          workingDirectory: projectRoot,
-        );
-        process.stderrStream().listen(printOnFailure);
-        await process.shouldExit(255);
-        expect(
-          await process.stderrStream().contains(
-                'Main project ${tempDir.path} is not within or equal to ${projectRoot.path}',
+            );
+            await expectLater(
+              process.stdout,
+              emitsThrough(
+                "In order to update your existing project run ${dcli.cyan('<cli> sidekick update')} instead.",
               ),
-          isTrue,
+            );
+          },
         );
-      },
-      timeout: const Timeout(Duration(minutes: 5)),
-    );
+      });
 
-    test(
-      'throws when mainProjectPath is given but it does not contain a DartPackage',
-      () async {
-        final tempDir = Directory.systemTemp.createTempSync();
-        addTearDown(() => tempDir.deleteSync());
+      test(
+        'Override',
+        () async {
+          final projectRoot =
+              setupTemplateProject('test/templates/minimal_flutter_package');
 
-        final projectRoot =
-            setupTemplateProject('test/templates/minimal_dart_package');
-        final process = await cachedGlobalSidekickCli.run(
-          [
-            'init',
-            '-n',
-            'dashi',
-            '--entrypointDirectory',
-            projectRoot.path,
-            '--mainProjectPath',
-            tempDir.path
-          ],
-          workingDirectory: projectRoot,
-        );
-        process.stderrStream().listen(printOnFailure);
-        await process.shouldExit(255);
-        expect(
-          await process.stderrStream().contains(
-                'mainProjectPath was given, but no DartPackage could be found at the given path ${tempDir.path}',
-              ),
-          isTrue,
-        );
-      },
-      timeout: const Timeout(Duration(minutes: 5)),
-    );
+          // Create initial sidekick
+          final firstProcess = await cachedGlobalSidekickCli.run(
+            ['init', '-n', 'dashi'],
+            workingDirectory: projectRoot,
+          );
+          await firstProcess.shouldExit(0);
+          final entrypoint = File("${projectRoot.path}/dashi");
+          expect(entrypoint.existsSync(), isTrue);
 
-    test(
-      'throws error when cli name is invalid',
-      () async {
-        final process = await cachedGlobalSidekickCli.run(
-          ['init', '-n', '-42invalidName'],
-          workingDirectory: Directory.systemTemp.createTempSync(),
-        );
+          // Create sidekick again in the same directory
+          final TestProcess secondProcess = await cachedGlobalSidekickCli.run(
+            ['init', '-n', 'dashi'],
+            workingDirectory: projectRoot,
+            runInShell: true,
+          );
 
-        await process.shouldExit(255);
-        expect(
-          await process.stderr.rest.contains(invalidCliNameErrorMessage),
-          isTrue,
-        );
-      },
-    );
+          secondProcess.stdoutStream().listen((event) {
+            if (event == "Do you want to override your existing CLI?") {
+              secondProcess.stdin.writeln('y');
+            }
+            print(event);
+          });
 
-    test(
-      'throws error when cli name collides with an system executable',
-      () async {
-        final process = await cachedGlobalSidekickCli.run(
-          ['init', '-n', 'rm'],
-          workingDirectory: Directory.systemTemp.createTempSync(),
-        );
-
-        await process.shouldExit(255);
-        final stderrText = await process.stderr.rest.toList();
-        expect(
-          stderrText,
-          contains(
-            'The CLI name rm is already taken by an executable on your system see [/bin/rm]',
-          ),
-        );
-      },
-    );
-
-    test(
-      'Warns about an already existing project in the current path',
-      () async {
-        final projectRoot =
-            setupTemplateProject('test/templates/minimal_flutter_package');
-
-        // Create initial sidekick
-        final firstProcess = await cachedGlobalSidekickCli.run(
-          ['init', '-n', 'dashi'],
-          workingDirectory: projectRoot,
-        );
-        await firstProcess.shouldExit(0);
-        final entrypoint = File("${projectRoot.path}/dashi");
-        expect(entrypoint.existsSync(), isTrue);
-
-        // Create sidekick again in the same directory
-        final TestProcess secondProcess = await cachedGlobalSidekickCli.run(
-          ['init', '-n', 'dashi'],
-          workingDirectory: projectRoot,
-        );
-
-        await expectLater(
-          secondProcess.stdout,
-          emitsThrough(
-            "Welcome to sidekick. You're about to initialize a sidekick project",
-          ),
-        );
-        printOnFailure(await secondProcess.stdoutStream().join('\n'));
-        printOnFailure(await secondProcess.stdoutStream().join('\n'));
-
-        await expectLater(
-          secondProcess.stdout,
-          emitsThrough(
-            "You already have an existing sidekick project initialized in packages/dashi_sidekick.",
-          ),
-        );
-        printOnFailure(await secondProcess.stdoutStream().join('\n'));
-
-        await expectLater(
-          secondProcess.stdout,
-          emitsThrough(
-            "In order to update your existing project run ${dcli.cyan('<cli> sidekick update')} instead.",
-          ),
-        );
-      },
-    );
-  });
+          await secondProcess.shouldExit(0);
+        },
+      );
+    },
+  );
 
   // TODO do we really need groups for all of these layouts? we had them because in the past we had some ProjectStructureDetector
   group('sidekick init - simple layout', () {
