@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:dcli/dcli.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_core/sidekick_core.dart' as core;
+import 'package:sidekick_core/src/entrypoint.dart';
 import 'package:sidekick_core/src/sidekick_package.dart';
 
 /// Environment variable containing the location of the shell `entryPoint`, when
@@ -23,44 +24,49 @@ const String _envPackageHome = 'SIDEKICK_PACKAGE_HOME';
 class SidekickContext {
   SidekickContext._();
 
-  // TODO add context cache that SidekickRunner can inject while executing a
-  //  Command to prevent multiple (expensive) lookups
-  // SidekickContextCache cache;
+  /// Caches expensive lookups
+  // static SidekickContextCache? _cache;
+
+  static SidekickContextCache _cache = _NoCache();
 
   /// Returns the name of the CLI
   static String get cliName {
     return sidekickPackage.cliName;
   }
 
-  /// Returns the directory of the Flutter SDK sidekick uses for the [flutter] command
-  ///
-  /// This variable is usually set to a pinned version of the Flutter SDK per project, i.e.
-  /// - https://github.com/passsy/flutter_wrapper
-  /// - https://github.com/fluttertools/fvm
-  ///
-  /// The flutterSdkPath can be set in [initializeSidekick].
-  static Directory? get flutterSdk => throw 'TODO';
-
-  /// Returns the directory of the Dart SDK sidekick uses for the [dart] command
-  ///
-  /// Overrides the Dart SDK of [flutterSdk] when set
-  ///
-  /// The dartSdkPath can be set in [initializeSidekick].
-  static Directory? get dartSdk => throw 'TODO';
-
-  /// The main package/app which should be executed by the [flutter] command
-  ///
-  /// The mainProjectPath can be set in [initializeSidekick].
-  ///
-  /// It's optional, not every project has a mainProject, there are repositories
-  /// with zero or multiple projects.
-  static DartPackage? get mainProject => throw 'TODO';
+  // /// Returns the directory of the Flutter SDK sidekick uses for the [flutter] command
+  // ///
+  // /// This variable is usually set to a pinned version of the Flutter SDK per project, i.e.
+  // /// - https://github.com/passsy/flutter_wrapper
+  // /// - https://github.com/fluttertools/fvm
+  // ///
+  // /// The flutterSdkPath can be set in [initializeSidekick].
+  // static Directory? get flutterSdk => throw 'TODO';
+  //
+  // /// Returns the directory of the Dart SDK sidekick uses for the [dart] command
+  // ///
+  // /// Overrides the Dart SDK of [flutterSdk] when set
+  // ///
+  // /// The dartSdkPath can be set in [initializeSidekick].
+  // static Directory? get dartSdk => throw 'TODO';
+  //
+  // /// The main package/app which should be executed by the [flutter] command
+  // ///
+  // /// The mainProjectPath can be set in [initializeSidekick].
+  // ///
+  // /// It's optional, not every project has a mainProject, there are repositories
+  // /// with zero or multiple projects.
+  // static DartPackage? get mainProject => throw 'TODO';
 
   /// The location of the sidekick package inside the [repository]
   static Directory get sidekickPackageDir => sidekickPackage.root;
 
   /// The sidekick package inside the [repository]
   static SidekickPackage get sidekickPackage {
+    return _cache.getOrCreate('sidekickPackage', _findSidekickPackage);
+  }
+
+  static SidekickPackage _findSidekickPackage() {
     final injectedPackageHome = env[_envPackageHome];
     if (injectedPackageHome != null && injectedPackageHome.isNotBlank) {
       // When called via entryPoint, immediately return the package
@@ -89,7 +95,7 @@ class SidekickContext {
     // Fallback strategy: searching all parent folders until we find a dart package root
     final scriptDirectory = script.parent;
     Directory current = Directory(scriptDirectory.path);
-    final repoRoot = repository;
+    final repoRoot = repository.root;
 
     while (current.isWithin(repoRoot)) {
       final sidekickPackage = SidekickPackage.fromDirectory(current);
@@ -105,19 +111,23 @@ class SidekickContext {
   /// The location of the entryPoint inside the [repository]
   ///
   /// Usually injected from the entryPoint itself via `env.SIDEKICK_ENTRYPOINT_HOME`
-  static File get entryPoint {
+  static EntryPoint get entryPoint {
+    return _cache.getOrCreate('findEntryPoint', _findEntryPoint);
+  }
+
+  static EntryPoint _findEntryPoint() {
     if (env.exists(_envEntryPointHome)) {
       // CLI is called via entryPoint
       final injectedEntryPointPath = env[_envEntryPointHome];
       if (injectedEntryPointPath == null || injectedEntryPointPath.isBlank) {
         throw 'Injected entryPoint was not set (env.$_envEntryPointHome)';
       }
-      final entryPoint =
+      final entryPointFile =
           File(normalize('$injectedEntryPointPath/${core.cliName}'));
-      if (!entryPoint.existsSync()) {
-        throw 'Injected entryPoint does not exist ${entryPoint.absolute.path}';
+      if (!entryPointFile.existsSync()) {
+        throw 'Injected entryPoint does not exist ${entryPointFile.absolute.path}';
       }
-      return entryPoint;
+      return EntryPoint(file: entryPointFile);
     } else {
       // Fallback strategy: Search all parents directories for the entrypoint
       // This case is used when debugging the cli and the dart program is
@@ -125,7 +135,7 @@ class SidekickContext {
       final entryPointName = core.cliNameOrNull ?? sidekickPackage.cliName;
 
       Directory current = sidekickPackageDir;
-      final repoRoot = repository;
+      final repoRoot = repository.root;
 
       while (current.isWithin(repoRoot)) {
         final entryPoint = current
@@ -133,7 +143,7 @@ class SidekickContext {
             .whereType<File>()
             .where((it) => it.name == entryPointName);
         if (entryPoint.isNotEmpty) {
-          return entryPoint.single;
+          return EntryPoint(file: entryPoint.single);
         }
 
         current = current.parent;
@@ -143,7 +153,11 @@ class SidekickContext {
   }
 
   /// The git repository root the [sidekickPackage] is located in
-  static Directory get repository {
+  static Repository get repository {
+    return _cache.getOrCreate('findRepository', _findRepository);
+  }
+
+  static Repository _findRepository() {
     bool isGitDir(Directory dir) => dir.directory('.git').existsSync();
 
     final gitRoot = sidekickPackageDir.findParent(isGitDir);
@@ -153,6 +167,40 @@ class SidekickContext {
           '${sidekickPackageDir.absolute.path}';
     }
 
-    return gitRoot;
+    return Repository(root: gitRoot);
+  }
+}
+
+SidekickContextCache get internalSidekickContextCache {
+  return SidekickContext._cache;
+}
+
+set internalSidekickContextCache(SidekickContextCache value) {
+  SidekickContext._cache = value;
+}
+
+abstract class SidekickContextCache {
+  T getOrCreate<T extends Object>(Object key, T Function() create);
+  factory SidekickContextCache() = _InMemoryCache;
+}
+
+class _NoCache implements SidekickContextCache {
+  @override
+  T getOrCreate<T extends Object>(Object key, T Function() create) {
+    return create();
+  }
+}
+
+class _InMemoryCache implements SidekickContextCache {
+  final Map<Object, Object> _map = {};
+  @override
+  T getOrCreate<T extends Object>(Object key, T Function() create) {
+    final value = _map[key] as T?;
+    if (value != null) {
+      return value;
+    }
+    final newValue = create();
+    _map[key] = newValue;
+    return newValue;
   }
 }

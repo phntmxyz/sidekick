@@ -29,8 +29,8 @@ int dart(
       final flutterWrapperLocation = findFlutterwLocation();
       if (flutterWrapperLocation != null) {
         // flutter_wrapper is installed, going into legacy mode for those which have not set the flutterSdkPath
-        final embeddedSdk =
-            repository.root.directory('.flutter/bin/cache/dart-sdk');
+        final embeddedSdk = SidekickContext.repository.root
+            .directory('.flutter/bin/cache/dart-sdk');
         if (!embeddedSdk.existsSync()) {
           // Flutter SDK is not fully initialized, the Dart SDK not yet downloaded
           // Execute flutter_tool to download the embedded dart runtime

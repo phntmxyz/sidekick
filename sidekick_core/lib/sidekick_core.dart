@@ -9,6 +9,7 @@ import 'package:pub_semver/pub_semver.dart';
 import 'package:sidekick_core/src/commands/update_command.dart';
 import 'package:sidekick_core/src/dart_package.dart';
 import 'package:sidekick_core/src/repository.dart';
+import 'package:sidekick_core/src/sidekick_context.dart';
 import 'package:sidekick_core/src/version_checker.dart';
 
 export 'dart:io' hide sleep;
@@ -37,6 +38,7 @@ export 'package:sidekick_core/src/flutterw.dart';
 export 'package:sidekick_core/src/forward_command.dart';
 export 'package:sidekick_core/src/git.dart';
 export 'package:sidekick_core/src/repository.dart';
+export 'package:sidekick_core/src/sidekick_context.dart' show SidekickContext;
 export 'package:sidekick_core/src/sidekick_package.dart';
 export 'package:sidekick_core/src/template/sidekick_package.template.dart';
 
@@ -128,11 +130,14 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
   /// and restore the previous globals
   Unmount mount() {
     final SidekickCommandRunner? oldRunner = _activeRunner;
+    final SidekickContextCache oldCache = internalSidekickContextCache;
     _activeRunner = this;
+    internalSidekickContextCache = SidekickContextCache();
     _entryWorkingDirectory = workingDirectory;
 
     return () {
       _activeRunner = oldRunner;
+      internalSidekickContextCache = oldCache;
       _entryWorkingDirectory = _activeRunner?.workingDirectory;
     };
   }
@@ -148,13 +153,14 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
     try {
       parsedArgs = parse(args);
       if (parsedArgs['version'] == true) {
-        print('$cliName is using sidekick version $version');
+        print('${SidekickContext.cliName} is using sidekick version $version');
         return null;
       }
 
       final result = await super.runCommand(parsedArgs);
       return result;
     } finally {
+      unmount();
       if (_isUpdateCheckEnabled && !_isSidekickCliUpdateCommand(parsedArgs)) {
         // print warning if the user didn't fully update their CLI
         _checkCliVersionIntegrity();
@@ -163,7 +169,6 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
         // TODO prevent multiple update checks when a command start another command
         await _checkForUpdates();
       }
-      unmount();
     }
   }
 
@@ -180,7 +185,7 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
       if (!isUpToDate) {
         printerr(
           '${yellow('Update available!')}\n'
-          'Run ${cyan('$cliName sidekick update')} to update your CLI.',
+          'Run ${cyan('${SidekickContext.cliName} sidekick update')} to update your CLI.',
         );
       }
     } catch (_) {
@@ -212,7 +217,7 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
         'The sidekick_core version is incompatible with the bash scripts '
         'in /tool and entrypoint because you probably updated the '
         'sidekick_core dependency of your CLI package manually.\n'
-        'Please run ${cyan('$cliName sidekick update')} to repair your CLI.',
+        'Please run ${cyan('${SidekickContext.cliName} sidekick update')} to repair your CLI.',
       );
     }
   }

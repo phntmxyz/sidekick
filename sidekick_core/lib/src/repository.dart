@@ -5,12 +5,12 @@ import 'package:sidekick_core/src/sidekick_context.dart';
 
 /// Finds the root of the repo
 @Deprecated('Use SidekickContext') // TODO be more precise
-Repository findRepository() => Repository(root: SidekickContext.repository);
+Repository findRepository() =>
+    Repository(root: SidekickContext.repository.root);
 
 /// The Git repository of the project
 ///
 /// Might contain a single dart project or multiple packages, or even non dart packages
-@Deprecated('Use SidekickContext') // TODO be more precise
 class Repository {
   Repository({
     required this.root,
@@ -52,16 +52,15 @@ class Repository {
   ///
   /// Usually injected from the entrypoint itself via `env.SIDEKICK_ENTRYPOINT_HOME`
   @Deprecated('Use SidekickContext.entryPoint')
-  static File? get entryPoint => SidekickContext.entryPoint;
+  static File? get entryPoint => SidekickContext.entryPoint.file;
 
   /// The location of the entrypoint
   ///
   /// Throws when not executed with [entryPoint]
   @Deprecated('Use SidekickContext.entryPoint')
-  static File get requiredEntryPoint => SidekickContext.entryPoint;
+  static File get requiredEntryPoint => SidekickContext.entryPoint.file;
 
   /// Returns the list of all packages in the repository
-  @Deprecated('Use SidekickContext') // TODO be more precise
   List<DartPackage> findAllPackages() {
     return root
         .allSubDirectories((dir) {

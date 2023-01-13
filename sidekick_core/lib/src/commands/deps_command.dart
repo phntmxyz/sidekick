@@ -1,3 +1,4 @@
+import 'package:dcli/dcli.dart';
 import 'package:glob/glob.dart';
 import 'package:glob/list_local_fs.dart';
 import 'package:sidekick_core/sidekick_core.dart';
@@ -30,14 +31,14 @@ class DepsCommand extends Command {
   Future<void> run() async {
     final String? packageName = argResults?['package'] as String?;
 
-    final List<DartPackage> allPackages = repository.findAllPackages();
-
+    final List<DartPackage> allPackages =
+        SidekickContext.repository.findAllPackages();
     if (packageName != null) {
       final package =
           allPackages.where((it) => it.name == packageName).firstOrNull;
       if (package == null) {
         throw "Package with name $packageName not found in repository "
-            "${repository.root.path}";
+            "${SidekickContext.repository.root.path}";
       }
       // only get deps for selected package
       _getDependencies(package);
