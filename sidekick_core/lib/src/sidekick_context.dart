@@ -24,10 +24,31 @@ const String _envPackageHome = 'SIDEKICK_PACKAGE_HOME';
 class SidekickContext {
   SidekickContext._();
 
-  /// Caches expensive lookups
-  // static SidekickContextCache? _cache;
-
-  static SidekickContextCache _cache = _NoCache();
+  /// Caches expensive lookups, disabled by default
+  ///
+  /// The idea is to cache repeated lookups while [SidekickCommandRunner] is
+  /// executing a command. [SidekickCommandRunner] is responsible for setting
+  /// and resetting this value (exposed via [internalSidekickContextCache]).
+  /// Caution! Commands may be nested. Completion of one command should revert
+  /// the cache of the previous command.
+  ///
+  /// ## Why can't we always cache?
+  ///
+  /// Because of tests. Tests run in the same process and would share the cache.
+  ///
+  /// [SidekickContext] picks up all information from environment variables,
+  /// and the file system. Those information don't change when using the CLI in
+  /// production. The process is started from entrypoint and ends when one
+  /// command (and the nested commands) is executed. The process only knows
+  /// about a single sidekick package.
+  ///
+  /// When testing, multiple tests are executed in the same process.
+  /// This leads to shared memory. If the cache would be
+  /// enabled outside of [SidekickCommandRunner] executing a single command,
+  /// we would cache the values for the first test and reuse it in all others.
+  /// But each test uses a different temp directory, resulting in different
+  /// environment variables. Those can't be cached across tests.
+  static SidekickContextCache _cache = SidekickContextCache.noCache();
 
   /// Returns the name of the CLI
   static String get cliName {
@@ -182,6 +203,7 @@ set internalSidekickContextCache(SidekickContextCache value) {
 abstract class SidekickContextCache {
   T getOrCreate<T extends Object>(Object key, T Function() create);
   factory SidekickContextCache() = _InMemoryCache;
+  factory SidekickContextCache.noCache() = _NoCache;
 }
 
 class _NoCache implements SidekickContextCache {
