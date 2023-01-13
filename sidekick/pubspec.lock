@@ -554,6 +554,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.4.21"
+  test_descriptor:
+    dependency: "direct dev"
+    description:
+      name: test_descriptor
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.0.1"
   test_process:
     dependency: "direct dev"
     description:
