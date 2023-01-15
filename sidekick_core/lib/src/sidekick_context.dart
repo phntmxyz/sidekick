@@ -5,6 +5,7 @@ import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_core/sidekick_core.dart' as core;
 import 'package:sidekick_core/src/entrypoint.dart';
 import 'package:sidekick_core/src/sidekick_package.dart';
+import 'package:path/path.dart' as p;
 
 /// Environment variable containing the location of the shell `entryPoint`, when
 /// executing the sidekick CLI with the shell entrypoint
@@ -118,7 +119,7 @@ class SidekickContext {
     Directory current = Directory(scriptDirectory.path);
     final repoRoot = repository.root;
 
-    while (current.isWithin(repoRoot)) {
+    while (current.isWithinOrEquals(repoRoot)) {
       final sidekickPackage = SidekickPackage.fromDirectory(current);
       if (sidekickPackage != null) {
         return sidekickPackage;
@@ -158,7 +159,7 @@ class SidekickContext {
       Directory current = sidekickPackageDir;
       final repoRoot = repository.root;
 
-      while (current.isWithin(repoRoot)) {
+      while (current.isWithinOrEquals(repoRoot)) {
         final entryPoint = current
             .listSync()
             .whereType<File>()
@@ -179,15 +180,11 @@ class SidekickContext {
   }
 
   static Repository _findRepository() {
-    bool isGitDir(Directory dir) => dir.directory('.git').existsSync();
-
-    final gitRoot = sidekickPackageDir.findParent(isGitDir);
-
-    if (gitRoot == null) {
-      throw 'Could not find the root of the repository. Searched in '
-          '${sidekickPackageDir.absolute.path}';
+    final gitRootPath = 'git rev-parse --show-toplevel'.firstLine;
+    if (gitRootPath == null) {
+      throw "Can't find git root";
     }
-
+    final gitRoot = Directory(gitRootPath);
     return Repository(root: gitRoot);
   }
 }
@@ -224,5 +221,11 @@ class _InMemoryCache implements SidekickContextCache {
     final newValue = create();
     _map[key] = newValue;
     return newValue;
+  }
+}
+
+extension on Directory {
+  bool isWithinOrEquals(Directory parent) {
+    return p.equals(parent.path, path) || p.isWithin(parent.path, path);
   }
 }
