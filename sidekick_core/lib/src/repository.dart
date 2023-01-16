@@ -59,5 +59,5 @@ class Repository {
   static File get requiredEntryPoint => SidekickContext.entryPoint.file;
 
   /// Returns the list of all packages in the repository
-  List<DartPackage> findAllPackages() => dartpackage.findAllPackages(root);
+  List<DartPackage> findAllPackages() => dartPackage.findAllPackages(root);
 }
