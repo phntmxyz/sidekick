@@ -24,7 +24,15 @@ const String _envEntryPointFile = 'SIDEKICK_ENTRYPOINT_FILE';
 /// when executed via `entryPoint`
 const String _envPackageHome = 'SIDEKICK_PACKAGE_HOME';
 
+/// Global information about the sidekick cli that is being executed
+///
+/// Get the location of the [entryPoint] and the [sidekickPackage] which works
+/// when
+/// - executed via the shell entrypoint (default) or
+/// - when debugging the cli on the DartVM or
+/// - when running tests for your custom commands
 class SidekickContext {
+  /// Private constructor, no instances
   SidekickContext._();
 
   /// Caches expensive lookups, disabled by default
@@ -183,7 +191,7 @@ class SidekickContext {
   /// [SidekickPackage] and the [EntryPoint].
   /// [DartScript.self] is guaranteed to be a inside [SidekickPackage].
   /// [SidekickPackage] is guaranteed to be inside parent of [EntryPoint].
-  static ProjectDiscoveryResult _discoverProject({
+  static _ProjectDiscoveryResult _discoverProject({
     SidekickPackage? knownSidekickPackage,
   }) {
     return _cache.getOrCreate('_discoverProject', () {
@@ -192,7 +200,7 @@ class SidekickContext {
 
       SidekickPackage? sidekickPackage = knownSidekickPackage;
       EntryPoint? entryPoint;
-      ProjectDiscoveryResult? result;
+      _ProjectDiscoveryResult? result;
       for (final dir in startDir.allParentDirectories()) {
         sidekickPackage ??= SidekickPackage.fromDirectory(dir);
         entryPoint ??= () {
@@ -211,7 +219,7 @@ class SidekickContext {
           return null;
         }();
         if (sidekickPackage != null && entryPoint != null) {
-          result = ProjectDiscoveryResult(
+          result = _ProjectDiscoveryResult(
             sidekickPackage: sidekickPackage,
             entryPoint: entryPoint,
           );
@@ -269,19 +277,28 @@ class SidekickContext {
   }
 }
 
-SidekickContextCache get internalSidekickContextCache {
-  return SidekickContext._cache;
-}
+/// Read the current cache of [SidekickContext]
+///
+/// This is a private API and should only be used by [SidekickCommandRunner]
+SidekickContextCache get internalSidekickContextCache => SidekickContext._cache;
 
+/// Set the cache of [SidekickContext], don't forget to reset it after
+/// a command has been executed.
+///
+/// This is a private API and should only be used by [SidekickCommandRunner]
 set internalSidekickContextCache(SidekickContextCache value) {
   SidekickContext._cache = value;
 }
 
+/// Interface of the cache of [SidekickContext]
 abstract class SidekickContextCache {
+  /// Returns the cached value when available or creates a new value
   T getOrCreate<T extends Object>(Object key, T Function() create);
 
+  /// Creates a cache that keeps values in memory
   factory SidekickContextCache() = _InMemoryCache;
 
+  /// Creates a cache that caches nothing (noop)
   factory SidekickContextCache.noCache() = _NoCache;
 }
 
@@ -307,11 +324,12 @@ class _InMemoryCache implements SidekickContextCache {
   }
 }
 
-class ProjectDiscoveryResult {
+/// The result of [SidekickContext._discoverProject]
+class _ProjectDiscoveryResult {
   final SidekickPackage sidekickPackage;
   final EntryPoint entryPoint;
 
-  ProjectDiscoveryResult({
+  _ProjectDiscoveryResult({
     required this.sidekickPackage,
     required this.entryPoint,
   });
