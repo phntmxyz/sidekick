@@ -14,7 +14,7 @@ extension DirectoryExt on Directory {
         return dir;
       }
       final parent = dir.parent;
-      if (dir.toString() == parent.toString()) {
+      if (canonicalize(dir.path) == canonicalize(parent.path)) {
         // not found
         return null;
       }
