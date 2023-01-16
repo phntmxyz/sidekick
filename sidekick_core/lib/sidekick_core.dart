@@ -197,28 +197,39 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
   /// minimum version of their CLI and that version doesn't match with the
   /// CLI version listed in the pubspec at the path ['sidekick', 'cli_version']
   void _checkCliVersionIntegrity() {
-    final sidekickCoreVersion = VersionChecker.getMinimumVersionConstraint(
-      Repository.requiredSidekickPackage,
-      ['dependencies', 'sidekick_core'],
-    );
-    final sidekickCliVersion = VersionChecker.getMinimumVersionConstraint(
-      Repository.requiredSidekickPackage,
-      ['sidekick', 'cli_version'],
-    );
-
-    // old CLI which has no version information yet
-    // _checkForUpdates will print a warning to update the CLI in this case
-    if (sidekickCliVersion == Version.none) {
-      return;
-    }
-
-    if (sidekickCliVersion != sidekickCoreVersion) {
-      printerr(
-        'The sidekick_core version is incompatible with the bash scripts '
-        'in /tool and entrypoint because you probably updated the '
-        'sidekick_core dependency of your CLI package manually.\n'
-        'Please run ${cyan('${SidekickContext.cliName} sidekick update')} to repair your CLI.',
+    try {
+      final sidekickCoreVersion = VersionChecker.getMinimumVersionConstraint(
+        Repository.requiredSidekickPackage,
+        ['dependencies', 'sidekick_core'],
       );
+      if (sidekickCoreVersion == null) {
+        // Couldn't parse sidekick_core version. Most likely because it uses
+        // a git or path dependency.
+        return;
+      }
+
+      final sidekickCliVersion = VersionChecker.getMinimumVersionConstraint(
+        Repository.requiredSidekickPackage,
+        ['sidekick', 'cli_version'],
+      );
+      if (sidekickCliVersion == null) {
+        // old CLI which has no version information yet
+        // _checkForUpdates will print a warning to update the CLI in this case
+        return;
+      }
+
+      if (sidekickCliVersion != sidekickCoreVersion) {
+        printerr(
+          "Dependency sidekick_core:${sidekickCoreVersion.canonicalizedVersion} "
+          "doesn't match sidekick.cli_version ${sidekickCliVersion.canonicalizedVersion} in your pubspec.yaml.\n"
+          "This is a signal that sidekick_core was updated manually without calling 'sidekick update'. "
+          "Some features in your CLI might not work as expected.\n\n"
+          'Please run ${cyan('$cliName sidekick update')} to execute the missing migrations.',
+        );
+      }
+    } catch (e, s) {
+      printerr(e.toString());
+      printerr(s.toString());
     }
   }
 
@@ -254,7 +265,12 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
 }
 
 /// Enables the [SidekickCommandRunner] to check for `sidekick` updates
-bool get _isUpdateCheckEnabled => env['SIDEKICK_ENABLE_UPDATE_CHECK'] == 'true';
+///
+/// Enables checking for `sidekick` updates in [SidekickCommandRunner]
+///
+/// Defaults to true, unless `export SIDEKICK_ENABLE_UPDATE_CHECK=false` is set
+bool get _isUpdateCheckEnabled =>
+    env['SIDEKICK_ENABLE_UPDATE_CHECK'] != 'false';
 
 typedef Unmount = void Function();
 

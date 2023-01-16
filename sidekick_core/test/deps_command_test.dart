@@ -42,7 +42,6 @@ environment:
           expect(exitCode, 0);
 
           final expectedPackages = [
-            'dash',
             'main_project',
             'foo_a',
             'foo_b',
@@ -56,7 +55,7 @@ environment:
     });
   });
 
-  test('deps respects exclude parameters ', () async {
+  test('deps respects exclude parameters', () async {
     await insideFakeProjectWithSidekick((dir) async {
       final fakeStdOut = FakeStdoutStream();
       await overrideIoStreams(
@@ -80,7 +79,6 @@ environment:
           final includedPackages = [
             'test_a',
             'test_b',
-            'dash',
           ].map((e) => yellow('=== package $e ==='));
           expect(fakeStdOut.lines, containsAll(includedPackages));
 
@@ -89,6 +87,100 @@ environment:
             'foo_a',
             'foo_b',
             'foo_bar_baz',
+          ].map((e) => yellow('=== package $e ==='));
+          for (final excluded in excludedPackages) {
+            expect(fakeStdOut.lines, isNot(anyElement(excluded)));
+          }
+        },
+      );
+    });
+  });
+
+  test('glob searches from repo root, not cwd', () async {
+    await insideFakeProjectWithSidekick((dir) async {
+      final fakeStdOut = FakeStdoutStream();
+      await overrideIoStreams(
+        stdout: () => fakeStdOut,
+        body: () async {
+          setUpPackages(dir);
+
+          // move to a different dir
+          final otherDir = Directory.systemTemp.createTempSync('');
+          addTearDown(() => otherDir.deleteSync());
+          IOOverrides.current!.setCurrentDirectory(otherDir.path);
+
+          final runner = initializeSidekick(
+            name: 'dash',
+            dartSdkPath: systemDartSdkPath(),
+          );
+
+          // exclude `<repo-root>/foo/bar/baz`
+          runner.addCommand(
+            DepsCommand(
+              excludeGlob: ['**/bar/**'],
+            ),
+          );
+          await runner.run(['deps']);
+          expect(exitCode, 0);
+
+          final includedPackages = [
+            'main_project',
+            'test_a',
+            'test_b',
+            'foo_a',
+            'foo_b',
+          ].map((e) => yellow('=== package $e ==='));
+          expect(fakeStdOut.lines, containsAll(includedPackages));
+
+          final excludedPackages = [
+            'foo_bar_baz',
+          ].map((e) => yellow('=== package $e ==='));
+          for (final excluded in excludedPackages) {
+            expect(fakeStdOut.lines, isNot(anyElement(excluded)));
+          }
+        },
+      );
+    });
+  });
+
+  test('glob filter all packages in <repo-root>/foo/', () async {
+    await insideFakeProjectWithSidekick((dir) async {
+      final fakeStdOut = FakeStdoutStream();
+      await overrideIoStreams(
+        stdout: () => fakeStdOut,
+        body: () async {
+          setUpPackages(dir);
+
+          // move to a different dir
+          final otherDir = Directory.systemTemp.createTempSync('');
+          addTearDown(() => otherDir.deleteSync());
+          IOOverrides.current!.setCurrentDirectory(otherDir.path);
+
+          final runner = initializeSidekick(
+            name: 'dash',
+            dartSdkPath: systemDartSdkPath(),
+          );
+
+          // exclude all packages in `<repo-root>/foo/`
+          runner.addCommand(
+            DepsCommand(
+              excludeGlob: ['foo/**'],
+            ),
+          );
+          await runner.run(['deps']);
+          expect(exitCode, 0);
+
+          final includedPackages = [
+            'main_project',
+            'test_a',
+            'test_b',
+          ].map((e) => yellow('=== package $e ==='));
+          expect(fakeStdOut.lines, containsAll(includedPackages));
+
+          final excludedPackages = [
+            'foo_bar_baz',
+            'foo_a',
+            'foo_b',
           ].map((e) => yellow('=== package $e ==='));
           for (final excluded in excludedPackages) {
             expect(fakeStdOut.lines, isNot(anyElement(excluded)));

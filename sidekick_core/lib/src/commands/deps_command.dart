@@ -15,6 +15,27 @@ class DepsCommand extends Command {
   final List<DartPackage> exclude;
 
   /// glob patterns of packages whose dependencies should not be loaded
+  ///
+  /// Search starts at repository root.
+  ///
+  /// Example project layout:
+  ///
+  /// ```
+  /// repo-root
+  /// ├── packages
+  /// │   ├── package1
+  /// │   ├── package2
+  /// │   └── circle
+  /// └── third_party
+  ///     ├── circle
+  ///     │   ├── packageA
+  ///     │   └── packageB
+  ///     └── square
+  /// ```
+  ///
+  /// - Use `packages/package1/**` to exclude only `packages/package1`.
+  /// - Use `**/circle/**` to exclude `packages/circle` as well as
+  ///   `third_party/circle/packageA` and `third_party/circle/packageB`.
   final List<String> excludeGlob;
 
   DepsCommand({
@@ -47,18 +68,24 @@ class DepsCommand extends Command {
 
     final errorBuffer = StringBuffer();
 
-    final excluded = excludeGlob
-        .map((p) => Glob(p))
-        .map(
-          (e) => e.listSync(
-            // See https://github.com/dart-lang/glob/issues/52
-            root: Directory.current.path,
-          ),
-        )
-        .expand((e) => e) // flattens nested list
+    final globExcludes = excludeGlob
+        .expand((rule) {
+          // start search at repo root
+          final root = repository.root.path;
+          return Glob("$root/$rule").listSync(root: root);
+        })
         .whereType<Directory>()
-        .mapNotNull((e) => DartPackage.fromDirectory(e))
-        .append(exclude);
+        .mapNotNull((e) => DartPackage.fromDirectory(e));
+
+    final excluded = [
+      ...exclude,
+      ...globExcludes,
+      // exclude the sidekick package, because it should load it's dependencies
+      // using the embedded sdk.
+      // Since this command is already running, the deps are already loaded.
+      DartPackage.fromDirectory(Repository.requiredCliPackage)!,
+    ];
+
     for (final package in allPackages.whereNot(excluded.contains)) {
       try {
         _getDependencies(package);

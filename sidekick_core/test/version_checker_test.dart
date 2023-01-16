@@ -65,9 +65,9 @@ dependencies:
         pubspecYamlFile.readAsStringSync(),
         '''
 name: dashi
-dependencies:
-  foo: 1.2.4
+dependencies: 
   bar: 0.0.0
+  foo: 1.2.4
 ''',
       );
     });
@@ -87,9 +87,61 @@ name: dashi
         pubspecYamlFile.readAsStringSync(),
         '''
 name: dashi
-# the pubspec does not have a dependencies block, it should be added by updateVersionConstraint
 dependencies:
   foo: 1.2.4
+# the pubspec does not have a dependencies block, it should be added by updateVersionConstraint
+''',
+      );
+    });
+
+    test('replace path dependency with pub version', () async {
+      pubspecYamlFile.writeAsStringSync('''
+name: dashi
+dependencies:
+  sidekick_core:
+    path: ../sidekick_core
+''');
+
+      VersionChecker.updateVersionConstraint(
+        package: package,
+        pubspecKeys: ['dependencies', 'sidekick_core'],
+        newMinimumVersion: Version(0, 14, 0),
+        pinVersion: true,
+      );
+
+      expect(
+        pubspecYamlFile.readAsStringSync(),
+        '''
+name: dashi
+dependencies:
+  sidekick_core: 0.14.0
+''',
+      );
+    });
+
+    test('replace git dependency with pub version', () async {
+      pubspecYamlFile.writeAsStringSync('''
+name: dashi
+dependencies:
+  some_sidekick_plugin:
+    git:
+      url: git@github.com:phntmxyz/some_sidekick_plugin.git
+      ref: main
+''');
+
+      VersionChecker.updateVersionConstraint(
+        package: package,
+        pubspecKeys: ['dependencies', 'some_sidekick_plugin'],
+        newMinimumVersion: Version(0, 14, 0),
+        pinVersion: true,
+      );
+
+      expect(
+        pubspecYamlFile.readAsStringSync(),
+        '''
+name: dashi
+dependencies:
+  some_sidekick_plugin: 0.14.0
 ''',
       );
     });

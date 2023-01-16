@@ -5,6 +5,7 @@ import 'package:meta/meta.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:yaml/yaml.dart';
+import 'package:yaml_edit/yaml_edit.dart';
 
 // ignore: avoid_classes_with_only_static_members
 /// Checks and updates dependencies
@@ -61,47 +62,67 @@ abstract class VersionChecker {
     final pubspec = package.pubspec;
     final pubspecContent = pubspec.readAsStringSync();
 
+    final editor = YamlEditor(pubspecContent);
+
     final newVersionConstraint = pinVersion
         ? newMinimumVersion.canonicalizedVersion
         : newMinimumVersion.major > 0
             ? '^${newMinimumVersion.canonicalizedVersion}'
-            : "'>=${newMinimumVersion.canonicalizedVersion} <1.0.0'";
+            : ">=${newMinimumVersion.canonicalizedVersion} <1.0.0";
 
-    // get startTag which matches as many parts of [pubspecKeys] as possible
-    String? largestMatch;
-    final List<String> missingKeys = () {
-      for (int i = 0; i < pubspecKeys.length; i++) {
-        final regex = _createNestedYamlKeyRegex(pubspecKeys.sublist(0, i + 1));
-        final match = regex.firstMatch(pubspecContent);
-        if (match == null) {
-          // no match
-          return pubspecKeys.sublist(i);
+    // This whole ceremony creates missing keys until reaching the actual key to update
+    final existingKeys = [];
+    for (final key in pubspecKeys) {
+      existingKeys.add(key);
+      // use this pseudo object as fallback when a value is absent
+      const nothing = '\$\$nothing\$\$';
+      final parent = editor.parseAt(existingKeys.dropLast(1));
+      final node =
+          editor.parseAt(existingKeys, orElse: () => wrapAsYamlNode(nothing));
+      if (node.value == nothing) {
+        // The node is missing beginning at this point in the tree
+        final missingKeys = pubspecKeys.sublist(existingKeys.length - 1);
+
+        // Create the complete missing object and insert it as a single block
+        // This helps YamlEditor to actually use the BLOCK syntax. Adding the
+        // nodes one at a time falls back to FLOW syntax
+        YamlMap missing = missingKeys.reversed.fold(
+          YamlMap.wrap({}, style: CollectionStyle.BLOCK),
+          (previousValue, element) {
+            return YamlMap.wrap(
+              {element: previousValue},
+              style: CollectionStyle.BLOCK,
+            );
+          },
+        );
+
+        // We don't want to replace the complete parent node, only add new keys
+        if (parent is YamlMap) {
+          // YamlMap is unmodifiable, therefore create a new one
+          missing = YamlMap.wrap({
+            ...parent,
+            ...missing,
+          });
         }
-        largestMatch = match.group(0);
-      }
-      return <String>[];
-    }();
 
-    if (largestMatch == null) {
-      // everything is missing, add it to the end of the file
-      pubspec.writeAsStringSync(
-        '\n${missingKeys.mapIndexed(
-              (index, key) => '${'  ' * index}$key:',
-            ).join('\n')} $newVersionConstraint\n',
-        mode: FileMode.append,
-      );
-    } else {
-      // only a part of the nested block is missing
-      // add the missing part under the existing part
-      pubspec.replaceSectionWith(
-        startTag: largestMatch!,
-        endTag: '\n',
-        content: '${missingKeys.isNotEmpty ? '\n' : ''}${missingKeys.mapIndexed(
-              (index, key) =>
-                  '${'  ' * (index + pubspecKeys.length - missingKeys.length)}$key:',
-            ).join('\n')} $newVersionConstraint',
-      );
+        // insert the full missing nodes and exit
+        editor.update(
+          existingKeys.dropLast(1),
+          missing,
+        );
+        break;
+      }
     }
+
+    // All parent nodes have been added, finally replace the value.
+    editor.update(pubspecKeys, newVersionConstraint);
+    String generatedYaml = editor.toString();
+
+    // Best practice, close the file with \n (which YamlEditor removed)
+    if (!generatedYaml.endsWith('\n')) {
+      generatedYaml += '\n';
+    }
+    pubspec.writeAsStringSync(generatedYaml);
   }
 
   /// Returns the minimum version constraint of a dependency in [package]
@@ -237,33 +258,12 @@ _Option<String?> _readFromYaml(File yamlFile, List<Object> path) {
     i++;
   }
 
-  return _Some(current as String?);
-}
-
-/// Return regex matching a potentially nested yaml key
-///
-/// Examples:
-/// - createNestedVersionYamlRegex(['version'])
-///   -> '^dependencies:'
-/// - createNestedVersionYamlRegex(['dependencies', 'foo'])
-///   -> '^dependencies:\\s*(\\n  .*)*\\n  foo:'
-/// - createNestedVersionYamlRegex(['dependencies', 'foo', 'bar'])
-///   -> '^dependencies:\\s*(\\n  .*)*\\n  foo:\\s*(\\n    .*)*\\n    bar:'
-RegExp _createNestedYamlKeyRegex(List<String> keys) {
-  final sb = StringBuffer('^');
-  for (int i = 0; i < keys.length; i++) {
-    final key = keys[i];
-    sb.write('$key:');
-
-    if (i < keys.length - 1) {
-      final indentation = '  ' * (i + 1);
-      sb.write('\\s*(\\n$indentation.*)*\\n$indentation');
-    }
+  if (current is String?) {
+    return _Some(current);
   }
-  return RegExp(
-    sb.toString(),
-    multiLine: true,
-  );
+
+  // most likely still a YamlMap or YamlList
+  return const _None();
 }
 
 extension on VersionConstraint {
