@@ -211,6 +211,9 @@ class SidekickContext {
 
   /// The git repository root the [sidekickPackage] is located in
   static Repository get repository {
+    // TODO remove repository? It's not actually required when we define
+    //  the entryPoint to be the root of the project and start package discovery
+    //  from there.
     return _cache.getOrCreate('findRepository', _findRepository);
   }
 
