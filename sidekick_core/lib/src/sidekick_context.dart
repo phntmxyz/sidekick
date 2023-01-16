@@ -133,12 +133,16 @@ class SidekickContext {
   }
 
   static EntryPoint _findEntryPoint() {
+    // Strategy 1: Use the environment variable SIDEKICK_ENTRYPOINT_FILE injected
+    // by entryPoint shell script
     if (env.exists(_envEntryPointFile)) {
       final path = env[_envEntryPointFile]!;
       return EntryPoint(file: File(path));
     }
 
-    if (env.exists(_envEntryPointHome)) {
+    // Strategy 2: (deprecated) Combine SIDEKICK_ENTRYPOINT_FILE and core.cliName.
+    // This only works after call to `initializeSidekick()`.
+    if (env.exists(_envEntryPointHome) && core.cliNameOrNull != null) {
       // CLI is called via entryPoint
       final injectedEntryPointPath = env[_envEntryPointHome];
       if (injectedEntryPointPath == null || injectedEntryPointPath.isBlank) {
@@ -152,7 +156,7 @@ class SidekickContext {
       return EntryPoint(file: entryPointFile);
     }
 
-    // Fallback strategy: Search all parents directories for the entrypoint
+    // Fallback strategy: Search all parents directories for the entryPoint.
     // This case is used when debugging the cli and the dart program is
     // started on the DartVM, and not called and compiled with the entrypoint
     final discovery = _discoverProject();
@@ -173,9 +177,11 @@ class SidekickContext {
       for (final dir in script.parent.allParentDirectories()) {
         sidekickPackage ??= SidekickPackage.fromDirectory(dir);
         entryPoint ??= () {
-          final String? entryPointName =
-              core.cliNameOrNull ?? sidekickPackage?.cliName;
-          if (entryPointName == null) return null;
+          if (sidekickPackage == null) {
+            // sidekickPackage is always found first, when searching upwards
+            return null;
+          }
+          final String entryPointName = sidekickPackage.cliName;
           final match = dir
               .listSync()
               .whereType<File>()
