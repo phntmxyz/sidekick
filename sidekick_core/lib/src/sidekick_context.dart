@@ -3,9 +3,9 @@ import 'dart:io';
 import 'package:dcli/dcli.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_core/sidekick_core.dart' as core;
+import 'package:sidekick_core/src/directory_ext.dart';
 import 'package:sidekick_core/src/entrypoint.dart';
 import 'package:sidekick_core/src/sidekick_package.dart';
-import 'package:path/path.dart' as p;
 
 /// Environment variable containing the location of the shell `entryPoint`, when
 /// executing the sidekick CLI with the shell entrypoint
@@ -51,11 +51,6 @@ class SidekickContext {
   /// environment variables. Those can't be cached across tests.
   static SidekickContextCache _cache = SidekickContextCache.noCache();
 
-  /// Returns the name of the CLI
-  static String get cliName {
-    return sidekickPackage.cliName;
-  }
-
   // /// Returns the directory of the Flutter SDK sidekick uses for the [flutter] command
   // ///
   // /// This variable is usually set to a pinned version of the Flutter SDK per project, i.e.
@@ -80,21 +75,29 @@ class SidekickContext {
   // /// with zero or multiple projects.
   // static DartPackage? get mainProject => throw 'TODO';
 
-  /// The location of the sidekick package inside the [repository]
-  static Directory get sidekickPackageDir => sidekickPackage.root;
-
   /// The sidekick package inside the [repository]
   static SidekickPackage get sidekickPackage {
     return _cache.getOrCreate('sidekickPackage', _findSidekickPackage);
   }
 
+  /// The location of the sidekick package inside the [repository]
+  static Directory get sidekickPackageDir => sidekickPackage.root;
+
+  /// Returns the name of the CLI
+  static String get cliName {
+    return sidekickPackage.cliName;
+  }
+
   static SidekickPackage _findSidekickPackage() {
+    // Strategy 1: Use the environment variable SIDEKICK_PACKAGE_HOME injected
+    // by entryPoint shell script
     final injectedPackageHome = env[_envPackageHome];
     if (injectedPackageHome != null && injectedPackageHome.isNotBlank) {
       // When called via entryPoint, immediately return the package
       return SidekickPackage.fromDirectory(Directory(injectedPackageHome))!;
     }
 
+    // Strategy 2: Script is within the sidekick package
     final script = File(DartScript.self.pathToScript);
     final scriptPath = script.uri.path;
     final pathSep = Platform.pathSeparator;
@@ -221,11 +224,5 @@ class _InMemoryCache implements SidekickContextCache {
     final newValue = create();
     _map[key] = newValue;
     return newValue;
-  }
-}
-
-extension on Directory {
-  bool isWithinOrEquals(Directory parent) {
-    return p.equals(parent.path, path) || p.isWithin(parent.path, path);
   }
 }

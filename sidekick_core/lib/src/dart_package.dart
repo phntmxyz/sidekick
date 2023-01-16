@@ -1,4 +1,5 @@
 import 'package:sidekick_core/sidekick_core.dart';
+import 'package:sidekick_core/src/directory_ext.dart';
 import 'package:yaml/yaml.dart';
 
 class DartPackage {
@@ -113,6 +114,27 @@ class DartPackage {
 /// start with digits and isn’t a reserved word (keyword).
 bool isValidPubPackageName(String name) {
   return _cliNameRegExp.hasMatch(name) && !_keywords.contains(name);
+}
+
+/// Returns the list of all packages in the repository
+List<DartPackage> findAllPackages(Directory directory) {
+  return directory
+      .allSubDirectories((dir) {
+        if (dir.name.startsWith('.')) {
+          // ignore hidden folders
+          return false;
+        }
+        if (dir.name == 'build') {
+          final package = DartPackage.fromDirectory(dir.parent);
+          if (package != null) {
+            // ignore <dartPackage>/build dir
+            return false;
+          }
+        }
+        return true;
+      })
+      .mapNotNull((it) => DartPackage.fromDirectory(it))
+      .toList();
 }
 
 /// https://github.com/dart-lang/sdk/blob/8d262e294400d2f7e41f05579c088a6409a7b2bb/pkg/dartdev/lib/src/utils.dart#L95

@@ -2,11 +2,11 @@ import 'dart:io';
 
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_core/src/sidekick_context.dart';
+import 'package:sidekick_core/src/dart_package.dart' as dartpackage;
 
 /// Finds the root of the repo
-@Deprecated('Use SidekickContext') // TODO be more precise
-Repository findRepository() =>
-    Repository(root: SidekickContext.repository.root);
+@Deprecated('Use SidekickContext.repository') // TODO be more precise
+Repository findRepository() => SidekickContext.repository;
 
 /// The Git repository of the project
 ///
@@ -61,53 +61,5 @@ class Repository {
   static File get requiredEntryPoint => SidekickContext.entryPoint.file;
 
   /// Returns the list of all packages in the repository
-  List<DartPackage> findAllPackages() {
-    return root
-        .allSubDirectories((dir) {
-          if (dir.name.startsWith('.')) {
-            // ignore hidden folders
-            return false;
-          }
-          if (dir.name == 'build') {
-            final package = DartPackage.fromDirectory(dir.parent);
-            if (package != null) {
-              // ignore <dartPackage>/build dir
-              return false;
-            }
-          }
-          return true;
-        })
-        .mapNotNull((it) => DartPackage.fromDirectory(it))
-        .toList();
-  }
-}
-
-extension FindInDirectory on Directory {
-  /// Recursively goes up and tries to find a [Directory] matching [predicate]
-  ///
-  /// Returns `null` when reaching root (/) without a match
-  Directory? findParent(bool Function(Directory dir) predicate) {
-    var dir = this;
-    // ignore: literal_only_boolean_expressions
-    while (true) {
-      if (predicate(dir)) {
-        return dir;
-      }
-      final parent = dir.parent;
-      if (dir.toString() == parent.toString()) {
-        // not found
-        return null;
-      }
-      dir = dir.parent;
-    }
-  }
-
-  Iterable<Directory> allSubDirectories(
-    bool Function(Directory dir) predicate,
-  ) sync* {
-    yield this;
-    for (final dir in listSync().whereType<Directory>().where(predicate)) {
-      yield* dir.allSubDirectories(predicate);
-    }
-  }
+  List<DartPackage> findAllPackages() => dartpackage.findAllPackages(root);
 }

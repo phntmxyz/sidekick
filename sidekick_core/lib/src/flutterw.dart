@@ -1,5 +1,6 @@
 import 'package:dcli/dcli.dart' as dcli;
 import 'package:sidekick_core/sidekick_core.dart';
+import 'package:sidekick_core/src/directory_ext.dart';
 
 /// Returns the closes `flutterw` file, searching upwards from [mainProject] or [Repository.cliPackageDir] or [repository]
 File? findFlutterwLocation() {
