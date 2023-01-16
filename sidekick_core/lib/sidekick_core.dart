@@ -32,6 +32,7 @@ export 'package:sidekick_core/src/commands/sidekick_command.dart';
 export 'package:sidekick_core/src/dart.dart';
 export 'package:sidekick_core/src/dart_package.dart';
 export 'package:sidekick_core/src/dart_runtime.dart';
+export 'package:sidekick_core/src/directory_ext.dart';
 export 'package:sidekick_core/src/file_util.dart';
 export 'package:sidekick_core/src/flutter.dart';
 export 'package:sidekick_core/src/flutterw.dart';
