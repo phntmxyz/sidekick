@@ -1,5 +1,5 @@
 import 'package:sidekick_core/sidekick_core.dart';
-import 'package:sidekick_core/src/dart_package.dart' as dartpackage;
+import 'package:sidekick_core/src/dart_package.dart' as dartPackage;
 
 /// Finds the root of the repo
 @Deprecated('Use SidekickContext.repository') // TODO be more precise
