@@ -1,11 +1,7 @@
-import 'dart:io';
-
-import 'package:dcli/dcli.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_core/sidekick_core.dart' as core;
 import 'package:sidekick_core/src/directory_ext.dart';
 import 'package:sidekick_core/src/entrypoint.dart';
-import 'package:sidekick_core/src/sidekick_package.dart';
 
 /// Environment variable containing the location of the shell `entryPoint`, when
 /// executing the sidekick CLI with the shell entrypoint
@@ -13,6 +9,13 @@ import 'package:sidekick_core/src/sidekick_package.dart';
 /// May be not set when debugging where the CLI is executed directly on the
 /// DartVM by calling `dart bin/main.dart` without the entrypoint
 const String _envEntryPointHome = 'SIDEKICK_ENTRYPOINT_HOME';
+
+/// Environment variable containing the path of the entrypoint when executing
+/// the sidekick CLI with the shell entrypoint
+///
+/// May be not set when debugging where the CLI is executed directly on the
+/// DartVM by calling `dart bin/main.dart` without the entrypoint
+const String _envEntryPointFile = 'SIDEKICK_ENTRYPOINT_FILE';
 
 /// Environment variable containing the location of the dart package of this
 /// sidekick CLI. It contains the source code and tool scripts of this sidekick
@@ -130,6 +133,11 @@ class SidekickContext {
   }
 
   static EntryPoint _findEntryPoint() {
+    if (env.exists(_envEntryPointFile)) {
+      final path = env[_envEntryPointFile]!;
+      return EntryPoint(file: File(path));
+    }
+
     if (env.exists(_envEntryPointHome)) {
       // CLI is called via entryPoint
       final injectedEntryPointPath = env[_envEntryPointHome];
