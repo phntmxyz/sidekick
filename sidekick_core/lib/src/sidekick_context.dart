@@ -78,13 +78,10 @@ class SidekickContext {
   // /// with zero or multiple projects.
   // static DartPackage? get mainProject => throw 'TODO';
 
-  /// The sidekick package inside the [repository]
+  /// The sidekick package inside the [projectRoot]
   static SidekickPackage get sidekickPackage {
     return _cache.getOrCreate('sidekickPackage', _findSidekickPackage);
   }
-
-  /// The location of the sidekick package inside the [repository]
-  static Directory get sidekickPackageDir => sidekickPackage.root;
 
   /// Returns the name of the CLI
   static String get cliName {
@@ -94,13 +91,32 @@ class SidekickContext {
   static SidekickPackage _findSidekickPackage() {
     // Strategy 1: Use the environment variable SIDEKICK_PACKAGE_HOME injected
     // by entryPoint shell script
+    final envPackage = _findSidekickPackageFromEnv();
+    if (envPackage != null) {
+      return envPackage;
+    }
+
+    // Strategy 2: Script is within the sidekick package
+    final scriptPackage = _findSidekickPackageFromScript();
+    if (scriptPackage != null) {
+      return scriptPackage;
+    }
+
+    // Fallback strategy: searching all parent folders until we find a dart package root
+    final discovery = _discoverProject();
+    return discovery.sidekickPackage;
+  }
+
+  static SidekickPackage? _findSidekickPackageFromEnv() {
     final injectedPackageHome = env[_envPackageHome];
     if (injectedPackageHome != null && injectedPackageHome.isNotBlank) {
       // When called via entryPoint, immediately return the package
       return SidekickPackage.fromDirectory(Directory(injectedPackageHome))!;
     }
+    return null;
+  }
 
-    // Strategy 2: Script is within the sidekick package
+  static SidekickPackage? _findSidekickPackageFromScript() {
     final script = File(DartScript.self.pathToScript);
     final scriptPath = script.uri.path;
     final pathSep = Platform.pathSeparator;
@@ -119,13 +135,13 @@ class SidekickContext {
     if (scriptPath.endsWith('${pathSep}bin${pathSep}update.dart')) {
       return SidekickPackage.fromDirectory(script.parent.parent)!;
     }
-
-    // Fallback strategy: searching all parent folders until we find a dart package root
-    final discovery = _discoverProject();
-    return discovery.sidekickPackage;
+    return null;
   }
 
-  /// The location of the entryPoint inside the [repository]
+  /// The location of the entryPoint, the shell script that is used to execute
+  /// the cli.
+  ///
+  /// The entryPoint also marks the root of the project ([projectRoot]).
   ///
   /// Usually injected from the entryPoint itself via `env.SIDEKICK_ENTRYPOINT_HOME`
   static EntryPoint get entryPoint {
@@ -159,7 +175,9 @@ class SidekickContext {
     // Fallback strategy: Search all parents directories for the entryPoint.
     // This case is used when debugging the cli and the dart program is
     // started on the DartVM, and not called and compiled with the entrypoint
-    final discovery = _discoverProject();
+    final discovery = _discoverProject(
+      knownSidekickPackage: _findSidekickPackageFromEnv(),
+    );
     return discovery.entryPoint;
   }
 
@@ -167,14 +185,17 @@ class SidekickContext {
   /// [SidekickPackage] and the [EntryPoint].
   /// [DartScript.self] is guaranteed to be a inside [SidekickPackage].
   /// [SidekickPackage] is guaranteed to be inside parent of [EntryPoint].
-  static ProjectDiscoveryResult _discoverProject() {
+  static ProjectDiscoveryResult _discoverProject({
+    SidekickPackage? knownSidekickPackage,
+  }) {
     return _cache.getOrCreate('_discoverProject', () {
       final script = File(DartScript.self.pathToScript);
+      final startDir = knownSidekickPackage?.root ?? script.parent;
 
-      SidekickPackage? sidekickPackage;
+      SidekickPackage? sidekickPackage = knownSidekickPackage;
       EntryPoint? entryPoint;
       ProjectDiscoveryResult? result;
-      for (final dir in script.parent.allParentDirectories()) {
+      for (final dir in startDir.allParentDirectories()) {
         sidekickPackage ??= SidekickPackage.fromDirectory(dir);
         entryPoint ??= () {
           if (sidekickPackage == null) {
@@ -201,15 +222,36 @@ class SidekickContext {
       }
       if (result == null) {
         throw StateError(
-            "Can't find sidekick package and entryPoint from ${script.path}. "
-            'entryPoint: $entryPoint, '
-            'sidekickPackage: $sidekickPackage');
+          "Can't find sidekick package and entryPoint from ${script.path}.\n"
+          'entryPoint: $entryPoint,\n'
+          'sidekickPackage: $sidekickPackage',
+        );
       }
       return result;
     });
   }
 
+  /// The directory where the [entryPoint] is located
+  ///
+  /// This directory is considered the project root.
+  static Directory get projectRoot {
+    if (env.exists(_envEntryPointHome)) {
+      // CLI is called via entryPoint
+      final injectedEntryPointPath = env[_envEntryPointHome];
+      if (injectedEntryPointPath == null || injectedEntryPointPath.isBlank) {
+        throw 'Injected entryPoint was not set (env.$_envEntryPointHome)';
+      }
+      final Directory dir = Directory(injectedEntryPointPath);
+      if (!dir.existsSync()) {
+        throw 'Injected entryPoint does not exist ${dir.absolute.path}';
+      }
+      return dir;
+    }
+    return entryPoint.file.parent;
+  }
+
   /// The git repository root the [sidekickPackage] is located in
+  @Deprecated('Use projectRoot instead')
   static Repository get repository {
     // TODO remove repository? It's not actually required when we define
     //  the entryPoint to be the root of the project and start package discovery

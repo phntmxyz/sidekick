@@ -1,3 +1,4 @@
+import 'package:dcli/dcli.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 
 /// The package that contains the generated sidekick cli code
@@ -22,4 +23,7 @@ class SidekickPackage extends DartPackage {
   File get cliMainFile {
     return libDir.file('$name.dart');
   }
+
+  @override
+  String toString() => "SidekickPackage '$name' (${absolute(root.path)})";
 }

@@ -15,8 +15,8 @@ final _gitPatch1 = MigrationStep.gitPatch(
 
 String _patch1() {
   final cliMainFilePath = relative(
-    Repository.requiredSidekickPackage.cliMainFile.absolute.path,
-    from: findRepository().root.path,
+    SidekickContext.sidekickPackage.cliMainFile.absolute.path,
+    from: SidekickContext.projectRoot.path,
   );
 
   return '''
@@ -45,8 +45,8 @@ final _gitPatch2 = MigrationStep.gitPatch(
 
 String _patch2() {
   final cliMainFilePath = relative(
-    Repository.requiredSidekickPackage.cliMainFile.absolute.path,
-    from: findRepository().root.path,
+    SidekickContext.sidekickPackage.cliMainFile.absolute.path,
+    from: SidekickContext.projectRoot.path,
   );
 
   return '''

@@ -94,7 +94,7 @@ class GitPatchMigrationStep extends MigrationStep {
     final exitCode = startFromArgs(
           'git',
           ['apply', patchFile.absolute.path],
-          workingDirectory: Repository.requiredCliPackage.path,
+          workingDirectory: SidekickContext.sidekickPackage.root.path,
           // A more detailed error will be thrown on exitCode != 0
           nothrow: true,
         ).exitCode ??

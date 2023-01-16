@@ -1,4 +1,3 @@
-import 'package:dcli/dcli.dart';
 import 'package:glob/glob.dart';
 import 'package:glob/list_local_fs.dart';
 import 'package:sidekick_core/sidekick_core.dart';
@@ -53,13 +52,13 @@ class DepsCommand extends Command {
     final String? packageName = argResults?['package'] as String?;
 
     final List<DartPackage> allPackages =
-        SidekickContext.repository.findAllPackages();
+        findAllPackages(SidekickContext.projectRoot);
     if (packageName != null) {
       final package =
           allPackages.where((it) => it.name == packageName).firstOrNull;
       if (package == null) {
-        throw "Package with name $packageName not found in repository "
-            "${SidekickContext.repository.root.path}";
+        throw "Package with name $packageName not found in "
+            "${SidekickContext.projectRoot.path}";
       }
       // only get deps for selected package
       _getDependencies(package);
@@ -83,7 +82,7 @@ class DepsCommand extends Command {
       // exclude the sidekick package, because it should load it's dependencies
       // using the embedded sdk.
       // Since this command is already running, the deps are already loaded.
-      DartPackage.fromDirectory(Repository.requiredCliPackage)!,
+      DartPackage.fromDirectory(SidekickContext.sidekickPackage.root)!,
     ];
 
     for (final package in allPackages.whereNot(excluded.contains)) {

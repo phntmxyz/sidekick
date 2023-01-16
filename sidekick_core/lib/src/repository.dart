@@ -1,7 +1,4 @@
-import 'dart:io';
-
 import 'package:sidekick_core/sidekick_core.dart';
-import 'package:sidekick_core/src/sidekick_context.dart';
 import 'package:sidekick_core/src/dart_package.dart' as dartpackage;
 
 /// Finds the root of the repo
@@ -26,13 +23,14 @@ class Repository {
   ///
   /// Usually you want to use [sidekickPackage]
   @Deprecated('Use SidekickContext.sidekickPackageDir')
-  static Directory? get cliPackageDir => SidekickContext.sidekickPackageDir;
+  static Directory? get cliPackageDir => SidekickContext.sidekickPackage.root;
 
   /// The location of the sidekick package
   ///
   /// Throws when not executed with [entryPoint]
-  @Deprecated('Use SidekickContext.sidekickPackageDir')
-  static Directory get requiredCliPackage => SidekickContext.sidekickPackageDir;
+  @Deprecated('Use SidekickContext.sidekickPackage.root')
+  static Directory get requiredCliPackage =>
+      SidekickContext.sidekickPackage.root;
 
   /// The sidekick package inside the repository
   ///

@@ -21,8 +21,7 @@ class InstallGlobalCommand extends Command {
     }
 
     /// The entrypoint injects its location
-    final entrypoint = Repository.requiredEntryPoint;
-    GlobalSidekickRoot.linkBinary(entrypoint);
+    GlobalSidekickRoot.linkBinary(SidekickContext.entryPoint.file);
 
     if (dcli.isOnPATH(GlobalSidekickRoot.binDir.path)) {
       print(

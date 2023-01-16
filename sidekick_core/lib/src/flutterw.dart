@@ -2,11 +2,10 @@ import 'package:dcli/dcli.dart' as dcli;
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_core/src/directory_ext.dart';
 
-/// Returns the closes `flutterw` file, searching upwards from [mainProject] or [Repository.cliPackageDir] or [repository]
+/// Returns the closes `flutterw` file, searching upwards from
+/// [SidekickContext.sidekickPackageDir]
 File? findFlutterwLocation() {
-  final searchStart = mainProject?.root ??
-      Repository.cliPackageDir ??
-      SidekickContext.repository.root;
+  final searchStart = SidekickContext.sidekickPackage.root;
   final flutterwParent =
       searchStart.findParent((dir) => dir.file('flutterw').existsSync());
   final flutterw = flutterwParent?.file('flutterw');

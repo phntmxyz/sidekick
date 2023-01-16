@@ -1,3 +1,4 @@
+import 'package:dcli/dcli.dart' show absolute;
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_core/src/directory_ext.dart';
 import 'package:yaml/yaml.dart';
@@ -101,7 +102,8 @@ class DartPackage {
   int get hashCode => canonicalize(root.path).hashCode;
 
   @override
-  String toString() => "DartPackage '$name'";
+  String toString() =>
+      "DartPackage '$name' ${isFlutterPackage ? "with Flutter " : " "}(${absolute(root.path)})";
 }
 
 /// Returns true when the name is a valid pub package name according to

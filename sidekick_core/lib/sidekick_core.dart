@@ -76,7 +76,8 @@ SidekickCommandRunner initializeSidekick({
 }) {
   DartPackage? mainProject;
 
-  final repo = findRepository();
+  final repo = Repository(root: SidekickContext.projectRoot);
+  // final repo = findRepository();
   if (mainProjectPath != null) {
     mainProject =
         DartPackage.fromDirectory(repo.root.directory(mainProjectPath));
@@ -176,7 +177,7 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
   Future<void> _checkForUpdates() async {
     try {
       final updateFuture = VersionChecker.isDependencyUpToDate(
-        package: Repository.requiredSidekickPackage,
+        package: SidekickContext.sidekickPackage,
         dependency: 'sidekick_core',
         pubspecKeys: ['sidekick', 'cli_version'],
       );
@@ -199,7 +200,7 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
   void _checkCliVersionIntegrity() {
     try {
       final sidekickCoreVersion = VersionChecker.getMinimumVersionConstraint(
-        Repository.requiredSidekickPackage,
+        SidekickContext.sidekickPackage,
         ['dependencies', 'sidekick_core'],
       );
       if (sidekickCoreVersion == null) {
@@ -209,7 +210,7 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
       }
 
       final sidekickCliVersion = VersionChecker.getMinimumVersionConstraint(
-        Repository.requiredSidekickPackage,
+        SidekickContext.sidekickPackage,
         ['sidekick', 'cli_version'],
       );
       if (sidekickCliVersion == null) {
@@ -224,7 +225,7 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
           "doesn't match sidekick.cli_version ${sidekickCliVersion.canonicalizedVersion} in your pubspec.yaml.\n"
           "This is a signal that sidekick_core was updated manually without calling 'sidekick update'. "
           "Some features in your CLI might not work as expected.\n\n"
-          'Please run ${cyan('$cliName sidekick update')} to execute the missing migrations.',
+          'Please run ${cyan('${SidekickContext.cliName} sidekick update')} to execute the missing migrations.',
         );
       }
     } catch (e, s) {

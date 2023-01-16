@@ -13,7 +13,7 @@ class DartAnalyzeCommand extends ForwardCommand {
     // running in root of project, includes all packages
     final exitCode = dart(
       ['analyze', ...argResults!.arguments],
-      workingDirectory: SidekickContext.repository.root,
+      workingDirectory: SidekickContext.projectRoot,
     );
     exit(exitCode);
   }

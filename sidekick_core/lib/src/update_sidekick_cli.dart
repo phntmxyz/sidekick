@@ -67,7 +67,7 @@ Future<void> main(List<String> args) async {
     // update sidekick: cli_version: <version> in pubspec.yaml to signalize
     // that update has completed successfully
     VersionChecker.updateVersionConstraint(
-      package: Repository.requiredSidekickPackage,
+      package: SidekickContext.sidekickPackage,
       pubspecKeys: ['sidekick', 'cli_version'],
       newMinimumVersion: targetSidekickCoreVersion,
       pinVersion: true,
@@ -101,9 +101,9 @@ class UpdateToolsMigration extends MigrationStep {
   Future<void> migrate(MigrationContext context) async {
     final template = SidekickTemplate();
     final props = SidekickTemplateProperties(
-      name: Repository.requiredSidekickPackage.cliName,
-      entrypointLocation: Repository.requiredEntryPoint,
-      packageLocation: Repository.requiredCliPackage,
+      name: SidekickContext.sidekickPackage.cliName,
+      entrypointLocation: SidekickContext.entryPoint.file,
+      packageLocation: SidekickContext.sidekickPackage.root,
     );
     template.generateTools(props);
   }
@@ -121,9 +121,9 @@ class UpdateEntryPointMigration extends MigrationStep {
   Future<void> migrate(MigrationContext context) async {
     final template = SidekickTemplate();
     final props = SidekickTemplateProperties(
-      name: Repository.requiredSidekickPackage.cliName,
-      entrypointLocation: Repository.requiredEntryPoint,
-      packageLocation: Repository.requiredCliPackage,
+      name: SidekickContext.sidekickPackage.cliName,
+      entrypointLocation: SidekickContext.entryPoint.file,
+      packageLocation: SidekickContext.sidekickPackage.root,
     );
     template.generateEntrypoint(props);
   }
@@ -139,7 +139,7 @@ class UseLatestDartVersionMigration extends MigrationStep {
 
   @override
   Future<void> migrate(MigrationContext context) async {
-    final package = Repository.requiredSidekickPackage;
+    final package = SidekickContext.sidekickPackage;
 
     final pubspec = YamlEditor(package.pubspec.readAsStringSync());
     final String? sdkConstraints =

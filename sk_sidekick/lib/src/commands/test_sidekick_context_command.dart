@@ -1,5 +1,4 @@
 import 'package:sidekick_core/sidekick_core.dart';
-import 'package:sk_sidekick/sk_sidekick.dart';
 
 class TestSidekickContextCommand extends Command {
   @override
@@ -14,7 +13,7 @@ class TestSidekickContextCommand extends Command {
     print('sidekickPackage: ${relative(sidekickPackage.root.path)}');
     final entryPoint = SidekickContext.entryPoint;
     print('entryPoint: ${relative(entryPoint.file.path)}');
-    final repository = SidekickContext.repository;
-    print('repository: ${relative(repository.root.path)}');
+    final projectRoot = SidekickContext.projectRoot;
+    print('projectRoot: ${relative(projectRoot.path)}');
   }
 }

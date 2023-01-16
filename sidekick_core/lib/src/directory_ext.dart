@@ -1,4 +1,5 @@
 import 'dart:io';
+// ignore: depend_on_referenced_packages, is part of dartx
 import 'package:path/path.dart' as p;
 
 extension DirectoryExt on Directory {
