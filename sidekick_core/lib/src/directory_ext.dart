@@ -1,6 +1,6 @@
 import 'dart:io';
-// ignore: depend_on_referenced_packages, is part of dartx
-import 'package:path/path.dart' as p;
+
+import 'package:dcli/dcli.dart';
 
 extension DirectoryExt on Directory {
   /// Recursively goes up and tries to find a [Directory] matching [predicate]
@@ -40,14 +40,10 @@ extension DirectoryExt on Directory {
         yield current;
       }
       final parent = current.parent;
-      if (p.equals(parent.path, current.path)) {
+      if (canonicalize(parent.path) == canonicalize(current.path)) {
         break;
       }
       current = parent;
     }
-  }
-
-  bool isWithinOrEquals(Directory parent) {
-    return p.equals(parent.path, path) || p.isWithin(parent.path, path);
   }
 }

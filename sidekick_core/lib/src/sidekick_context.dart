@@ -1,6 +1,5 @@
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_core/sidekick_core.dart' as core;
-import 'package:sidekick_core/src/directory_ext.dart';
 import 'package:sidekick_core/src/entrypoint.dart';
 
 /// Environment variable containing the location of the shell `entryPoint`, when

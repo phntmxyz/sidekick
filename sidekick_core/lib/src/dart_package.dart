@@ -1,6 +1,5 @@
 import 'package:dcli/dcli.dart' show absolute;
 import 'package:sidekick_core/sidekick_core.dart';
-import 'package:sidekick_core/src/directory_ext.dart';
 import 'package:yaml/yaml.dart';
 
 class DartPackage {
