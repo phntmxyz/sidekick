@@ -30,6 +30,22 @@ extension DirectoryExt on Directory {
     }
   }
 
+  Iterable<Directory> allParentDirectories([
+    bool Function(Directory dir)? predicate,
+  ]) sync* {
+    Directory current = this;
+    while (true) {
+      if (predicate?.call(current) ?? true) {
+        yield current;
+      }
+      final parent = current.parent;
+      if (p.equals(parent.path, current.path)) {
+        break;
+      }
+      current = parent;
+    }
+  }
+
   bool isWithinOrEquals(Directory parent) {
     return p.equals(parent.path, path) || p.isWithin(parent.path, path);
   }

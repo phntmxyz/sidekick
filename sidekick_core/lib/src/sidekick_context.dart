@@ -118,19 +118,8 @@ class SidekickContext {
     }
 
     // Fallback strategy: searching all parent folders until we find a dart package root
-    final scriptDirectory = script.parent;
-    Directory current = Directory(scriptDirectory.path);
-    final repoRoot = repository.root;
-
-    while (current.isWithinOrEquals(repoRoot)) {
-      final sidekickPackage = SidekickPackage.fromDirectory(current);
-      if (sidekickPackage != null) {
-        return sidekickPackage;
-      }
-
-      current = current.parent;
-    }
-    throw "Can't find sidekickPackage from ${scriptDirectory.path}";
+    final discovery = _discoverProject();
+    return discovery.sidekickPackage;
   }
 
   /// The location of the entryPoint inside the [repository]
@@ -153,28 +142,57 @@ class SidekickContext {
         throw 'Injected entryPoint does not exist ${entryPointFile.absolute.path}';
       }
       return EntryPoint(file: entryPointFile);
-    } else {
-      // Fallback strategy: Search all parents directories for the entrypoint
-      // This case is used when debugging the cli and the dart program is
-      // started on the DartVM, and not called and compiled with the entrypoint
-      final entryPointName = core.cliNameOrNull ?? sidekickPackage.cliName;
-
-      Directory current = sidekickPackageDir;
-      final repoRoot = repository.root;
-
-      while (current.isWithinOrEquals(repoRoot)) {
-        final entryPoint = current
-            .listSync()
-            .whereType<File>()
-            .where((it) => it.name == entryPointName);
-        if (entryPoint.isNotEmpty) {
-          return EntryPoint(file: entryPoint.single);
-        }
-
-        current = current.parent;
-      }
-      throw "Can't find entryPoint $entryPointName from ${sidekickPackageDir.path}";
     }
+
+    // Fallback strategy: Search all parents directories for the entrypoint
+    // This case is used when debugging the cli and the dart program is
+    // started on the DartVM, and not called and compiled with the entrypoint
+    final discovery = _discoverProject();
+    return discovery.entryPoint;
+  }
+
+  /// Searches the folder structure upwards from the [DartScript.self], scanning for the
+  /// [SidekickPackage] and the [EntryPoint].
+  /// [DartScript.self] is guaranteed to be a inside [SidekickPackage].
+  /// [SidekickPackage] is guaranteed to be inside parent of [EntryPoint].
+  static ProjectDiscoveryResult _discoverProject() {
+    return _cache.getOrCreate('_discoverProject', () {
+      final script = File(DartScript.self.pathToScript);
+
+      SidekickPackage? sidekickPackage;
+      EntryPoint? entryPoint;
+      ProjectDiscoveryResult? result;
+      for (final dir in script.parent.allParentDirectories()) {
+        sidekickPackage ??= SidekickPackage.fromDirectory(dir);
+        entryPoint ??= () {
+          final String? entryPointName =
+              core.cliNameOrNull ?? sidekickPackage?.cliName;
+          if (entryPointName == null) return null;
+          final match = dir
+              .listSync()
+              .whereType<File>()
+              .firstOrNullWhere((it) => it.name == entryPointName);
+          if (match != null) {
+            return EntryPoint(file: match);
+          }
+          return null;
+        }();
+        if (sidekickPackage != null && entryPoint != null) {
+          result = ProjectDiscoveryResult(
+            sidekickPackage: sidekickPackage,
+            entryPoint: entryPoint,
+          );
+          break;
+        }
+      }
+      if (result == null) {
+        throw StateError(
+            "Can't find sidekick package and entryPoint from ${script.path}. "
+            'entryPoint: $entryPoint, '
+            'sidekickPackage: $sidekickPackage');
+      }
+      return result;
+    });
   }
 
   /// The git repository root the [sidekickPackage] is located in
@@ -183,11 +201,13 @@ class SidekickContext {
   }
 
   static Repository _findRepository() {
-    final gitRootPath = 'git rev-parse --show-toplevel'.firstLine;
-    if (gitRootPath == null) {
-      throw "Can't find git root";
+    bool isGitDir(Directory dir) => dir.directory('.git').existsSync();
+
+    final projectRoot = entryPoint.file.parent;
+    final gitRoot = projectRoot.findParent(isGitDir);
+    if (gitRoot == null) {
+      throw 'Could not find the root of the repository from ${projectRoot.path}';
     }
-    final gitRoot = Directory(gitRootPath);
     return Repository(root: gitRoot);
   }
 }
@@ -225,4 +245,14 @@ class _InMemoryCache implements SidekickContextCache {
     _map[key] = newValue;
     return newValue;
   }
+}
+
+class ProjectDiscoveryResult {
+  final SidekickPackage sidekickPackage;
+  final EntryPoint entryPoint;
+
+  ProjectDiscoveryResult({
+    required this.sidekickPackage,
+    required this.entryPoint,
+  });
 }
