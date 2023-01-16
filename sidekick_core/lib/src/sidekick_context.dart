@@ -118,20 +118,19 @@ class SidekickContext {
   static SidekickPackage? _findSidekickPackageFromScript() {
     final script = File(DartScript.self.pathToScript);
     final scriptPath = script.uri.path;
-    final pathSep = Platform.pathSeparator;
 
     // When CLI is run with compiled entryPoint: <sidekick package>/build/cli.exe
-    if (scriptPath.endsWith('${pathSep}build${pathSep}cli.exe')) {
+    if (scriptPath.endsWith('/build/cli.exe')) {
       return SidekickPackage.fromDirectory(script.parent.parent)!;
     }
 
     // When CLI is run with `dart bin/main.dart`: <sidekick package>/bin/main.dart
-    if (scriptPath.endsWith('${pathSep}bin${pathSep}main.dart')) {
+    if (scriptPath.endsWith('/bin/main.dart')) {
       return SidekickPackage.fromDirectory(script.parent.parent)!;
     }
 
     // in `UpdateCommand` when the latest `update_sidekick_cli.dart` is written to <sidekick package>/build/update.dart to be executed
-    if (scriptPath.endsWith('${pathSep}bin${pathSep}update.dart')) {
+    if (scriptPath.endsWith('/bin/update.dart')) {
       return SidekickPackage.fromDirectory(script.parent.parent)!;
     }
     return null;
@@ -280,7 +279,9 @@ set internalSidekickContextCache(SidekickContextCache value) {
 
 abstract class SidekickContextCache {
   T getOrCreate<T extends Object>(Object key, T Function() create);
+
   factory SidekickContextCache() = _InMemoryCache;
+
   factory SidekickContextCache.noCache() = _NoCache;
 }
 
@@ -293,6 +294,7 @@ class _NoCache implements SidekickContextCache {
 
 class _InMemoryCache implements SidekickContextCache {
   final Map<Object, Object> _map = {};
+
   @override
   T getOrCreate<T extends Object>(Object key, T Function() create) {
     final value = _map[key] as T?;
