@@ -8,7 +8,6 @@ extension DirectoryExt on Directory {
   /// Returns `null` when reaching root (/) without a match
   Directory? findParent(bool Function(Directory dir) predicate) {
     var dir = this;
-    // ignore: literal_only_boolean_expressions
     while (true) {
       if (predicate(dir)) {
         return dir;
