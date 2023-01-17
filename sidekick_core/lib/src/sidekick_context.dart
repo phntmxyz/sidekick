@@ -1,6 +1,5 @@
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_core/sidekick_core.dart' as core;
-import 'package:sidekick_core/src/entrypoint.dart';
 
 /// Environment variable containing the location of the shell `entryPoint`, when
 /// executing the sidekick CLI with the shell entrypoint
@@ -164,7 +163,7 @@ class SidekickContext {
       }
       return dir;
     }
-    return entryPoint.file.parent;
+    return entryPoint.parent;
   }
 
   /// The location of the entryPoint, the shell script that is used to execute
@@ -173,16 +172,16 @@ class SidekickContext {
   /// The entryPoint also marks the root of the project ([projectRoot]).
   ///
   /// Usually injected from the entryPoint itself via `env.SIDEKICK_ENTRYPOINT_HOME`
-  static EntryPoint get entryPoint {
+  static File get entryPoint {
     return _cache.getOrCreate('findEntryPoint', _findEntryPoint);
   }
 
-  static EntryPoint _findEntryPoint() {
+  static File _findEntryPoint() {
     // Strategy 1: Use the environment variable SIDEKICK_ENTRYPOINT_FILE injected
     // by entryPoint shell script
     if (env.exists(_envEntryPointFile)) {
       final path = env[_envEntryPointFile]!;
-      return EntryPoint(file: File(path));
+      return File(path);
     }
 
     // Strategy 2: (deprecated) Combine SIDEKICK_ENTRYPOINT_FILE and core.cliName.
@@ -193,12 +192,12 @@ class SidekickContext {
       if (injectedEntryPointPath == null || injectedEntryPointPath.isBlank) {
         throw 'Injected entryPoint was not set (env.$_envEntryPointHome)';
       }
-      final entryPointFile =
+      final entryPoint =
           File(normalize('$injectedEntryPointPath/${core.cliName}'));
-      if (!entryPointFile.existsSync()) {
-        throw 'Injected entryPoint does not exist ${entryPointFile.absolute.path}';
+      if (!entryPoint.existsSync()) {
+        throw 'Injected entryPoint does not exist ${entryPoint.absolute.path}';
       }
-      return EntryPoint(file: entryPointFile);
+      return entryPoint;
     }
 
     // Fallback strategy: Search all parents directories for the entryPoint.
@@ -222,7 +221,7 @@ class SidekickContext {
       final startDir = knownSidekickPackage?.root ?? script.parent;
 
       SidekickPackage? sidekickPackage = knownSidekickPackage;
-      EntryPoint? entryPoint;
+      File? entryPoint;
       _ProjectDiscoveryResult? result;
       for (final dir in startDir.allParentDirectories()) {
         sidekickPackage ??= SidekickPackage.fromDirectory(dir);
@@ -232,12 +231,12 @@ class SidekickContext {
             return null;
           }
           final String entryPointName = sidekickPackage.cliName;
-          final match = dir
+          final entrtPoint = dir
               .listSync()
               .whereType<File>()
               .firstOrNullWhere((it) => it.name == entryPointName);
-          if (match != null) {
-            return EntryPoint(file: match);
+          if (entrtPoint != null) {
+            return entrtPoint;
           }
           return null;
         }();
@@ -311,7 +310,7 @@ class _InMemoryCache implements SidekickContextCache {
 /// The result of [SidekickContext._discoverProject]
 class _ProjectDiscoveryResult {
   final SidekickPackage sidekickPackage;
-  final EntryPoint entryPoint;
+  final File entryPoint;
 
   _ProjectDiscoveryResult({
     required this.sidekickPackage,

@@ -102,7 +102,7 @@ class UpdateToolsMigration extends MigrationStep {
     final template = SidekickTemplate();
     final props = SidekickTemplateProperties(
       name: SidekickContext.sidekickPackage.cliName,
-      entrypointLocation: SidekickContext.entryPoint.file,
+      entrypointLocation: SidekickContext.entryPoint,
       packageLocation: SidekickContext.sidekickPackage.root,
     );
     template.generateTools(props);
@@ -122,7 +122,7 @@ class UpdateEntryPointMigration extends MigrationStep {
     final template = SidekickTemplate();
     final props = SidekickTemplateProperties(
       name: SidekickContext.sidekickPackage.cliName,
-      entrypointLocation: SidekickContext.entryPoint.file,
+      entrypointLocation: SidekickContext.entryPoint,
       packageLocation: SidekickContext.sidekickPackage.root,
     );
     template.generateEntrypoint(props);

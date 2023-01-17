@@ -12,7 +12,7 @@ class TestSidekickContextCommand extends Command {
     final sidekickPackage = SidekickContext.sidekickPackage;
     print('sidekickPackage: ${relative(sidekickPackage.root.path)}');
     final entryPoint = SidekickContext.entryPoint;
-    print('entryPoint: ${relative(entryPoint.file.path)}');
+    print('entryPoint: ${relative(entryPoint.path)}');
     final projectRoot = SidekickContext.projectRoot;
     print('projectRoot: ${relative(projectRoot.path)}');
   }

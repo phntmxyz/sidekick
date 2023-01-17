@@ -10,7 +10,7 @@ import 'package:sidekick_core/src/dart_package.dart' as dart_package;
 Repository findRepository() {
   bool isGitDir(Directory dir) => dir.directory('.git').existsSync();
 
-  final projectRoot = SidekickContext.entryPoint.file.parent;
+  final projectRoot = SidekickContext.entryPoint.parent;
   final gitRoot = projectRoot.findParent(isGitDir);
   if (gitRoot == null) {
     throw 'Could not find the root of the repository from ${projectRoot.path}';
@@ -68,14 +68,14 @@ class Repository {
   /// The location of the entrypoint
   ///
   /// Usually injected from the entrypoint itself via `env.SIDEKICK_ENTRYPOINT_HOME`
-  @Deprecated('Use SidekickContext.entryPoint.file')
-  static File? get entryPoint => SidekickContext.entryPoint.file;
+  @Deprecated('Use SidekickContext.entryPoint')
+  static File? get entryPoint => SidekickContext.entryPoint;
 
   /// The location of the entrypoint
   ///
   /// Throws when not executed with [entryPoint]
-  @Deprecated('Use SidekickContext.entryPoint.file')
-  static File get requiredEntryPoint => SidekickContext.entryPoint.file;
+  @Deprecated('Use SidekickContext.entryPoint')
+  static File get requiredEntryPoint => SidekickContext.entryPoint;
 
   /// Returns the list of all packages in the repository
   @Deprecated('Use findAllPackages(SidekickContext.projectRoot)')
