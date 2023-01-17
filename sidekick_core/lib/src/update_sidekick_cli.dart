@@ -10,24 +10,19 @@ import 'package:yaml_edit/yaml_edit.dart';
 ///
 /// This function is called by [UpdateCommand]
 /// and receives the following arguments:
-///   1. name of the sidekick cli to update
-///   2. current version of the sidekick cli
-///   3. target version of the sidekick cli
+///   1. current version of the sidekick cli
+///   2. target version of the sidekick cli
 Future<void> main(List<String> args) async {
-  final sidekickCliName = args[0];
-  final currentSidekickCliVersion = Version.parse(args[1]);
-  final targetSidekickCoreVersion = Version.parse(args[2]);
+  final currentSidekickCliVersion = Version.parse(args[0]);
+  final targetSidekickCoreVersion = Version.parse(args[1]);
 
   // TODO: verify that the package is named `<cliName>_sidekick`
 
   print(
-    'Updating sidekick CLI $sidekickCliName from version '
+    'Updating sidekick CLI ${SidekickContext.cliName} from version '
     '$currentSidekickCliVersion to $targetSidekickCoreVersion ...',
   );
 
-  /// Creating a runner to allow access to values like [repository], [mainProject] or [cliName]
-  final runner = initializeSidekick(name: sidekickCliName);
-  final unmount = runner.mount();
   try {
     // Throws when the migration is aborted due to an error
     await migrate(
@@ -74,18 +69,16 @@ Future<void> main(List<String> args) async {
     );
     print(
       green(
-        'Successfully updated sidekick CLI $cliName from version $currentSidekickCliVersion to $targetSidekickCoreVersion!',
+        'Successfully updated sidekick CLI ${SidekickContext.cliName} from version $currentSidekickCliVersion to $targetSidekickCoreVersion!',
       ),
     );
   } catch (_) {
     print(
       red(
-        'There was an error updating sidekick CLI $cliName from version $currentSidekickCliVersion to $targetSidekickCoreVersion.',
+        'There was an error updating sidekick CLI ${SidekickContext.cliName} from version $currentSidekickCliVersion to $targetSidekickCoreVersion.',
       ),
     );
     rethrow;
-  } finally {
-    unmount();
   }
 }
 

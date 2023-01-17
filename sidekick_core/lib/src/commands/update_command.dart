@@ -95,6 +95,8 @@ class UpdateCommand extends Command {
   /// Make sure to update the sidekick_core dependency before starting this
   /// process.
   void startUpdateScriptProcess(Version from, Version to) {
+    // it's important that we put the update script within the sidekick package,
+    // so SidekickContext can pick it up
     final updateScript =
         SidekickContext.sidekickPackage.buildDir.file('update.dart')
           ..createSync(recursive: true)
@@ -108,7 +110,6 @@ class UpdateCommand extends Command {
       _dartCommand(
         [
           updateScript.path,
-          SidekickContext.cliName,
           from.canonicalizedVersion,
           to.canonicalizedVersion,
         ],
