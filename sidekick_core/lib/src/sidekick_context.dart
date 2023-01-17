@@ -60,30 +60,6 @@ class SidekickContext {
   /// environment variables. Those can't be cached across tests.
   static SidekickContextCache _cache = SidekickContextCache.noCache();
 
-  // /// Returns the directory of the Flutter SDK sidekick uses for the [flutter] command
-  // ///
-  // /// This variable is usually set to a pinned version of the Flutter SDK per project, i.e.
-  // /// - https://github.com/passsy/flutter_wrapper
-  // /// - https://github.com/fluttertools/fvm
-  // ///
-  // /// The flutterSdkPath can be set in [initializeSidekick].
-  // static Directory? get flutterSdk => throw 'TODO';
-  //
-  // /// Returns the directory of the Dart SDK sidekick uses for the [dart] command
-  // ///
-  // /// Overrides the Dart SDK of [flutterSdk] when set
-  // ///
-  // /// The dartSdkPath can be set in [initializeSidekick].
-  // static Directory? get dartSdk => throw 'TODO';
-  //
-  // /// The main package/app which should be executed by the [flutter] command
-  // ///
-  // /// The mainProjectPath can be set in [initializeSidekick].
-  // ///
-  // /// It's optional, not every project has a mainProject, there are repositories
-  // /// with zero or multiple projects.
-  // static DartPackage? get mainProject => throw 'TODO';
-
   /// The sidekick package inside the [projectRoot]
   static SidekickPackage get sidekickPackage {
     return _cache.getOrCreate('sidekickPackage', _findSidekickPackage);
