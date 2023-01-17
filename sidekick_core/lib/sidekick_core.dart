@@ -77,6 +77,7 @@ SidekickCommandRunner initializeSidekick({
 }) {
   DartPackage? mainProject;
 
+  // ignore: deprecated_member_use_from_same_package
   final repo = Repository(root: SidekickContext.projectRoot);
   // final repo = findRepository();
   if (mainProjectPath != null) {
@@ -104,11 +105,13 @@ SidekickCommandRunner initializeSidekick({
 }
 
 /// A CommandRunner that mounts the sidekick globals
+// ignore: deprecated_member_use_from_same_package
 /// [entryWorkingDirectory], [cliName], [repository], [mainProject].
 class SidekickCommandRunner<T> extends CommandRunner<T> {
   SidekickCommandRunner._({
     required String cliName,
     required String description,
+    // ignore: deprecated_consistency
     required this.repository,
     this.mainProject,
     required this.workingDirectory,
@@ -122,6 +125,7 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
     );
   }
 
+  @Deprecated('Use SidekickContext.projectRoot')
   final Repository repository;
   final DartPackage? mainProject;
   final Directory workingDirectory;
@@ -302,7 +306,7 @@ String get cliName {
 String? get cliNameOrNull => _activeRunner?.executableName;
 
 /// The root of the repository which contains all projects
-// TODO can this be replaced with SidekickContext?
+@Deprecated('Use SidekickContext.projectRoot')
 Repository get repository {
   if (_activeRunner == null) {
     throw OutOfCommandRunnerScopeException('repository');

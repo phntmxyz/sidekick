@@ -101,6 +101,7 @@ void main() {
   group('repository', () {
     test('repository requires initialization', () {
       expect(
+        // ignore: deprecated_member_use_from_same_package
         () => repository,
         throwsA(
           isA<OutOfCommandRunnerScopeException>()
@@ -118,6 +119,7 @@ void main() {
             name: 'inside',
             block: () {
               called = true;
+              // ignore: deprecated_member_use_from_same_package
               expect(repository.root.path, dir.path);
             },
           ),
@@ -169,11 +171,13 @@ void main() {
           block: () async {
             outerCalled = true;
 
+            // ignore: deprecated_member_use_from_same_package
             final outerRepository = repository;
             void verifyOuter(Directory dir) {
               expect(cliName, 'dash');
               expect(mainProject!.root.path, dir.path);
               expect(mainProject!.name, 'main_project');
+              // ignore: deprecated_member_use_from_same_package
               expect(repository.root.path, dir.path);
             }
 
@@ -188,6 +192,7 @@ void main() {
                   // inner values are set
                   expect(cliName, 'innerdash');
                   expect(mainProject, isNull);
+                  // ignore: deprecated_member_use_from_same_package
                   expect(repository, isNot(outerRepository));
                 },
               ),

@@ -255,26 +255,6 @@ class SidekickContext {
     }
     return entryPoint.file.parent;
   }
-
-  /// The git repository root the [sidekickPackage] is located in
-  @Deprecated('Use projectRoot instead')
-  static Repository get repository {
-    // TODO remove repository? It's not actually required when we define
-    //  the entryPoint to be the root of the project and start package discovery
-    //  from there.
-    return _cache.getOrCreate('findRepository', _findRepository);
-  }
-
-  static Repository _findRepository() {
-    bool isGitDir(Directory dir) => dir.directory('.git').existsSync();
-
-    final projectRoot = entryPoint.file.parent;
-    final gitRoot = projectRoot.findParent(isGitDir);
-    if (gitRoot == null) {
-      throw 'Could not find the root of the repository from ${projectRoot.path}';
-    }
-    return Repository(root: gitRoot);
-  }
 }
 
 /// Read the current cache of [SidekickContext]

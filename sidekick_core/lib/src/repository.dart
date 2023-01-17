@@ -1,14 +1,33 @@
 import 'package:sidekick_core/sidekick_core.dart';
-import 'package:sidekick_core/src/dart_package.dart' as dartPackage;
+import 'package:sidekick_core/src/dart_package.dart' as dart_package;
 
 /// Finds the root of the repo
-@Deprecated('Use SidekickContext.repository') // TODO be more precise
-Repository findRepository() => SidekickContext.repository;
+///
+/// Deprecated because sidekick doesn't require a git repo anymore. This method
+/// will work most of the time, but git is not a requirement anymore. Thus,
+/// people will use sidekick CLIs outside of a git repository
+@Deprecated('Use SidekickContext.projectRoot')
+Repository findRepository() {
+  bool isGitDir(Directory dir) => dir.directory('.git').existsSync();
+
+  final projectRoot = SidekickContext.entryPoint.file.parent;
+  final gitRoot = projectRoot.findParent(isGitDir);
+  if (gitRoot == null) {
+    throw 'Could not find the root of the repository from ${projectRoot.path}';
+  }
+  return Repository(root: gitRoot);
+}
 
 /// The Git repository of the project
 ///
 /// Might contain a single dart project or multiple packages, or even non dart packages
+///
+/// Deprecated because sidekick doesn't require a git repo anymore. This method
+/// will work most of the time, but git is not a requirement anymore. Thus,
+/// people will use sidekick CLIs outside of a git repository
+@Deprecated('Use SidekickContext.projectRoot')
 class Repository {
+  @Deprecated('Use SidekickContext.projectRoot')
   Repository({
     required this.root,
   });
@@ -22,7 +41,7 @@ class Repository {
   /// `null` when not executed with [entryPoint]
   ///
   /// Usually you want to use [sidekickPackage]
-  @Deprecated('Use SidekickContext.sidekickPackageDir')
+  @Deprecated('Use SidekickContext.sidekickPackage.root')
   static Directory? get cliPackageDir => SidekickContext.sidekickPackage.root;
 
   /// The location of the sidekick package
@@ -49,15 +68,16 @@ class Repository {
   /// The location of the entrypoint
   ///
   /// Usually injected from the entrypoint itself via `env.SIDEKICK_ENTRYPOINT_HOME`
-  @Deprecated('Use SidekickContext.entryPoint')
+  @Deprecated('Use SidekickContext.entryPoint.file')
   static File? get entryPoint => SidekickContext.entryPoint.file;
 
   /// The location of the entrypoint
   ///
   /// Throws when not executed with [entryPoint]
-  @Deprecated('Use SidekickContext.entryPoint')
+  @Deprecated('Use SidekickContext.entryPoint.file')
   static File get requiredEntryPoint => SidekickContext.entryPoint.file;
 
   /// Returns the list of all packages in the repository
-  List<DartPackage> findAllPackages() => dartPackage.findAllPackages(root);
+  @Deprecated('Use findAllPackages(SidekickContext.projectRoot)')
+  List<DartPackage> findAllPackages() => dart_package.findAllPackages(root);
 }

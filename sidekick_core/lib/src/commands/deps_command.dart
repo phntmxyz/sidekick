@@ -70,7 +70,7 @@ class DepsCommand extends Command {
     final globExcludes = excludeGlob
         .expand((rule) {
           // start search at repo root
-          final root = repository.root.path;
+          final root = SidekickContext.projectRoot.path;
           return Glob("$root/$rule").listSync(root: root);
         })
         .whereType<Directory>()

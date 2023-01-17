@@ -95,7 +95,8 @@ ${changelog.readAsStringSync().replaceFirst('# Changelog', '').trimLeft()}''');
     final tag = '${package.name}-v$nextVersion';
     "git add -A ${package.root.path}".runInRepo;
     'git commit -m "Prepare release $tag"'.runInRepo;
-    final newChangelogAndVersionBranch = _getCurrentBranch(repository.root);
+    final newChangelogAndVersionBranch =
+        _getCurrentBranch(SidekickContext.projectRoot);
 
     final bool lock = package == skProject.sidekickPackage;
     if (lock) {
@@ -344,7 +345,7 @@ bool _gitRepoHasChangesIn(Directory directory) =>
     'git status --porcelain ${directory.path}'
         .start(
           progress: Progress.capture(),
-          workingDirectory: repository.root.path,
+          workingDirectory: SidekickContext.projectRoot.path,
         )
         .lines
         .isNotEmpty;
@@ -446,5 +447,6 @@ extension on DartPackage {
 }
 
 extension on String {
-  void get runInRepo => start(workingDirectory: repository.root.path);
+  void get runInRepo =>
+      start(workingDirectory: SidekickContext.projectRoot.path);
 }

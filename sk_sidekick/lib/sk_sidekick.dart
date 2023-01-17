@@ -18,7 +18,7 @@ Future<void> runSk(List<String> args) async {
     dartSdkPath: systemDartSdkPath(),
   );
 
-  skProject = SkProject(runner.repository.root);
+  skProject = SkProject(SidekickContext.projectRoot);
   runner
     ..addCommand(DartCommand())
     ..addCommand(DepsCommand(excludeGlob: ['**/templates/**']))
