@@ -144,6 +144,29 @@ class SidekickContext {
     return null;
   }
 
+  /// The directory where the [entryPoint] is located
+  ///
+  /// This directory is considered the project root.
+  static Directory get projectRoot {
+    return _cache.getOrCreate('projectRoot', _findProjectRoot);
+  }
+
+  static Directory _findProjectRoot() {
+    if (env.exists(_envEntryPointHome)) {
+      // CLI is called via entryPoint
+      final injectedEntryPointPath = env[_envEntryPointHome];
+      if (injectedEntryPointPath == null || injectedEntryPointPath.isBlank) {
+        throw 'Injected entryPoint was not set (env.$_envEntryPointHome)';
+      }
+      final Directory dir = Directory(injectedEntryPointPath);
+      if (!dir.existsSync()) {
+        throw 'Injected entryPoint does not exist ${dir.absolute.path}';
+      }
+      return dir;
+    }
+    return entryPoint.file.parent;
+  }
+
   /// The location of the entryPoint, the shell script that is used to execute
   /// the cli.
   ///
@@ -235,25 +258,6 @@ class SidekickContext {
       }
       return result;
     });
-  }
-
-  /// The directory where the [entryPoint] is located
-  ///
-  /// This directory is considered the project root.
-  static Directory get projectRoot {
-    if (env.exists(_envEntryPointHome)) {
-      // CLI is called via entryPoint
-      final injectedEntryPointPath = env[_envEntryPointHome];
-      if (injectedEntryPointPath == null || injectedEntryPointPath.isBlank) {
-        throw 'Injected entryPoint was not set (env.$_envEntryPointHome)';
-      }
-      final Directory dir = Directory(injectedEntryPointPath);
-      if (!dir.existsSync()) {
-        throw 'Injected entryPoint does not exist ${dir.absolute.path}';
-      }
-      return dir;
-    }
-    return entryPoint.file.parent;
   }
 }
 
