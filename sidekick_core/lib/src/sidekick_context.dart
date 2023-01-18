@@ -255,7 +255,7 @@ abstract class SidekickContextCache {
   T getOrCreate<T extends Object>(Object key, T Function() create);
 
   /// Creates a cache that keeps values in memory
-  factory SidekickContextCache() = _InMemoryCache;
+  factory SidekickContextCache({String? debugName}) = _InMemoryCache;
 
   /// Creates a cache that caches nothing (noop)
   factory SidekickContextCache.noCache() = _NoCache;
@@ -269,7 +269,9 @@ class _NoCache implements SidekickContextCache {
 }
 
 class _InMemoryCache implements SidekickContextCache {
+  _InMemoryCache({this.debugName});
   final Map<Object, Object> _map = {};
+  final String? debugName;
 
   @override
   T getOrCreate<T extends Object>(Object key, T Function() create) {
@@ -280,6 +282,11 @@ class _InMemoryCache implements SidekickContextCache {
     final newValue = create();
     _map[key] = newValue;
     return newValue;
+  }
+
+  @override
+  String toString() {
+    return '_InMemoryCache{debugName: $debugName}';
   }
 }
 

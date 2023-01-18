@@ -134,15 +134,25 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
 
   /// Mounts the sidekick related globals, returns a function to unmount them
   /// and restore the previous globals
-  Unmount mount() {
+  Unmount mount({String? debugName}) {
     final SidekickCommandRunner? oldRunner = _activeRunner;
     final SidekickContextCache oldCache = internalSidekickContextCache;
     _activeRunner = this;
-    internalSidekickContextCache = SidekickContextCache();
+    final newCache = SidekickContextCache(debugName: debugName);
+    internalSidekickContextCache = newCache;
     _entryWorkingDirectory = workingDirectory;
 
     return () {
       _activeRunner = oldRunner;
+      assert(() {
+        final mountedCache = internalSidekickContextCache;
+        if (!identical(mountedCache, newCache)) {
+          throw "Tried to unmount the SidekickContext.cache but the currently "
+              "registered cache $mountedCache@${mountedCache.hashCode} is not the same "
+              "as the one that was mounted $newCache@${newCache.hashCode}.";
+        }
+        return true;
+      }());
       internalSidekickContextCache = oldCache;
       _entryWorkingDirectory = _activeRunner?.workingDirectory;
     };
@@ -153,7 +163,7 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
     // a new command gets executes, reset whatever exitCode the previous command has set
     exitCode = 0;
 
-    final unmount = mount();
+    final unmount = mount(debugName: args.join(' '));
 
     ArgResults? parsedArgs;
     try {
