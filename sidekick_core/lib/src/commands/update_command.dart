@@ -107,9 +107,14 @@ class UpdateCommand extends Command {
   }
   ''');
     try {
+      // Do not change the arguments in a breaking way. The `update_sidekick_cli.dart`
+      // script will be called from another sidekick_core version. Changes will break
+      // the update process.
+      // Only add parameters, never remove any.
       _dartCommand(
         [
           updateScript.path,
+          SidekickContext.cliName,
           from.canonicalizedVersion,
           to.canonicalizedVersion,
         ],

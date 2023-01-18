@@ -10,12 +10,15 @@ import 'package:yaml_edit/yaml_edit.dart';
 ///
 /// This function is called by [UpdateCommand]
 /// and receives the following arguments:
-///   1. current version of the sidekick cli
-///   2. target version of the sidekick cli
+///   1. name of the sidekick cli to update
+///   2. current version of the sidekick cli
+///   3. target version of the sidekick cli
 Future<void> main(List<String> args) async {
-  final currentSidekickCliVersion = Version.parse(args[0]);
-  final targetSidekickCoreVersion = Version.parse(args[1]);
-
+  // unused but still here for backwards-compatibility
+  final sidekickCliName = args[0];
+  assert(sidekickCliName.isNotEmpty);
+  final currentSidekickCliVersion = Version.parse(args[1]);
+  final targetSidekickCoreVersion = Version.parse(args[2]);
   // TODO: verify that the package is named `<cliName>_sidekick`
 
   print(
