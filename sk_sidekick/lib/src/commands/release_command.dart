@@ -21,6 +21,9 @@ class ReleaseCommand extends Command {
   Future<void> run() async {
     final package = DartPackage.fromArgResults(argResults!);
 
+    // disable update check
+    env['SIDEKICK_ENABLE_UPDATE_CHECK'] = 'false';
+
     print('Hey ${_getGitUserName() ?? 'developer'}, '
         'you started the release process for package:${package.name}.');
     final proceed = confirm(
@@ -90,10 +93,22 @@ ${changelog.readAsStringSync().replaceFirst('# Changelog', '').trimLeft()}''');
       '--$versionBumpType',
       '--no-commit',
     ]);
+    if (package == skProject.sidekickCorePackage) {
+      // update sidekick-core in sk_sidekick
+      final runtime = SidekickDartRuntime(skProject.skSidekickPackage.root);
+      runtime.dart(
+        ['pub', 'get'],
+        workingDirectory: skProject.skSidekickPackage.root,
+      );
+    } else {
+      print('$package != ${skProject.sidekickCorePackage}');
+    }
 
     print(' - Committing changelog and version bump ...');
     final tag = '${package.name}-v$nextVersion';
     "git add -A ${package.root.path}".runInRepo;
+    "git add -A ${skProject.skSidekickPackage.root.path}/pubspec.lock"
+        .runInRepo;
     'git commit -m "Prepare release $tag"'.runInRepo;
     final newChangelogAndVersionBranch =
         _getCurrentBranch(SidekickContext.projectRoot);
@@ -131,6 +146,10 @@ ${changelog.readAsStringSync().replaceFirst('# Changelog', '').trimLeft()}''');
 
     print(green("\nRelease preparation complete\n"));
 
+    print(
+      "Next step: Publishing $tag to pub.dev (take a 10s break before you continue)",
+    );
+    sleep(10);
     final publish = confirm(
       'Do you want to publish release $tag to pub.dev?',
       defaultValue: false,
@@ -174,7 +193,13 @@ ${changelog.readAsStringSync().replaceFirst('# Changelog', '').trimLeft()}''');
 
     dcli.startFromArgs(
       'gh',
-      ['release', 'create', tag, '--notes', nextReleaseChangelog],
+      [
+        'release',
+        'create',
+        'sidekick_core-v0.15.0',
+        '--notes',
+        '"$nextReleaseChangelog"'
+      ],
       terminal: true,
       workingDirectory: package.root.path,
       nothrow: true,
@@ -222,7 +247,7 @@ ${changelog.readAsStringSync().replaceFirst('# Changelog', '').trimLeft()}''');
     final packageChanges =
         _getChanges(from: currentPackageVersionTag, paths: [package.root.path]);
     if (packageChanges.isEmpty) {
-      throw 'No commits found since last release';
+      return "No commits found since last release";
     }
     print('Found ${packageChanges.length} commits since last release');
 
@@ -359,15 +384,15 @@ Iterable<String> _getChanges({
   String? to = 'HEAD',
   Iterable<String> paths = const [],
 }) =>
-    // %H = commit hash, %b = commit title
-    "git log --format='- %s %h' $from..$to -- ${paths.join(' ')}"
+    // %s = subject, %H = full commit hash,
+    'git log --format="- %s https://github.com/phntmxyz/sidekick/commit/%H" $from..$to -- ${paths.join(' ')}'
         .start(progress: Progress.capture())
         .lines
         .map(_prLinkToMarkdownLink);
 
 /// Converts the last PR Link in [original] to a markdown link
 ///
-/// E.g. '(#123)' -> '([#123](https://github.com/phntmxyz/sidekick/pull/123))'
+/// E.g. '(#123)' -> '[#123](https://github.com/phntmxyz/sidekick/pull/123)'
 String _prLinkToMarkdownLink(String original) {
   final prLinkRegExp = RegExp(r'\(#(\d+)\)');
   final prLink = prLinkRegExp.allMatches(original).lastOrNull;
@@ -378,7 +403,7 @@ String _prLinkToMarkdownLink(String original) {
   return original.replaceRange(
     prLink.start,
     prLink.end,
-    '([#$prNumber](https://github.com/phntmxyz/sidekick/pull/$prNumber))',
+    '[#$prNumber](https://github.com/phntmxyz/sidekick/pull/$prNumber)',
   );
 }
 

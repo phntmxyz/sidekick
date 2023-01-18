@@ -1,5 +1,35 @@
 # Changelog
 
+## [0.15.0](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v0.14.0..sidekick_core-v0.15.0) (2023-1-18)
+
+### Changes to your sidekick CLI
+
+- `<cli> <command>` Sidekick CLIs now automatically check for updates after executing a command. Disable with `export SIDEKICK_ENABLE_UPDATE_CHECK=false` [#177](https://github.com/phntmxyz/sidekick/pull/177) [#171](https://github.com/phntmxyz/sidekick/pull/171)
+- `<cli> sidekick update` now updates to the latest stable Dart SDK [#167](https://github.com/phntmxyz/sidekick/pull/167)
+- Automatic `pub upgrade` when CLI compilation fails (due to Dart SDK upgrade) [#166](https://github.com/phntmxyz/sidekick/pull/166)
+
+### New APIs
+
+- New: `BashCommand` to simplify converting bash scripts to commands in dart [#168](https://github.com/phntmxyz/sidekick/pull/168)
+
+    ```dart
+    BashCommand(
+      name: 'codegen',
+      description: 'Runs build runner',
+      workingDirectory: runner.mainProject?.root,
+      script: () => '''
+    ${systemFlutterSdkPath()}/bin/flutter pub run build_runner build --delete-conflicting-outputs
+    ''',
+    ),
+    ```
+
+### Bugfixes and improvements
+
+- `DepsCommand` now ignores sidekick packages, which pull deps automatically with embedded Dart SDK [#184](https://github.com/phntmxyz/sidekick/pull/184)
+- Fix: `DepsCommand.excludeGlob` now starts matching at repo root, not CWD [#183](https://github.com/phntmxyz/sidekick/pull/183)
+- `sidekick update` now handles `path` and `git` dependencies when updating `sidekick_core` [#180](https://github.com/phntmxyz/sidekick/pull/180)
+- `DartPackage.fromDirectory()` Simplify detection of Flutter packages [#182](https://github.com/phntmxyz/sidekick/pull/182)
+
 ## [0.14.0](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v0.13.1..sidekick_core-v0.14.0) (2023-1-6)
 
 ### Template Changes
