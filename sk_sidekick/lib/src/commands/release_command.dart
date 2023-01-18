@@ -227,7 +227,7 @@ ${changelog.readAsStringSync().replaceFirst('# Changelog', '').trimLeft()}''');
     final packageChanges =
         _getChanges(from: currentPackageVersionTag, paths: [package.root.path]);
     if (packageChanges.isEmpty) {
-      throw 'No commits found since last release';
+      return "No commits found since last release";
     }
     print('Found ${packageChanges.length} commits since last release');
 
