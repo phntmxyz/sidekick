@@ -319,7 +319,8 @@ You can continue once you completed all steps.
   String? _getMinSidekickCoreVersion(String pubspec) {
     final doc = loadYamlDocument(pubspec);
     final ps = doc.contents.value as YamlMap;
-    final constraint = ps['dependencies']['sidekick_core'] as String?;
+    final constraint =
+        (ps['dependencies'] as YamlMap)['sidekick_core'] as String?;
     if (constraint == null) {
       return null;
     }
