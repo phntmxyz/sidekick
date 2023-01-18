@@ -166,14 +166,17 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
       final result = await super.runCommand(parsedArgs);
       return result;
     } finally {
-      unmount();
-      if (_isUpdateCheckEnabled && !_isSidekickCliUpdateCommand(parsedArgs)) {
-        // print warning if the user didn't fully update their CLI
-        _checkCliVersionIntegrity();
-        // print warning if CLI update is available
-        // TODO start the update check in the background at command start
-        // TODO prevent multiple update checks when a command start another command
-        await _checkForUpdates();
+      try {
+        if (_isUpdateCheckEnabled && !_isSidekickCliUpdateCommand(parsedArgs)) {
+          // print warning if the user didn't fully update their CLI
+          _checkCliVersionIntegrity();
+          // print warning if CLI update is available
+          // TODO start the update check in the background at command start
+          // TODO prevent multiple update checks when a command start another command
+          await _checkForUpdates();
+        }
+      } finally {
+        unmount();
       }
     }
   }
