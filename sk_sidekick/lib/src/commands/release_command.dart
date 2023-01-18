@@ -21,6 +21,9 @@ class ReleaseCommand extends Command {
   Future<void> run() async {
     final package = DartPackage.fromArgResults(argResults!);
 
+    // disable update check
+    env['SIDEKICK_ENABLE_UPDATE_CHECK'] = 'false';
+
     print('Hey ${_getGitUserName() ?? 'developer'}, '
         'you started the release process for package:${package.name}.');
     final proceed = confirm(
