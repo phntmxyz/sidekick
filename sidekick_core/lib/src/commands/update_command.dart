@@ -65,6 +65,7 @@ class UpdateCommand extends Command {
     _dartCommand(
       ['pub', 'get'],
       workingDirectory: Repository.requiredCliPackage,
+      progress: Progress.printStdErr(),
     );
 
     // run the update script (`update_sidekick_cli.dart`) from sidekick_core at
@@ -90,7 +91,7 @@ class UpdateCommand extends Command {
       // `_dartCommand` still uses the "old" Dart SDK.
       // The new SDK will be downloaded with the next execution.
 
-      // For all other errors: The become visible the next time the cli is executed
+      // For all other errors: They become visible the next time the cli is executed
     }
   }
 
