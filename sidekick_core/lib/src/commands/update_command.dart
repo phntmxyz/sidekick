@@ -82,6 +82,7 @@ class UpdateCommand extends Command {
       _dartCommand(
         ['pub', 'get'],
         workingDirectory: Repository.requiredCliPackage,
+        progress: Progress.devNull(),
       );
     } catch (e) {
       // This pub get is a nice to have, and it doesn't matter if it fails or
