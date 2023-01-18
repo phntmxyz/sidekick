@@ -93,10 +93,22 @@ ${changelog.readAsStringSync().replaceFirst('# Changelog', '').trimLeft()}''');
       '--$versionBumpType',
       '--no-commit',
     ]);
+    if (package == skProject.sidekickCorePackage) {
+      // update sidekick-core in sk_sidekick
+      final runtime = SidekickDartRuntime(skProject.skSidekickPackage.root);
+      runtime.dart(
+        ['pub', 'get'],
+        workingDirectory: skProject.skSidekickPackage.root,
+      );
+    } else {
+      print('$package != ${skProject.sidekickCorePackage}');
+    }
 
     print(' - Committing changelog and version bump ...');
     final tag = '${package.name}-v$nextVersion';
     "git add -A ${package.root.path}".runInRepo;
+    "git add -A ${skProject.skSidekickPackage.root.path}/pubspec.lock"
+        .runInRepo;
     'git commit -m "Prepare release $tag"'.runInRepo;
     final newChangelogAndVersionBranch = _getCurrentBranch(repository.root);
 
