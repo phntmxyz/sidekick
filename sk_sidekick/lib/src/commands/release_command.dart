@@ -383,15 +383,15 @@ Iterable<String> _getChanges({
   String? to = 'HEAD',
   Iterable<String> paths = const [],
 }) =>
-    // %H = commit hash, %b = commit title
-    "git log --format='- %s %h' $from..$to -- ${paths.join(' ')}"
+    // %s = subject, %H = full commit hash,
+    'git log --format="- %s https://github.com/phntmxyz/sidekick/commit/%H" $from..$to -- ${paths.join(' ')}'
         .start(progress: Progress.capture())
         .lines
         .map(_prLinkToMarkdownLink);
 
 /// Converts the last PR Link in [original] to a markdown link
 ///
-/// E.g. '(#123)' -> '([#123](https://github.com/phntmxyz/sidekick/pull/123))'
+/// E.g. '(#123)' -> '[#123](https://github.com/phntmxyz/sidekick/pull/123)'
 String _prLinkToMarkdownLink(String original) {
   final prLinkRegExp = RegExp(r'\(#(\d+)\)');
   final prLink = prLinkRegExp.allMatches(original).lastOrNull;
@@ -402,7 +402,7 @@ String _prLinkToMarkdownLink(String original) {
   return original.replaceRange(
     prLink.start,
     prLink.end,
-    '([#$prNumber](https://github.com/phntmxyz/sidekick/pull/$prNumber))',
+    '[#$prNumber](https://github.com/phntmxyz/sidekick/pull/$prNumber)',
   );
 }
 
