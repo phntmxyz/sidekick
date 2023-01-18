@@ -78,10 +78,19 @@ class UpdateCommand extends Command {
       pubspecKeys: ['dependencies', 'sidekick_core'],
       newMinimumVersion: to,
     );
-    _dartCommand(
-      ['pub', 'get'],
-      workingDirectory: Repository.requiredCliPackage,
-    );
+    try {
+      _dartCommand(
+        ['pub', 'get'],
+        workingDirectory: Repository.requiredCliPackage,
+      );
+    } catch (e) {
+      // This pub get is a nice to have, and it doesn't matter if it fails or
+      // not. It may fail when the Dart SDK version has been updated, because
+      // `_dartCommand` still uses the "old" Dart SDK.
+      // The new SDK will be downloaded with the next execution.
+
+      // For all other errors: The become visible the next time the cli is executed
+    }
   }
 
   /// Runs the update script `update_sidekick_cli.dart` in a new process using
