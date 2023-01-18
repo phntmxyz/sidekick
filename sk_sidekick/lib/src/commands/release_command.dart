@@ -173,7 +173,13 @@ ${changelog.readAsStringSync().replaceFirst('# Changelog', '').trimLeft()}''');
 
     dcli.startFromArgs(
       'gh',
-      ['release', 'create', tag, '--notes', nextReleaseChangelog],
+      [
+        'release',
+        'create',
+        'sidekick_core-v0.15.0',
+        '--notes',
+        '"$nextReleaseChangelog"'
+      ],
       terminal: true,
       workingDirectory: package.root.path,
       nothrow: true,
