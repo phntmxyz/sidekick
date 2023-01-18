@@ -145,6 +145,10 @@ ${changelog.readAsStringSync().replaceFirst('# Changelog', '').trimLeft()}''');
 
     print(green("\nRelease preparation complete\n"));
 
+    print(
+      "Next step: Publishing $tag to pub.dev (take a 10s break before you continue)",
+    );
+    sleep(10);
     final publish = confirm(
       'Do you want to publish release $tag to pub.dev?',
       defaultValue: false,
