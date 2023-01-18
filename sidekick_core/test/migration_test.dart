@@ -184,7 +184,7 @@ void main() {
           tempDir.deleteSync(recursive: true);
           env['SIDEKICK_PACKAGE_HOME'] = null;
         });
-        tempDir.file('pubspec.yaml').writeAsStringSync('name: placeholder');
+        tempDir.file('pubspec.yaml').writeAsStringSync('name: foo_sidekick');
         final fileToBeChanged = tempDir.file('foo')..writeAsStringSync('''
 void main(){
   print('foo');
