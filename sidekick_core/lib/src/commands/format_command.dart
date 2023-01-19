@@ -112,12 +112,12 @@ void _format(DartPackage package, {int? globalLineLength}) {
   final int lineLength = globalLineLength ?? getLineLength(package);
   if (package.isFlutterPackage) {
     exitCode = flutter(
-      ['format', '-l', '$lineLength', '.'],
+      ['format', '-l', '$lineLength', package.root.path],
       workingDirectory: package.root,
     );
   } else {
     exitCode = dart(
-      ['format', '-l', '$lineLength', '.'],
+      ['format', '-l', '$lineLength', package.root.path],
       workingDirectory: package.root,
     );
   }
