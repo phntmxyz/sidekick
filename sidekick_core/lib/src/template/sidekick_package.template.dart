@@ -124,6 +124,7 @@ Future<void> main(List<String> arguments) async {
       'DepsCommand()',
       'CleanCommand()',
       'DartAnalyzeCommand()',
+      'FormatCommand()',
       'SidekickCommand()',
     ];
 
