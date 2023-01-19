@@ -217,7 +217,7 @@ name: dashi
             );
             runner.addCommand(
               FormatCommand(
-                exclude: [DartPackage.flutter(dir.directory('lib'), 'Dash')],
+                excludeGlob: ['lib/**'],
               ),
             );
             await runner.run(['format']);
