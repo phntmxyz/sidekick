@@ -167,7 +167,7 @@ format:
         );
       });
     });
-    test('Format the File to 120 if set in PubspecYaml', () async {
+    test('Format the File to 80 if set in PubspecYaml', () async {
       await insideFakeProjectWithSidekick((dir) async {
         final fakeStdOut = FakeStdoutStream();
         await overrideIoStreams(
