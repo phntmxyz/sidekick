@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.15.1](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v0.15.0..sidekick_core-v0.15.1) (2023-1-18)
+
+- **bugfix**: sidekick update - Ignore insignificant `pub get` errors [#190](https://github.com/phntmxyz/sidekick/pull/190)
+
 ## [0.15.0](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v0.14.0..sidekick_core-v0.15.0) (2023-1-18)
 
 ### Changes to your sidekick CLI

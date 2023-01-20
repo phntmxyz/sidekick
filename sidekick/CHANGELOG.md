@@ -1,5 +1,54 @@
 # Changelog
 
+## [0.9.0](https://github.com/phntmxyz/sidekick/compare/sidekick-v0.8.0..sidekick-v0.9.0) (2023-1-20)
+
+## Updates to the sidekick CLI
+
+- `sidekick update` now updates the global sidekick CLI to the latest version [#159](https://github.com/phntmxyz/sidekick/pull/159)
+
+## Updates from sidekick_core (0.13.1 -> 0.15.1)
+
+### Changes to generated sidekick CLIs
+
+- `<cli> <command>` Sidekick CLIs now automatically check for updates after executing a command. Disable with `export SIDEKICK_ENABLE_UPDATE_CHECK=false` [#177](https://github.com/phntmxyz/sidekick/pull/177) [#171](https://github.com/phntmxyz/sidekick/pull/171)
+- `<cli> sidekick update` now updates to the latest stable Dart SDK [#167](https://github.com/phntmxyz/sidekick/pull/167)
+- Automatic `pub upgrade` when CLI compilation fails (due to Dart SDK upgrade) [#166](https://github.com/phntmxyz/sidekick/pull/166)
+
+### New APIs
+
+- New: `BashCommand` to simplify converting bash scripts to commands in dart [#168](https://github.com/phntmxyz/sidekick/pull/168)
+
+    ```dart
+    BashCommand(
+      name: 'codegen',
+      description: 'Runs build runner',
+      workingDirectory: runner.mainProject?.root,
+      script: () => '''
+    ${systemFlutterSdkPath()}/bin/flutter pub run build_runner build --delete-conflicting-outputs
+    ''',
+    ),
+    ```
+
+### Bugfixes and improvements
+
+- `DepsCommand` now ignores sidekick packages, which pull deps automatically with embedded Dart SDK [#184](https://github.com/phntmxyz/sidekick/pull/184)
+- Fix: `DepsCommand.excludeGlob` now starts matching at repo root, not CWD [#183](https://github.com/phntmxyz/sidekick/pull/183)
+- `sidekick update` now handles `path` and `git` dependencies when updating `sidekick_core` [#180](https://github.com/phntmxyz/sidekick/pull/180)
+- `DartPackage.fromDirectory()` Simplify detection of Flutter packages [#182](https://github.com/phntmxyz/sidekick/pull/182)
+
+### Template Changes
+
+- CLI template now does **not** generate a `<cli>_project.dart` file. You can continue to use yours but we found most people didn't need it. ([#156](https://github.com/phntmxyz/sidekick/pull/156))
+- UsageException is now correctly printed ([#157](https://github.com/phntmxyz/sidekick/pull/157)) (with `<cli> sidekick update` migration)
+- Calling the CLI with zero arguments now also checks for sidekick updates ([#157](https://github.com/phntmxyz/sidekick/pull/157)) (with `<cli> sidekick update` migration)
+- Fix unnecessary CLI recompilation in `run.sh` ([#152](https://github.com/phntmxyz/sidekick/pull/152))
+
+### API Changes
+
+- New `DartPackage.lockfile` getter ([#159](https://github.com/phntmxyz/sidekick/pull/159))
+- New `DartPackage.fromArgResults` constructor for Commands that take a package as only argument. Parses `rest` and `cwd`. ([#160](https://github.com/phntmxyz/sidekick/pull/160))
+- `SidekickTemplateProperties` now has optional properties. Caller has to decide what to inject for each template. ([#161](https://github.com/phntmxyz/sidekick/pull/161))
+
 ## 0.8.0
 - `sidekick --version` now prints the version
 

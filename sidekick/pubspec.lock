@@ -455,7 +455,7 @@ packages:
       name: sidekick_core
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.13.1"
+    version: "0.15.1"
   sidekick_test:
     dependency: "direct dev"
     description:
@@ -645,5 +645,12 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "3.1.1"
+  yaml_edit:
+    dependency: transitive
+    description:
+      name: yaml_edit
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.0.3"
 sdks:
   dart: ">=2.18.0 <3.0.0"
