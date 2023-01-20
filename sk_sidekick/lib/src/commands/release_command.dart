@@ -111,7 +111,7 @@ ${changelog.readAsStringSync().replaceFirst('# Changelog', '').trimLeft()}''');
         .runInRepo;
     'git commit -m "Prepare release $tag"'.runInRepo;
     final newChangelogAndVersionBranch =
-        _getCurrentBranch(SidekickContext.projectRoot);
+        _getCurrentBranch(SidekickContext.repository!);
 
     final bool lock = package == skProject.sidekickPackage;
     if (lock) {
@@ -365,7 +365,7 @@ bool _gitRepoHasChangesIn(Directory directory) =>
     'git status --porcelain ${directory.path}'
         .start(
           progress: Progress.capture(),
-          workingDirectory: SidekickContext.projectRoot.path,
+          workingDirectory: SidekickContext.repository!.path,
         )
         .lines
         .isNotEmpty;
