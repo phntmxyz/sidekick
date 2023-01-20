@@ -203,6 +203,7 @@ void main(){
 ''';
         final patch = GitPatchMigrationStep(
           () => patchContent,
+          workingDirectory: () => tempDir,
           description: 'test patch',
           targetVersion: Version(0, 0, 1),
         );
@@ -237,6 +238,7 @@ void main(){
         tempDir.file('pubspec.yaml').writeAsStringSync('name: placeholder');
         final patch = GitPatchMigrationStep(
           () => 'corrupt patch',
+          workingDirectory: () => tempDir,
           description: 'test patch',
           targetVersion: Version(0, 0, 1),
         );
