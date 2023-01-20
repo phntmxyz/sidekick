@@ -1,5 +1,4 @@
 import 'package:recase/recase.dart';
-
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_core/src/template/download_dart.sh.template.dart';
 import 'package:sidekick_core/src/template/entrypoint.template.dart';
@@ -92,13 +91,14 @@ class SidekickTemplateProperties {
   /// The current version of sidekick_core which includes the project templates
   ///
   /// This version should be written to pubspec.yaml as sidekick.cli_version
+  @Deprecated('Not used anymore')
   final Version? sidekickCliVersion;
 
   const SidekickTemplateProperties({
     required this.name,
     required this.entrypointLocation,
     required this.packageLocation,
-    this.sidekickCliVersion,
+    @Deprecated('Not used anymore') this.sidekickCliVersion,
     this.mainProjectPath,
     this.shouldSetFlutterSdkPath,
     @Deprecated('Not used anymore') this.isMainProjectRoot,
@@ -176,6 +176,10 @@ class CleanCommand extends Command {
   }
 
   String get pubspecYaml {
+    final canonicalizedVersion = version.canonicalizedVersion;
+    final constraintRange = version.major > 0
+        ? '^$canonicalizedVersion'
+        : "'>=$canonicalizedVersion <1.0.0'";
     return '''
 name: ${name.snakeCase}_sidekick
 description: Sidekick CLI for $name
@@ -183,20 +187,20 @@ version: 0.0.1
 publish_to: none
 
 environment:
-  sdk: '>=2.14.0 <3.0.0'
+  sdk: '>=2.18.7 <3.0.0'
 
 executables:
   main:
 
 dependencies:
-  sidekick_core: '>=0.10.0 <1.0.0'
+  sidekick_core: $constraintRange
 
 dev_dependencies:
   lint: ^1.5.3
 
 # generated code, do not edit this manually
 sidekick:
-  cli_version: ${sidekickCliVersion!.canonicalizedVersion}
+  cli_version: $canonicalizedVersion
 ''';
   }
 }
