@@ -34,6 +34,7 @@ abstract class MigrationStep {
     required String description,
     String pullRequestLink,
     required Version targetVersion,
+    required Directory Function() workingDirectory,
   }) = GitPatchMigrationStep;
 
   /// This method is called to do the action migration of this step.
@@ -68,6 +69,7 @@ class GitPatchMigrationStep extends MigrationStep {
     required this.description,
     this.pullRequestLink,
     required Version targetVersion,
+    required this.workingDirectory,
   }) : super(
           name:
               '$description${pullRequestLink != null ? ' ($pullRequestLink)' : ''}',
@@ -83,6 +85,8 @@ class GitPatchMigrationStep extends MigrationStep {
   /// Link to the pull request on GitHub introducing this patch
   final String? pullRequestLink;
 
+  final Directory Function() workingDirectory;
+
   @override
   Future<void> migrate(MigrationContext context) async {
     final patchFile = Directory.systemTemp
@@ -94,7 +98,7 @@ class GitPatchMigrationStep extends MigrationStep {
     final exitCode = startFromArgs(
           'git',
           ['apply', patchFile.absolute.path],
-          workingDirectory: SidekickContext.sidekickPackage.root.path,
+          workingDirectory: workingDirectory().absolute.path,
           // A more detailed error will be thrown on exitCode != 0
           nothrow: true,
         ).exitCode ??

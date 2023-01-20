@@ -204,12 +204,12 @@ class SidekickContext {
             return null;
           }
           final String entryPointName = sidekickPackage.cliName;
-          final entrtPoint = dir
+          final entryPoint = dir
               .listSync()
               .whereType<File>()
               .firstOrNullWhere((it) => it.name == entryPointName);
-          if (entrtPoint != null) {
-            return entrtPoint;
+          if (entryPoint != null) {
+            return entryPoint;
           }
           return null;
         }();

@@ -7,15 +7,16 @@ void main() {
   for (final testCase in _testCases) {
     test('patch 157 works (${testCase.name})', () async {
       final tempDir = Directory.systemTemp.createTempSync();
-      'git init -q'.start(workingDirectory: tempDir.path);
-      env['SIDEKICK_PACKAGE_HOME'] = tempDir.absolute.path;
+      final sidekickDir = tempDir.directory('test_sidekick')..createSync();
+      // 'git init -q'.start(workingDirectory: tempDir.path);
+      env['SIDEKICK_PACKAGE_HOME'] = sidekickDir.absolute.path;
       addTearDown(() {
         tempDir.deleteSync(recursive: true);
         env['SIDEKICK_PACKAGE_HOME'] = null;
       });
       tempDir.file('test').writeAsString('# entrypoint file');
-      tempDir.file('pubspec.yaml').writeAsStringSync('name: test_sidekick');
-      final cliMainFile = tempDir.file('lib/test_sidekick.dart')
+      sidekickDir.file('pubspec.yaml').writeAsStringSync('name: test_sidekick');
+      final cliMainFile = sidekickDir.file('lib/test_sidekick.dart')
         ..createSync(recursive: true)
         ..writeAsStringSync(testCase.fileContentBefore);
 
