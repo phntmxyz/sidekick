@@ -187,7 +187,7 @@ version: 0.0.1
 publish_to: none
 
 environment:
-  sdk: '>=2.18.7 <3.0.0'
+  sdk: '>=2.18.6 <3.0.0'
 
 executables:
   main:
