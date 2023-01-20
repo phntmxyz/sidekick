@@ -295,13 +295,6 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.0.4"
-  mocktail:
-    dependency: transitive
-    description:
-      name: mocktail
-      url: "https://pub.dartlang.org"
-    source: hosted
-    version: "0.3.0"
   node_preamble:
     dependency: transitive
     description:
@@ -435,13 +428,6 @@ packages:
       relative: true
     source: path
     version: "0.15.1"
-  sidekick_test:
-    dependency: "direct dev"
-    description:
-      path: "../sidekick_test"
-      relative: true
-    source: path
-    version: "1.0.0"
   source_map_stack_trace:
     dependency: transitive
     description:
