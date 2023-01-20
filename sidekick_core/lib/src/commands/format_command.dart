@@ -1,5 +1,6 @@
 import 'package:glob/glob.dart';
 import 'package:glob/list_local_fs.dart';
+import 'package:meta/meta.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:yaml/yaml.dart';
 
@@ -127,6 +128,7 @@ void _format(DartPackage package, {int? globalLineLength}) {
   print("\n");
 }
 
+@visibleForTesting
 int getLineLength(DartPackage package) {
   final yamlFile = package.root.file('pubspec.yaml').readAsStringSync();
   final pubspecData = loadYaml(yamlFile) as YamlMap;
