@@ -468,8 +468,10 @@ extension on DartPackage {
 
 extension on String {
   void get runInRepo {
-    assert(SidekickContext.repository != null,
-        'Release command must be run in a repository');
+    assert(
+      SidekickContext.repository != null,
+      'Release command must be run in a repository',
+    );
     start(workingDirectory: SidekickContext.repository!.path);
   }
 }
