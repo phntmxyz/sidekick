@@ -170,9 +170,6 @@ class SidekickContext {
       }
       final entryPoint =
           File(normalize('$injectedEntryPointPath/${core.cliName}'));
-      if (!entryPoint.existsSync()) {
-        throw 'Injected entryPoint does not exist ${entryPoint.absolute.path}';
-      }
       return entryPoint;
     }
 
