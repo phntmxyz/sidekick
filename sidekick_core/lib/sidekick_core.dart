@@ -79,15 +79,100 @@ SidekickCommandRunner initializeSidekick({
   String? flutterSdkPath,
   String? dartSdkPath,
 }) {
-  // TODO migrate to relative paths
-  DartPackage? mainProject;
+  final repoRoot = SidekickContext.repository;
+  final projectRoot = SidekickContext.projectRoot;
 
-  // ignore: deprecated_member_use_from_same_package
-  final repo = Repository(root: SidekickContext.projectRoot);
-  // final repo = findRepository();
-  if (mainProjectPath != null) {
-    mainProject =
-        DartPackage.fromDirectory(repo.root.directory(mainProjectPath));
+  /// Migrates a [path] relative to the [SidekickContext.repository] (as it
+  /// was default before sidekick 1.0.0) to a path relative to the
+  /// [SidekickContext.projectRoot]
+  ///
+  /// This usually works because the projectRoot is usually also the repository
+  /// root.
+  /// If the Directory is found in only one resolved location that one is used
+  /// and warning to migrate to paths relative to the projectRoot is printed.
+  /// If the Directory is found in both locations the one relative to the
+  /// projectRoot is returned.
+  Directory? resolveDirectoryBackwardsCompatible(
+    String parameterName,
+    String? path,
+  ) {
+    if (path == null) return null;
+    final fromRepoRoot =
+        repoRoot == null ? null : _resolveSdkPath(path, repoRoot);
+    final fromProjectRoot = _resolveSdkPath(path, projectRoot);
+
+    if (fromRepoRoot == null && fromProjectRoot == null) {
+      throw "Could not find directory $parameterName at '$path'. The resolved path is: ${projectRoot.directory(path).path}";
+    }
+
+    if (fromProjectRoot != null && fromRepoRoot == null) {
+      // path has been migrated, all good
+      return fromProjectRoot;
+    }
+
+    if (fromRepoRoot != null && fromProjectRoot == null) {
+      // Found deprecated path relative to repo root. This is fully working
+      // when inside a git repo.
+      // Show a warning to migrate the path so it will work when not in a git
+      // repo
+      final correctPath = relative(
+        fromRepoRoot.path,
+        from: SidekickContext.projectRoot.path,
+      );
+      printerr(
+        red('$parameterName is defined relative to your git repository. '
+            'Please migrate it to be relative to the ${SidekickContext.cliName} entryPoint at ${SidekickContext.projectRoot}.\n'),
+      );
+      printerr(
+        "Please use the following path:\n"
+        "final runner = initializeSidekick(\n"
+        "  //...\n"
+        "  $parameterName: '$correctPath'\n"
+        ");",
+      );
+      return fromRepoRoot;
+    }
+    printerr('Found $parameterName at both: ${fromRepoRoot!.path} and '
+        '${fromProjectRoot!.path}. Using the latter which is relative '
+        'to the ${SidekickContext.cliName} entryPoint');
+    return fromProjectRoot;
+  }
+
+  DartPackage? mainProject;
+  Directory? flutterSdk;
+  Directory? dartSdk;
+
+  if (repoRoot == null) {
+    // Not in a git repo. This is not a breaking change. Sidekick did not
+    // support project without a git repo, before the migration
+    if (mainProjectPath != null) {
+      mainProject =
+          DartPackage.fromDirectory(projectRoot.directory(mainProjectPath));
+    }
+    flutterSdk = _resolveSdkPath(flutterSdkPath, projectRoot);
+    dartSdk = _resolveSdkPath(dartSdkPath, projectRoot);
+  } else if (canonicalize(repoRoot.path) == canonicalize(projectRoot.path)) {
+    // EntryPoint is in root of repository, we can safely migrate
+    if (mainProjectPath != null) {
+      mainProject =
+          DartPackage.fromDirectory(projectRoot.directory(mainProjectPath));
+    }
+    flutterSdk = _resolveSdkPath(flutterSdkPath, projectRoot);
+    dartSdk = _resolveSdkPath(dartSdkPath, projectRoot);
+  } else {
+    // Detected that repoRoot and projectRoot differ
+    // This is where shit hits the fan. Users have to migrate their paths from
+    // relative to repo-root to relative to project-root
+
+    flutterSdk =
+        resolveDirectoryBackwardsCompatible('flutterSdkPath', flutterSdkPath);
+    dartSdk = resolveDirectoryBackwardsCompatible('dartSdkPath', dartSdkPath);
+
+    final mainProjectDir =
+        resolveDirectoryBackwardsCompatible('mainProjectPath', mainProjectPath);
+    if (mainProjectDir != null) {
+      mainProject = DartPackage.fromDirectory(mainProjectDir);
+    }
   }
 
   if (flutterSdkPath != null && dartSdkPath != null) {
@@ -96,15 +181,24 @@ SidekickCommandRunner initializeSidekick({
         "Set `dartSdkPath` only for pure dart projects.");
   }
 
+  if (flutterSdkPath != null && flutterSdk?.existsSync() != true) {
+    throw SdkNotFoundException(flutterSdkPath, projectRoot);
+  }
+  if (dartSdkPath != null && dartSdk?.existsSync() != true) {
+    throw SdkNotFoundException(dartSdkPath, projectRoot);
+  }
+  if (mainProjectPath != null && mainProject?.root.existsSync() != true) {
+    throw "mainProjectPath ${mainProject!.root.path} couldn't be resolved";
+  }
+
   final runner = SidekickCommandRunner._(
     cliName: name,
     description: description ??
         'A sidekick CLI to equip Dart/Flutter projects with custom tasks',
-    repository: repo,
     mainProject: mainProject,
     workingDirectory: Directory.current,
-    flutterSdk: _resolveSdkPath(flutterSdkPath, repo.root),
-    dartSdk: _resolveSdkPath(dartSdkPath, repo.root),
+    flutterSdk: flutterSdk,
+    dartSdk: dartSdk,
   );
   return runner;
 }
@@ -407,7 +501,7 @@ Directory? _resolveSdkPath(String? sdkPath, Directory repoRoot) {
       .absolute;
 
   if (!resolvedDir.existsSync()) {
-    throw SdkNotFoundException(sdkPath, repoRoot);
+    return null;
   }
 
   return resolvedDir;
