@@ -5,12 +5,7 @@ import 'package:sidekick_plugin_installer/sidekick_plugin_installer.dart';
 Future<void> main() async {
   final SidekickPackage package = PluginContext.sidekickPackage;
 
-  if (PluginContext.localPlugin == null) {
-    pubAddDependency(package, 'sidekick_vault');
-  } else {
-    // For local development
-    pubAddLocalDependency(package, PluginContext.localPlugin!.root.path);
-  }
+  addSelfAsDependency();
   pubGet(package);
 
   _writeVaultFile(package);
