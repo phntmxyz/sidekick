@@ -6,16 +6,13 @@ import 'package:sidekick_core/src/dart_package.dart' as dart_package;
 /// Deprecated because sidekick doesn't require a git repo anymore. This method
 /// will work most of the time, but git is not a requirement anymore. Thus,
 /// people will use sidekick CLIs outside of a git repository
-@Deprecated('Use SidekickContext.projectRoot')
+@Deprecated('Use SidekickContext.repository or SidekickContext.projectRoot')
 Repository findRepository() {
-  bool isGitDir(Directory dir) => dir.directory('.git').existsSync();
-
-  final projectRoot = SidekickContext.entryPoint.parent;
-  final gitRoot = projectRoot.findParent(isGitDir);
-  if (gitRoot == null) {
-    throw 'Could not find the root of the repository from ${projectRoot.path}';
+  final dir = SidekickContext.repository;
+  if (dir == null) {
+    throw 'Could not find the root of the repository from ${SidekickContext.projectRoot.path}';
   }
-  return Repository(root: gitRoot);
+  return Repository(root: dir);
 }
 
 /// The Git repository of the project
@@ -25,9 +22,9 @@ Repository findRepository() {
 /// Deprecated because sidekick doesn't require a git repo anymore. This method
 /// will work most of the time, but git is not a requirement anymore. Thus,
 /// people will use sidekick CLIs outside of a git repository
-@Deprecated('Use SidekickContext.projectRoot')
+@Deprecated('Use SidekickContext.repository')
 class Repository {
-  @Deprecated('Use SidekickContext.projectRoot')
+  @Deprecated('Use SidekickContext.repository')
   Repository({
     required this.root,
   });
@@ -78,6 +75,7 @@ class Repository {
   static File get requiredEntryPoint => SidekickContext.entryPoint;
 
   /// Returns the list of all packages in the repository
-  @Deprecated('Use findAllPackages(SidekickContext.projectRoot)')
+  @Deprecated('Use findAllPackages(SidekickContext.projectRoot) or '
+      'findAllPackages(SidekickContext.repository)')
   List<DartPackage> findAllPackages() => dart_package.findAllPackages(root);
 }

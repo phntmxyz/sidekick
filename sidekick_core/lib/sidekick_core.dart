@@ -54,20 +54,24 @@ final Version version = Version.parse('0.15.0');
 ///
 /// Set [name] to the name of your CLI entrypoint
 ///
+/// All paths are resolved relative to the location of the
+/// [SidekickContext.entryPoint], or absolute.
+///
+/// Set [flutterSdkPath] when you bind a Flutter SDK to this project. This SDK
+/// enables the [flutter] and [dart] commands.
+/// [dartSdkPath] is inherited from [flutterSdkPath]. Set it only for pure Dart
+/// projects.
+/// The paths can either be absolute or relative to the projectRoot (where the
+/// entryPoint is located). I.e. when the entrypoint is in `/Users/foo/project-x/`
+/// set `dartSdkPath = 'third_party/dart-sdk'` to use the Dart SDK in
+/// `/Users/foo/project-x/third_party/dart-sdk`.
+///
 /// [mainProjectPath] should be set when you have a package that you
 /// consider the main package of the whole repository.
-/// When your repository contains only one Flutter package in root set
+/// When your repository contains only one Flutter package in projectRoot set
 /// `mainProjectPath = '.'`.
 /// In a multi package repository you might use the same when the main package
-/// is in root, or `mainProjectPath = 'packages/my_app'` when it is in a subfolder.
-///
-/// Set [flutterSdkPath] when you bind a flutter sdk to this project. This SDK
-/// enables the [flutter] and [dart] commands.
-/// [dartSdkPath] is inherited from [flutterSdkPath]. Set it only for pure dart
-/// projects.
-/// The paths can either be absolute or relative to the project root. (E.g. if
-/// the custom sidekick CLI is at /Users/foo/project-x/packages/custom_sidekick,
-/// relative paths are resolved relative to /Users/foo/project-x)
+/// is in projectRoot, or `mainProjectPath = 'packages/my_app'` when it is in a subfolder.
 SidekickCommandRunner initializeSidekick({
   required String name,
   String? description,
@@ -75,6 +79,7 @@ SidekickCommandRunner initializeSidekick({
   String? flutterSdkPath,
   String? dartSdkPath,
 }) {
+  // TODO migrate to relative paths
   DartPackage? mainProject;
 
   // ignore: deprecated_member_use_from_same_package
@@ -111,8 +116,6 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
   SidekickCommandRunner._({
     required String cliName,
     required String description,
-    // ignore: deprecated_consistency
-    required this.repository,
     this.mainProject,
     required this.workingDirectory,
     this.flutterSdk,
@@ -125,8 +128,9 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
     );
   }
 
-  @Deprecated('Use SidekickContext.projectRoot')
-  final Repository repository;
+  @Deprecated('Use SidekickContext.projectRoot or SidekickContext.repository')
+  Repository get repository => findRepository();
+
   final DartPackage? mainProject;
   final Directory workingDirectory;
   final Directory? flutterSdk;
@@ -319,7 +323,7 @@ String get cliName {
 String? get cliNameOrNull => _activeRunner?.executableName;
 
 /// The root of the repository which contains all projects
-@Deprecated('Use SidekickContext.projectRoot')
+@Deprecated('Use SidekickContext.projectRoot or SidekickContext.repository')
 Repository get repository {
   if (_activeRunner == null) {
     throw OutOfCommandRunnerScopeException('repository');

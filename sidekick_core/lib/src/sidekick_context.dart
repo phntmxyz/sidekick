@@ -234,6 +234,29 @@ class SidekickContext {
       return result;
     });
   }
+
+  /// The git repository root the [sidekickPackage] is located in
+  ///
+  /// It may return `null` when there's not git repository. In most cases it is
+  /// better to use [projectRoot] instead.
+  ///
+  /// Why would there not be a git repository?
+  /// Code can be downloaded as a zip file (from github) or may be hosted in a
+  /// non-git mono repository. Anyways, your sidekick CLI should always be
+  /// functional.
+  static Directory? get repository {
+    return _cache.getOrCreate('findRepository', _findRepository);
+  }
+
+  /// Searches the parent directories of [entryPoint] for a git repository
+  ///
+  /// Returns `null` when no `.git` folder is found.
+  ///
+  /// This method is faster than calling `git rev-parse --show-toplevel`
+  static Directory? _findRepository() {
+    return entryPoint.parent
+        .findParent((dir) => dir.directory('.git').existsSync());
+  }
 }
 
 /// Read the current cache of [SidekickContext]
@@ -252,7 +275,7 @@ set internalSidekickContextCache(SidekickContextCache value) {
 /// Interface of the cache of [SidekickContext]
 abstract class SidekickContextCache {
   /// Returns the cached value when available or creates a new value
-  T getOrCreate<T extends Object>(Object key, T Function() create);
+  T getOrCreate<T extends Object?>(Object key, T Function() create);
 
   /// Creates a cache that keeps values in memory
   factory SidekickContextCache({String? debugName}) = _InMemoryCache;
@@ -263,18 +286,18 @@ abstract class SidekickContextCache {
 
 class _NoCache implements SidekickContextCache {
   @override
-  T getOrCreate<T extends Object>(Object key, T Function() create) {
+  T getOrCreate<T extends Object?>(Object key, T Function() create) {
     return create();
   }
 }
 
 class _InMemoryCache implements SidekickContextCache {
   _InMemoryCache({this.debugName});
-  final Map<Object, Object> _map = {};
+  final Map<Object, Object?> _map = {};
   final String? debugName;
 
   @override
-  T getOrCreate<T extends Object>(Object key, T Function() create) {
+  T getOrCreate<T extends Object?>(Object key, T Function() create) {
     final value = _map[key] as T?;
     if (value != null) {
       return value;
