@@ -6,16 +6,17 @@ import 'package:sidekick_plugin_installer/sidekick_plugin_installer.dart';
 Future<void> main() async {
   final SidekickPackage package = PluginContext.sidekickPackage;
 
-  final repoRoot = findRepository().root;
+  final projectRoot = Repository.entryPoint!.parent;
   final vaultPath = prompts.get(
-    'Where do you want to locate the vault? (Relative to ${repoRoot.path})',
+    'Where do you want to create the vault directory? (Relative to ${projectRoot.path})',
     validate: (path) {
       final vaultDir = Directory(path);
-      return vaultDir.isWithin(repoRoot);
+      return vaultDir.isWithin(projectRoot);
     },
-    defaultsTo: relative(repoRoot.directory('vault').path, from: repoRoot.path),
+    defaultsTo:
+        relative(projectRoot.directory('vault').path, from: projectRoot.path),
   );
-  final vaultDir = repoRoot.directory(vaultPath);
+  final vaultDir = projectRoot.directory(vaultPath);
 
   print("- Adding sidekick_vault as dependency");
   addSelfAsDependency();
