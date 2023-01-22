@@ -14,18 +14,18 @@ import 'package:yaml_edit/yaml_edit.dart';
 ///   2. current version of the sidekick cli
 ///   3. target version of the sidekick cli
 Future<void> main(List<String> args) async {
+  // unused but still here for backwards-compatibility
   final sidekickCliName = args[0];
+  assert(sidekickCliName.isNotEmpty);
   final currentSidekickCliVersion = Version.parse(args[1]);
   final targetSidekickCoreVersion = Version.parse(args[2]);
+  // TODO: verify that the package is named `<cliName>_sidekick`
 
   print(
-    'Updating sidekick CLI $sidekickCliName from version '
+    'Updating sidekick CLI ${SidekickContext.cliName} from version '
     '$currentSidekickCliVersion to $targetSidekickCoreVersion ...',
   );
 
-  /// Creating a runner to allow access to values like [repository], [mainProject] or [cliName]
-  final runner = initializeSidekick(name: sidekickCliName);
-  final unmount = runner.mount();
   try {
     // Throws when the migration is aborted due to an error
     await migrate(
@@ -65,25 +65,23 @@ Future<void> main(List<String> args) async {
     // update sidekick: cli_version: <version> in pubspec.yaml to signalize
     // that update has completed successfully
     VersionChecker.updateVersionConstraint(
-      package: Repository.requiredSidekickPackage,
+      package: SidekickContext.sidekickPackage,
       pubspecKeys: ['sidekick', 'cli_version'],
       newMinimumVersion: targetSidekickCoreVersion,
       pinVersion: true,
     );
     print(
       green(
-        'Successfully updated sidekick CLI $cliName from version $currentSidekickCliVersion to $targetSidekickCoreVersion!',
+        'Successfully updated sidekick CLI ${SidekickContext.cliName} from version $currentSidekickCliVersion to $targetSidekickCoreVersion!',
       ),
     );
   } catch (_) {
     print(
       red(
-        'There was an error updating sidekick CLI $cliName from version $currentSidekickCliVersion to $targetSidekickCoreVersion.',
+        'There was an error updating sidekick CLI ${SidekickContext.cliName} from version $currentSidekickCliVersion to $targetSidekickCoreVersion.',
       ),
     );
     rethrow;
-  } finally {
-    unmount();
   }
 }
 
@@ -99,9 +97,9 @@ class UpdateToolsMigration extends MigrationStep {
   Future<void> migrate(MigrationContext context) async {
     final template = SidekickTemplate();
     final props = SidekickTemplateProperties(
-      name: Repository.requiredSidekickPackage.cliName,
-      entrypointLocation: Repository.requiredEntryPoint,
-      packageLocation: Repository.requiredCliPackage,
+      name: SidekickContext.sidekickPackage.cliName,
+      entrypointLocation: SidekickContext.entryPoint,
+      packageLocation: SidekickContext.sidekickPackage.root,
     );
     template.generateTools(props);
   }
@@ -119,9 +117,9 @@ class UpdateEntryPointMigration extends MigrationStep {
   Future<void> migrate(MigrationContext context) async {
     final template = SidekickTemplate();
     final props = SidekickTemplateProperties(
-      name: Repository.requiredSidekickPackage.cliName,
-      entrypointLocation: Repository.requiredEntryPoint,
-      packageLocation: Repository.requiredCliPackage,
+      name: SidekickContext.sidekickPackage.cliName,
+      entrypointLocation: SidekickContext.entryPoint,
+      packageLocation: SidekickContext.sidekickPackage.root,
     );
     template.generateEntrypoint(props);
   }
@@ -137,7 +135,7 @@ class UseLatestDartVersionMigration extends MigrationStep {
 
   @override
   Future<void> migrate(MigrationContext context) async {
-    final package = Repository.requiredSidekickPackage;
+    final package = SidekickContext.sidekickPackage;
 
     final pubspec = YamlEditor(package.pubspec.readAsStringSync());
     final String? sdkConstraints =

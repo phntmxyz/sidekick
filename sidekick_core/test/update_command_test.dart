@@ -39,7 +39,7 @@ void main() {
         runner.addCommand(UpdateCommand());
         await runner.run(['update', targetVersion.toString()]);
 
-        final package = Repository.requiredSidekickPackage;
+        final package = SidekickContext.sidekickPackage;
         final sidekickVersionAfterUpdate =
             VersionChecker.getMinimumVersionConstraint(
           package,
@@ -101,7 +101,7 @@ void main() {
       runner.addCommand(UpdateCommand());
       await runner.run(['update', '0.1.0']);
 
-      final package = Repository.requiredSidekickPackage;
+      final package = SidekickContext.sidekickPackage;
       final sidekickVersionAfterUpdate =
           VersionChecker.getMinimumVersionConstraint(
         package,

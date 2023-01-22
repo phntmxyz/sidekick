@@ -110,7 +110,8 @@ ${changelog.readAsStringSync().replaceFirst('# Changelog', '').trimLeft()}''');
     "git add -A ${skProject.skSidekickPackage.root.path}/pubspec.lock"
         .runInRepo;
     'git commit -m "Prepare release $tag"'.runInRepo;
-    final newChangelogAndVersionBranch = _getCurrentBranch(repository.root);
+    final newChangelogAndVersionBranch =
+        _getCurrentBranch(SidekickContext.repository!);
 
     final bool lock = package == skProject.sidekickPackage;
     if (lock) {
@@ -312,7 +313,8 @@ You can continue once you completed all steps.
   String? _getMinSidekickCoreVersion(String pubspec) {
     final doc = loadYamlDocument(pubspec);
     final ps = doc.contents.value as YamlMap;
-    final constraint = ps['dependencies']['sidekick_core'] as String?;
+    final constraint =
+        (ps['dependencies'] as YamlMap)['sidekick_core'] as String?;
     if (constraint == null) {
       return null;
     }
@@ -363,7 +365,7 @@ bool _gitRepoHasChangesIn(Directory directory) =>
     'git status --porcelain ${directory.path}'
         .start(
           progress: Progress.capture(),
-          workingDirectory: repository.root.path,
+          workingDirectory: SidekickContext.repository!.path,
         )
         .lines
         .isNotEmpty;
@@ -465,5 +467,11 @@ extension on DartPackage {
 }
 
 extension on String {
-  void get runInRepo => start(workingDirectory: repository.root.path);
+  void get runInRepo {
+    assert(
+      SidekickContext.repository != null,
+      'Release command must be run in a repository',
+    );
+    start(workingDirectory: SidekickContext.repository!.path);
+  }
 }

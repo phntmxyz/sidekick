@@ -184,12 +184,13 @@ void main() {
           tempDir.deleteSync(recursive: true);
           env['SIDEKICK_PACKAGE_HOME'] = null;
         });
+        tempDir.file('pubspec.yaml').writeAsStringSync('name: foo_sidekick');
         final fileToBeChanged = tempDir.file('foo')..writeAsStringSync('''
 void main(){
   print('foo');
 }
 ''');
-        'git init'.start(workingDirectory: tempDir.path);
+        'git init -q'.start(workingDirectory: tempDir.path);
 
         const patchContent = '''
 --- a/foo
@@ -202,6 +203,7 @@ void main(){
 ''';
         final patch = GitPatchMigrationStep(
           () => patchContent,
+          workingDirectory: () => tempDir,
           description: 'test patch',
           targetVersion: Version(0, 0, 1),
         );
@@ -233,8 +235,10 @@ void main(){
       await observeFileCreations((createdFiles) async {
         final tempDir = Directory.systemTemp.createTempSync();
         env['SIDEKICK_PACKAGE_HOME'] = tempDir.absolute.path;
+        tempDir.file('pubspec.yaml').writeAsStringSync('name: placeholder');
         final patch = GitPatchMigrationStep(
           () => 'corrupt patch',
+          workingDirectory: () => tempDir,
           description: 'test patch',
           targetVersion: Version(0, 0, 1),
         );

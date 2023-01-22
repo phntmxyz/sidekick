@@ -47,3 +47,13 @@ jobs:
         run: cd sidekick_plugin_installer && dart pub get --no-precompile
       - name: Run tests sidekick_plugin_installer
         run: cd sidekick_plugin_installer && dart test
+
+  sk_sidekick:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v1
+      - name: Install dependencies sk_sidekick
+        run: ./sk
+      - name: Run tests sk_sidekick
+        run: cd sk_sidekick && ./build/cache/dart-sdk/bin/dart test

@@ -28,8 +28,7 @@ class VerifyPublishStateCommand extends Command {
     }
 
     if (package == null) {
-      final allPackages = repository
-          .findAllPackages()
+      final allPackages = findAllPackages(SidekickContext.projectRoot)
           .where((it) => !it.root.path.contains('/templates/'))
           .where(_isPublishable)
           .toList();

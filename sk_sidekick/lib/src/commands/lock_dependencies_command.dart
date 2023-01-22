@@ -54,16 +54,18 @@ class LockDependenciesCommand extends Command {
     }
 
     final packages =
+        // ignore: avoid_dynamic_calls
         loadYaml(lockfile.readAsStringSync())['packages'] as YamlMap;
 
     final Map<String, String> directDependencies = {};
     final Map<String, String> transitiveDependencies = {};
     for (final package in packages.entries) {
-      final type = package.value['dependency'];
+      final value = package.value as YamlMap;
+      final type = value['dependency'];
       final packageName = package.key as String;
-      final version = package.value['version'] as String;
+      final version = value['version'] as String;
 
-      if (type != 'direct dev' && package.value['source'] != 'hosted') {
+      if (type != 'direct dev' && value['source'] != 'hosted') {
         throw "Can only handle dependencies from hosted sources, but $packageName violates this.";
       }
 

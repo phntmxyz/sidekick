@@ -33,7 +33,7 @@ class UpdateCommand extends Command {
     // at the path ['sidekick', 'cli_version']
     final currentSidekickCliVersion =
         VersionChecker.getMinimumVersionConstraint(
-              Repository.requiredSidekickPackage,
+              SidekickContext.sidekickPackage,
               ['sidekick', 'cli_version'],
             ) ??
             Version.none;
@@ -56,7 +56,7 @@ class UpdateCommand extends Command {
   void updateSidekickCli({required Version from, required Version to}) {
     // update sidekick_core to load the update script at the necessary version
     VersionChecker.updateVersionConstraint(
-      package: Repository.requiredSidekickPackage,
+      package: SidekickContext.sidekickPackage,
       pubspecKeys: ['dependencies', 'sidekick_core'],
       newMinimumVersion: to,
       // make sure we get the update script exactly at the specified version
@@ -64,7 +64,7 @@ class UpdateCommand extends Command {
     );
     _dartCommand(
       ['pub', 'get'],
-      workingDirectory: Repository.requiredCliPackage,
+      workingDirectory: SidekickContext.sidekickPackage.root,
       progress: Progress.printStdErr(),
     );
 
@@ -75,14 +75,14 @@ class UpdateCommand extends Command {
     // previously the version was pinned to get the correct version of the
     // update_sidekick_cli script, now we can allow newer versions again
     VersionChecker.updateVersionConstraint(
-      package: Repository.requiredSidekickPackage,
+      package: SidekickContext.sidekickPackage,
       pubspecKeys: ['dependencies', 'sidekick_core'],
       newMinimumVersion: to,
     );
     try {
       _dartCommand(
         ['pub', 'get'],
-        workingDirectory: Repository.requiredCliPackage,
+        workingDirectory: SidekickContext.sidekickPackage.root,
         progress: Progress.devNull(),
       );
     } catch (e) {
@@ -106,8 +106,10 @@ class UpdateCommand extends Command {
   /// Make sure to update the sidekick_core dependency before starting this
   /// process.
   void startUpdateScriptProcess(Version from, Version to) {
+    // it's important that we put the update script within the sidekick package,
+    // so SidekickContext can pick it up
     final updateScript =
-        Repository.requiredSidekickPackage.buildDir.file('update.dart')
+        SidekickContext.sidekickPackage.buildDir.file('update.dart')
           ..createSync(recursive: true)
           ..writeAsStringSync('''
   import 'package:sidekick_core/src/update_sidekick_cli.dart' as update;
@@ -116,10 +118,14 @@ class UpdateCommand extends Command {
   }
   ''');
     try {
+      // Do not change the arguments in a breaking way. The `update_sidekick_cli.dart`
+      // script will be called from another sidekick_core version. Changes will break
+      // the update process.
+      // Only add parameters, never remove any.
       _dartCommand(
         [
           updateScript.path,
-          Repository.requiredSidekickPackage.cliName,
+          SidekickContext.cliName,
           from.canonicalizedVersion,
           to.canonicalizedVersion,
         ],

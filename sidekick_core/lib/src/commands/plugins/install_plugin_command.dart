@@ -67,7 +67,7 @@ class InstallPluginCommand extends Command {
           '${gitPath != null ? "plugin in git repository at path '$gitPath'" : ''} '
           '${gitRef != null ? "at git reference '$gitRef'" : ''} '
           '${versionConstraint != null ? '$versionConstraint ' : ''}'
-          'for ${Repository.sidekickPackage!.cliName}'),
+          'for ${SidekickContext.cliName}'),
     );
     env['SIDEKICK_PLUGIN_VERSION_CONSTRAINT'] = versionConstraint;
 
@@ -116,7 +116,9 @@ class InstallPluginCommand extends Command {
     }
 
     // The target where to install the plugin
-    final target = Repository.requiredSidekickPackage;
+    final target = SidekickContext.sidekickPackage;
+    // Important! workingDir has to be within the target package, so it can
+    // lookup information with SidekickContext
     final workingDir = target.root.directory('build/plugins/$pluginName');
 
     print('Preparing $pluginName installer...');
