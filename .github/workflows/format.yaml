@@ -11,13 +11,17 @@ jobs:
     runs-on: ubuntu-latest
 
     container:
-      image: dart:2.16.1
+      image: dart:2.18.6
 
     steps:
       - uses: actions/checkout@v1
       - name: check formatting
         run: |
           dart format --fix --output none --set-exit-if-changed \
-          sidekick/bin sidekick/lib sidekick/test sidekick/tool \
+          sidekick/bin sidekick/lib sidekick/test \
           sidekick_core \
-          sidekick_vault 
+          sidekick_plugin_installer \
+          sidekick_test \
+          sidekick_vault \
+          sk_sidekick/lib
+          

@@ -1,6 +1,6 @@
 name: sidekick_core
 description: Reusable code pieces for sidekick CLIs. Provides a project and useful helper methods when working with files
-version: 0.13.0
+version: 0.15.1
 repository: https://github.com/phntmxyz/sidekick/tree/main/sidekick_core
 issue_tracker: https://github.com/phntmxyz/sidekick/labels/sidekick_core
 
@@ -18,8 +18,10 @@ dependencies:
   pub_semver: ^2.1.1
   recase: ^4.1.0
   yaml: ^3.1.0
+  yaml_edit: ^2.0.3
 
 dev_dependencies:
+  fake_http_client: ^1.0.0
   lint: ^1.5.0
   sidekick_test:
     path: ../sidekick_test

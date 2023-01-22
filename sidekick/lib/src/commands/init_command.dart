@@ -1,9 +1,10 @@
 import 'package:dcli/dcli.dart' as dcli;
 import 'package:recase/recase.dart';
-import 'package:sidekick/src/init/name_suggester.dart';
 import 'package:sidekick/src/util/dcli_ask_validators.dart';
 import 'package:sidekick/src/util/directory_extension.dart';
+import 'package:sidekick/src/util/name_suggester.dart';
 import 'package:sidekick_core/sidekick_core.dart';
+import 'package:sidekick_core/sidekick_core.dart' as core;
 
 class InitCommand extends Command {
   @override
@@ -176,22 +177,14 @@ class InitCommand extends Command {
       mainProjectPath: mainProject != null
           ? relative(mainProject.root.path, from: repoRoot.absolute.path)
           : null,
-      isMainProjectRoot:
-          mainProject?.root.absolute.path == repoRoot.absolute.path,
-      hasNestedPackagesPath: mainProject != null &&
-          !relative(mainProject.root.path, from: repoRoot.absolute.path)
-              .startsWith('packages'),
       shouldSetFlutterSdkPath: Repository(root: repoRoot)
           .findAllPackages()
           .any((package) => package.isFlutterPackage),
       entrypointLocation: entrypoint,
       packageLocation: cliPackage,
-      sidekickCliVersion: version,
+      sidekickCliVersion: core.version,
     );
     SidekickTemplate().generate(props);
-
-    // TODO move into template
-    _addPackagesToProjectClass(repoRoot, cliPackage, cliName, packages);
 
     // Install flutterw when a Flutter project is detected
     final flutterPackages = [if (mainProject != null) mainProject, ...packages]
@@ -232,41 +225,16 @@ class InitCommand extends Command {
       progress: dcli.Progress.printStdErr(),
     );
   }
-
-  void _addPackagesToProjectClass(
-    Directory repoRoot,
-    Directory cliPackage,
-    String cliName,
-    List<DartPackage> packages,
-  ) {
-    final projectClassFile = cliPackage.file('lib/src/${cliName}_project.dart');
-
-    final packageNames = packages.groupBy((package) => package.name);
-    final packageCode = packages.map((package) {
-      final path = relative(package.root.path, from: repoRoot.absolute.path);
-      final packageNameIsUnique = packageNames[package.name]!.length == 1;
-      final packageName = ReCase(packageNameIsUnique ? package.name : path);
-      return "DartPackage get ${packageName.camelCase}Package => DartPackage.fromDirectory(root.directory('$path'))!;";
-    }).toList();
-
-    final code = '''
-  
-  ${packageCode.join('\n\n  ')}
-    ''';
-
-    projectClassFile.replaceSectionWith(
-      startTag: '/// packages',
-      endTag: '\n',
-      content: code,
-    );
-    projectClassFile.replaceFirst('/// packages', '');
-  }
 }
 
 /// Initializes git via `git init` in [directory]
 Future<void> gitInit(Directory directory) async {
-  final bool inGitDir =
-      Process.runSync('git', ['rev-parse', '--git-dir']).exitCode == 0;
+  final bool inGitDir = Process.runSync(
+        'git',
+        ['rev-parse', '--git-dir'],
+        workingDirectory: directory.path,
+      ).exitCode ==
+      0;
   if (inGitDir) {
     // no need to initialize
     return;

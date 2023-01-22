@@ -15,7 +15,7 @@ class RecompileCommand extends Command {
   @override
   Future<void> run() async {
     final installScript =
-        Repository.requiredSidekickPackage.root.file('tool/install.sh');
+        SidekickContext.sidekickPackage.root.file('tool/install.sh');
     final process = start(installScript.path, nothrow: true, terminal: true);
     exitCode = process.exitCode ?? -1;
   }

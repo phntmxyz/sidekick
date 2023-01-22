@@ -67,7 +67,7 @@ class InstallPluginCommand extends Command {
           '${gitPath != null ? "plugin in git repository at path '$gitPath'" : ''} '
           '${gitRef != null ? "at git reference '$gitRef'" : ''} '
           '${versionConstraint != null ? '$versionConstraint ' : ''}'
-          'for ${Repository.sidekickPackage!.cliName}'),
+          'for ${SidekickContext.cliName}'),
     );
     env['SIDEKICK_PLUGIN_VERSION_CONSTRAINT'] = versionConstraint;
 
@@ -106,17 +106,19 @@ class InstallPluginCommand extends Command {
     print('Installer downloaded');
 
     if (!pluginInstallerDir.existsSync()) {
-      error("Package directory doesn't exist");
+      throw "Package directory doesn't exist";
     }
 
     final pluginName = DartPackage.fromDirectory(pluginInstallerDir)?.name;
     if (pluginName == null) {
-      error('installer package at $pluginInstallerDir is '
-          'not a valid dart package');
+      throw 'installer package at $pluginInstallerDir is '
+          'not a valid dart package';
     }
 
     // The target where to install the plugin
-    final target = Repository.requiredSidekickPackage;
+    final target = SidekickContext.sidekickPackage;
+    // Important! workingDir has to be within the target package, so it can
+    // lookup information with SidekickContext
     final workingDir = target.root.directory('build/plugins/$pluginName');
 
     print('Preparing $pluginName installer...');
@@ -128,8 +130,8 @@ class InstallPluginCommand extends Command {
     await pluginInstallerDir.copyRecursively(workingDir);
     final pluginInstallerCode = DartPackage.fromDirectory(workingDir);
     if (pluginInstallerCode == null) {
-      error('installer package at $workingDir is '
-          'not a valid dart package');
+      throw 'installer package at $workingDir is '
+          'not a valid dart package';
     }
 
     // get installer dependencies
@@ -139,10 +141,16 @@ class InstallPluginCommand extends Command {
       progress: Progress.printStdErr(),
     );
 
-    final pluginVersionChecker = VersionChecker(pluginInstallerCode);
+    final pluginInstallerProtocolVersion = VersionChecker.getResolvedVersion(
+      pluginInstallerCode,
+      'sidekick_plugin_installer',
+    );
 
-    final pluginInstallerProtocolVersion =
-        pluginVersionChecker.getResolvedVersion('sidekick_plugin_installer');
+    if (pluginInstallerProtocolVersion is! Version) {
+      throw "The plugin you're trying to install isn't a valid sidekick plugin "
+          "because it doesn't have a dependency on sidekick_plugin_installer.";
+    }
+
     final supportedInstallerVersions = VersionRange(
       // update when sidekick_core removes support for old sidekick_plugin_installer protocol
       min: Version.none,
@@ -183,9 +191,7 @@ class InstallPluginCommand extends Command {
     // Execute installer. Requires a tool/install.dart file to execute
     final installScript = workingDir.file('tool/install.dart');
     if (!installScript.existsSync()) {
-      error(
-        'No ${installScript.path} script found in package at $pluginInstallerDir',
-      );
+      throw 'No ${installScript.path} script found in package at $pluginInstallerDir';
     }
     sidekickDartRuntime.dart(
       [installScript.path],
@@ -247,11 +253,7 @@ Directory _getPackageRootDirForHostedOrGitSource(ArgResults args) {
         'The --$parameter parameter is not yet supported by the pub tool in '
         'the Dart SDK your sidekick CLI is using.\n'
         'It is available from Dart $requiredVersion.\n'
-        'Try updating the Dart SDK of your sidekick CLI.\n'
-        // TODO update instructions when https://github.com/phntmxyz/sidekick/issues/149 is resolved
-        'You can do this by increasing the minimum sdk constraint of your '
-        'sidekick CLI in its pubspec.yaml. Then, execute the entrypoint of '
-        'your sidekick CLI again to download the new Dart SDK version.';
+        'Try running ${cyan('$cliName sidekick update')} to update the Dart SDK of your sidekick CLI.';
     if (progress.lines.contains('Could not find an option named "git-path".')) {
       throw parameterNotAvailableErrorMessage('git-path', '2.17');
     }

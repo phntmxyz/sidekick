@@ -15,19 +15,18 @@ class InstallGlobalCommand extends Command {
 
   @override
   Future<void> run() async {
-    if (isProgramInstalled(cliName)) {
-      print('program $cliName is already globally installed');
+    if (isProgramInstalled(SidekickContext.cliName)) {
+      print('program ${SidekickContext.cliName} is already globally installed');
       exit(0);
     }
 
     /// The entrypoint injects its location
-    final entrypoint = Repository.requiredEntryPoint;
-    GlobalSidekickRoot.linkBinary(entrypoint);
+    GlobalSidekickRoot.linkBinary(SidekickContext.entryPoint);
 
     if (dcli.isOnPATH(GlobalSidekickRoot.binDir.path)) {
       print(
         '\n'
-        "You can now use '$cliName' from everywhere\n"
+        "You can now use '${SidekickContext.cliName}' from everywhere\n"
         '\n',
       );
       return;

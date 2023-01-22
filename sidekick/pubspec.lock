@@ -7,7 +7,7 @@ packages:
       name: _fe_analyzer_shared
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "50.0.0"
+    version: "51.0.0"
   acronym:
     dependency: "direct main"
     description:
@@ -21,7 +21,7 @@ packages:
       name: analyzer
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "5.2.0"
+    version: "5.3.1"
   archive:
     dependency: transitive
     description:
@@ -287,9 +287,9 @@ packages:
       name: matcher
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.12.13"
+    version: "0.12.14"
   meta:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: meta
       url: "https://pub.dartlang.org"
@@ -301,7 +301,14 @@ packages:
       name: mime
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.0.2"
+    version: "1.0.3"
+  mocktail:
+    dependency: transitive
+    description:
+      name: mocktail
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.3.0"
   node_preamble:
     dependency: transitive
     description:
@@ -322,7 +329,14 @@ packages:
       name: path
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.8.2"
+    version: "1.8.3"
+  platform:
+    dependency: transitive
+    description:
+      name: platform
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "3.1.0"
   pointycastle:
     dependency: transitive
     description:
@@ -344,6 +358,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "4.1.0"
+  process:
+    dependency: "direct main"
+    description:
+      name: process
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "4.2.4"
   pub_semver:
     dependency: transitive
     description:
@@ -434,7 +455,7 @@ packages:
       name: sidekick_core
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.13.0"
+    version: "0.15.1"
   sidekick_test:
     dependency: "direct dev"
     description:
@@ -518,21 +539,21 @@ packages:
       name: test
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.22.0"
+    version: "1.22.1"
   test_api:
     dependency: transitive
     description:
       name: test_api
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.4.16"
+    version: "0.4.17"
   test_core:
     dependency: transitive
     description:
       name: test_core
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.4.20"
+    version: "0.4.21"
   test_process:
     dependency: "direct dev"
     description:
@@ -616,7 +637,7 @@ packages:
       name: win32
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "3.1.2"
+    version: "3.1.3"
   yaml:
     dependency: transitive
     description:
@@ -624,5 +645,12 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "3.1.1"
+  yaml_edit:
+    dependency: transitive
+    description:
+      name: yaml_edit
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.0.3"
 sdks:
   dart: ">=2.18.0 <3.0.0"

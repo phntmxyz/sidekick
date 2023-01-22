@@ -7,9 +7,6 @@ import 'package:test/test.dart';
 /// True when dependencies should be linked to local sidekick dependencies
 final bool shouldUseLocalDeps = env['SIDEKICK_PUB_DEPS'] != 'true';
 
-/// Add this to the test name
-final String localOrPubDepsLabel = shouldUseLocalDeps ? "(local)" : "(pub)";
-
 /// Changes the sidekick_core dependency to a local override
 void overrideSidekickCoreWithLocalPath(Directory package) {
   if (!shouldUseLocalDeps) return;
@@ -53,15 +50,20 @@ final bool analyzeGeneratedCode = env['SIDEKICK_ANALYZE'] == 'true';
 /// - [sidekickCliVersion] sidekick: cli_version: <sidekickCliVersion> in the
 ///   pubspec. Only written to pubspec if value is not null.
 R insideFakeProjectWithSidekick<R>(
-  R Function(Directory projectDir) callback, {
+  R Function(Directory projectRoot) callback, {
   bool overrideSidekickCoreWithLocalDependency = false,
   String? sidekickCoreVersion,
   String? sidekickCliVersion,
+  bool insideGitRepo = false,
 }) {
   final tempDir = Directory.systemTemp.createTempSync();
-  'git init ${tempDir.path}'.run;
+  Directory projectRoot = tempDir;
+  if (insideGitRepo) {
+    'git init -q ${tempDir.path}'.run;
+    projectRoot = tempDir.directory('myProject')..createSync();
+  }
 
-  tempDir.file('pubspec.yaml')
+  projectRoot.file('pubspec.yaml')
     ..createSync()
     ..writeAsStringSync('''
 name: main_project
@@ -69,9 +71,9 @@ name: main_project
 environment:
   sdk: '>=2.14.0 <3.0.0'
 ''');
-  tempDir.file('dash').createSync();
+  projectRoot.file('dash').createSync();
 
-  final fakeSidekickDir = tempDir.directory('packages/dash')
+  final fakeSidekickDir = projectRoot.directory('packages/dash')
     ..createSync(recursive: true);
 
   fakeSidekickDir.file('pubspec.yaml')
@@ -99,21 +101,27 @@ sidekick:
   fakeSidekickLibDir.file('dash_sidekick.dart').createSync();
 
   env['SIDEKICK_PACKAGE_HOME'] = fakeSidekickDir.absolute.path;
-  env['SIDEKICK_ENTRYPOINT_HOME'] = tempDir.absolute.path;
+  env['SIDEKICK_ENTRYPOINT_HOME'] = projectRoot.absolute.path;
+  if (!env.exists('SIDEKICK_ENABLE_UPDATE_CHECK')) {
+    env['SIDEKICK_ENABLE_UPDATE_CHECK'] = 'false';
+  }
 
   if (overrideSidekickCoreWithLocalDependency) {
     overrideSidekickCoreWithLocalPath(fakeSidekickDir);
   }
 
   addTearDown(() {
-    tempDir.deleteSync(recursive: true);
+    projectRoot.deleteSync(recursive: true);
     env['SIDEKICK_PACKAGE_HOME'] = null;
     env['SIDEKICK_ENTRYPOINT_HOME'] = null;
+    env['SIDEKICK_ENABLE_UPDATE_CHECK'] = null;
   });
 
+  Directory cwd = projectRoot;
   return IOOverrides.runZoned<R>(
-    () => callback(tempDir),
-    getCurrentDirectory: () => tempDir,
+    () => callback(projectRoot),
+    getCurrentDirectory: () => cwd,
+    setCurrentDirectory: (dir) => cwd = Directory(dir),
   );
 }
 

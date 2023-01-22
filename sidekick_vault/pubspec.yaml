@@ -13,7 +13,8 @@ dependencies:
   sidekick_core: '>=0.7.0 <1.0.0'
 
 dev_dependencies:
+  dcli_core: ^1.17.2
   lint: ^1.5.0
-  sidekick_plugin_installer: ^0.2.0
+  sidekick_plugin_installer: ^0.2.1
   test: ^1.20.0
   prompts: ^2.0.0

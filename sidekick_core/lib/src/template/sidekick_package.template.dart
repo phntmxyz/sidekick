@@ -1,5 +1,4 @@
 import 'package:recase/recase.dart';
-
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_core/src/template/download_dart.sh.template.dart';
 import 'package:sidekick_core/src/template/entrypoint.template.dart';
@@ -58,9 +57,6 @@ class SidekickTemplate {
       ..createSync(recursive: true)
       ..writeAsStringSync(props.cleanCommandDart());
     props.packageLocation
-        .file('lib/src/${props.name.snakeCase}_project.dart')
-        .writeAsStringSync(props.cliProjectDart());
-    props.packageLocation
         .file('lib/${props.name.snakeCase}_sidekick.dart')
         .writeAsStringSync(props.cliSidekickDart());
   }
@@ -79,32 +75,34 @@ class SidekickTemplateProperties {
   final Directory packageLocation;
 
   /// When there's a flutter package that requires a flutter sdk
-  final bool shouldSetFlutterSdkPath;
+  final bool? shouldSetFlutterSdkPath;
 
   /// When the dart package is located in root of the repo
-  final bool isMainProjectRoot;
+  @Deprecated('Not used anymore')
+  final bool? isMainProjectRoot;
 
   /// true when a /packages directory exists
-  final bool hasNestedPackagesPath;
+  @Deprecated('Not used anymore')
+  final bool? hasNestedPackagesPath;
 
   /// Path to main project, relative from repo root
   final String? mainProjectPath;
 
-  /// The version of the generated sidekick CLI
+  /// The current version of sidekick_core which includes the project templates
   ///
-  /// This is set to the version of sidekick_core because sidekick_core contains
-  /// the template used for generation of the CLI.
-  final Version sidekickCliVersion;
+  /// This version should be written to pubspec.yaml as sidekick.cli_version
+  @Deprecated('Not used anymore')
+  final Version? sidekickCliVersion;
 
   const SidekickTemplateProperties({
     required this.name,
     required this.entrypointLocation,
     required this.packageLocation,
-    required this.mainProjectPath,
-    required this.shouldSetFlutterSdkPath,
-    required this.isMainProjectRoot,
-    required this.hasNestedPackagesPath,
-    required this.sidekickCliVersion,
+    @Deprecated('Not used anymore') this.sidekickCliVersion,
+    this.mainProjectPath,
+    this.shouldSetFlutterSdkPath,
+    @Deprecated('Not used anymore') this.isMainProjectRoot,
+    @Deprecated('Not used anymore') this.hasNestedPackagesPath,
   });
 }
 
@@ -119,68 +117,9 @@ Future<void> main(List<String> arguments) async {
 ''';
   }
 
-  String cliProjectDart() {
-    if (isMainProjectRoot) {
-      return '''
-import 'package:sidekick_core/sidekick_core.dart';
-
-class ${name.pascalCase}Project extends DartPackage {
-  factory ${name.pascalCase}Project(Directory root) {
-    final package = DartPackage.fromDirectory(root)!;
-    return ${name.pascalCase}Project._(package.root, package.name);
-  }
-
-  ${name.pascalCase}Project._(Directory root, String name) : super.flutter(root, name);
-
-  /// packages
-
-  File get flutterw => root.file('flutterw');
-
-  List<DartPackage>? _packages;
-  List<DartPackage> get allPackages {
-    return _packages ??= root
-        ${hasNestedPackagesPath ? ".directory('$mainProjectPath')" : ''}
-        .directory('packages')
-        .listSync()
-        .whereType<Directory>()
-        .mapNotNull((it) => DartPackage.fromDirectory(it))
-        .toList()
-      ${isMainProjectRoot ? '..add(this)' : ''};
-  }
-}
-''';
-    } else {
-      return '''
-import 'package:sidekick_core/sidekick_core.dart';
-
-class ${name.pascalCase}Project {
-  ${name.pascalCase}Project(this.root);
-
-  final Directory root;
-  /// packages
-
-  File get flutterw => root.file('flutterw');
-
-  List<DartPackage>? _packages;
-  List<DartPackage> get allPackages {
-    return _packages ??= root
-        ${hasNestedPackagesPath ? ".directory('$mainProjectPath')" : ''}
-        .directory('packages')
-        .listSync()
-        .whereType<Directory>()
-        .mapNotNull((it) => DartPackage.fromDirectory(it))
-        .toList()
-        ${isMainProjectRoot ? '..add(this)' : ''};
-  }
-}
-
-''';
-    }
-  }
-
   String cliSidekickDart() {
     final commands = [
-      if (shouldSetFlutterSdkPath) 'FlutterCommand()',
+      if (shouldSetFlutterSdkPath!) 'FlutterCommand()',
       'DartCommand()',
       'DepsCommand()',
       'CleanCommand()',
@@ -188,39 +127,26 @@ class ${name.pascalCase}Project {
       'SidekickCommand()',
     ];
 
-    final projectRoot = isMainProjectRoot != true
-        ? 'runner.repository.root'
-        : 'runner.mainProject!.root';
-
     return '''
 import 'dart:async';
 
 import 'package:${name.snakeCase}_sidekick/src/commands/clean_command.dart';
-import 'package:${name.snakeCase}_sidekick/src/${name.snakeCase}_project.dart';
 import 'package:sidekick_core/sidekick_core.dart';
-
-late ${name.pascalCase}Project ${name.snakeCase}Project;
 
 Future<void> run${name.pascalCase}(List<String> args) async {
   final runner = initializeSidekick(
     name: '${name.snakeCase}',
     ${mainProjectPath != null ? "mainProjectPath: '$mainProjectPath'," : ''}
-    ${shouldSetFlutterSdkPath ? 'flutterSdkPath: systemFlutterSdkPath(),' : 'dartSdkPath: systemDartSdkPath(),'}
+    ${shouldSetFlutterSdkPath! ? 'flutterSdkPath: systemFlutterSdkPath(),' : 'dartSdkPath: systemDartSdkPath(),'}
   );
 
-  ${name.snakeCase}Project = ${name.pascalCase}Project($projectRoot);
   runner
 ${commands.map((cmd) => '    ..addCommand($cmd)').join('\n')};
-
-  if (args.isEmpty) {
-    print(runner.usage);
-    return;
-  }
 
   try {
     return await runner.run(args);
   } on UsageException catch (e) {
-    print(e.usage);
+    print(e);
     exit(64); // usage error
   }
 }
@@ -250,6 +176,10 @@ class CleanCommand extends Command {
   }
 
   String get pubspecYaml {
+    final canonicalizedVersion = version.canonicalizedVersion;
+    final constraintRange = version.major > 0
+        ? '^$canonicalizedVersion'
+        : "'>=$canonicalizedVersion <1.0.0'";
     return '''
 name: ${name.snakeCase}_sidekick
 description: Sidekick CLI for $name
@@ -257,20 +187,20 @@ version: 0.0.1
 publish_to: none
 
 environment:
-  sdk: '>=2.14.0 <3.0.0'
+  sdk: '>=2.18.6 <3.0.0'
 
 executables:
   main:
 
 dependencies:
-  sidekick_core: '>=0.10.0 <1.0.0'
+  sidekick_core: $constraintRange
 
 dev_dependencies:
   lint: ^1.5.3
 
 # generated code, do not edit this manually
 sidekick:
-  cli_version: ${sidekickCliVersion.canonicalizedVersion}
+  cli_version: $canonicalizedVersion
 ''';
   }
 }

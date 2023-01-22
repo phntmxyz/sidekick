@@ -3,7 +3,7 @@ import 'package:args/command_runner.dart';
 
 /// A [Command] which accepts all arguments and forwards everything to another cli app
 ///
-/// Arguments to format are available via `argResults!.arguments`
+/// Arguments are available via `argResults!.arguments`, not `argResults!.rest`
 abstract class ForwardCommand extends Command {
   ForwardCommand() {
     // recreate the _argParser and change it to allowAnything

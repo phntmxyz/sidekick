@@ -13,38 +13,32 @@ void main() {
     addTearDown(() => env['SIDEKICK_ENABLE_UPDATE_CHECK'] = null);
   });
 
-  final expectedCliVersionIntegrityWarning =
-      'The sidekick_core version is incompatible with the bash scripts '
-      'in /tool and entrypoint because you probably updated the '
-      'sidekick_core dependency of your CLI package manually.\n'
-      'Please run ${cyan('dash sidekick update')} to repair your CLI.';
+  final expectedCliVersionIntegrityWarnings = [
+    contains('sidekick_core:0.0.2'),
+    contains('sidekick.cli_version 0.0.1'),
+    contains('dash sidekick update'),
+  ];
   final expectedOutdatedWarning = '${yellow('Update available!')}\n'
       'Run ${cyan('dash sidekick update')} to update your CLI.';
 
   test('prints warnings to update outdated CLI', () async {
+    fakeGetLatestDependencyVersion({'sidekick_core': Version(1, 0, 0)});
     final fakeStderr = FakeStdoutStream();
     await insideFakeProjectWithSidekick(
       (tempDir) async {
         await overrideIoStreams(
           stderr: () => fakeStderr,
           body: () async {
-            final runner = initializeSidekick(
-              name: 'dash',
-            );
+            final runner = initializeSidekick(name: 'dash');
 
-            final fakeVersionChecker = _FakeVersionChecker(
-              package: Repository.requiredSidekickPackage,
-              latestDependencyVersions: {'sidekick_core': '1.0.0'},
-            );
-            runner.injectedVersionChecker = fakeVersionChecker;
             await runner.run(['-h']);
 
             final expectedWarnings = [
-              expectedCliVersionIntegrityWarning,
-              expectedOutdatedWarning,
+              ...expectedCliVersionIntegrityWarnings,
+              contains(expectedOutdatedWarning),
             ];
 
-            expect(fakeStderr.lines, containsAll(expectedWarnings));
+            expect(fakeStderr.lines.join('\n'), allOf(expectedWarnings));
           },
         );
       },
@@ -54,22 +48,16 @@ void main() {
   });
 
   test('prints no warnings when offline and versions match', () async {
+    // empty map is equivalent to being offline
+    fakeGetLatestDependencyVersion({});
     final fakeStderr = FakeStdoutStream();
     await insideFakeProjectWithSidekick(
       (tempDir) async {
         await overrideIoStreams(
           stderr: () => fakeStderr,
           body: () async {
-            final runner = initializeSidekick(
-              name: 'dash',
-            );
+            final runner = initializeSidekick(name: 'dash');
 
-            final fakeVersionChecker = _FakeVersionChecker(
-              package: Repository.requiredSidekickPackage,
-              // empty map is equivalent to being offline
-              latestDependencyVersions: {},
-            );
-            runner.injectedVersionChecker = fakeVersionChecker;
             await runner.run(['-h']);
 
             expect(fakeStderr.lines.isEmpty, isTrue);
@@ -83,27 +71,21 @@ void main() {
 
   test('prints only warning to repair CLI when offline and versions mismatch',
       () async {
+    // empty map is equivalent to being offline
+    fakeGetLatestDependencyVersion({});
     final fakeStderr = FakeStdoutStream();
     await insideFakeProjectWithSidekick(
       (tempDir) async {
         await overrideIoStreams(
           stderr: () => fakeStderr,
           body: () async {
-            final runner = initializeSidekick(
-              name: 'dash',
-            );
+            final runner = initializeSidekick(name: 'dash');
 
-            final fakeVersionChecker = _FakeVersionChecker(
-              package: Repository.requiredSidekickPackage,
-              // empty map is equivalent to being offline
-              latestDependencyVersions: {},
-            );
-            runner.injectedVersionChecker = fakeVersionChecker;
             await runner.run(['-h']);
 
             expect(
-              fakeStderr.lines,
-              contains(expectedCliVersionIntegrityWarning),
+              fakeStderr.lines.join('\n'),
+              allOf(expectedCliVersionIntegrityWarnings),
             );
           },
         );
@@ -150,13 +132,12 @@ void main() {
             runner.addCommand(_WrapperCommand());
 
             await runner.run(['wrapper', 'update', '-h']);
-
             final expectedWarnings = [
-              expectedCliVersionIntegrityWarning,
-              expectedOutdatedWarning,
+              ...expectedCliVersionIntegrityWarnings,
+              contains(expectedOutdatedWarning),
             ];
 
-            expect(fakeStderr.lines, containsAll(expectedWarnings));
+            expect(fakeStderr.lines.join('\n'), allOf(expectedWarnings));
           },
         );
       },
@@ -186,15 +167,8 @@ class _UpdateCommand extends Command {
   final String name = 'update';
 }
 
-class _FakeVersionChecker extends VersionChecker {
-  _FakeVersionChecker({
-    required DartPackage package,
-    required this.latestDependencyVersions,
-  }) : super(package);
-
-  final Map<String, String> latestDependencyVersions;
-
-  @override
-  Future<Version> getLatestDependencyVersion(String dependency) async =>
-      Version.parse(latestDependencyVersions[dependency]!);
+void fakeGetLatestDependencyVersion(Map<String, Version> latestVersions) {
+  VersionChecker.testFakeGetLatestDependencyVersion =
+      (String dependency) async => latestVersions[dependency]!;
+  addTearDown(() => VersionChecker.testFakeGetLatestDependencyVersion = null);
 }
