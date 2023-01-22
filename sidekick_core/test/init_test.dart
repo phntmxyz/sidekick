@@ -54,7 +54,10 @@ void main() {
           isA<OutOfCommandRunnerScopeException>()
               .having((it) => it.property, 'property', 'mainProject')
               .having(
-                  (it) => it.toString(), 'toString()', contains('mainProject')),
+                (it) => it.toString(),
+                'toString()',
+                contains('mainProject'),
+              ),
         ),
       );
     });
@@ -170,7 +173,10 @@ void main() {
           isA<OutOfCommandRunnerScopeException>()
               .having((it) => it.property, 'property', 'repository')
               .having(
-                  (it) => it.toString(), 'toString()', contains('repository')),
+                (it) => it.toString(),
+                'toString()',
+                contains('repository'),
+              ),
         ),
       );
     });
