@@ -164,9 +164,27 @@ SidekickCommandRunner initializeSidekick({
     // This is where shit hits the fan. Users have to migrate their paths from
     // relative to repo-root to relative to project-root
 
-    flutterSdk =
-        resolveDirectoryBackwardsCompatible('flutterSdkPath', flutterSdkPath);
-    dartSdk = resolveDirectoryBackwardsCompatible('dartSdkPath', dartSdkPath);
+    try {
+      flutterSdk =
+          resolveDirectoryBackwardsCompatible('flutterSdkPath', flutterSdkPath);
+    } catch (e, stack) {
+      throw SdkNotFoundException(
+        flutterSdkPath!,
+        repoRoot,
+        cause: e,
+        causeStackTrace: stack,
+      );
+    }
+    try {
+      dartSdk = resolveDirectoryBackwardsCompatible('dartSdkPath', dartSdkPath);
+    } catch (e, stack) {
+      throw SdkNotFoundException(
+        dartSdkPath!,
+        repoRoot,
+        cause: e,
+        causeStackTrace: stack,
+      );
+    }
 
     final mainProjectDir =
         resolveDirectoryBackwardsCompatible('mainProjectPath', mainProjectPath);
@@ -188,7 +206,7 @@ SidekickCommandRunner initializeSidekick({
     throw SdkNotFoundException(dartSdkPath, projectRoot);
   }
   if (mainProjectPath != null && mainProject?.root.existsSync() != true) {
-    throw "mainProjectPath ${mainProject!.root.path} couldn't be resolved";
+    throw "mainProjectPath $mainProjectPath couldn't be resolved";
   }
 
   final runner = SidekickCommandRunner._(
@@ -462,10 +480,17 @@ Directory? get dartSdk {
 /// The Dart or Flutter SDK path is set in [initializeSidekick],
 /// but the directory doesn't exist
 class SdkNotFoundException implements Exception {
-  SdkNotFoundException(this.sdkPath, this.repoRoot);
+  SdkNotFoundException(
+    this.sdkPath,
+    this.repoRoot, {
+    this.cause,
+    this.causeStackTrace,
+  });
 
   final String sdkPath;
   final Directory repoRoot;
+  final Object? cause;
+  final StackTrace? causeStackTrace;
 
   late final String message =
       "Dart or Flutter SDK set to '$sdkPath', but that directory doesn't exist. "
@@ -475,7 +500,13 @@ class SdkNotFoundException implements Exception {
 
   @override
   String toString() {
-    return "SdkNotFoundException{message: $message}";
+    return [
+      "SdkNotFoundException{",
+      "message: $message",
+      if (cause != null) "cause: $cause",
+      if (causeStackTrace != null) "cause stack:\n$causeStackTrace",
+      "}",
+    ].join('\n');
   }
 }
 

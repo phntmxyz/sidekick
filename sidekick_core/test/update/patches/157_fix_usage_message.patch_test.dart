@@ -8,7 +8,6 @@ void main() {
     test('patch 157 works (${testCase.name})', () async {
       final tempDir = Directory.systemTemp.createTempSync();
       final sidekickDir = tempDir.directory('test_sidekick')..createSync();
-      // 'git init -q'.start(workingDirectory: tempDir.path);
       env['SIDEKICK_PACKAGE_HOME'] = sidekickDir.absolute.path;
       addTearDown(() {
         tempDir.deleteSync(recursive: true);

@@ -190,7 +190,7 @@ void main(){
   print('foo');
 }
 ''');
-        'git init'.start(workingDirectory: tempDir.path);
+        'git init -q'.start(workingDirectory: tempDir.path);
 
         const patchContent = '''
 --- a/foo
