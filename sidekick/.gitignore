@@ -4,6 +4,7 @@
 .dart_tool/
 .packages
 build/
+coverage/
 
 # Directory created by dartdoc
 # If you don't generate documentation locally you can remove this line.
