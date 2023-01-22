@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.8.0](https://github.com/phntmxyz/sidekick/compare/sidekick_vault-v0.7.0..sidekick_vault-v0.8.0) (2023-1-22)
+
+- Ask for vault path during install [#200](https://github.com/phntmxyz/sidekick/pull/200) https://github.com/phntmxyz/sidekick/commit/45f0ccca62b81dbb80ebf9d334c5d4a96565ffc4
+- Update sidekick_plugin_installer [#193](https://github.com/phntmxyz/sidekick/pull/193) https://github.com/phntmxyz/sidekick/commit/8ab0c02882210dce07160816bedd9b507e5e1a03
+
 ## 0.7.0
 - Fix folder creation bug during install (missing `await`) #110
 - Improve error message when vault file doesn't exist #102
