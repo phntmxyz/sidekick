@@ -136,11 +136,17 @@ class InstallPluginCommand extends Command {
     }
 
     // get installer dependencies
-    sidekickDartRuntime.dart(
-      ['pub', 'get'],
-      workingDirectory: workingDir,
-      progress: Progress.printStdErr(),
-    );
+    final capture = Progress.capture();
+    try {
+      sidekickDartRuntime.dart(
+        ['pub', 'get'],
+        workingDirectory: workingDir,
+        progress: capture,
+      );
+    } catch (e) {
+      printerr(red(capture.lines.join('\n')));
+      rethrow;
+    }
 
     final pluginInstallerProtocolVersion = VersionChecker.getResolvedVersion(
       pluginInstallerCode,
