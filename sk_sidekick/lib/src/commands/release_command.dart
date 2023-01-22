@@ -89,7 +89,7 @@ class ReleaseCommand extends Command {
 
     final versionBumpType = _askForBumpType(package);
     final Version nextVersion = () {
-      final current = Version.parse(package!.version);
+      final current = Version.parse(package.version);
       switch (versionBumpType) {
         case 'major':
           return current.nextMajor;
