@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.8.1](https://github.com/phntmxyz/sidekick/compare/sidekick_vault-v0.8.0..sidekick_vault-v0.8.1) (2023-1-22)
+
+- Replace promts with dcli [#202](https://github.com/phntmxyz/sidekick/pull/202)
+
 ## [0.8.0](https://github.com/phntmxyz/sidekick/compare/sidekick_vault-v0.7.0..sidekick_vault-v0.8.0) (2023-1-22)
 
 - Ask for vault path during install [#200](https://github.com/phntmxyz/sidekick/pull/200) https://github.com/phntmxyz/sidekick/commit/45f0ccca62b81dbb80ebf9d334c5d4a96565ffc4
