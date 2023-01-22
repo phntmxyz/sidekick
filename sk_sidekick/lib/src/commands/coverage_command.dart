@@ -12,6 +12,13 @@ class CoverageCommand extends Command {
     if (!_isPubGlobalInstalled('coverage')) {
       dart(['pub', 'global', 'activate', 'coverage']);
     }
+    if (!isProgramInstalled('genhtml')) {
+      if (Platform.isMacOS) {
+        'brew install lcov'.run;
+      } else {
+        throw 'genhtml is not installed. Please install lcov';
+      }
+    }
 
     final package = () {
       try {
