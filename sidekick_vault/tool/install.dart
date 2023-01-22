@@ -1,4 +1,4 @@
-import 'package:prompts/prompts.dart' as prompts;
+import 'package:dcli/dcli.dart' as dcli;
 import 'package:sidekick_core/sidekick_core.dart'
     hide cliName, repository, mainProject;
 import 'package:sidekick_plugin_installer/sidekick_plugin_installer.dart';
@@ -7,13 +7,13 @@ Future<void> main() async {
   final SidekickPackage package = PluginContext.sidekickPackage;
 
   final repoRoot = findRepository().root;
-  final vaultPath = prompts.get(
-    'Where do you want to create the vault directory? (Relative to ${repoRoot.path})',
-    validate: (path) {
-      final vaultDir = Directory(path);
-      return vaultDir.isWithin(repoRoot);
-    },
-    defaultsTo: relative(repoRoot.directory('vault').path, from: repoRoot.path),
+  print('${green('Where do you want to create the vault directory?')} '
+      '(Relative to ${repoRoot.path})');
+  final vaultPath = dcli.ask(
+    'vault path:',
+    validator: _IsWithinDirectoryValidator(repoRoot),
+    defaultValue:
+        relative(repoRoot.directory('vault').path, from: repoRoot.path),
   );
   final vaultDir = repoRoot.directory(vaultPath);
 
@@ -127,3 +127,18 @@ ${white('vault usage:')}
     => CLI will prompt for the password
        or reads the value of env.${package.cliName.toUpperCase()}_VAULT_PASSPHRASE
 """;
+
+class _IsWithinDirectoryValidator extends dcli.AskValidator {
+  final Directory directory;
+
+  _IsWithinDirectoryValidator(this.directory);
+
+  @override
+  String validate(String line) {
+    final dir = Directory(line);
+    if (!dir.isWithin(directory)) {
+      throw AskValidatorException('Not within ${directory.path}');
+    }
+    return line;
+  }
+}
