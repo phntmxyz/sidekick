@@ -3,12 +3,12 @@ import 'package:sidekick_test/fake_stdio.dart';
 import 'package:sidekick_test/sidekick_test.dart';
 import 'package:test/test.dart';
 
-const String mainFileUnformatted = '''
+const String _mainFileUnformatted = '''
 void main() {
   final test = ['Hello', 'World', 'This', 'is', 'a', 'test', 'for', 'the', 'format', 'command'];
 }
 ''';
-const String mainFileFormatted = '''
+const String _mainFileFormatted = '''
 void main() {
   final test = [
     'Hello',
@@ -89,7 +89,7 @@ format:
               pubspecContent: '''
 name: dashi
 ''',
-              mainContent: mainFileUnformatted,
+              mainContent: _mainFileUnformatted,
             );
             final runner = initializeSidekick(
               name: 'dash',
@@ -101,7 +101,7 @@ name: dashi
             expect(exitCode, 0);
             expect(
               dir.file('lib/main.dart').readAsStringSync(),
-              mainFileFormatted,
+              _mainFileFormatted,
             );
           },
         );
@@ -118,7 +118,7 @@ name: dashi
               pubspecContent: '''
 name: dashi
 ''',
-              mainContent: mainFileUnformatted,
+              mainContent: _mainFileUnformatted,
             );
             final runner = initializeSidekick(
               name: 'dash',
@@ -130,7 +130,7 @@ name: dashi
             expect(exitCode, 0);
             expect(
               dir.file('lib/main.dart').readAsStringSync(),
-              mainFileUnformatted,
+              _mainFileUnformatted,
             );
           },
         );
@@ -149,7 +149,7 @@ name: dashi
 format:
   line_length: 120
 ''',
-              mainContent: mainFileUnformatted,
+              mainContent: _mainFileUnformatted,
             );
             final runner = initializeSidekick(
               name: 'dash',
@@ -161,7 +161,7 @@ format:
             expect(exitCode, 0);
             expect(
               dir.file('lib/main.dart').readAsStringSync(),
-              mainFileUnformatted,
+              _mainFileUnformatted,
             );
           },
         );
@@ -180,7 +180,7 @@ name: dashi
 format:
   line_length: 80
 ''',
-              mainContent: mainFileUnformatted,
+              mainContent: _mainFileUnformatted,
             );
             final runner = initializeSidekick(
               name: 'dash',
@@ -192,7 +192,7 @@ format:
             expect(exitCode, 0);
             expect(
               dir.file('lib/main.dart').readAsStringSync(),
-              mainFileFormatted,
+              _mainFileFormatted,
             );
           },
         );
@@ -209,7 +209,7 @@ format:
               pubspecContent: '''
 name: dashi
 ''',
-              mainContent: mainFileUnformatted,
+              mainContent: _mainFileUnformatted,
             );
             final runner = initializeSidekick(
               name: 'dash',
@@ -225,7 +225,7 @@ name: dashi
             expect(exitCode, 0);
             expect(
               dir.file('lib/main.dart').readAsStringSync(),
-              mainFileUnformatted,
+              _mainFileUnformatted,
             );
           },
         );

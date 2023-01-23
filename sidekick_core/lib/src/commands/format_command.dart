@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:glob/glob.dart';
 import 'package:glob/list_local_fs.dart';
 import 'package:meta/meta.dart';
@@ -51,6 +53,11 @@ class FormatCommand extends Command {
       'line-length',
       abbr: 'l',
     );
+    argParser.addFlag(
+      'verify',
+      help:
+          'Only verifies that all code is formatted, does not actually format it',
+    );
   }
 
   @override
@@ -58,6 +65,7 @@ class FormatCommand extends Command {
     final String? packageName = argResults?['package'] as String?;
     final int? lineLength =
         int.tryParse(argResults?['line-length'] as String? ?? '');
+    final bool verify = argResults?['verify'] as bool? ?? false;
 
     final List<DartPackage> allPackages = repository.findAllPackages();
 
@@ -69,12 +77,9 @@ class FormatCommand extends Command {
             "${repository.root.path}";
       }
       // only format for selected package
-      _format(package, globalLineLength: lineLength);
+      // _format(package, globalLineLength: lineLength);
       return;
     }
-
-    final errorBuffer = StringBuffer();
-
     final globExcludes = excludeGlob
         .expand((rule) {
           // start search at repo root
@@ -89,43 +94,83 @@ class FormatCommand extends Command {
       ...globExcludes,
     ];
 
-    for (final package in allPackages.whereNot(excluded.contains)) {
-      try {
-        _format(package, globalLineLength: lineLength);
-      } catch (e, stack) {
-        print('Error while formatting Code for ${package.name} '
-            '(${package.root.path})');
-        errorBuffer.writeln("${package.name}: $e\n$stack");
-      }
-    }
-    final errorText = errorBuffer.toString();
-    if (errorText.isNotEmpty) {
-      printerr("\n\nErrors while formatting:");
-      printerr(errorText);
-      exitCode = 1;
-    }
+    // Key: line length
+    // Value: all files to be formatted with the line length specified by key
+    final lineLengthsAndFiles = Map.fromEntries(
+      allPackages
+          .filter((package) => !excluded.contains(package))
+          .map((package) {
+        final lineLength = getLineLength(package);
+        final allFilesInPackage = package.root
+            .listSync(recursive: true)
+            .whereType<File>()
+            .filter((file) => file.extension == '.dart')
+            .filter((file) => !file.path.contains('/.dart_tool/'))
+            .filter((file) => !file.path.contains('/.symlinks/'))
+            .filter((file) {
+          // exclude files from packages nested inside the current package
+          //
+          // e.g.
+          // package_bar: 80
+          //   package_bar_example: 120
+          //
+          // if this step was omitted, the result would be
+          // {
+          //   80: [package_bar/main.dart, package_bar/example/main.dart, ...],
+          //   120: [package_bar/example/main.dart, ...],
+          // }
+          // that is wrong, the correct result is
+          // {
+          //   80: [package_bar/main.dart, ...],
+          //   120: [package_bar/example/main.dart, ...],
+          // }
+
+          // get all packages except the current package in iteration
+          final allOtherPackages = ([...allPackages]..remove(package));
+          return allOtherPackages.any((otherPackage) {
+            // does any of the other packages also contain the current file?
+            if (file.path.contains(otherPackage.root.path)) {
+              // exclude file if path of other package matches the file path more closely
+              //
+              // e.g.
+              // package: packages/bar
+              // otherPackage: packages/bar/example
+              // file: packages/bar/example/main.dart
+              //
+              // otherPackage matches file path more closely,
+              // so the file should be excluded for the current package
+
+              return otherPackage.root.path.length < package.root.path.length;
+            }
+            return true;
+          });
+        });
+
+        return MapEntry(lineLength, allFilesInPackage);
+      }),
+    );
+
+    _format(lineLengthsAndFiles);
   }
 }
 
-void _format(DartPackage package, {int? globalLineLength}) {
-  print(yellow('=== package ${package.name} ==='));
-  final int exitCode;
-  final int lineLength = globalLineLength ?? getLineLength(package);
-  if (package.isFlutterPackage) {
-    exitCode = flutter(
-      ['format', '-l', '$lineLength', package.root.path],
-      workingDirectory: package.root,
+void _format(Map<int, Iterable<File>> filesWithLineLength) {
+  filesWithLineLength.entries.map((e) {
+    final exitCode = dart(
+      [
+        'format',
+        '-l',
+        '${e.key}',
+        ...e.value.map(
+          (e) => e.path,
+        ),
+      ],
     );
-  } else {
-    exitCode = dart(
-      ['format', '-l', '$lineLength', package.root.path],
-      workingDirectory: package.root,
-    );
-  }
-  if (exitCode != 0) {
-    throw "Failed to get dependencies for package ${package.root.path}";
-  }
-  print("\n");
+    if (exitCode != 0) {
+      throw "Formatting failed with exit code $exitCode";
+    }
+    print("\n");
+  });
 }
 
 @visibleForTesting
