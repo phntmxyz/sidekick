@@ -83,8 +83,10 @@ void main() {
 
             await runner.run(['-h']);
 
-            expect(fakeStderr.lines.join('\n'),
-                allOf(expectedCliVersionIntegrityWarnings));
+            expect(
+              fakeStderr.lines.join('\n'),
+              allOf(expectedCliVersionIntegrityWarnings),
+            );
           },
         );
       },

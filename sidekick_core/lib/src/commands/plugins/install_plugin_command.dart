@@ -67,7 +67,7 @@ class InstallPluginCommand extends Command {
           '${gitPath != null ? "plugin in git repository at path '$gitPath'" : ''} '
           '${gitRef != null ? "at git reference '$gitRef'" : ''} '
           '${versionConstraint != null ? '$versionConstraint ' : ''}'
-          'for ${Repository.sidekickPackage!.cliName}'),
+          'for ${SidekickContext.cliName}'),
     );
     env['SIDEKICK_PLUGIN_VERSION_CONSTRAINT'] = versionConstraint;
 
@@ -109,17 +109,20 @@ class InstallPluginCommand extends Command {
       throw "Package directory doesn't exist";
     }
 
-    final pluginName = DartPackage.fromDirectory(pluginInstallerDir)?.name;
-    if (pluginName == null) {
+    final plugin = DartPackage.fromDirectory(pluginInstallerDir);
+    if (plugin == null) {
       throw 'installer package at $pluginInstallerDir is '
           'not a valid dart package';
     }
 
     // The target where to install the plugin
-    final target = Repository.requiredSidekickPackage;
-    final workingDir = target.root.directory('build/plugins/$pluginName');
+    final target = SidekickContext.sidekickPackage;
+    // Important! workingDir has to be within the target package, so it can
+    // lookup information with SidekickContext
+    final workingDir = target.root.directory('build/plugins/${plugin.name}');
 
-    print('Preparing $pluginName installer...');
+    final pluginPubspec = PubSpec.fromFile(plugin.pubspec.absolute.path);
+    print('Preparing ${plugin.name}:${pluginPubspec.version} installer...');
     // copy installer from cache into build dir. We should not manipulate anything in the cache
     if (workingDir.existsSync()) {
       workingDir.deleteSync(recursive: true);
@@ -133,11 +136,17 @@ class InstallPluginCommand extends Command {
     }
 
     // get installer dependencies
-    sidekickDartRuntime.dart(
-      ['pub', 'get'],
-      workingDirectory: workingDir,
-      progress: Progress.printStdErr(),
-    );
+    final capture = Progress.capture();
+    try {
+      sidekickDartRuntime.dart(
+        ['pub', 'get'],
+        workingDirectory: workingDir,
+        progress: capture,
+      );
+    } catch (e) {
+      printerr(red(capture.lines.join('\n')));
+      rethrow;
+    }
 
     final pluginInstallerProtocolVersion = VersionChecker.getResolvedVersion(
       pluginInstallerCode,
@@ -185,7 +194,9 @@ class InstallPluginCommand extends Command {
       }
     }
 
-    print(white('Executing installer $pluginName...'));
+    print(
+      white('Executing installer ${plugin.name}:${pluginPubspec.version}...'),
+    );
     // Execute installer. Requires a tool/install.dart file to execute
     final installScript = workingDir.file('tool/install.dart');
     if (!installScript.existsSync()) {
@@ -197,7 +208,9 @@ class InstallPluginCommand extends Command {
     );
 
     print(
-      green('Installed $pluginName for ${target.cliName}'),
+      green(
+        'Installed ${plugin.name}:${pluginPubspec.version} for ${target.cliName}',
+      ),
     );
 
     // Cleanup

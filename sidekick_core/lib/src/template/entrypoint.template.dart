@@ -22,6 +22,7 @@ while [ -h "$PRG" ]; do
 done
 SAVED="$(pwd)"
 cd "$(dirname "$PRG")/" >/dev/null
+export SIDEKICK_ENTRYPOINT_FILE="${PRG}"
 export SIDEKICK_ENTRYPOINT_HOME="$(pwd -P)"
 cd "$SAVED" >/dev/null
 

@@ -58,6 +58,18 @@ jobs:
         env:
           SIDEKICK_PUB_DEPS: "true"
           SIDEKICK_ANALYZE: "${{ matrix.version == '2.18' }}"
+      - name: Run latest sidekick from pub
+        run: |
+          set -o errexit
+          dart pub global activate sidekick
+          export PATH="$PATH":"$HOME/.pub-cache/bin"
+          mkdir tmp
+          cd tmp
+          sidekick init --cliName dashi --entrypointDirectory . --cliPackageDirectory .
+          ./dashi -h
+          ./dashi sidekick -h
+          ./dashi sidekick plugins install sidekick_vault
+          ./dashi vault -h
 
   integration_tests_windows:
     runs-on: windows-2022

@@ -9,6 +9,7 @@ import 'package:pub_semver/pub_semver.dart';
 import 'package:sidekick_core/src/commands/update_command.dart';
 import 'package:sidekick_core/src/dart_package.dart';
 import 'package:sidekick_core/src/repository.dart';
+import 'package:sidekick_core/src/sidekick_context.dart';
 import 'package:sidekick_core/src/version_checker.dart';
 
 export 'dart:io' hide sleep;
@@ -32,12 +33,14 @@ export 'package:sidekick_core/src/commands/sidekick_command.dart';
 export 'package:sidekick_core/src/dart.dart';
 export 'package:sidekick_core/src/dart_package.dart';
 export 'package:sidekick_core/src/dart_runtime.dart';
+export 'package:sidekick_core/src/directory_ext.dart';
 export 'package:sidekick_core/src/file_util.dart';
 export 'package:sidekick_core/src/flutter.dart';
 export 'package:sidekick_core/src/flutterw.dart';
 export 'package:sidekick_core/src/forward_command.dart';
 export 'package:sidekick_core/src/git.dart';
 export 'package:sidekick_core/src/repository.dart';
+export 'package:sidekick_core/src/sidekick_context.dart' show SidekickContext;
 export 'package:sidekick_core/src/sidekick_package.dart';
 export 'package:sidekick_core/src/template/sidekick_package.template.dart';
 
@@ -52,20 +55,24 @@ final Version version = Version.parse('0.15.1');
 ///
 /// Set [name] to the name of your CLI entrypoint
 ///
+/// All paths are resolved relative to the location of the
+/// [SidekickContext.entryPoint], or absolute.
+///
+/// Set [flutterSdkPath] when you bind a Flutter SDK to this project. This SDK
+/// enables the [flutter] and [dart] commands.
+/// [dartSdkPath] is inherited from [flutterSdkPath]. Set it only for pure Dart
+/// projects.
+/// The paths can either be absolute or relative to the projectRoot (where the
+/// entryPoint is located). I.e. when the entrypoint is in `/Users/foo/project-x/`
+/// set `dartSdkPath = 'third_party/dart-sdk'` to use the Dart SDK in
+/// `/Users/foo/project-x/third_party/dart-sdk`.
+///
 /// [mainProjectPath] should be set when you have a package that you
 /// consider the main package of the whole repository.
-/// When your repository contains only one Flutter package in root set
+/// When your repository contains only one Flutter package in projectRoot set
 /// `mainProjectPath = '.'`.
 /// In a multi package repository you might use the same when the main package
-/// is in root, or `mainProjectPath = 'packages/my_app'` when it is in a subfolder.
-///
-/// Set [flutterSdkPath] when you bind a flutter sdk to this project. This SDK
-/// enables the [flutter] and [dart] commands.
-/// [dartSdkPath] is inherited from [flutterSdkPath]. Set it only for pure dart
-/// projects.
-/// The paths can either be absolute or relative to the project root. (E.g. if
-/// the custom sidekick CLI is at /Users/foo/project-x/packages/custom_sidekick,
-/// relative paths are resolved relative to /Users/foo/project-x)
+/// is in projectRoot, or `mainProjectPath = 'packages/my_app'` when it is in a subfolder.
 SidekickCommandRunner initializeSidekick({
   required String name,
   String? description,
@@ -73,12 +80,118 @@ SidekickCommandRunner initializeSidekick({
   String? flutterSdkPath,
   String? dartSdkPath,
 }) {
-  DartPackage? mainProject;
+  final repoRoot = SidekickContext.repository;
+  final projectRoot = SidekickContext.projectRoot;
 
-  final repo = findRepository();
-  if (mainProjectPath != null) {
-    mainProject =
-        DartPackage.fromDirectory(repo.root.directory(mainProjectPath));
+  /// Migrates a [path] relative to the [SidekickContext.repository] (as it
+  /// was default before sidekick 1.0.0) to a path relative to the
+  /// [SidekickContext.projectRoot]
+  ///
+  /// This usually works because the projectRoot is usually also the repository
+  /// root.
+  /// If the Directory is found in only one resolved location that one is used
+  /// and warning to migrate to paths relative to the projectRoot is printed.
+  /// If the Directory is found in both locations the one relative to the
+  /// projectRoot is returned.
+  Directory? resolveDirectoryBackwardsCompatible(
+    String parameterName,
+    String? path,
+  ) {
+    if (path == null) return null;
+    final fromRepoRoot =
+        repoRoot == null ? null : _resolveSdkPath(path, repoRoot);
+    final fromProjectRoot = _resolveSdkPath(path, projectRoot);
+
+    if (fromRepoRoot == null && fromProjectRoot == null) {
+      throw "Could not find directory $parameterName at '$path'. The resolved path is: ${projectRoot.directory(path).path}";
+    }
+
+    if (fromProjectRoot != null && fromRepoRoot == null) {
+      // path has been migrated, all good
+      return fromProjectRoot;
+    }
+
+    if (fromRepoRoot != null && fromProjectRoot == null) {
+      // Found deprecated path relative to repo root. This is fully working
+      // when inside a git repo.
+      // Show a warning to migrate the path so it will work when not in a git
+      // repo
+      final correctPath = relative(
+        fromRepoRoot.path,
+        from: SidekickContext.projectRoot.path,
+      );
+      printerr(
+        red('$parameterName is defined relative to your git repository. '
+            'Please migrate it to be relative to the ${SidekickContext.cliName} entryPoint at ${SidekickContext.projectRoot}.\n'),
+      );
+      printerr(
+        "Please use the following path:\n"
+        "final runner = initializeSidekick(\n"
+        "  //...\n"
+        "  $parameterName: '$correctPath'\n"
+        ");",
+      );
+      return fromRepoRoot;
+    }
+    printerr('Found $parameterName at both: ${fromRepoRoot!.path} and '
+        '${fromProjectRoot!.path}. Using the latter which is relative '
+        'to the ${SidekickContext.cliName} entryPoint');
+    return fromProjectRoot;
+  }
+
+  DartPackage? mainProject;
+  Directory? flutterSdk;
+  Directory? dartSdk;
+
+  if (repoRoot == null) {
+    // Not in a git repo. This is not a breaking change. Sidekick did not
+    // support project without a git repo, before the migration
+    if (mainProjectPath != null) {
+      mainProject =
+          DartPackage.fromDirectory(projectRoot.directory(mainProjectPath));
+    }
+    flutterSdk = _resolveSdkPath(flutterSdkPath, projectRoot);
+    dartSdk = _resolveSdkPath(dartSdkPath, projectRoot);
+  } else if (canonicalize(repoRoot.path) == canonicalize(projectRoot.path)) {
+    // EntryPoint is in root of repository, we can safely migrate
+    if (mainProjectPath != null) {
+      mainProject =
+          DartPackage.fromDirectory(projectRoot.directory(mainProjectPath));
+    }
+    flutterSdk = _resolveSdkPath(flutterSdkPath, projectRoot);
+    dartSdk = _resolveSdkPath(dartSdkPath, projectRoot);
+  } else {
+    // Detected that repoRoot and projectRoot differ
+    // This is where shit hits the fan. Users have to migrate their paths from
+    // relative to repo-root to relative to project-root
+
+    try {
+      flutterSdk =
+          resolveDirectoryBackwardsCompatible('flutterSdkPath', flutterSdkPath);
+    } catch (e, stack) {
+      throw SdkNotFoundException(
+        flutterSdkPath!,
+        repoRoot,
+        cause: e,
+        causeStackTrace: stack,
+      );
+    }
+    try {
+      dartSdk = resolveDirectoryBackwardsCompatible('dartSdkPath', dartSdkPath);
+    } catch (e, stack) {
+      throw SdkNotFoundException(
+        dartSdkPath!,
+        repoRoot,
+        cause: e,
+        causeStackTrace: stack,
+      );
+    }
+
+    final mainProjectDir =
+        resolveDirectoryBackwardsCompatible('mainProjectPath', mainProjectPath);
+    if (mainProjectDir != null) {
+      mainProject = DartPackage.fromDirectory(mainProjectDir);
+    }
   }
 
   if (flutterSdkPath != null && dartSdkPath != null) {
@@ -87,26 +200,35 @@ SidekickCommandRunner initializeSidekick({
         "Set `dartSdkPath` only for pure dart projects.");
   }
 
+  if (flutterSdkPath != null && flutterSdk?.existsSync() != true) {
+    throw SdkNotFoundException(flutterSdkPath, projectRoot);
+  }
+  if (dartSdkPath != null && dartSdk?.existsSync() != true) {
+    throw SdkNotFoundException(dartSdkPath, projectRoot);
+  }
+  if (mainProjectPath != null && mainProject?.root.existsSync() != true) {
+    throw "mainProjectPath $mainProjectPath couldn't be resolved";
+  }
+
   final runner = SidekickCommandRunner._(
     cliName: name,
     description: description ??
         'A sidekick CLI to equip Dart/Flutter projects with custom tasks',
-    repository: repo,
     mainProject: mainProject,
     workingDirectory: Directory.current,
-    flutterSdk: _resolveSdkPath(flutterSdkPath, repo.root),
-    dartSdk: _resolveSdkPath(dartSdkPath, repo.root),
+    flutterSdk: flutterSdk,
+    dartSdk: dartSdk,
   );
   return runner;
 }
 
 /// A CommandRunner that mounts the sidekick globals
+// ignore: deprecated_member_use_from_same_package
 /// [entryWorkingDirectory], [cliName], [repository], [mainProject].
 class SidekickCommandRunner<T> extends CommandRunner<T> {
   SidekickCommandRunner._({
     required String cliName,
     required String description,
-    required this.repository,
     this.mainProject,
     required this.workingDirectory,
     this.flutterSdk,
@@ -119,7 +241,9 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
     );
   }
 
-  final Repository repository;
+  @Deprecated('Use SidekickContext.projectRoot or SidekickContext.repository')
+  Repository get repository => findRepository();
+
   final DartPackage? mainProject;
   final Directory workingDirectory;
   final Directory? flutterSdk;
@@ -127,13 +251,26 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
 
   /// Mounts the sidekick related globals, returns a function to unmount them
   /// and restore the previous globals
-  Unmount mount() {
+  Unmount mount({String? debugName}) {
     final SidekickCommandRunner? oldRunner = _activeRunner;
+    final SidekickContextCache oldCache = internalSidekickContextCache;
     _activeRunner = this;
+    final newCache = SidekickContextCache(debugName: debugName);
+    internalSidekickContextCache = newCache;
     _entryWorkingDirectory = workingDirectory;
 
     return () {
       _activeRunner = oldRunner;
+      assert(() {
+        final mountedCache = internalSidekickContextCache;
+        if (!identical(mountedCache, newCache)) {
+          throw "Tried to unmount the SidekickContext.cache but the currently "
+              "registered cache $mountedCache@${mountedCache.hashCode} is not the same "
+              "as the one that was mounted $newCache@${newCache.hashCode}.";
+        }
+        return true;
+      }());
+      internalSidekickContextCache = oldCache;
       _entryWorkingDirectory = _activeRunner?.workingDirectory;
     };
   }
@@ -143,28 +280,31 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
     // a new command gets executes, reset whatever exitCode the previous command has set
     exitCode = 0;
 
-    final unmount = mount();
+    final unmount = mount(debugName: args.join(' '));
 
     ArgResults? parsedArgs;
     try {
       parsedArgs = parse(args);
       if (parsedArgs['version'] == true) {
-        print('$cliName is using sidekick version $version');
+        print('${SidekickContext.cliName} is using sidekick version $version');
         return null;
       }
 
       final result = await super.runCommand(parsedArgs);
       return result;
     } finally {
-      if (_isUpdateCheckEnabled && !_isSidekickCliUpdateCommand(parsedArgs)) {
-        // print warning if the user didn't fully update their CLI
-        _checkCliVersionIntegrity();
-        // print warning if CLI update is available
-        // TODO start the update check in the background at command start
-        // TODO prevent multiple update checks when a command start another command
-        await _checkForUpdates();
+      try {
+        if (_isUpdateCheckEnabled && !_isSidekickCliUpdateCommand(parsedArgs)) {
+          // print warning if the user didn't fully update their CLI
+          _checkCliVersionIntegrity();
+          // print warning if CLI update is available
+          // TODO start the update check in the background at command start
+          // TODO prevent multiple update checks when a command start another command
+          await _checkForUpdates();
+        }
+      } finally {
+        unmount();
       }
-      unmount();
     }
   }
 
@@ -172,7 +312,7 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
   Future<void> _checkForUpdates() async {
     try {
       final updateFuture = VersionChecker.isDependencyUpToDate(
-        package: Repository.requiredSidekickPackage,
+        package: SidekickContext.sidekickPackage,
         dependency: 'sidekick_core',
         pubspecKeys: ['sidekick', 'cli_version'],
       );
@@ -181,7 +321,7 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
       if (!isUpToDate) {
         printerr(
           '${yellow('Update available!')}\n'
-          'Run ${cyan('$cliName sidekick update')} to update your CLI.',
+          'Run ${cyan('${SidekickContext.cliName} sidekick update')} to update your CLI.',
         );
       }
     } catch (_) {
@@ -195,7 +335,7 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
   void _checkCliVersionIntegrity() {
     try {
       final sidekickCoreVersion = VersionChecker.getMinimumVersionConstraint(
-        Repository.requiredSidekickPackage,
+        SidekickContext.sidekickPackage,
         ['dependencies', 'sidekick_core'],
       );
       if (sidekickCoreVersion == null) {
@@ -205,7 +345,7 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
       }
 
       final sidekickCliVersion = VersionChecker.getMinimumVersionConstraint(
-        Repository.requiredSidekickPackage,
+        SidekickContext.sidekickPackage,
         ['sidekick', 'cli_version'],
       );
       if (sidekickCliVersion == null) {
@@ -220,7 +360,7 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
           "doesn't match sidekick.cli_version ${sidekickCliVersion.canonicalizedVersion} in your pubspec.yaml.\n"
           "This is a signal that sidekick_core was updated manually without calling 'sidekick update'. "
           "Some features in your CLI might not work as expected.\n\n"
-          'Please run ${cyan('$cliName sidekick update')} to execute the missing migrations.',
+          'Please run ${cyan('${SidekickContext.cliName} sidekick update')} to execute the missing migrations.',
         );
       }
     } catch (e, s) {
@@ -296,6 +436,7 @@ String get cliName {
 String? get cliNameOrNull => _activeRunner?.executableName;
 
 /// The root of the repository which contains all projects
+@Deprecated('Use SidekickContext.projectRoot or SidekickContext.repository')
 Repository get repository {
   if (_activeRunner == null) {
     throw OutOfCommandRunnerScopeException('repository');
@@ -340,10 +481,17 @@ Directory? get dartSdk {
 /// The Dart or Flutter SDK path is set in [initializeSidekick],
 /// but the directory doesn't exist
 class SdkNotFoundException implements Exception {
-  SdkNotFoundException(this.sdkPath, this.repoRoot);
+  SdkNotFoundException(
+    this.sdkPath,
+    this.repoRoot, {
+    this.cause,
+    this.causeStackTrace,
+  });
 
   final String sdkPath;
   final Directory repoRoot;
+  final Object? cause;
+  final StackTrace? causeStackTrace;
 
   late final String message =
       "Dart or Flutter SDK set to '$sdkPath', but that directory doesn't exist. "
@@ -353,7 +501,13 @@ class SdkNotFoundException implements Exception {
 
   @override
   String toString() {
-    return "SdkNotFoundException{message: $message}";
+    return [
+      "SdkNotFoundException{",
+      "message: $message",
+      if (cause != null) "cause: $cause",
+      if (causeStackTrace != null) "cause stack:\n$causeStackTrace",
+      "}",
+    ].join('\n');
   }
 }
 
@@ -379,7 +533,7 @@ Directory? _resolveSdkPath(String? sdkPath, Directory repoRoot) {
       .absolute;
 
   if (!resolvedDir.existsSync()) {
-    throw SdkNotFoundException(sdkPath, repoRoot);
+    return null;
   }
 
   return resolvedDir;

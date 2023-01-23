@@ -19,24 +19,60 @@ class ReleaseCommand extends Command {
 
   @override
   Future<void> run() async {
-    final package = DartPackage.fromArgResults(argResults!);
+    print("Initializing package release routine");
 
     // disable update check
     env['SIDEKICK_ENABLE_UPDATE_CHECK'] = 'false';
+    // get all tags from origin for correct divs
+    'git fetch -t'.run;
 
-    print('Hey ${_getGitUserName() ?? 'developer'}, '
-        'you started the release process for package:${package.name}.');
-    final proceed = confirm(
-      'Do you want to release a new version?',
-      defaultValue: false,
-    );
-    if (!proceed) {
-      exitCode = 1;
-      return;
+    print('Hey ${_getGitUserName() ?? 'developer'}, ');
+    sleep(400, interval: Interval.milliseconds);
+    print('let ship a new version to our users!');
+    sleep(2);
+    print('');
+
+    DartPackage? package = () {
+      try {
+        return DartPackage.fromArgResults(argResults!);
+      } catch (e) {
+        return null;
+      }
+    }();
+
+    if (package == null) {
+      print(green('Which package do you want to release?'));
+      package = dcli.menu(
+        prompt: 'Select package',
+        options: [
+          skProject.sidekickPackage,
+          skProject.sidekickCorePackage,
+          skProject.sidekickPluginInstallerPackage,
+          skProject.sidekickVaultPackage,
+        ],
+        format: (p) => p?.name ?? 'None',
+      );
     } else {
-      print(' ');
+      print('Do you want to release a new version for '
+          '${green('package:${package.name}')}?');
+      final proceed = confirm('Proceed?', defaultValue: false);
+      if (!proceed) {
+        exitCode = 1;
+        return;
+      } else {
+        print(' ');
+      }
     }
+    if (package == null) throw StateError('no package selected');
 
+    sleep(400, interval: Interval.milliseconds);
+    print('Starting release workflow for package:${package.name}.');
+    sleep(400, interval: Interval.milliseconds);
+    print(' ');
+    await _releasePackage(package);
+  }
+
+  Future<void> _releasePackage(DartPackage package) async {
     _warnIfNotOnDefaultBranch(package.root);
 
     while (_gitRepoHasChangesIn(package.root)) {
@@ -110,7 +146,8 @@ ${changelog.readAsStringSync().replaceFirst('# Changelog', '').trimLeft()}''');
     "git add -A ${skProject.skSidekickPackage.root.path}/pubspec.lock"
         .runInRepo;
     'git commit -m "Prepare release $tag"'.runInRepo;
-    final newChangelogAndVersionBranch = _getCurrentBranch(repository.root);
+    final newChangelogAndVersionBranch =
+        _getCurrentBranch(SidekickContext.repository!);
 
     final bool lock = package == skProject.sidekickPackage;
     if (lock) {
@@ -192,13 +229,7 @@ ${changelog.readAsStringSync().replaceFirst('# Changelog', '').trimLeft()}''');
 
     dcli.startFromArgs(
       'gh',
-      [
-        'release',
-        'create',
-        'sidekick_core-v0.15.0',
-        '--notes',
-        '"$nextReleaseChangelog"'
-      ],
+      ['release', 'create', tag, '--notes', '"$nextReleaseChangelog"'],
       terminal: true,
       workingDirectory: package.root.path,
       nothrow: true,
@@ -248,6 +279,7 @@ ${changelog.readAsStringSync().replaceFirst('# Changelog', '').trimLeft()}''');
     if (packageChanges.isEmpty) {
       return "No commits found since last release";
     }
+    sleep(1);
     print('Found ${packageChanges.length} commits since last release');
 
     // also check sidekick_core updates
@@ -271,6 +303,7 @@ Full diff: https://github.com/phntmxyz/sidekick/compare/$currentPackageVersionTa
 $initialChangelog
 ''');
 
+    sleep(1);
     print('''
 Created changelog file ${relative(nextReleaseChangelog.path)}.
 
@@ -278,6 +311,7 @@ Created changelog file ${relative(nextReleaseChangelog.path)}.
 Please follow the instructions in the auto-generated ${relative(nextReleaseChangelog.path)} header.
 You can continue once you completed all steps.
 ''');
+    sleep(1);
 
     final editor = Platform.environment['EDITOR'];
     if (editor == null) {
@@ -288,6 +322,7 @@ You can continue once you completed all steps.
       );
     } else {
       print("Opening ${relative(nextReleaseChangelog.path)} with $editor ...");
+      sleep(300, interval: Interval.milliseconds);
       '$editor ${nextReleaseChangelog.path}'.start(nothrow: true);
     }
 
@@ -318,7 +353,8 @@ You can continue once you completed all steps.
   String? _getMinSidekickCoreVersion(String pubspec) {
     final doc = loadYamlDocument(pubspec);
     final ps = doc.contents.value as YamlMap;
-    final constraint = ps['dependencies']['sidekick_core'] as String?;
+    final constraint =
+        (ps['dependencies'] as YamlMap)['sidekick_core'] as String?;
     if (constraint == null) {
       return null;
     }
@@ -369,7 +405,7 @@ bool _gitRepoHasChangesIn(Directory directory) =>
     'git status --porcelain ${directory.path}'
         .start(
           progress: Progress.capture(),
-          workingDirectory: repository.root.path,
+          workingDirectory: SidekickContext.repository!.path,
         )
         .lines
         .isNotEmpty;
@@ -471,5 +507,11 @@ extension on DartPackage {
 }
 
 extension on String {
-  void get runInRepo => start(workingDirectory: repository.root.path);
+  void get runInRepo {
+    assert(
+      SidekickContext.repository != null,
+      'Release command must be run in a repository',
+    );
+    start(workingDirectory: SidekickContext.repository!.path);
+  }
 }

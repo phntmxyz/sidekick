@@ -8,6 +8,7 @@ final fixUsageMessage157Patches = [
 
 final _gitPatch1 = MigrationStep.gitPatch(
   _patch1,
+  workingDirectory: () => SidekickContext.sidekickPackage.root,
   description: 'Fix usage message (1/2)',
   pullRequestLink: 'https://github.com/phntmxyz/sidekick/pull/157',
   targetVersion: Version(0, 13, 2),
@@ -15,8 +16,8 @@ final _gitPatch1 = MigrationStep.gitPatch(
 
 String _patch1() {
   final cliMainFilePath = relative(
-    Repository.requiredSidekickPackage.cliMainFile.absolute.path,
-    from: findRepository().root.path,
+    SidekickContext.sidekickPackage.cliMainFile.absolute.path,
+    from: SidekickContext.sidekickPackage.root.path,
   );
 
   return '''
@@ -38,6 +39,7 @@ Subject: [PATCH] print all information on UsageException
 
 final _gitPatch2 = MigrationStep.gitPatch(
   _patch2,
+  workingDirectory: () => SidekickContext.sidekickPackage.root,
   description: 'Fix usage message (2/2)',
   pullRequestLink: 'https://github.com/phntmxyz/sidekick/pull/157',
   targetVersion: Version(0, 13, 2),
@@ -45,8 +47,8 @@ final _gitPatch2 = MigrationStep.gitPatch(
 
 String _patch2() {
   final cliMainFilePath = relative(
-    Repository.requiredSidekickPackage.cliMainFile.absolute.path,
-    from: findRepository().root.path,
+    SidekickContext.sidekickPackage.cliMainFile.absolute.path,
+    from: SidekickContext.sidekickPackage.root.path,
   );
 
   return '''

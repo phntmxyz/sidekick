@@ -1,3 +1,4 @@
+import 'package:dcli/dcli.dart' as dcli;
 import 'package:sidekick_core/sidekick_core.dart'
     hide cliName, repository, mainProject;
 import 'package:sidekick_plugin_installer/sidekick_plugin_installer.dart';
@@ -5,50 +6,59 @@ import 'package:sidekick_plugin_installer/sidekick_plugin_installer.dart';
 Future<void> main() async {
   final SidekickPackage package = PluginContext.sidekickPackage;
 
-  if (PluginContext.localPlugin == null) {
-    pubAddDependency(package, 'sidekick_vault');
-  } else {
-    // For local development
-    pubAddLocalDependency(package, PluginContext.localPlugin!.root.path);
-  }
+  final repoRoot = findRepository().root;
+  print('${green('Where do you want to create the vault directory?')} '
+      '(Relative to ${repoRoot.path})');
+  final vaultPath = dcli.ask(
+    'vault path:',
+    validator: _IsWithinDirectoryValidator(repoRoot),
+    defaultValue:
+        relative(repoRoot.directory('vault').path, from: repoRoot.path),
+  );
+  final vaultDir = repoRoot.directory(vaultPath);
+
+  print("- Adding sidekick_vault as dependency");
+  addSelfAsDependency();
   pubGet(package);
 
-  _writeVaultFile(package);
+  print("- Generating package:${package.name}/src/vault.dart");
+  _writeVaultFile(vaultDir, package);
   addImport(
     package.libDir.file('${package.name}.dart'),
     "import 'package:${package.name}/src/vault.dart';",
   );
 
+  print("- Adding vault command");
   registerPlugin(
     sidekickCli: package,
     import: "import 'package:sidekick_vault/sidekick_vault.dart';",
     command: 'VaultCommand(vault: vault)',
   );
-  _createVaultFolder(package);
 
-  print(_usage(package));
+  print("- Creating vault at ${vaultDir.path}");
+  _createVaultFolder(vaultDir, package);
+
+  print(_usage(relative(vaultDir.path), package));
 }
 
-void _writeVaultFile(SidekickPackage package) {
+void _writeVaultFile(Directory vault, SidekickPackage package) {
   final vaultFile = package.root.file('lib/src/vault.dart');
+  final vaultDirRelativeToPackage =
+      relative(vault.path, from: package.root.path);
 
   final cliName = package.cliName;
   vaultFile.writeAsStringSync('''
-import 'package:sidekick_vault/sidekick_vault.dart';
-
-import 'package:${cliName}_sidekick/${cliName}_sidekick.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_vault/sidekick_vault.dart';
 
 final SidekickVault vault = SidekickVault(
-  location: ${cliName}Project.root.directory('vault'),
+  location: Repository.requiredSidekickPackage.root.directory('$vaultDirRelativeToPackage'),
   environmentVariableName: '${cliName.toUpperCase()}_VAULT_PASSPHRASE',
 );
-  ''');
+''');
 }
 
-void _createVaultFolder(SidekickPackage package) {
-  final folder = package.root.directory('vault');
+void _createVaultFolder(Directory folder, SidekickPackage package) {
   if (!folder.existsSync()) {
     folder.createSync();
   }
@@ -98,14 +108,14 @@ ${package.cliName} vault decrypt file.csv.gpg
   }
 }
 
-String _usage(SidekickPackage package) => """
+String _usage(String vaultPath, SidekickPackage package) => """
 
 ${white('vault usage:')}
 
   ${white('Add item to vault:')}
-    \$ ${package.cliName} vault add ~/Downloads/my_secret.txt
+    \$ ${package.cliName} vault encrypt ~/Downloads/my_secret.txt
     
-    => File is saved as ${package.name}/vault/my_secret.txt.gpg
+    => File is saved as $vaultPath/my_secret.txt.gpg
   
   ${white('Use secret in code:')}
     ```dart
@@ -117,3 +127,18 @@ ${white('vault usage:')}
     => CLI will prompt for the password
        or reads the value of env.${package.cliName.toUpperCase()}_VAULT_PASSPHRASE
 """;
+
+class _IsWithinDirectoryValidator extends dcli.AskValidator {
+  final Directory directory;
+
+  _IsWithinDirectoryValidator(this.directory);
+
+  @override
+  String validate(String line) {
+    final dir = Directory(line);
+    if (!dir.isWithin(directory)) {
+      throw AskValidatorException('Not within ${directory.path}');
+    }
+    return line;
+  }
+}
