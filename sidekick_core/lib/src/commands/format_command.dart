@@ -105,7 +105,7 @@ class FormatCommand extends Command {
           .whereType<File>()
           .filter((file) => file.extension == '.dart')
           .filter(
-            (file) => !file.uri.pathSegments.none(
+            (file) => file.uri.pathSegments.none(
               (element) => element.startsWith('.'),
             ),
           )
@@ -182,7 +182,7 @@ void _format(
         'format',
         '-l',
         '${entry.key}',
-        entry.value.map((file) => file.path).join(' '),
+        ...entry.value.map((file) => file.path),
         if (verify) '--set-exit-if-changed',
       ],
     );
