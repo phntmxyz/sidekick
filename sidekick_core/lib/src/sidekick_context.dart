@@ -182,10 +182,10 @@ class SidekickContext {
     return discovery.entryPoint;
   }
 
-  /// Searches the folder structure upwards from the [DartScript.self], scanning for the
-  /// [SidekickPackage] and the [EntryPoint].
+  /// Searches the folder structure upwards from the [DartScript.self], scanning
+  /// for the [SidekickPackage] and the [entryPoint].
   /// [DartScript.self] is guaranteed to be a inside [SidekickPackage].
-  /// [SidekickPackage] is guaranteed to be inside parent of [EntryPoint].
+  /// [SidekickPackage] is guaranteed to be inside parent of [entryPoint].
   static _ProjectDiscoveryResult _discoverProject({
     SidekickPackage? knownSidekickPackage,
   }) {

@@ -31,11 +31,14 @@ class NameSuggester {
       return null;
     }
     if (answer == names.last) {
-      return dcli.ask(
-        'Enter your CLI name',
+      final manualName = dcli.ask(
+        'Enter your CLI name:',
         validator: const CliNameValidator(),
       );
+      print('');
+      return manualName;
     } else {
+      print('');
       return answer;
     }
   }

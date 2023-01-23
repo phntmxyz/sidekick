@@ -51,50 +51,58 @@ class InitCommand extends Command {
       "Welcome to sidekick. You're about to initialize a sidekick project\n",
     );
 
-    final entrypointDir = Directory(
+    final projectRoot = Directory(
       argResults!['entrypointDirectory'] as String? ??
           argResults!.rest.firstOrNull ??
-          dcli.ask(
-            '\nEnter the directory in which the entrypoint script should be created.\n'
-            'Or press enter to use the current directory.\n',
-            validator: const DirectoryExistsValidator(),
-            defaultValue: Directory.current.path,
-          ),
+          () {
+            print(
+              '${green('Enter the directory in which the entrypoint script should be created.')}\n'
+              'Or press enter to use the current directory.',
+            );
+            final answer = dcli.ask(
+              'Set entrypoint directory:',
+              validator: const DirectoryExistsValidator(),
+              defaultValue: Directory.current.path,
+            );
+            print('');
+            return answer;
+          }(),
     ).canonicalized;
-    if (!entrypointDir.existsSync()) {
-      throw 'Entrypoint directory ${entrypointDir.path} does not exist';
+    if (!projectRoot.existsSync()) {
+      throw 'Entrypoint directory ${projectRoot.path} does not exist';
     }
-
-    bool isGitDir(Directory dir) => dir.directory('.git').existsSync();
-    final repoRoot = entrypointDir.findParent(isGitDir) ?? entrypointDir;
 
     final cliPackageDir = Directory(
       argResults!['cliPackageDirectory'] as String? ??
-          dcli.ask(
-            '\nEnter the directory in which the CLI package should be created.\n'
-            'Must be an absolute path or a path '
-            'relative to the repository root (${entrypointDir.path}).\n'
-            'Or press enter to use the suggested directory.\n',
-            validator: DirectoryIsWithinOrEqualValidator(repoRoot),
-            defaultValue: repoRoot.directory('packages').path,
-          ),
+          () {
+            print(
+              '${green('Enter the directory in which the CLI package should be created.')}\n'
+              'Must be an absolute path or a path '
+              'relative to the repository root (${projectRoot.path}).\n'
+              'Or press enter to use the suggested directory.\n',
+            );
+            final answer = dcli.ask(
+              'Set CLI package directory:',
+              validator: DirectoryIsWithinOrEqualValidator(projectRoot),
+              defaultValue: projectRoot.directory('packages').path,
+            );
+            print('');
+            return answer;
+          }(),
     );
-    if (!cliPackageDir.isWithinOrEqual(repoRoot)) {
-      throw 'CLI package directory ${cliPackageDir.path} is not within or equal to ${repoRoot.path}';
+    if (!cliPackageDir.isWithinOrEqual(projectRoot)) {
+      throw 'CLI package directory ${cliPackageDir.path} is not within or equal to ${projectRoot.path}';
     }
 
     final mainProjectPath = argResults!['mainProjectPath'] as String?;
     DartPackage? mainProject = mainProjectPath != null
-        ? DartPackage.fromDirectory(
-            Directory(mainProjectPath),
-          )
-        : (DartPackage.fromDirectory(entrypointDir) ??
-            DartPackage.fromDirectory(repoRoot));
+        ? DartPackage.fromDirectory(Directory(mainProjectPath))
+        : DartPackage.fromDirectory(projectRoot);
     if (mainProjectPath != null && mainProject == null) {
       throw 'mainProjectPath was given, but no DartPackage could be found at the given path $mainProjectPath';
     }
-    if (mainProject != null && !mainProject.root.isWithinOrEqual(repoRoot)) {
-      throw 'Main project ${mainProject.root.path} is not within or equal to ${repoRoot.path}';
+    if (mainProject != null && !mainProject.root.isWithinOrEqual(projectRoot)) {
+      throw 'Main project ${mainProject.root.path} is not within or equal to ${projectRoot.path}';
     }
 
     final cliName = argResults!['cliName'] as String? ??
@@ -103,7 +111,7 @@ class InitCommand extends Command {
             '${dcli.green('Please select a name for your sidekick CLI.')}\n'
             'We know, selecting a name is hard. Here are some suggestions:',
           );
-          final suggester = NameSuggester(projectDir: repoRoot);
+          final suggester = NameSuggester(projectDir: projectRoot);
           final name = suggester.askUserForName();
           if (name == null) {
             throw 'No cliName provided. Call `sidekick init --cliName <your-name>`';
@@ -121,9 +129,9 @@ class InitCommand extends Command {
       throw 'The CLI name $cliName is already taken by an executable on your system see $cliNameCollisions';
     }
 
-    print("\nGenerating ${cliName}_sidekick");
+    print("\n${green("Generating ${cliName}_sidekick")}");
 
-    final packages = Repository(root: repoRoot).findAllPackages();
+    final packages = Repository(root: projectRoot).findAllPackages();
 
     if (mainProject == null && packages.isNotEmpty) {
       // Ask user for a main project (optional)
@@ -140,34 +148,71 @@ class InitCommand extends Command {
 
     await createSidekickPackage(
       cliName: cliName,
-      repoRoot: repoRoot,
+      projectRoot: projectRoot,
       packageDir: cliPackageDir,
-      entrypointDir: entrypointDir,
+      entrypointDir: projectRoot,
       mainProject: mainProject,
       packages: packages,
+    );
+    print("Code generation successful");
+
+    final entrypoint = projectRoot.file(cliName);
+
+    // Install flutterw when a Flutter project is detected
+    final flutterPackages = [if (mainProject != null) mainProject, ...packages]
+        .filter((package) => package.isFlutterPackage)
+        .toList();
+
+    if (flutterPackages.isNotEmpty) {
+      print(
+          'Sidekick detected (${flutterPackages.length}) Flutter packages in your project.\n');
+      print(
+        "It's recommended to bind an exact Flutter version to your project "
+        "and share the same version with your coworkers and CI. There are two ways to accomplish this:\n"
+        " - Use FVM (https://fvm.app/)\n"
+        " - Use flutterw (https://github.com/passsy/flutter_wrapper)\n",
+      );
+
+      print(
+        dcli.green(
+          'Do you want pin the Flutter version of this project with flutterw?',
+        ),
+      );
+      final confirmFlutterwInstall = dcli.confirm(
+        'Install flutterw_sidekick_plugin?',
+        defaultValue: false,
+      );
+      if (confirmFlutterwInstall) {
+        "${entrypoint.path} sidekick plugins install flutterw_sidekick_plugin"
+            .run;
+      }
+    }
+
+    print(
+      'Your sidekick CLI ${dcli.green(cliName)} has been successfully created! 🎉',
     );
   }
 
   /// Generates a custom sidekick CLI
   ///
   /// Required parameters:
-  ///   [repoRoot] - parent of the .git directory
+  ///   [projectRoot] - parent of the .git directory
   ///   [packageDir] - directory in which the sidekick cli package will be created
   ///   [entrypointDir] - directory in which entrypoint.sh will be created
   ///
   /// Optional parameters:
   ///   [mainProject] - primary project directory (usually an app which depends on all other packages)
-  ///   [packages] - list of all packages in the [repoRoot]
+  ///   [packages] - list of all packages in the [projectRoot]
   Future<void> createSidekickPackage({
     required String cliName,
-    required Directory repoRoot,
+    required Directory projectRoot,
     required Directory packageDir,
     required Directory entrypointDir,
     DartPackage? mainProject,
     List<DartPackage> packages = const [],
   }) async {
     // init git, required for flutterw
-    await gitInit(repoRoot);
+    await gitInit(projectRoot);
 
     final Directory cliPackage = packageDir.directory('${cliName}_sidekick');
 
@@ -175,9 +220,9 @@ class InitCommand extends Command {
     final props = SidekickTemplateProperties(
       name: cliName,
       mainProjectPath: mainProject != null
-          ? relative(mainProject.root.path, from: repoRoot.absolute.path)
+          ? relative(mainProject.root.path, from: projectRoot.absolute.path)
           : null,
-      shouldSetFlutterSdkPath: Repository(root: repoRoot)
+      shouldSetFlutterSdkPath: Repository(root: projectRoot)
           .findAllPackages()
           .any((package) => package.isFlutterPackage),
       entrypointLocation: entrypoint,
@@ -186,39 +231,22 @@ class InitCommand extends Command {
     );
     SidekickTemplate().generate(props);
 
-    // Install flutterw when a Flutter project is detected
-    final flutterPackages = [if (mainProject != null) mainProject, ...packages]
-        .filter((package) => package.isFlutterPackage);
-
-    if (flutterPackages.isNotEmpty) {
-      print('We detected Flutter packages in your project:');
-      for (final package in flutterPackages) {
-        print('  - ${package.name} '
-            'at ${relative(package.root.path, from: repoRoot.absolute.path)}');
-      }
-
-      print('\n\n'
-          '${dcli.green('Do you want pin the Flutter version of this project with flutterw?\n')}'
-          'https://github.com/passsy/flutter_wrapper\n\n'
-          'This allows you to use the `$cliName dart` and `$cliName flutter` commands\n');
-      final confirmFlutterwInstall = dcli.confirm(
-        'Install flutterw?',
-        defaultValue: false,
-      );
-      if (confirmFlutterwInstall) {
-        await installFlutterWrapper(entrypointDir);
-      }
-    }
-
     // Download the bundled dart runtime for the CLI
     final bundledDart = (SidekickDartRuntime(cliPackage)..download()).dart;
 
-    // TODO add --offline flag that does not upgrade anything
     // make sure sidekick_core is up-to-date
-    bundledDart(
-      ['pub', 'upgrade', 'sidekick_core'],
-      workingDirectory: cliPackage,
-    );
+    final errorCapture = Progress.capture();
+    try {
+      bundledDart(
+        ['pub', 'upgrade', 'sidekick_core'],
+        workingDirectory: cliPackage,
+        progress: errorCapture,
+      );
+    } catch (e) {
+      // print only in case of error
+      printerr(red(errorCapture.lines.join('\n')));
+      rethrow;
+    }
 
     bundledDart(
       ['format', cliPackage.path],
@@ -244,16 +272,4 @@ Future<void> gitInit(Directory directory) async {
   stdout.addStream(process.stdout);
   stderr.addStream(process.stderr);
   await process.exitCode;
-}
-
-/// Installs the [flutter_wrapper](https://github.com/passsy/flutter_wrapper) in
-/// [directory] using the provided install script
-Future<File> installFlutterWrapper(Directory directory) async {
-  writeAndRunShellScript(
-    r'sh -c "$(curl -fsSL https://raw.githubusercontent.com/passsy/flutter_wrapper/master/install.sh)"',
-    workingDirectory: directory,
-  );
-  final exe = directory.file('flutterw');
-  assert(exe.existsSync());
-  return exe;
 }
