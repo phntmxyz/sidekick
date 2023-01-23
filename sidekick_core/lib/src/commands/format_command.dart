@@ -66,7 +66,6 @@ class FormatCommand extends Command {
     final bool verify = argResults?['verify'] as bool? ?? false;
 
     final List<DartPackage> allPackages = repository.findAllPackages();
-
     if (packageName != null) {
       final package =
           allPackages.where((it) => it.name == packageName).firstOrNull;
@@ -150,17 +149,28 @@ class FormatCommand extends Command {
     // exclude files from excludeGlob
     final root = repository.root.path;
     final excludedFiles = excludeGlob.expand(
-        (rule) => Glob("$root/$rule").listSync(root: root).whereType<File>());
+      (rule) => Glob("$root/$rule").listSync(root: root).whereType<File>(),
+    );
     for (final files in lineLengthsAndFiles.values) {
-      files.removeWhere((file) =>
-          excludedFiles.any((excludedFile) => file.path == excludedFile.path));
+      files.removeWhere(
+        (file) =>
+            excludedFiles.any((excludedFile) => file.path == excludedFile.path),
+      );
     }
 
-    _format(lineLengthsAndFiles);
+    if (lineLength != null) {
+      final tempMap = [...lineLengthsAndFiles.values];
+      lineLengthsAndFiles.clear();
+      (lineLengthsAndFiles[lineLength] ??= []).addAll(tempMap.expand((e) => e));
+    }
+    _format(lineLengthsAndFiles, verify: verify);
   }
 }
 
-void _format(Map<int, Iterable<File>> filesWithLineLength) {
+void _format(
+  Map<int, Iterable<File>> filesWithLineLength, {
+  bool verify = false,
+}) {
   for (final entry in filesWithLineLength.entries) {
     final exitCode = dart(
       [
@@ -170,6 +180,9 @@ void _format(Map<int, Iterable<File>> filesWithLineLength) {
         ...entry.value.map(
           (e) => e.path,
         ),
+        '-o',
+        if (verify) 'none' else 'write',
+        '--fix',
       ],
     );
     if (exitCode != 0) {
