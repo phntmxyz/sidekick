@@ -147,6 +147,15 @@ class FormatCommand extends Command {
       (lineLengthsAndFiles[lineLength] ??= []).addAll(allFilesInPackage);
     }
 
+    // exclude files from excludeGlob
+    final root = repository.root.path;
+    final excludedFiles = excludeGlob.expand(
+        (rule) => Glob("$root/$rule").listSync(root: root).whereType<File>());
+    for (final files in lineLengthsAndFiles.values) {
+      files.removeWhere((file) =>
+          excludedFiles.any((excludedFile) => file.path == excludedFile.path));
+    }
+
     _format(lineLengthsAndFiles);
   }
 }
