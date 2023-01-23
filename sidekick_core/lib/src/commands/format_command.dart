@@ -102,8 +102,11 @@ class FormatCommand extends Command {
           .listSync(recursive: true)
           .whereType<File>()
           .filter((file) => file.extension == '.dart')
-          .filter((file) => !file.path.contains('/.dart_tool/'))
-          .filter((file) => !file.path.contains('/.symlinks/'));
+          .filter(
+            (file) => file.uri.pathSegments.none(
+              (element) => element.startsWith('.'),
+            ),
+          );
       final allFilesInPackage = allFilesInPackageWIP.filter((file) {
         // exclude files from packages nested inside the current package
         //
