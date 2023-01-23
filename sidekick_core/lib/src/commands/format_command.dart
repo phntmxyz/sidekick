@@ -65,9 +65,8 @@ class FormatCommand extends Command {
         int.tryParse(argResults?['line-length'] as String? ?? '');
     final bool verify = argResults?['verify'] as bool? ?? false;
 
-    final List<DartPackage> allPackages = findAllPackages(
-      SidekickContext.repository ?? SidekickContext.projectRoot,
-    );
+    final root = SidekickContext.repository ?? SidekickContext.projectRoot;
+    final List<DartPackage> allPackages = findAllPackages(root);
     if (packageName != null) {
       final package =
           allPackages.where((it) => it.name == packageName).firstOrNull;
@@ -152,9 +151,10 @@ class FormatCommand extends Command {
     }
 
     // exclude files from excludeGlob
-    final root = SidekickContext.repository?.path;
     final excludedFiles = excludeGlob.expand(
-      (rule) => Glob("$root/$rule").listSync(root: root).whereType<File>(),
+      (rule) => Glob("${root.path}/$rule")
+          .listSync(root: root.path)
+          .whereType<File>(),
     );
     for (final files in lineLengthsAndFiles.values) {
       files.removeWhere(
