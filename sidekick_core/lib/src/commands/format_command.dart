@@ -65,13 +65,15 @@ class FormatCommand extends Command {
         int.tryParse(argResults?['line-length'] as String? ?? '');
     final bool verify = argResults?['verify'] as bool? ?? false;
 
-    final List<DartPackage> allPackages = repository.findAllPackages();
+    final List<DartPackage> allPackages = findAllPackages(
+      SidekickContext.repository ?? SidekickContext.projectRoot,
+    );
     if (packageName != null) {
       final package =
           allPackages.where((it) => it.name == packageName).firstOrNull;
       if (package == null) {
         throw "Package with name $packageName not found in repository "
-            "${repository.root.path}";
+            "${SidekickContext.projectRoot.path}";
       }
       // only format for selected package
       // _format(package, globalLineLength: lineLength);
@@ -80,7 +82,7 @@ class FormatCommand extends Command {
     final globExcludes = excludeGlob
         .expand((rule) {
           // start search at repo root
-          final root = repository.root.path;
+          final root = SidekickContext.projectRoot.path;
           return Glob("$root/$rule").listSync(root: root);
         })
         .whereType<Directory>()
@@ -103,7 +105,7 @@ class FormatCommand extends Command {
           .whereType<File>()
           .filter((file) => file.extension == '.dart')
           .filter(
-            (file) => file.uri.pathSegments.none(
+            (file) => !file.uri.pathSegments.none(
               (element) => element.startsWith('.'),
             ),
           );
@@ -150,7 +152,7 @@ class FormatCommand extends Command {
     }
 
     // exclude files from excludeGlob
-    final root = repository.root.path;
+    final root = SidekickContext.projectRoot.path;
     final excludedFiles = excludeGlob.expand(
       (rule) => Glob("$root/$rule").listSync(root: root).whereType<File>(),
     );
