@@ -211,9 +211,6 @@ class InitCommand extends Command {
     DartPackage? mainProject,
     List<DartPackage> packages = const [],
   }) async {
-    // init git, required for flutterw
-    await gitInit(projectRoot);
-
     final Directory cliPackage = packageDir.directory('${cliName}_sidekick');
 
     final entrypoint = entrypointDir.file(cliName.snakeCase);
@@ -253,23 +250,4 @@ class InitCommand extends Command {
       progress: dcli.Progress.printStdErr(),
     );
   }
-}
-
-/// Initializes git via `git init` in [directory]
-Future<void> gitInit(Directory directory) async {
-  final bool inGitDir = Process.runSync(
-        'git',
-        ['rev-parse', '--git-dir'],
-        workingDirectory: directory.path,
-      ).exitCode ==
-      0;
-  if (inGitDir) {
-    // no need to initialize
-    return;
-  }
-  final Process process =
-      await Process.start('git', ['init'], workingDirectory: directory.path);
-  stdout.addStream(process.stdout);
-  stderr.addStream(process.stderr);
-  await process.exitCode;
 }
