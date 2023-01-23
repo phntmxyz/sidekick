@@ -73,7 +73,7 @@ class FormatCommand extends Command {
           allPackages.where((it) => it.name == packageName).firstOrNull;
       if (package == null) {
         throw "Package with name $packageName not found in repository "
-            "${SidekickContext.projectRoot.path}";
+            "${SidekickContext.repository?.path}";
       }
       // only format for selected package
       // _format(package, globalLineLength: lineLength);
@@ -82,7 +82,7 @@ class FormatCommand extends Command {
     final globExcludes = excludeGlob
         .expand((rule) {
           // start search at repo root
-          final root = SidekickContext.projectRoot.path;
+          final root = SidekickContext.repository?.path;
           return Glob("$root/$rule").listSync(root: root);
         })
         .whereType<Directory>()
@@ -100,7 +100,7 @@ class FormatCommand extends Command {
     for (final package
         in allPackages.filter((package) => !excluded.contains(package))) {
       final lineLength = getLineLength(package);
-      final allFilesInPackageWIP = package.root
+      final allFilesInPackage = package.root
           .listSync(recursive: true)
           .whereType<File>()
           .filter((file) => file.extension == '.dart')
@@ -108,8 +108,8 @@ class FormatCommand extends Command {
             (file) => !file.uri.pathSegments.none(
               (element) => element.startsWith('.'),
             ),
-          );
-      final allFilesInPackage = allFilesInPackageWIP.filter((file) {
+          )
+          .filter((file) {
         // exclude files from packages nested inside the current package
         //
         // e.g.
@@ -152,7 +152,7 @@ class FormatCommand extends Command {
     }
 
     // exclude files from excludeGlob
-    final root = SidekickContext.projectRoot.path;
+    final root = SidekickContext.repository?.path;
     final excludedFiles = excludeGlob.expand(
       (rule) => Glob("$root/$rule").listSync(root: root).whereType<File>(),
     );
@@ -182,12 +182,8 @@ void _format(
         'format',
         '-l',
         '${entry.key}',
-        ...entry.value.map(
-          (e) => e.path,
-        ),
-        '-o',
-        if (verify) 'none' else 'write',
-        '--fix',
+        entry.value.map((file) => file.path).join(' '),
+        if (verify) '--set-exit-if-changed',
       ],
     );
     if (exitCode != 0) {
