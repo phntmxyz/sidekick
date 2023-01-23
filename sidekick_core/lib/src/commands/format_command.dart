@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:glob/glob.dart';
 import 'package:glob/list_local_fs.dart';
 import 'package:meta/meta.dart';
@@ -96,72 +94,71 @@ class FormatCommand extends Command {
 
     // Key: line length
     // Value: all files to be formatted with the line length specified by key
-    final lineLengthsAndFiles = Map.fromEntries(
-      allPackages
-          .filter((package) => !excluded.contains(package))
-          .map((package) {
-        final lineLength = getLineLength(package);
-        final allFilesInPackage = package.root
-            .listSync(recursive: true)
-            .whereType<File>()
-            .filter((file) => file.extension == '.dart')
-            .filter((file) => !file.path.contains('/.dart_tool/'))
-            .filter((file) => !file.path.contains('/.symlinks/'))
-            .filter((file) {
-          // exclude files from packages nested inside the current package
-          //
-          // e.g.
-          // package_bar: 80
-          //   package_bar_example: 120
-          //
-          // if this step was omitted, the result would be
-          // {
-          //   80: [package_bar/main.dart, package_bar/example/main.dart, ...],
-          //   120: [package_bar/example/main.dart, ...],
-          // }
-          // that is wrong, the correct result is
-          // {
-          //   80: [package_bar/main.dart, ...],
-          //   120: [package_bar/example/main.dart, ...],
-          // }
 
-          // get all packages except the current package in iteration
-          final allOtherPackages = ([...allPackages]..remove(package));
-          return allOtherPackages.any((otherPackage) {
-            // does any of the other packages also contain the current file?
-            if (file.path.contains(otherPackage.root.path)) {
-              // exclude file if path of other package matches the file path more closely
-              //
-              // e.g.
-              // package: packages/bar
-              // otherPackage: packages/bar/example
-              // file: packages/bar/example/main.dart
-              //
-              // otherPackage matches file path more closely,
-              // so the file should be excluded for the current package
+    final lineLengthsAndFiles = <int, List<File>>{};
+    for (final package
+        in allPackages.filter((package) => !excluded.contains(package))) {
+      final lineLength = getLineLength(package);
+      final allFilesInPackageWIP = package.root
+          .listSync(recursive: true)
+          .whereType<File>()
+          .filter((file) => file.extension == '.dart')
+          .filter((file) => !file.path.contains('/.dart_tool/'))
+          .filter((file) => !file.path.contains('/.symlinks/'));
+      final allFilesInPackage = allFilesInPackageWIP.filter((file) {
+        // exclude files from packages nested inside the current package
+        //
+        // e.g.
+        // package_bar: 80
+        //   package_bar_example: 120
+        //
+        // if this step was omitted, the result would be
+        // {
+        //   80: [package_bar/main.dart, package_bar/example/main.dart, ...],
+        //   120: [package_bar/example/main.dart, ...],
+        // }
+        // that is wrong, the correct result is
+        // {
+        //   80: [package_bar/main.dart, ...],
+        //   120: [package_bar/example/main.dart, ...],
+        // }
 
-              return otherPackage.root.path.length < package.root.path.length;
-            }
-            return true;
-          });
+        // get all packages except the current package in iteration
+        final allOtherPackages = ([...allPackages]..remove(package));
+        return allOtherPackages.any((otherPackage) {
+          // does any of the other packages also contain the current file?
+          if (file.path.contains(otherPackage.root.path)) {
+            // exclude file if path of other package matches the file path more closely
+            //
+            // e.g.
+            // package: packages/bar
+            // otherPackage: packages/bar/example
+            // file: packages/bar/example/main.dart
+            //
+            // otherPackage matches file path more closely,
+            // so the file should be excluded for the current package
+
+            return otherPackage.root.path.length < package.root.path.length;
+          }
+          return true;
         });
+      });
 
-        return MapEntry(lineLength, allFilesInPackage);
-      }),
-    );
+      (lineLengthsAndFiles[lineLength] ??= []).addAll(allFilesInPackage);
+    }
 
     _format(lineLengthsAndFiles);
   }
 }
 
 void _format(Map<int, Iterable<File>> filesWithLineLength) {
-  filesWithLineLength.entries.map((e) {
+  for (final entry in filesWithLineLength.entries) {
     final exitCode = dart(
       [
         'format',
         '-l',
-        '${e.key}',
-        ...e.value.map(
+        '${entry.key}',
+        ...entry.value.map(
           (e) => e.path,
         ),
       ],
@@ -170,7 +167,7 @@ void _format(Map<int, Iterable<File>> filesWithLineLength) {
       throw "Formatting failed with exit code $exitCode";
     }
     print("\n");
-  });
+  }
 }
 
 @visibleForTesting
