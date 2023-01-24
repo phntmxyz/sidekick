@@ -22,7 +22,7 @@ class FormatCommand extends Command {
   /// Example project layout:
   ///
   /// ```
-  /// repo-root
+  /// project-root
   /// ├── packages
   /// │   ├── package1
   /// │   ├── package2
@@ -65,7 +65,7 @@ class FormatCommand extends Command {
         int.tryParse(argResults?['line-length'] as String? ?? '');
     final bool verify = argResults?['verify'] as bool? ?? false;
 
-    final root = SidekickContext.repository ?? SidekickContext.projectRoot;
+    final root = SidekickContext.projectRoot;
     final List<DartPackage> allPackages = findAllPackages(root);
     if (packageName != null) {
       final package =
@@ -81,8 +81,7 @@ class FormatCommand extends Command {
     final globExcludes = excludeGlob
         .expand((rule) {
           // start search at repo root
-          final root = SidekickContext.repository?.path;
-          return Glob("$root/$rule").listSync(root: root);
+          return Glob("${root.path}/$rule").listSync(root: root.path);
         })
         .whereType<Directory>()
         .mapNotNull((e) => DartPackage.fromDirectory(e));
