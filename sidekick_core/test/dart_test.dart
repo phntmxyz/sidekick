@@ -59,5 +59,28 @@ void main() {
         });
       },
     );
+
+    test(
+      'throws given message when command fails',
+      () async {
+        await insideFakeProjectWithSidekick((_) async {
+          final runner = initializeSidekick(
+            name: 'dash',
+            dartSdkPath: fakeFailingDartSdk().path,
+          );
+          runner.addCommand(
+            DelegatedCommand(
+              name: 'dart',
+              block: () => dart(['fail'], throwOnError: (_) => 'foo'),
+            ),
+          );
+
+          await expectLater(
+            () => runner.run(['dart']),
+            throwsA('foo'),
+          );
+        });
+      },
+    );
   });
 }
