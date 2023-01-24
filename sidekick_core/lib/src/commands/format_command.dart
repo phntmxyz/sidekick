@@ -65,9 +65,8 @@ class FormatCommand extends Command {
         int.tryParse(argResults?['line-length'] as String? ?? '');
     final bool verify = argResults?['verify'] as bool? ?? false;
 
-    final List<DartPackage> allPackages = findAllPackages(
-      SidekickContext.repository ?? SidekickContext.projectRoot,
-    );
+    final root = SidekickContext.repository ?? SidekickContext.projectRoot;
+    final List<DartPackage> allPackages = findAllPackages(root);
     if (packageName != null) {
       final package =
           allPackages.where((it) => it.name == packageName).firstOrNull;
@@ -105,7 +104,7 @@ class FormatCommand extends Command {
           .whereType<File>()
           .filter((file) => file.extension == '.dart')
           .filter(
-            (file) => !file.uri.pathSegments.none(
+            (file) => file.uri.pathSegments.none(
               (element) => element.startsWith('.'),
             ),
           )
@@ -152,9 +151,10 @@ class FormatCommand extends Command {
     }
 
     // exclude files from excludeGlob
-    final root = SidekickContext.repository?.path;
     final excludedFiles = excludeGlob.expand(
-      (rule) => Glob("$root/$rule").listSync(root: root).whereType<File>(),
+      (rule) => Glob("${root.path}/$rule")
+          .listSync(root: root.path)
+          .whereType<File>(),
     );
     for (final files in lineLengthsAndFiles.values) {
       files.removeWhere(
@@ -182,7 +182,7 @@ void _format(
         'format',
         '-l',
         '${entry.key}',
-        entry.value.map((file) => file.path).join(' '),
+        ...entry.value.map((file) => file.path),
         if (verify) '--set-exit-if-changed',
       ],
     );
