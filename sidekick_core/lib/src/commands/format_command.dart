@@ -12,9 +12,6 @@ class FormatCommand extends Command {
   @override
   String get name => 'format';
 
-  /// packages whose files should not be formatted
-  final List<DartPackage> exclude;
-
   /// glob patterns of packages whose dependencies should not be loaded
   ///
   /// Search starts at repository root.
@@ -40,7 +37,6 @@ class FormatCommand extends Command {
   final List<String> excludeGlob;
 
   FormatCommand({
-    this.exclude = const [],
     this.excludeGlob = const [],
   }) {
     argParser.addOption(
@@ -87,7 +83,6 @@ class FormatCommand extends Command {
         .mapNotNull((e) => DartPackage.fromDirectory(e));
 
     final excluded = [
-      ...exclude,
       ...globExcludes,
     ];
 
