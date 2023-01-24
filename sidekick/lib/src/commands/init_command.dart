@@ -94,7 +94,12 @@ class InitCommand extends Command {
           }(),
     ).canonicalized;
     if (!projectRoot.existsSync()) {
-      throw 'Entrypoint directory ${projectRoot.path} does not exist';
+      print(
+        'Info: projectRoot directory containing the entryPoint does not exist yet. '
+        'It will be created at ${projectRoot.path}\n'
+        "Info: Please double check your entryPoint directory, "
+        "you're about to create a sidekick CLI in an empty directory.",
+      );
     }
 
     final packageDir = Directory(

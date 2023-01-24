@@ -42,10 +42,10 @@ void main() {
 
   group('sidekick init - argument validation', () {
     test(
-      'throws when entrypointDirectory does not exist',
+      'Creates entrypointDirectory when it does not exist',
       () async {
         final tempDir = Directory.systemTemp.createTempSync();
-        addTearDown(() => tempDir.deleteSync());
+        addTearDown(() => tempDir.deleteSync(recursive: true));
 
         final projectRoot =
             setupTemplateProject('test/templates/minimal_dart_package');
@@ -60,13 +60,7 @@ void main() {
           workingDirectory: projectRoot,
         );
         process.stderrStream().listen(printOnFailure);
-        await process.shouldExit(255);
-        expect(
-          await process.stderrStream().contains(
-                'Entrypoint directory ${tempDir.directory('foo').path} does not exist',
-              ),
-          isTrue,
-        );
+        await process.shouldExit(0);
       },
       timeout: const Timeout(Duration(minutes: 5)),
     );
