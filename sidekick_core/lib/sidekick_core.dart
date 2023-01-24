@@ -35,7 +35,6 @@ export 'package:sidekick_core/src/dart_runtime.dart';
 export 'package:sidekick_core/src/directory_ext.dart';
 export 'package:sidekick_core/src/file_util.dart';
 export 'package:sidekick_core/src/flutter.dart';
-export 'package:sidekick_core/src/flutterw.dart';
 export 'package:sidekick_core/src/forward_command.dart';
 export 'package:sidekick_core/src/repository.dart';
 export 'package:sidekick_core/src/sidekick_context.dart' show SidekickContext;
