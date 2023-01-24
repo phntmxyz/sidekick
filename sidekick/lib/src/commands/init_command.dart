@@ -18,8 +18,7 @@ class InitCommand extends Command {
     argParser.addOption(
       'cliName',
       abbr: 'n',
-      help: 'The name of the CLI to be created. \n'
-          'The `_cli` prefix will be defined automatically.',
+      help: 'The name of the CLI to be created (entryPoint name).',
     );
     argParser.addOption(
       'entrypointDirectory',
