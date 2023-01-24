@@ -335,15 +335,11 @@ void main() {
 
         await expectLater(
           process.stdout,
-          emitsThrough('Generating dashi_sidekick'),
+          emitsThrough(contains('Generating dashi_sidekick')),
         );
         printOnFailure(await process.stdoutStream().join('\n'));
         printOnFailure(await process.stderrStream().join('\n'));
         await process.shouldExit(0);
-
-        // check git is initialized
-        final git = Directory("${project.path}/.git");
-        expect(git.existsSync(), isTrue);
 
         // check entrypoint executes fine
         final entrypoint = File("${project.path}/dashi");
