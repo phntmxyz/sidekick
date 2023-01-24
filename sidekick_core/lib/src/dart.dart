@@ -10,14 +10,14 @@ import 'package:sidekick_core/sidekick_core.dart';
 /// The exit code will still be non-zero if the command failed and the method
 /// will still throw if the Dart SDK was not set in [initializeSidekick]
 ///
-/// If [errorMessage] is given and the command returns a non-zero exit code,
-/// the result of [errorMessage] will be thrown regardless of [nothrow]
+/// If [throwOnError] is given and the command returns a non-zero exit code,
+/// the result of [throwOnError] will be thrown regardless of [nothrow]
 int dart(
   List<String> args, {
   Directory? workingDirectory,
   dcli.Progress? progress,
   bool nothrow = false,
-  String Function(int code)? errorMessage,
+  String Function(int code)? throwOnError,
 }) {
   bool flutterwLegacyMode = false;
 
@@ -70,7 +70,7 @@ int dart(
     args,
     workingDirectory: workingDirectory?.path ?? entryWorkingDirectory.path,
     progress: progress,
-    nothrow: nothrow || errorMessage != null,
+    nothrow: nothrow || throwOnError != null,
     terminal: progress == null,
   );
 
@@ -80,8 +80,8 @@ int dart(
 
   final exitCode = process.exitCode ?? -1;
 
-  if (errorMessage != null) {
-    throw errorMessage(exitCode);
+  if (throwOnError != null) {
+    throw throwOnError(exitCode);
   }
 
   return exitCode;
@@ -105,14 +105,14 @@ class DartSdkNotSetException implements Exception {
 /// will still throw if there is no Dart SDK on PATH
 ///
 ///
-/// If [errorMessage] is given and the command returns a non-zero exit code,
-/// the result of [errorMessage] will be thrown regardless of [nothrow]
+/// If [throwOnError] is given and the command returns a non-zero exit code,
+/// the result of [throwOnError] will be thrown regardless of [nothrow]
 int systemDart(
   List<String> args, {
   Directory? workingDirectory,
   dcli.Progress? progress,
   bool nothrow = false,
-  String Function(int code)? errorMessage,
+  String Function(int code)? throwOnError,
 }) {
   final systemDartExecutablePath = systemDartExecutable();
   if (systemDartExecutablePath == null) {
@@ -125,13 +125,13 @@ int systemDart(
     workingDirectory: workingDirectory?.path ?? entryWorkingDirectory.path,
     progress: progress,
     terminal: progress == null,
-    nothrow: nothrow || errorMessage != null,
+    nothrow: nothrow || throwOnError != null,
   );
 
   final exitCode = process.exitCode ?? -1;
 
-  if (errorMessage != null) {
-    throw errorMessage(exitCode);
+  if (throwOnError != null) {
+    throw throwOnError(exitCode);
   }
 
   return exitCode;

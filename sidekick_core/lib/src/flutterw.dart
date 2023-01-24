@@ -19,15 +19,15 @@ File? findFlutterwLocation() {
 /// The exit code will still be non-zero if the command failed and the method
 /// will still throw if no flutterw can be found
 ///
-/// If [errorMessage] is given and the command returns a non-zero exit code,
-/// the result of [errorMessage] will be thrown regardless of [nothrow]
+/// If [throwOnError] is given and the command returns a non-zero exit code,
+/// the result of [throwOnError] will be thrown regardless of [nothrow]
 @Deprecated('Use flutter() instead')
 int flutterw(
   List<String> args, {
   Directory? workingDirectory,
   dcli.Progress? progress,
   bool nothrow = false,
-  String Function(int code)? errorMessage,
+  String Function(int code)? throwOnError,
 }) {
   final flutterw = findFlutterwLocation();
   if (flutterw == null) {
@@ -40,15 +40,15 @@ int flutterw(
     Platform.isWindows ? 'bash' : flutterw.path,
     [if (Platform.isWindows) flutterw.path, ...args],
     workingDirectory: workingDir.path,
-    nothrow: nothrow || errorMessage != null,
+    nothrow: nothrow || throwOnError != null,
     progress: progress,
     terminal: progress == null,
   );
 
   final exitCode = process.exitCode ?? -1;
 
-  if (errorMessage != null) {
-    throw errorMessage(exitCode);
+  if (throwOnError != null) {
+    throw throwOnError(exitCode);
   }
 
   return exitCode;

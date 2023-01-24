@@ -45,7 +45,7 @@ class LockDependenciesCommand extends Command {
     systemDart(
       ['pub', 'get'],
       workingDirectory: package.root,
-      errorMessage: (_) => "Couldn't get dependencies in ${package.root}",
+      throwOnError: (_) => "Couldn't get dependencies in ${package.root}",
     );
 
     final lockfile = package.lockfile;

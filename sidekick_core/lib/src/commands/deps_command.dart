@@ -109,7 +109,7 @@ class DepsCommand extends Command {
     dartOrFlutter(
       ['pub', 'get'],
       workingDirectory: packageDir,
-      errorMessage: (_) =>
+      throwOnError: (_) =>
           'Failed to get dependencies for package ${packageDir.path}',
     );
     print("\n");

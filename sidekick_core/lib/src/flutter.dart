@@ -9,14 +9,14 @@ import 'package:sidekick_core/sidekick_core.dart';
 /// The exit code will still be non-zero if the command failed and the method
 /// will still throw if the Flutter SDK was not set in [initializeSidekick]
 ///
-/// If [errorMessage] is given and the command returns a non-zero exit code,
-/// the result of [errorMessage] will be thrown regardless of [nothrow]
+/// If [throwOnError] is given and the command returns a non-zero exit code,
+/// the result of [throwOnError] will be thrown regardless of [nothrow]
 int flutter(
   List<String> args, {
   Directory? workingDirectory,
   dcli.Progress? progress,
   bool nothrow = false,
-  String Function(int code)? errorMessage,
+  String Function(int code)? throwOnError,
 }) {
   final workingDir =
       workingDirectory?.absolute ?? entryWorkingDirectory.absolute;
@@ -37,15 +37,15 @@ int flutter(
     Platform.isWindows ? 'bash' : sdk.file('bin/flutter').path,
     [if (Platform.isWindows) sdk.file('bin/flutter.exe').path, ...args],
     workingDirectory: workingDir.path,
-    nothrow: nothrow || errorMessage != null,
+    nothrow: nothrow || throwOnError != null,
     progress: progress,
     terminal: progress == null,
   );
 
   final exitCode = process.exitCode ?? -1;
 
-  if (errorMessage != null) {
-    throw errorMessage(exitCode);
+  if (throwOnError != null) {
+    throw throwOnError(exitCode);
   }
 
   return exitCode;
