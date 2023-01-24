@@ -419,16 +419,13 @@ Directory? _entryWorkingDirectory;
 /// Name of the cli program
 ///
 /// Usually a short acronym, like 3 characters
-String get cliName {
-  if (_activeRunner == null) {
-    throw OutOfCommandRunnerScopeException('cliName');
-  }
-  return _activeRunner!.executableName;
-}
+@Deprecated('Use SidekickContext.cliName')
+String get cliName => SidekickContext.cliName;
 
 /// Name of the cli program (if running a generated sidekick CLI)
 /// or null (if running the global sidekick CLI)
-String? get cliNameOrNull => _activeRunner?.executableName;
+@Deprecated('Use SidekickContext.cliName')
+String? get cliNameOrNull => SidekickContext.cliName;
 
 /// The root of the repository which contains all projects
 @Deprecated('Use SidekickContext.projectRoot or SidekickContext.repository')
