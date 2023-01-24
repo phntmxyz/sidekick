@@ -136,7 +136,6 @@ import 'package:sidekick_core/sidekick_core.dart';
 
 Future<void> run${name.pascalCase}(List<String> args) async {
   final runner = initializeSidekick(
-    name: '${name.snakeCase}',
     ${mainProjectPath != null ? "mainProjectPath: '$mainProjectPath'," : ''}
     ${shouldSetFlutterSdkPath! ? 'flutterSdkPath: systemFlutterSdkPath(),' : 'dartSdkPath: systemDartSdkPath(),'}
   );
