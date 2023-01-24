@@ -57,13 +57,8 @@ int dart(
     throw DartSdkNotSetException();
   }
 
-  final dart = () {
-    if (Platform.isWindows) {
-      return sdk!.file('bin/dart.exe');
-    } else {
-      return sdk!.file('bin/dart');
-    }
-  }();
+  final dart =
+      Platform.isWindows ? sdk.file('bin/dart.exe') : sdk.file('bin/dart');
 
   final process = dcli.startFromArgs(
     dart.path,
@@ -80,7 +75,7 @@ int dart(
 
   final exitCode = process.exitCode ?? -1;
 
-  if (throwOnError != null) {
+  if (exitCode != 0 && throwOnError != null) {
     throw throwOnError(exitCode);
   }
 
@@ -130,7 +125,7 @@ int systemDart(
 
   final exitCode = process.exitCode ?? -1;
 
-  if (throwOnError != null) {
+  if (exitCode != 0 && throwOnError != null) {
     throw throwOnError(exitCode);
   }
 

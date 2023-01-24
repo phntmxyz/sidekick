@@ -47,7 +47,7 @@ int flutterw(
 
   final exitCode = process.exitCode ?? -1;
 
-  if (throwOnError != null) {
+  if (exitCode != 0 && throwOnError != null) {
     throw throwOnError(exitCode);
   }
 
