@@ -7,7 +7,6 @@ void main() {
   test('bash command receives arguments', () async {
     await insideFakeProjectWithSidekick((dir) async {
       final runner = initializeSidekick(
-        name: 'dash',
         dartSdkPath: fakeDartSdk().path,
       );
       runner.addCommand(
@@ -30,7 +29,6 @@ void main() {
   test('workingDirectory default to cwd', () async {
     await insideFakeProjectWithSidekick((dir) async {
       final runner = initializeSidekick(
-        name: 'dash',
         dartSdkPath: fakeDartSdk().path,
       );
       runner.addCommand(
@@ -54,7 +52,6 @@ void main() {
     await insideFakeProjectWithSidekick((dir) async {
       final subDir = dir.directory('someSubDir')..createSync();
       final runner = initializeSidekick(
-        name: 'dash',
         dartSdkPath: fakeDartSdk().path,
       );
       runner.addCommand(
@@ -78,7 +75,6 @@ void main() {
   test('throw BashCommandException on error', () async {
     await insideFakeProjectWithSidekick((dir) async {
       final runner = initializeSidekick(
-        name: 'dash',
         dartSdkPath: fakeDartSdk().path,
       );
       runner.addCommand(
@@ -127,7 +123,6 @@ void main() {
   test('BashCommandException contains arguments', () async {
     await insideFakeProjectWithSidekick((dir) async {
       final runner = initializeSidekick(
-        name: 'dash',
         dartSdkPath: fakeDartSdk().path,
       );
       runner.addCommand(

@@ -62,6 +62,7 @@ void main() {
 
       expect(generatedFilePaths, expectedFiles);
       expect(generatedExecutableFilePaths, expectedExecutables);
+      overrideSidekickCoreWithLocalPath(tempDir);
 
       run('dart pub get', workingDirectory: tempDir.path);
       if (analyzeGeneratedCode) {

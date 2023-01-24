@@ -18,9 +18,6 @@ int flutter(
   bool nothrow = false,
   String Function()? throwOnError,
 }) {
-  final workingDir =
-      workingDirectory?.absolute ?? entryWorkingDirectory.absolute;
-
   final sdk = flutterSdk;
   if (sdk == null) {
     throw FlutterSdkNotSetException();
@@ -36,7 +33,7 @@ int flutter(
   final process = dcli.startFromArgs(
     Platform.isWindows ? 'bash' : sdk.file('bin/flutter').path,
     [if (Platform.isWindows) sdk.file('bin/flutter.exe').path, ...args],
-    workingDirectory: workingDir.path,
+    workingDirectory: workingDirectory?.absolute.path,
     nothrow: nothrow || throwOnError != null,
     progress: progress,
     terminal: progress == null,

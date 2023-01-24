@@ -56,7 +56,7 @@ class SidekickDartRuntime {
     dcli.startFromArgs(
       dart.path,
       args,
-      workingDirectory: workingDirectory?.path ?? entryWorkingDirectory.path,
+      workingDirectory: workingDirectory?.path,
       progress: progress,
       nothrow: nothrow,
       terminal: progress == null,

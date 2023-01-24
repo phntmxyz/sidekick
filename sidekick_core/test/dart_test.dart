@@ -45,7 +45,6 @@ void main() {
       () async {
         await insideFakeProjectWithSidekick((_) async {
           final runner = initializeSidekick(
-            name: 'dash',
             dartSdkPath: fakeFailingDartSdk().path,
           );
           runner.addCommand(
@@ -65,7 +64,6 @@ void main() {
       () async {
         await insideFakeProjectWithSidekick((_) async {
           final runner = initializeSidekick(
-            name: 'dash',
             dartSdkPath: fakeFailingDartSdk().path,
           );
           runner.addCommand(

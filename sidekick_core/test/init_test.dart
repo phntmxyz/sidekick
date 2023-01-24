@@ -32,7 +32,7 @@ void main() {
     await runZoned(
       () async {
         await insideFakeProjectWithSidekick((dir) async {
-          final runner = initializeSidekick(name: 'dash');
+          final runner = initializeSidekick();
           bool called = false;
           runner.addCommand(
             DelegatedCommand(name: 'inside', block: () => called = true),
@@ -66,7 +66,6 @@ void main() {
       await insideFakeProjectWithSidekick((dir) async {
         expect(
           () => initializeSidekick(
-            name: 'dash',
             mainProjectPath: 'bielefeld',
           ),
           throwsA(
@@ -81,7 +80,6 @@ void main() {
     test('mainProject returns null when not set', () async {
       await insideFakeProjectWithSidekick((dir) async {
         final runner = initializeSidekick(
-          name: 'dash',
           // ignore: avoid_redundant_argument_values
           mainProjectPath: null, // explicitly null
         );
@@ -102,7 +100,7 @@ void main() {
 
     test('mainProject returns while running run', () async {
       await insideFakeProjectWithSidekick((dir) async {
-        final runner = initializeSidekick(name: 'dash', mainProjectPath: '.');
+        final runner = initializeSidekick(mainProjectPath: '.');
         bool called = false;
         runner.addCommand(
           DelegatedCommand(
@@ -122,7 +120,7 @@ void main() {
     test('mainProject is detected in repo non root', () async {
       await insideFakeProjectWithSidekick(
         (dir) async {
-          final runner = initializeSidekick(name: 'dash', mainProjectPath: '.');
+          final runner = initializeSidekick(mainProjectPath: '.');
           bool called = false;
           runner.addCommand(
             DelegatedCommand(
@@ -145,7 +143,7 @@ void main() {
       await insideFakeProjectWithSidekick(
         (dir) async {
           'git init -q ${dir.path}'.run;
-          final runner = initializeSidekick(name: 'dash', mainProjectPath: '.');
+          final runner = initializeSidekick(mainProjectPath: '.');
           bool called = false;
           runner.addCommand(
             DelegatedCommand(
@@ -184,7 +182,7 @@ void main() {
     test('repository returns while running run', () async {
       await insideFakeProjectWithSidekick((projectRoot) async {
         'git init -q ${projectRoot.path}'.run;
-        final runner = initializeSidekick(name: 'dash');
+        final runner = initializeSidekick();
         bool called = false;
         runner.addCommand(
           DelegatedCommand(
@@ -203,7 +201,7 @@ void main() {
 
     test('repository is null when not in git repo', () async {
       await insideFakeProjectWithSidekick((projectRoot) async {
-        final runner = initializeSidekick(name: 'dash');
+        final runner = initializeSidekick();
         bool called = false;
         runner.addCommand(
           DelegatedCommand(
@@ -223,25 +221,16 @@ void main() {
   });
 
   group('cliName', () {
-    test('cliName requires initialization', () {
-      expect(
-        () => cliName,
-        throwsA(
-          isA<OutOfCommandRunnerScopeException>()
-              .having((it) => it.property, 'property', 'cliName')
-              .having((it) => it.toString(), 'toString()', contains('cliName')),
-        ),
-      );
-    });
     test('cliName returns while running run', () async {
       await insideFakeProjectWithSidekick((dir) async {
-        final runner = initializeSidekick(name: 'dash');
+        final runner = initializeSidekick();
         bool called = false;
         runner.addCommand(
           DelegatedCommand(
             name: 'inside',
             block: () {
               called = true;
+              // ignore: deprecated_member_use_from_same_package
               expect(cliName, 'dash');
             },
           ),
@@ -254,8 +243,7 @@ void main() {
 
   test('nested initializeSidekick() restores old static members', () async {
     await insideFakeProjectWithSidekick((dir) async {
-      final outerRunner =
-          initializeSidekick(name: 'dash', mainProjectPath: '.');
+      final outerRunner = initializeSidekick(mainProjectPath: '.');
       bool outerCalled = false;
       bool innerCalled = false;
       outerRunner.addCommand(
@@ -266,21 +254,19 @@ void main() {
 
             // ignore: deprecated_member_use_from_same_package
             void verifyOuter(Directory dir) {
-              expect(cliName, 'dash');
               expect(mainProject!.root.path, dir.path);
               expect(mainProject!.name, 'main_project');
             }
 
             verifyOuter(dir);
 
-            final innerRunner = initializeSidekick(name: 'innerdash');
+            final innerRunner = initializeSidekick();
             innerRunner.addCommand(
               DelegatedCommand(
                 name: 'inner',
                 block: () {
                   innerCalled = true;
                   // inner values are set
-                  expect(cliName, 'innerdash');
                   expect(mainProject, isNull);
                 },
               ),
@@ -333,7 +319,6 @@ void main() {
       insideFakeProjectWithSidekick((projectRoot) {
         expect(
           () => initializeSidekick(
-            name: 'dash',
             dartSdkPath: 'unknown-dart-sdk-path',
           ),
           throwsA(isA<SdkNotFoundException>()),
@@ -346,7 +331,6 @@ void main() {
         (projectRoot) {
           expect(
             () => initializeSidekick(
-              name: 'dash',
               dartSdkPath: 'unknown-dart-sdk-path',
             ),
             throwsA(isA<SdkNotFoundException>()),
@@ -360,7 +344,6 @@ void main() {
       insideFakeProjectWithSidekick((projectRoot) {
         expect(
           () => initializeSidekick(
-            name: 'dash',
             flutterSdkPath: 'unknown-flutter-sdk-path',
           ),
           throwsA(isA<SdkNotFoundException>()),
@@ -373,7 +356,6 @@ void main() {
         (projectRoot) {
           expect(
             () => initializeSidekick(
-              name: 'dash',
               flutterSdkPath: 'unknown-flutter-sdk-path',
             ),
             throwsA(isA<SdkNotFoundException>()),
@@ -391,7 +373,6 @@ void main() {
             ..createSync();
 
           final runner = initializeSidekick(
-            name: 'dash',
             dartSdkPath: fakeDartSdk.absolute.path,
             flutterSdkPath: fakeFlutterSdk.absolute.path,
           );
@@ -409,7 +390,6 @@ void main() {
             ..createSync();
 
           final runner = initializeSidekick(
-            name: 'dash',
             dartSdkPath: 'my-dart-sdk',
             flutterSdkPath: 'my-flutter-sdk',
           );
@@ -435,7 +415,6 @@ void main() {
               ..createSync();
 
             final runner = initializeSidekick(
-              name: 'dash',
               dartSdkPath: 'my-dart-sdk',
               flutterSdkPath: 'my-flutter-sdk',
             );
@@ -454,7 +433,6 @@ void main() {
             ..createSync(recursive: true);
 
           final runner = initializeSidekick(
-            name: 'dash',
             dartSdkPath: 'sdks/my-dart-sdk',
             flutterSdkPath: 'sdks/my-flutter-sdk',
           );
@@ -478,7 +456,6 @@ void main() {
                   ..createSync(recursive: true);
 
                 final runner = initializeSidekick(
-                  name: 'dash',
                   dartSdkPath:
                       '${projectRoot.nameWithoutExtension}/sdks/my-dart-sdk',
                   flutterSdkPath:
@@ -528,7 +505,6 @@ void main() {
                   ..createSync(recursive: true);
 
                 final runner = initializeSidekick(
-                  name: 'dash',
                   dartSdkPath: 'sdks/my-dart-sdk',
                   flutterSdkPath: 'sdks/my-flutter-sdk',
                 );
@@ -566,7 +542,7 @@ void main() {
         const doesntExist = 'bielefeld';
 
         expect(
-          () => initializeSidekick(name: 'dash', dartSdkPath: doesntExist),
+          () => initializeSidekick(dartSdkPath: doesntExist),
           throwsA(
             isA<SdkNotFoundException>().having(
               (it) => it.toString(),
@@ -580,7 +556,7 @@ void main() {
           ),
         );
         expect(
-          () => initializeSidekick(name: 'dash', flutterSdkPath: doesntExist),
+          () => initializeSidekick(flutterSdkPath: doesntExist),
           throwsA(
             isA<SdkNotFoundException>().having(
               (it) => it.toString(),

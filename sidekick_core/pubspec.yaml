@@ -9,7 +9,7 @@ environment:
 
 dependencies:
   args: ^2.1.0
-  dartx: '>=0.7.1 <2.0.0'
+  dartx: ^1.1.0
   dcli: ^1.15.0
   glob: ^2.0.2
   http: ^0.13.5

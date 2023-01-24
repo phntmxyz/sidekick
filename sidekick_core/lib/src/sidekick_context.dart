@@ -160,19 +160,6 @@ class SidekickContext {
       return File(path);
     }
 
-    // Strategy 2: (deprecated) Combine SIDEKICK_ENTRYPOINT_FILE and core.cliName.
-    // This only works after call to `initializeSidekick()`.
-    if (env.exists(_envEntryPointHome) && core.cliNameOrNull != null) {
-      // CLI is called via entryPoint
-      final injectedEntryPointPath = env[_envEntryPointHome];
-      if (injectedEntryPointPath == null || injectedEntryPointPath.isBlank) {
-        throw 'Injected entryPoint was not set (env.$_envEntryPointHome)';
-      }
-      final entryPoint =
-          File(normalize('$injectedEntryPointPath/${core.cliName}'));
-      return entryPoint;
-    }
-
     // Fallback strategy: Search all parents directories for the entryPoint.
     // This case is used when debugging the cli and the dart program is
     // started on the DartVM, and not called and compiled with the entrypoint

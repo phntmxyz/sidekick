@@ -19,8 +19,6 @@ int dart(
   bool nothrow = false,
   String Function()? throwOnError,
 }) {
-  bool flutterwLegacyMode = false;
-
   Directory? sdk = dartSdk;
   if (sdk == null) {
     if (flutterSdk != null) {
@@ -34,24 +32,6 @@ int dart(
         sdk = embeddedSdk;
       }
     }
-    if (sdk == null) {
-      final flutterWrapperLocation = findFlutterwLocation();
-      if (flutterWrapperLocation != null) {
-        // flutter_wrapper is installed, going into legacy mode for those which have not set the flutterSdkPath
-        final embeddedSdk = SidekickContext.repository
-            ?.directory('.flutter/bin/cache/dart-sdk');
-        if (embeddedSdk?.existsSync() != true) {
-          // Flutter SDK is not fully initialized, the Dart SDK not yet downloaded
-          // Execute flutter_tool to download the embedded dart runtime
-          // ignore: deprecated_member_use_from_same_package
-          flutterw([], workingDirectory: workingDirectory, nothrow: true);
-        }
-        if (embeddedSdk?.existsSync() == true) {
-          sdk = embeddedSdk;
-          flutterwLegacyMode = true;
-        }
-      }
-    }
   }
   if (sdk == null) {
     throw DartSdkNotSetException();
@@ -63,15 +43,11 @@ int dart(
   final process = dcli.startFromArgs(
     dart.path,
     args,
-    workingDirectory: workingDirectory?.path ?? entryWorkingDirectory.path,
+    workingDirectory: workingDirectory?.path,
     progress: progress,
     nothrow: nothrow || throwOnError != null,
     terminal: progress == null,
   );
-
-  if (flutterwLegacyMode) {
-    printerr("Sidekick Warning: ${DartSdkNotSetException().message}");
-  }
 
   final exitCode = process.exitCode ?? -1;
 
@@ -117,7 +93,7 @@ int systemDart(
   final process = dcli.startFromArgs(
     systemDartExecutablePath,
     args,
-    workingDirectory: workingDirectory?.path ?? entryWorkingDirectory.path,
+    workingDirectory: workingDirectory?.path,
     progress: progress,
     terminal: progress == null,
     nothrow: nothrow || throwOnError != null,
