@@ -1,5 +1,4 @@
 import 'package:sidekick_core/sidekick_core.dart';
-
 // ignore: implementation_imports, sk_sidekick is not a published package and already depends on sidekick_core from path
 import 'package:sidekick_core/src/version_checker.dart';
 import 'package:yaml/yaml.dart';
@@ -43,7 +42,8 @@ class LockDependenciesCommand extends Command {
       }
     }
 
-    final pubGet = systemDart(['pub', 'get'], workingDirectory: package.root);
+    final pubGet = systemDart(['pub', 'get'],
+        workingDirectory: package.root, nothrow: true);
     if (pubGet != 0) {
       throw "Couldn't get dependencies in ${package.root}";
     }

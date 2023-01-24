@@ -8,6 +8,7 @@ int flutter(
   List<String> args, {
   Directory? workingDirectory,
   dcli.Progress? progress,
+  bool nothrow = false,
 }) {
   final workingDir =
       workingDirectory?.absolute ?? entryWorkingDirectory.absolute;
@@ -39,7 +40,7 @@ int flutter(
       sdk.file('bin/flutter').path,
       args,
       workingDirectory: workingDir.path,
-      nothrow: true,
+      nothrow: nothrow,
       progress: progress,
       terminal: progress == null,
     );

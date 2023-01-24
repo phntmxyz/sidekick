@@ -9,6 +9,7 @@ int dart(
   List<String> args, {
   Directory? workingDirectory,
   dcli.Progress? progress,
+  bool nothrow = false,
 }) {
   bool flutterwLegacyMode = false;
 
@@ -19,7 +20,7 @@ int dart(
       if (!embeddedSdk.existsSync()) {
         // Flutter SDK is not fully initialized, the Dart SDK not yet downloaded
         // Execute flutter_tool to download the embedded dart runtime
-        flutter([], workingDirectory: workingDirectory);
+        flutter([], workingDirectory: workingDirectory, nothrow: true);
       }
       if (embeddedSdk.existsSync()) {
         sdk = embeddedSdk;
@@ -35,7 +36,7 @@ int dart(
           // Flutter SDK is not fully initialized, the Dart SDK not yet downloaded
           // Execute flutter_tool to download the embedded dart runtime
           // ignore: deprecated_member_use_from_same_package
-          flutterw([], workingDirectory: workingDirectory);
+          flutterw([], workingDirectory: workingDirectory, nothrow: true);
         }
         if (embeddedSdk?.existsSync() == true) {
           sdk = embeddedSdk;
@@ -61,7 +62,7 @@ int dart(
     args,
     workingDirectory: workingDirectory?.path ?? entryWorkingDirectory.path,
     progress: progress,
-    nothrow: true,
+    nothrow: nothrow,
     terminal: progress == null,
   );
 
@@ -87,6 +88,7 @@ int systemDart(
   List<String> args, {
   Directory? workingDirectory,
   dcli.Progress? progress,
+  bool nothrow = false,
 }) {
   final systemDartExecutablePath = systemDartExecutable();
   if (systemDartExecutablePath == null) {
@@ -99,6 +101,7 @@ int systemDart(
     workingDirectory: workingDirectory?.path ?? entryWorkingDirectory.path,
     progress: progress,
     terminal: progress == null,
+    nothrow: nothrow,
   );
 
   return process.exitCode ?? -1;

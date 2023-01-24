@@ -58,6 +58,7 @@ class VerifyPublishStateCommand extends Command {
     final code = dart(
       ['pub', 'publish', '--dry-run'],
       workingDirectory: package.root,
+      nothrow: true,
     );
     if (code != 0) {
       throw 'Publish dry-run failed';

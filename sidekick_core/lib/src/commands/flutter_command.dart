@@ -19,7 +19,7 @@ class FlutterCommand extends ForwardCommand {
       // for backwards compatibility link to the previous required flutter_wrapper location
       try {
         // ignore: deprecated_member_use_from_same_package
-        exitCode = flutterw(args);
+        exitCode = flutterw(args, nothrow: true);
         printerr("Sidekick Warning: ${original.message}");
         // success with flutterw, immediately return
         return;

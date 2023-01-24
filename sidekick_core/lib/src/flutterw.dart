@@ -19,6 +19,7 @@ int flutterw(
   List<String> args, {
   Directory? workingDirectory,
   dcli.Progress? progress,
+  bool nothrow = false,
 }) {
   final flutterw = findFlutterwLocation();
   if (flutterw == null) {
@@ -32,7 +33,7 @@ int flutterw(
       'bash',
       [flutterw.path, ...args],
       workingDirectory: workingDir.path,
-      nothrow: true,
+      nothrow: nothrow,
       progress: progress,
       terminal: progress == null,
     );
@@ -42,7 +43,7 @@ int flutterw(
       flutterw.path,
       args,
       workingDirectory: workingDir.path,
-      nothrow: true,
+      nothrow: nothrow,
       progress: progress,
       terminal: progress == null,
     );
