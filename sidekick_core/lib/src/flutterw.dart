@@ -14,6 +14,10 @@ File? findFlutterwLocation() {
 /// Executes Flutter CLI (flutter_tool) via flutter_wrapper
 ///
 /// https://github.com/passsy/flutter_wrapper
+///
+/// Set [nothrow] to true to ignore errors when executing the flutterw command.
+/// The exit code will still be non-zero if the command failed and the method
+/// will still throw if no flutterw can be found
 @Deprecated('Use flutter() instead')
 int flutterw(
   List<String> args, {

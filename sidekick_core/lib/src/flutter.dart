@@ -4,6 +4,10 @@ import 'package:dcli/dcli.dart' as dcli;
 import 'package:sidekick_core/sidekick_core.dart';
 
 /// Executes Flutter command from Flutter SDK set in [flutterSdk]
+///
+/// Set [nothrow] to true to ignore errors when executing the flutter command.
+/// The exit code will still be non-zero if the command failed and the method
+/// will still throw if the Flutter SDK was not set in [initializeSidekick]
 int flutter(
   List<String> args, {
   Directory? workingDirectory,

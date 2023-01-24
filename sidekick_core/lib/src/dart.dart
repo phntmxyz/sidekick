@@ -5,6 +5,10 @@ import 'package:sidekick_core/sidekick_core.dart';
 /// https://github.com/passsy/flutter_wrapper
 ///
 /// Makes sure flutterw is executed beforehand to download the dart-sdk
+///
+/// Set [nothrow] to true to ignore errors when executing the dart command.
+/// The exit code will still be non-zero if the command failed and the method
+/// will still throw if the Dart SDK was not set in [initializeSidekick]
 int dart(
   List<String> args, {
   Directory? workingDirectory,
@@ -84,6 +88,10 @@ class DartSdkNotSetException implements Exception {
 }
 
 /// Executes the system dart cli which is globally available on PATH
+///
+/// Set [nothrow] to true to ignore errors when executing the dart command.
+/// The exit code will still be non-zero if the command failed and the method
+/// will still throw if there is no Dart SDK on PATH
 int systemDart(
   List<String> args, {
   Directory? workingDirectory,

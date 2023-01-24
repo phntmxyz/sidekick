@@ -35,7 +35,7 @@ void main() {
           final runner = initializeSidekick(name: 'dash');
           bool called = false;
           runner.addCommand(
-            _DelegatedCommand(name: 'inside', block: () => called = true),
+            DelegatedCommand(name: 'inside', block: () => called = true),
           );
           await runner.run(['inside', '--version']);
           expect(called, isFalse);
@@ -87,7 +87,7 @@ void main() {
         );
         bool called = false;
         runner.addCommand(
-          _DelegatedCommand(
+          DelegatedCommand(
             name: 'inside',
             block: () {
               called = true;
@@ -105,7 +105,7 @@ void main() {
         final runner = initializeSidekick(name: 'dash', mainProjectPath: '.');
         bool called = false;
         runner.addCommand(
-          _DelegatedCommand(
+          DelegatedCommand(
             name: 'inside',
             block: () {
               called = true;
@@ -125,7 +125,7 @@ void main() {
           final runner = initializeSidekick(name: 'dash', mainProjectPath: '.');
           bool called = false;
           runner.addCommand(
-            _DelegatedCommand(
+            DelegatedCommand(
               name: 'inside',
               block: () {
                 called = true;
@@ -148,7 +148,7 @@ void main() {
           final runner = initializeSidekick(name: 'dash', mainProjectPath: '.');
           bool called = false;
           runner.addCommand(
-            _DelegatedCommand(
+            DelegatedCommand(
               name: 'inside',
               block: () {
                 called = true;
@@ -187,7 +187,7 @@ void main() {
         final runner = initializeSidekick(name: 'dash');
         bool called = false;
         runner.addCommand(
-          _DelegatedCommand(
+          DelegatedCommand(
             name: 'inside',
             block: () {
               called = true;
@@ -206,7 +206,7 @@ void main() {
         final runner = initializeSidekick(name: 'dash');
         bool called = false;
         runner.addCommand(
-          _DelegatedCommand(
+          DelegatedCommand(
             name: 'inside',
             block: () {
               called = true;
@@ -238,7 +238,7 @@ void main() {
         final runner = initializeSidekick(name: 'dash');
         bool called = false;
         runner.addCommand(
-          _DelegatedCommand(
+          DelegatedCommand(
             name: 'inside',
             block: () {
               called = true;
@@ -259,7 +259,7 @@ void main() {
       bool outerCalled = false;
       bool innerCalled = false;
       outerRunner.addCommand(
-        _DelegatedCommand(
+        DelegatedCommand(
           name: 'outer',
           block: () async {
             outerCalled = true;
@@ -275,7 +275,7 @@ void main() {
 
             final innerRunner = initializeSidekick(name: 'innerdash');
             innerRunner.addCommand(
-              _DelegatedCommand(
+              DelegatedCommand(
                 name: 'inner',
                 block: () {
                   innerCalled = true;
@@ -596,24 +596,4 @@ void main() {
       });
     });
   });
-}
-
-class _DelegatedCommand extends Command {
-  _DelegatedCommand({
-    required this.name,
-    required this.block,
-  });
-
-  @override
-  String get description => 'delegated';
-
-  @override
-  final String name;
-
-  final FutureOr<void> Function() block;
-
-  @override
-  Future<void> run() async {
-    await block();
-  }
 }
