@@ -83,8 +83,7 @@ class BashCommand extends ForwardCommand {
       dcli.startFromArgs(
         scriptFile.absolute.path,
         argResults!.arguments,
-        workingDirectory:
-            workingDirectory?.absolute.path,
+        workingDirectory: workingDirectory?.absolute.path,
         progress: progress,
         terminal: withStdIn,
       );
