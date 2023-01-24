@@ -25,7 +25,8 @@ export 'package:sidekick_core/src/commands/bash_command.dart';
 export 'package:sidekick_core/src/commands/dart_command.dart';
 export 'package:sidekick_core/src/commands/deps_command.dart';
 export 'package:sidekick_core/src/commands/flutter_command.dart';
-export 'package:sidekick_core/src/commands/format_command.dart';
+export 'package:sidekick_core/src/commands/format_command.dart'
+    show FormatCommand;
 export 'package:sidekick_core/src/commands/install_global_command.dart';
 export 'package:sidekick_core/src/commands/plugins/plugins_command.dart';
 export 'package:sidekick_core/src/commands/recompile_command.dart';
