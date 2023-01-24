@@ -27,6 +27,7 @@ abstract class MigrationStep {
     FutureOr<void> Function(MigrationContext) block, {
     required String name,
     required Version targetVersion,
+    String pullRequestLink,
   }) = _InlineMigrationStep;
 
   factory MigrationStep.gitPatch(
@@ -52,14 +53,24 @@ class _InlineMigrationStep extends MigrationStep {
     this.block, {
     required String name,
     required Version targetVersion,
+    this.pullRequestLink,
   }) : super(name: name, targetVersion: targetVersion);
+
+  /// Link to the pull request on GitHub introducing this patch
+  final String? pullRequestLink;
 
   /// The code to execute for this migration step
   final FutureOr<void> Function(MigrationContext) block;
 
   @override
   Future<void> migrate(MigrationContext context) async {
-    await block(context);
+    try {
+      await block(context);
+    } catch (e, s) {
+      throw "Couldn't apply migration step '$name'.\n"
+          '${pullRequestLink != null ? 'Check $pullRequestLink for further information.\n' : ''}'
+          'Error: $e\n$s';
+    }
   }
 }
 
