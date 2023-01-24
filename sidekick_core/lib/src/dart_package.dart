@@ -43,7 +43,7 @@ class DartPackage {
   static DartPackage fromArgResults(ArgResults argResults) {
     {
       final packagePath =
-          argResults.rest.firstOrNull ?? entryWorkingDirectory.path;
+          argResults.rest.firstOrNull ?? Directory.current.path;
       final package = DartPackage.fromDirectory(Directory(packagePath));
       if (package == null) {
         throw 'Could not find a package in $packagePath';

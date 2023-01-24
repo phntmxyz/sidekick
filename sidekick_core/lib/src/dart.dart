@@ -43,7 +43,7 @@ int dart(
   final process = dcli.startFromArgs(
     dart.path,
     args,
-    workingDirectory: workingDirectory?.path ?? entryWorkingDirectory.path,
+    workingDirectory: workingDirectory?.path,
     progress: progress,
     nothrow: nothrow || throwOnError != null,
     terminal: progress == null,
@@ -93,7 +93,7 @@ int systemDart(
   final process = dcli.startFromArgs(
     systemDartExecutablePath,
     args,
-    workingDirectory: workingDirectory?.path ?? entryWorkingDirectory.path,
+    workingDirectory: workingDirectory?.path,
     progress: progress,
     terminal: progress == null,
     nothrow: nothrow || throwOnError != null,

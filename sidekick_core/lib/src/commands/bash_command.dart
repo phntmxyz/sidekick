@@ -84,7 +84,7 @@ class BashCommand extends ForwardCommand {
         scriptFile.absolute.path,
         argResults!.arguments,
         workingDirectory:
-            workingDirectory?.absolute.path ?? entryWorkingDirectory.path,
+            workingDirectory?.absolute.path,
         progress: progress,
         terminal: withStdIn,
       );

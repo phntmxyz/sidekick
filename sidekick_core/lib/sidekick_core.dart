@@ -209,7 +209,6 @@ SidekickCommandRunner initializeSidekick({
     description: description ??
         'A sidekick CLI to equip Dart/Flutter projects with custom tasks',
     mainProject: mainProject,
-    workingDirectory: Directory.current,
     flutterSdk: flutterSdk,
     dartSdk: dartSdk,
   );
@@ -221,7 +220,6 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
   SidekickCommandRunner._({
     required String description,
     this.mainProject,
-    required this.workingDirectory,
     this.flutterSdk,
     this.dartSdk,
   }) : super(SidekickContext.cliName, description) {
@@ -236,7 +234,6 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
   Repository get repository => findRepository();
 
   final DartPackage? mainProject;
-  final Directory workingDirectory;
   final Directory? flutterSdk;
   final Directory? dartSdk;
 
@@ -248,7 +245,8 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
     _activeRunner = this;
     final newCache = SidekickContextCache(debugName: debugName);
     internalSidekickContextCache = newCache;
-    _entryWorkingDirectory = workingDirectory;
+    final Directory? oldWorkingDirectory = _entryWorkingDirectory;
+    _entryWorkingDirectory = Directory.current;
 
     return () {
       _activeRunner = oldRunner;
@@ -262,7 +260,7 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
         return true;
       }());
       internalSidekickContextCache = oldCache;
-      _entryWorkingDirectory = _activeRunner?.workingDirectory;
+      _entryWorkingDirectory = oldWorkingDirectory;
     };
   }
 
@@ -404,7 +402,12 @@ typedef Unmount = void Function();
 /// The runner that is currently executing, used for nesting
 SidekickCommandRunner? _activeRunner;
 
-/// The working directory (cwd) from which the cli was started
+/// The working directory (cwd) from which the cli run method was started
+///
+/// Can be useful in case a command has changed the current working directory
+/// and the initial working directory is needed
+///
+/// Nested calls to the cli run method may return different directories
 Directory get entryWorkingDirectory =>
     _entryWorkingDirectory ?? Directory.current;
 Directory? _entryWorkingDirectory;

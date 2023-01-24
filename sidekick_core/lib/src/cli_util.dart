@@ -59,7 +59,7 @@ dcli.Progress writeAndRunShellScript(
       script.absolute.path,
       args,
       workingDirectory:
-          workingDirectory?.absolute.path ?? entryWorkingDirectory.path,
+          workingDirectory?.absolute.path,
       progress: scriptProgress,
       terminal: terminal,
     );
