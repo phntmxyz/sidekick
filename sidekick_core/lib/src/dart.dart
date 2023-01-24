@@ -17,7 +17,7 @@ int dart(
   Directory? workingDirectory,
   dcli.Progress? progress,
   bool nothrow = false,
-  String Function(int code)? throwOnError,
+  String Function()? throwOnError,
 }) {
   bool flutterwLegacyMode = false;
 
@@ -76,7 +76,7 @@ int dart(
   final exitCode = process.exitCode ?? -1;
 
   if (exitCode != 0 && throwOnError != null) {
-    throw throwOnError(exitCode);
+    throw throwOnError();
   }
 
   return exitCode;
@@ -107,7 +107,7 @@ int systemDart(
   Directory? workingDirectory,
   dcli.Progress? progress,
   bool nothrow = false,
-  String Function(int code)? throwOnError,
+  String Function()? throwOnError,
 }) {
   final systemDartExecutablePath = systemDartExecutable();
   if (systemDartExecutablePath == null) {
@@ -126,7 +126,7 @@ int systemDart(
   final exitCode = process.exitCode ?? -1;
 
   if (exitCode != 0 && throwOnError != null) {
-    throw throwOnError(exitCode);
+    throw throwOnError();
   }
 
   return exitCode;

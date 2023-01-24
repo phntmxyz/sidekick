@@ -59,7 +59,7 @@ class VerifyPublishStateCommand extends Command {
       ['pub', 'publish', '--dry-run'],
       workingDirectory: package.root,
       nothrow: true,
-      throwOnError: (_) => 'Publish dry-run failed',
+      throwOnError: () => 'Publish dry-run failed',
     );
   }
 }

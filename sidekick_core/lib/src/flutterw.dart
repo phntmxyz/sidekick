@@ -27,7 +27,7 @@ int flutterw(
   Directory? workingDirectory,
   dcli.Progress? progress,
   bool nothrow = false,
-  String Function(int code)? throwOnError,
+  String Function()? throwOnError,
 }) {
   final flutterw = findFlutterwLocation();
   if (flutterw == null) {
@@ -48,7 +48,7 @@ int flutterw(
   final exitCode = process.exitCode ?? -1;
 
   if (exitCode != 0 && throwOnError != null) {
-    throw throwOnError(exitCode);
+    throw throwOnError();
   }
 
   return exitCode;

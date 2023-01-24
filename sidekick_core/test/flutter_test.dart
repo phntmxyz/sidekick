@@ -82,7 +82,7 @@ void main() {
           runner.addCommand(
             DelegatedCommand(
               name: 'flutter',
-              block: () => flutter(['fail'], throwOnError: (_) => 'foo'),
+              block: () => flutter(['fail'], throwOnError: () => 'foo'),
             ),
           );
 

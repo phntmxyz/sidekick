@@ -71,7 +71,7 @@ void main() {
           runner.addCommand(
             DelegatedCommand(
               name: 'dart',
-              block: () => dart(['fail'], throwOnError: (_) => 'foo'),
+              block: () => dart(['fail'], throwOnError: () => 'foo'),
             ),
           );
 

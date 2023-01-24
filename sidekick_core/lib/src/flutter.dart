@@ -16,7 +16,7 @@ int flutter(
   Directory? workingDirectory,
   dcli.Progress? progress,
   bool nothrow = false,
-  String Function(int code)? throwOnError,
+  String Function()? throwOnError,
 }) {
   final workingDir =
       workingDirectory?.absolute ?? entryWorkingDirectory.absolute;
@@ -45,7 +45,7 @@ int flutter(
   final exitCode = process.exitCode ?? -1;
 
   if (exitCode != 0 && throwOnError != null) {
-    throw throwOnError(exitCode);
+    throw throwOnError();
   }
 
   return exitCode;
