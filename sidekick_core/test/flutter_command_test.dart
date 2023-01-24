@@ -148,4 +148,16 @@ void main() {
       });
     });
   });
+
+  test('flutter command sets exit code when command fails', () async {
+    await insideFakeProjectWithSidekick((dir) async {
+      final runner = initializeSidekick(
+        name: 'dash',
+        flutterSdkPath: fakeFailingFlutterSdk().path,
+      );
+      runner.addCommand(FlutterCommand());
+      await runner.run(['flutter', 'plz', 'fail']);
+      expect(exitCode, isNonZero);
+    });
+  });
 }

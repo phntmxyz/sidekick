@@ -5,10 +5,19 @@ import 'package:sidekick_core/sidekick_core.dart';
 /// https://github.com/passsy/flutter_wrapper
 ///
 /// Makes sure flutterw is executed beforehand to download the dart-sdk
+///
+/// Set [nothrow] to true to ignore errors when executing the dart command.
+/// The exit code will still be non-zero if the command failed and the method
+/// will still throw if the Dart SDK was not set in [initializeSidekick]
+///
+/// If [throwOnError] is given and the command returns a non-zero exit code,
+/// the result of [throwOnError] will be thrown regardless of [nothrow]
 int dart(
   List<String> args, {
   Directory? workingDirectory,
   dcli.Progress? progress,
+  bool nothrow = false,
+  String Function()? throwOnError,
 }) {
   bool flutterwLegacyMode = false;
 
@@ -19,7 +28,7 @@ int dart(
       if (!embeddedSdk.existsSync()) {
         // Flutter SDK is not fully initialized, the Dart SDK not yet downloaded
         // Execute flutter_tool to download the embedded dart runtime
-        flutter([], workingDirectory: workingDirectory);
+        flutter([], workingDirectory: workingDirectory, nothrow: true);
       }
       if (embeddedSdk.existsSync()) {
         sdk = embeddedSdk;
@@ -35,7 +44,7 @@ int dart(
           // Flutter SDK is not fully initialized, the Dart SDK not yet downloaded
           // Execute flutter_tool to download the embedded dart runtime
           // ignore: deprecated_member_use_from_same_package
-          flutterw([], workingDirectory: workingDirectory);
+          flutterw([], workingDirectory: workingDirectory, nothrow: true);
         }
         if (embeddedSdk?.existsSync() == true) {
           sdk = embeddedSdk;
@@ -48,27 +57,29 @@ int dart(
     throw DartSdkNotSetException();
   }
 
-  final dart = () {
-    if (Platform.isWindows) {
-      return sdk!.file('bin/dart.exe');
-    } else {
-      return sdk!.file('bin/dart');
-    }
-  }();
+  final dart =
+      Platform.isWindows ? sdk.file('bin/dart.exe') : sdk.file('bin/dart');
 
   final process = dcli.startFromArgs(
     dart.path,
     args,
     workingDirectory: workingDirectory?.path ?? entryWorkingDirectory.path,
     progress: progress,
-    nothrow: true,
+    nothrow: nothrow || throwOnError != null,
     terminal: progress == null,
   );
 
   if (flutterwLegacyMode) {
     printerr("Sidekick Warning: ${DartSdkNotSetException().message}");
   }
-  return process.exitCode ?? -1;
+
+  final exitCode = process.exitCode ?? -1;
+
+  if (exitCode != 0 && throwOnError != null) {
+    throw throwOnError();
+  }
+
+  return exitCode;
 }
 
 /// The Dart SDK path is not set in [initializeSidekick] (param [dartSdk], neither is is the [flutterSdk])
@@ -83,10 +94,20 @@ class DartSdkNotSetException implements Exception {
 }
 
 /// Executes the system dart cli which is globally available on PATH
+///
+/// Set [nothrow] to true to ignore errors when executing the dart command.
+/// The exit code will still be non-zero if the command failed and the method
+/// will still throw if there is no Dart SDK on PATH
+///
+///
+/// If [throwOnError] is given and the command returns a non-zero exit code,
+/// the result of [throwOnError] will be thrown regardless of [nothrow]
 int systemDart(
   List<String> args, {
   Directory? workingDirectory,
   dcli.Progress? progress,
+  bool nothrow = false,
+  String Function()? throwOnError,
 }) {
   final systemDartExecutablePath = systemDartExecutable();
   if (systemDartExecutablePath == null) {
@@ -99,9 +120,16 @@ int systemDart(
     workingDirectory: workingDirectory?.path ?? entryWorkingDirectory.path,
     progress: progress,
     terminal: progress == null,
+    nothrow: nothrow || throwOnError != null,
   );
 
-  return process.exitCode ?? -1;
+  final exitCode = process.exitCode ?? -1;
+
+  if (exitCode != 0 && throwOnError != null) {
+    throw throwOnError();
+  }
+
+  return exitCode;
 }
 
 String? systemDartExecutable() =>

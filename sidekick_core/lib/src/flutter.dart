@@ -4,10 +4,19 @@ import 'package:dcli/dcli.dart' as dcli;
 import 'package:sidekick_core/sidekick_core.dart';
 
 /// Executes Flutter command from Flutter SDK set in [flutterSdk]
+///
+/// Set [nothrow] to true to ignore errors when executing the flutter command.
+/// The exit code will still be non-zero if the command failed and the method
+/// will still throw if the Flutter SDK was not set in [initializeSidekick]
+///
+/// If [throwOnError] is given and the command returns a non-zero exit code,
+/// the result of [throwOnError] will be thrown regardless of [nothrow]
 int flutter(
   List<String> args, {
   Directory? workingDirectory,
   dcli.Progress? progress,
+  bool nothrow = false,
+  String Function()? throwOnError,
 }) {
   final workingDir =
       workingDirectory?.absolute ?? entryWorkingDirectory.absolute;
@@ -24,27 +33,22 @@ int flutter(
     }
   }
 
-  if (Platform.isWindows) {
-    final process = dcli.startFromArgs(
-      'bash',
-      [sdk.file('bin/flutter.exe').path, ...args],
-      workingDirectory: workingDir.path,
-      nothrow: true,
-      progress: progress,
-      terminal: progress == null,
-    );
-    return process.exitCode ?? -1;
-  } else {
-    final process = dcli.startFromArgs(
-      sdk.file('bin/flutter').path,
-      args,
-      workingDirectory: workingDir.path,
-      nothrow: true,
-      progress: progress,
-      terminal: progress == null,
-    );
-    return process.exitCode ?? -1;
+  final process = dcli.startFromArgs(
+    Platform.isWindows ? 'bash' : sdk.file('bin/flutter').path,
+    [if (Platform.isWindows) sdk.file('bin/flutter.exe').path, ...args],
+    workingDirectory: workingDir.path,
+    nothrow: nothrow || throwOnError != null,
+    progress: progress,
+    terminal: progress == null,
+  );
+
+  final exitCode = process.exitCode ?? -1;
+
+  if (exitCode != 0 && throwOnError != null) {
+    throw throwOnError();
   }
+
+  return exitCode;
 }
 
 /// The Flutter SDK path is not set in [initializeSidekick] (param [flutterSdk])

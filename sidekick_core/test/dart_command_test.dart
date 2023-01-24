@@ -39,4 +39,16 @@ void main() {
       await runner.run(['dart']);
     });
   });
+
+  test('dart command sets exit code when command fails', () async {
+    await insideFakeProjectWithSidekick((dir) async {
+      final runner = initializeSidekick(
+        name: 'dash',
+        dartSdkPath: fakeFailingDartSdk().path,
+      );
+      runner.addCommand(DartCommand());
+      await runner.run(['dart', 'plz', 'fail']);
+      expect(exitCode, isNonZero);
+    });
+  });
 }
