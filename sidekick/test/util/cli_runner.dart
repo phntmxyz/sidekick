@@ -111,11 +111,13 @@ class GlobalSidekickCli {
   Future<TestProcess> run(
     List<String> args, {
     required Directory workingDirectory,
+    Map<String, String>? environment,
   }) async {
     return TestProcess.start(
       executable.path,
       args,
       workingDirectory: workingDirectory.path,
+      environment: environment,
     );
   }
 }

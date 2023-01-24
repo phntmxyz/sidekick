@@ -377,4 +377,39 @@ void main() {
       timeout: const Timeout(Duration(minutes: 5)),
     );
   });
+
+  test(
+    'Installs optional flutterw_sidekick_plugin',
+    () async {
+      final projectRoot =
+          setupTemplateProject('test/templates/minimal_flutter_package');
+      final process = await cachedGlobalSidekickCli.run(
+        [
+          'init',
+          '-n',
+          'dashi',
+          '--entrypointDirectory',
+          '.',
+        ],
+        workingDirectory: projectRoot,
+        environment: {
+          'SIDEKICK_INIT_APPROVE_FLUTTERW_INSTALL': 'true',
+        },
+      );
+      process.stderrStream().listen(printOnFailure);
+      final output = await process.stdoutStream().join('\n');
+      expect(
+        output,
+        allOf([
+          contains('flutterw_sidekick_plugin'),
+          contains('Sidekick detected 1 Flutter packages in your project.'),
+          contains(
+            'Do you want pin the Flutter version of this project with flutterw?',
+          ),
+        ]),
+      );
+    },
+    timeout: const Timeout(Duration(minutes: 5)),
+    skip: 'Enable when sidekick_core 1.0 has been release with SidekickContext',
+  );
 }

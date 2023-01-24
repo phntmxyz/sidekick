@@ -258,7 +258,8 @@ class InitCommand extends Command {
       );
       final confirmFlutterwInstall = dcli.confirm(
         'Install flutterw_sidekick_plugin?',
-        defaultValue: false,
+        defaultValue:
+            env['SIDEKICK_INIT_APPROVE_FLUTTERW_INSTALL'] == 'true' || false,
       );
       if (confirmFlutterwInstall) {
         "${entrypoint.path} sidekick plugins install flutterw_sidekick_plugin"
