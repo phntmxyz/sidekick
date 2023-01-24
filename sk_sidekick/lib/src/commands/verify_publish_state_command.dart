@@ -55,14 +55,12 @@ class VerifyPublishStateCommand extends Command {
     );
 
     // dry-run publish should work without error
-    final code = dart(
+    dart(
       ['pub', 'publish', '--dry-run'],
       workingDirectory: package.root,
       nothrow: true,
+      errorMessage: (_) => 'Publish dry-run failed',
     );
-    if (code != 0) {
-      throw 'Publish dry-run failed';
-    }
   }
 }
 

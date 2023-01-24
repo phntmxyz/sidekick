@@ -105,17 +105,13 @@ class DepsCommand extends Command {
   void _getDependencies(DartPackage package) {
     print(yellow('=== package ${package.name} ==='));
     final packageDir = package.root;
-    final int exitCode;
-    if (package.isFlutterPackage) {
-      exitCode =
-          flutter(['pub', 'get'], workingDirectory: packageDir, nothrow: true);
-    } else {
-      exitCode =
-          dart(['pub', 'get'], workingDirectory: packageDir, nothrow: true);
-    }
-    if (exitCode != 0) {
-      throw "Failed to get dependencies for package ${packageDir.path}";
-    }
+    final dartOrFlutter = package.isFlutterPackage ? flutter : dart;
+    dartOrFlutter(
+      ['pub', 'get'],
+      workingDirectory: packageDir,
+      errorMessage: (_) =>
+          'Failed to get dependencies for package ${packageDir.path}',
+    );
     print("\n");
   }
 }
