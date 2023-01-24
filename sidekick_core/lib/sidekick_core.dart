@@ -409,9 +409,6 @@ bool get _isUpdateCheckEnabled =>
 
 typedef Unmount = void Function();
 
-@Deprecated('noop')
-void deinitializeSidekick() {}
-
 /// The runner that is currently executing, used for nesting
 SidekickCommandRunner? _activeRunner;
 
