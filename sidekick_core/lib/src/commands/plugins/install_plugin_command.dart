@@ -169,7 +169,7 @@ class InstallPluginCommand extends Command {
     if (!supportedInstallerVersions.allows(pluginInstallerProtocolVersion)) {
       if (pluginInstallerProtocolVersion < supportedInstallerVersions.max!) {
         throw "The plugin doesn't support your CLI's version.\n"
-            'Please run ${yellow('$cliName sidekick update')} to update your CLI.';
+            'Please run ${yellow('${SidekickContext.cliName} sidekick update')} to update your CLI.';
       } else {
         throw 'The plugin is too old to be installed to your CLI '
             'because it depends on an outdated version of sidekick_plugin_installer.';
@@ -264,7 +264,7 @@ Directory _getPackageRootDirForHostedOrGitSource(ArgResults args) {
         'The --$parameter parameter is not yet supported by the pub tool in '
         'the Dart SDK your sidekick CLI is using.\n'
         'It is available from Dart $requiredVersion.\n'
-        'Try running ${cyan('$cliName sidekick update')} to update the Dart SDK of your sidekick CLI.';
+        'Try running ${cyan('${SidekickContext.cliName} sidekick update')} to update the Dart SDK of your sidekick CLI.';
     if (progress.lines.contains('Could not find an option named "git-path".')) {
       throw parameterNotAvailableErrorMessage('git-path', '2.17');
     }

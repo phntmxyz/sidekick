@@ -65,6 +65,7 @@ class SidekickTemplate {
 class SidekickTemplateProperties {
   /// Name of the CLI.
   ///
+  // ignore: deprecated_member_use_from_same_package
   /// Do not rename it to `cliName` which would conflict with [cliName]
   final String name;
 

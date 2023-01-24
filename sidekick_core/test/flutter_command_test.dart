@@ -6,7 +6,6 @@ void main() {
   test('flutter command works when flutterSdkPath is set', () async {
     await insideFakeProjectWithSidekick((dir) async {
       final runner = initializeSidekick(
-        name: 'dash',
         flutterSdkPath: fakeFlutterSdk().path,
       );
       runner.addCommand(FlutterCommand());
@@ -17,7 +16,6 @@ void main() {
   test('flutter command fails when flutterSdkPath is not set', () async {
     await insideFakeProjectWithSidekick((dir) async {
       final runner = initializeSidekick(
-        name: 'dash',
         // ignore: avoid_redundant_argument_values
         flutterSdkPath: null,
       );
@@ -38,7 +36,6 @@ void main() {
         final tempDir = Directory.systemTemp.createTempSync();
         addTearDown(() => tempDir.deleteSync(recursive: true));
         final runner = initializeSidekick(
-          name: 'dash',
           flutterSdkPath: tempDir.path,
         );
         runner.addCommand(FlutterCommand());
@@ -62,7 +59,6 @@ void main() {
         final tempDir = Directory.systemTemp.createTempSync();
         addTearDown(() => tempDir.deleteSync(recursive: true));
         final runner = initializeSidekick(
-          name: 'dash',
           flutterSdkPath: tempDir.path,
         );
         runner.addCommand(FlutterCommand());
@@ -93,7 +89,6 @@ void main() {
         final tempDir = Directory.systemTemp.createTempSync();
         addTearDown(() => tempDir.deleteSync(recursive: true));
         final runner = initializeSidekick(
-          name: 'dash',
           flutterSdkPath: tempDir.path,
         );
         runner.addCommand(FlutterCommand());
@@ -118,7 +113,6 @@ void main() {
         final tempDir = Directory.systemTemp.createTempSync();
         addTearDown(() => tempDir.deleteSync(recursive: true));
         final runner = initializeSidekick(
-          name: 'dash',
           flutterSdkPath: tempDir.path,
         );
         runner.addCommand(FlutterCommand());
@@ -152,7 +146,6 @@ void main() {
   test('flutter command sets exit code when command fails', () async {
     await insideFakeProjectWithSidekick((dir) async {
       final runner = initializeSidekick(
-        name: 'dash',
         flutterSdkPath: fakeFailingFlutterSdk().path,
       );
       runner.addCommand(FlutterCommand());

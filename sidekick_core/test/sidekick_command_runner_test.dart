@@ -29,7 +29,7 @@ void main() {
         await overrideIoStreams(
           stderr: () => fakeStderr,
           body: () async {
-            final runner = initializeSidekick(name: 'dash');
+            final runner = initializeSidekick();
 
             await runner.run(['-h']);
 
@@ -56,7 +56,7 @@ void main() {
         await overrideIoStreams(
           stderr: () => fakeStderr,
           body: () async {
-            final runner = initializeSidekick(name: 'dash');
+            final runner = initializeSidekick();
 
             await runner.run(['-h']);
 
@@ -79,7 +79,7 @@ void main() {
         await overrideIoStreams(
           stderr: () => fakeStderr,
           body: () async {
-            final runner = initializeSidekick(name: 'dash');
+            final runner = initializeSidekick();
 
             await runner.run(['-h']);
 
@@ -102,9 +102,7 @@ void main() {
         await overrideIoStreams(
           stderr: () => fakeStderr,
           body: () async {
-            final runner = initializeSidekick(
-              name: 'dash',
-            );
+            final runner = initializeSidekick();
             runner.addCommand(SidekickCommand());
 
             await runner.run(['sidekick', 'update', '-h']);
@@ -126,9 +124,7 @@ void main() {
         await overrideIoStreams(
           stderr: () => fakeStderr,
           body: () async {
-            final runner = initializeSidekick(
-              name: 'dash',
-            );
+            final runner = initializeSidekick();
             runner.addCommand(_WrapperCommand());
 
             await runner.run(['wrapper', 'update', '-h']);

@@ -51,8 +51,6 @@ final Version version = Version.parse('0.15.1');
 
 /// Initializes sidekick, call this at the very start of your CLI program
 ///
-/// Set [name] to the name of your CLI entrypoint
-///
 /// All paths are resolved relative to the location of the
 /// [SidekickContext.entryPoint], or absolute.
 ///
@@ -72,7 +70,7 @@ final Version version = Version.parse('0.15.1');
 /// In a multi package repository you might use the same when the main package
 /// is in projectRoot, or `mainProjectPath = 'packages/my_app'` when it is in a subfolder.
 SidekickCommandRunner initializeSidekick({
-  required String name,
+  @Deprecated('Not used anymore') String? name,
   String? description,
   String? mainProjectPath,
   String? flutterSdkPath,
@@ -209,7 +207,6 @@ SidekickCommandRunner initializeSidekick({
   }
 
   final runner = SidekickCommandRunner._(
-    cliName: name,
     description: description ??
         'A sidekick CLI to equip Dart/Flutter projects with custom tasks',
     mainProject: mainProject,
@@ -220,18 +217,15 @@ SidekickCommandRunner initializeSidekick({
   return runner;
 }
 
-/// A CommandRunner that mounts the sidekick globals
-// ignore: deprecated_member_use_from_same_package
-/// [entryWorkingDirectory], [cliName], [repository], [mainProject].
+/// A CommandRunner that makes lookups in [SidekickContext] faster
 class SidekickCommandRunner<T> extends CommandRunner<T> {
   SidekickCommandRunner._({
-    required String cliName,
     required String description,
     this.mainProject,
     required this.workingDirectory,
     this.flutterSdk,
     this.dartSdk,
-  }) : super(cliName, description) {
+  }) : super(SidekickContext.cliName, description) {
     argParser.addFlag(
       'version',
       negatable: false,
