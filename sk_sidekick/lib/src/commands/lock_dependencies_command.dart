@@ -42,8 +42,11 @@ class LockDependenciesCommand extends Command {
       }
     }
 
-    final pubGet = systemDart(['pub', 'get'],
-        workingDirectory: package.root, nothrow: true);
+    final pubGet = systemDart(
+      ['pub', 'get'],
+      workingDirectory: package.root,
+      nothrow: true,
+    );
     if (pubGet != 0) {
       throw "Couldn't get dependencies in ${package.root}";
     }

@@ -23,7 +23,6 @@ void main() {
         packageLocation: tempDir,
         mainProjectPath: '.',
         shouldSetFlutterSdkPath: true,
-        sidekickCliVersion: Version.none,
       );
 
       template.generate(props);
