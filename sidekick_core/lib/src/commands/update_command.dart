@@ -92,46 +92,46 @@ class UpdateCommand extends Command {
       nothrow: true,
     );
   }
-}
 
-/// Runs the update script `update_sidekick_cli.dart` in a new process using
-/// the `sidekick_core` package at the exact version that is specified in
-/// pubspec.lock
-///
-/// The current process - running `sidekick update` - can't access code of other
-/// version of sidekick_core. Dependencies can't be changed at runtime.
-/// This workaround allows accessing any version of sidekick_core.
-///
-/// Make sure to update the sidekick_core dependency before starting this
-/// process.
-void startUpdateScriptProcess(Version from, Version to) {
-  // it's important that we put the update script within the sidekick package,
-  // so SidekickContext can pick it up
-  final updateScript =
-      SidekickContext.sidekickPackage.buildDir.file('update.dart')
-        ..createSync(recursive: true)
-        ..writeAsStringSync('''
-  import 'package:sidekick_core/src/update_sidekick_cli.dart' as update;
-  Future<void> main(List<String> args) async {
+  /// Runs the update script `update_sidekick_cli.dart` in a new process using
+  /// the `sidekick_core` package at the exact version that is specified in
+  /// pubspec.lock
+  ///
+  /// The current process - running `sidekick update` - can't access code of other
+  /// version of sidekick_core. Dependencies can't be changed at runtime.
+  /// This workaround allows accessing any version of sidekick_core.
+  ///
+  /// Make sure to update the sidekick_core dependency before starting this
+  /// process.
+  void startUpdateScriptProcess(Version from, Version to) {
+    // it's important that we put the update script within the sidekick package,
+    // so SidekickContext can pick it up
+    final updateScript =
+        SidekickContext.sidekickPackage.buildDir.file('update.dart')
+          ..createSync(recursive: true)
+          ..writeAsStringSync('''
+import 'package:sidekick_core/src/update_sidekick_cli.dart' as update;
+Future<void> main(List<String> args) async {
   await update.main(args);
-  }
+}
   ''');
-  try {
-    // Do not change the arguments in a breaking way. The `update_sidekick_cli.dart`
-    // script will be called from another sidekick_core version. Changes will break
-    // the update process.
-    // Only add parameters, never remove any.
-    _dartCommand(
-      [
-        updateScript.path,
-        SidekickContext.cliName,
-        from.canonicalizedVersion,
-        to.canonicalizedVersion,
-      ],
-      progress: Progress.print(),
-    );
-  } finally {
-    updateScript.deleteSync();
+    try {
+      // Do not change the arguments in a breaking way. The `update_sidekick_cli.dart`
+      // script will be called from another sidekick_core version. Changes will break
+      // the update process.
+      // Only add parameters, never remove any.
+      _dartCommand(
+        [
+          updateScript.path,
+          SidekickContext.cliName,
+          from.canonicalizedVersion,
+          to.canonicalizedVersion,
+        ],
+        progress: Progress.print(),
+      );
+    } finally {
+      updateScript.deleteSync();
+    }
   }
 }
 
