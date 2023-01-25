@@ -10,7 +10,7 @@ environment:
 dependencies:
   analyzer: '>=4.0.0 <6.0.0'
   dcli: ^1.15.0
-  sidekick_core: '>=0.7.0 <1.0.0'
+  sidekick_core: ^1.0.0
 
 dev_dependencies:
   lint: ^1.0.0
