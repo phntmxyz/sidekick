@@ -152,12 +152,16 @@ abstract class VersionChecker {
   /// even if a local dependency doesn't explicitly specify a version in their
   /// pubspec.yaml, there always is an implicit version of 0.0.0
   static Version? getResolvedVersion(DartPackage package, String dependency) {
-    final resolvedVersion =
-        _readFromYaml(package.lockfile, ['packages', dependency, 'version']);
-    return resolvedVersion.match(
-      () => null,
-      (t) => t != null ? Version.parse(t) : null,
-    );
+    try {
+      final resolvedVersion =
+          _readFromYaml(package.lockfile, ['packages', dependency, 'version']);
+      return resolvedVersion.match(
+        () => null,
+        (t) => t != null ? Version.parse(t) : null,
+      );
+    } catch (e) {
+      return null;
+    }
   }
 
   /// Returns the latest version of [dependency] available on pub.dev
