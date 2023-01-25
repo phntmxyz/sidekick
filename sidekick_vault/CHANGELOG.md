@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.9.0](https://github.com/phntmxyz/sidekick/compare/sidekick_vault-v0.8.1..sidekick_vault-v0.9.0) (2023-1-25)
+
+- Update sidekick_core to 1.0.0 [#212](https://github.com/phntmxyz/sidekick/pull/212)
+
 ## [0.8.1](https://github.com/phntmxyz/sidekick/compare/sidekick_vault-v0.8.0..sidekick_vault-v0.8.1) (2023-1-22)
 
 - Replace promts with dcli [#202](https://github.com/phntmxyz/sidekick/pull/202)
