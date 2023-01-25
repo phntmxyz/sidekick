@@ -11,7 +11,7 @@ import 'package:sidekick_core/sidekick_core.dart' show Version;
 
 /// The version of package:sidekick
 // DO NOT MANUALLY EDIT THIS VERSION, instead run `sk bump-version sidekick`
-final Version version = Version.parse('0.9.0');
+final Version version = Version.parse('0.10.0');
 
 /// See the [README](https://github.com/phntmxyz/sidekick/blob/main/sidekick/README.md)
 /// for more information on sidekick

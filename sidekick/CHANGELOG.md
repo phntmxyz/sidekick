@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.10.0](https://github.com/phntmxyz/sidekick/compare/sidekick-v0.9.0..sidekick-v0.10.0) (2023-1-25)
+
+- Update to `sidekick_core: 1.0.0` [#214](https://github.com/phntmxyz/sidekick/pull/214)
+- Default to Dart `2.18.6` for new CLIs [#195](https://github.com/phntmxyz/sidekick/pull/195)
+- Lock dependencies with correct lower bound [#215](https://github.com/phntmxyz/sidekick/pull/215)
+
 ## [0.9.0](https://github.com/phntmxyz/sidekick/compare/sidekick-v0.8.0..sidekick-v0.9.0) (2023-1-20)
 
 ## Updates to the sidekick CLI
