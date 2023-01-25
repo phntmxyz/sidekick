@@ -6,16 +6,16 @@ import 'package:sidekick_plugin_installer/sidekick_plugin_installer.dart';
 Future<void> main() async {
   final SidekickPackage package = PluginContext.sidekickPackage;
 
-  final repoRoot = findRepository().root;
+  final projectRoot = SidekickContext.projectRoot;
   print('${green('Where do you want to create the vault directory?')} '
-      '(Relative to ${repoRoot.path})');
+      '(Relative to ${projectRoot.path})');
   final vaultPath = dcli.ask(
     'vault path:',
-    validator: _IsWithinDirectoryValidator(repoRoot),
+    validator: _IsWithinDirectoryValidator(projectRoot),
     defaultValue:
-        relative(repoRoot.directory('vault').path, from: repoRoot.path),
+        relative(projectRoot.directory('vault').path, from: projectRoot.path),
   );
-  final vaultDir = repoRoot.directory(vaultPath);
+  final vaultDir = projectRoot.directory(vaultPath);
 
   print("- Adding sidekick_vault as dependency");
   addSelfAsDependency();
@@ -44,16 +44,15 @@ Future<void> main() async {
 void _writeVaultFile(Directory vault, SidekickPackage package) {
   final vaultFile = package.root.file('lib/src/vault.dart');
   final vaultDirRelativeToPackage =
-      relative(vault.path, from: package.root.path);
+      relative(vault.path, from: SidekickContext.projectRoot.path);
 
-  final cliName = package.cliName;
   vaultFile.writeAsStringSync('''
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_vault/sidekick_vault.dart';
 
 final SidekickVault vault = SidekickVault(
-  location: Repository.requiredSidekickPackage.root.directory('$vaultDirRelativeToPackage'),
-  environmentVariableName: '${cliName.toUpperCase()}_VAULT_PASSPHRASE',
+  location: SidekickContext.projectRoot.directory('$vaultDirRelativeToPackage'),
+  environmentVariableName: '${SidekickContext.cliName.toUpperCase()}_VAULT_PASSPHRASE',
 );
 ''');
 }

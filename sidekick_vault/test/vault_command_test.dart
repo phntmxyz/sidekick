@@ -1,4 +1,5 @@
 import 'package:sidekick_core/sidekick_core.dart' hide withEnvironment;
+import 'package:sidekick_test/sidekick_test.dart';
 import 'package:sidekick_vault/sidekick_vault.dart';
 import 'package:test/test.dart';
 
@@ -10,15 +11,16 @@ void main() {
   late CommandRunner runner;
   late SidekickVault vault;
   setUp(() async {
-    runner = initializeSidekick(name: 'flg');
-    final tempVault = Directory.systemTemp.createTempSync();
-    await Directory('test/vault').copyRecursively(tempVault);
-    vault = SidekickVault(
-      location: tempVault,
-      environmentVariableName: 'FLG_VAULT_PASSPHRASE',
-    );
-
-    runner.addCommand(VaultCommand(vault: vault));
+    await insideFakeProjectWithSidekick((projectRoot) async {
+      final tempVault = Directory.systemTemp.createTempSync();
+      await Directory('test/vault').copyRecursively(tempVault);
+      vault = SidekickVault(
+        location: tempVault,
+        environmentVariableName: 'DASH_VAULT_PASSPHRASE',
+      );
+      runner = initializeSidekick();
+      runner.addCommand(VaultCommand(vault: vault));
+    });
   });
 
   test('encrypt/decrypt a file', () async {
@@ -56,7 +58,10 @@ void main() {
           'secret.txt.gpg',
         ]);
       },
-      environment: {'FLG_VAULT_PASSPHRASE': 'asdfasdf'},
+      environment: {
+        'DASH_VAULT_PASSPHRASE': 'asdfasdf',
+        'SIDEKICK_ENABLE_UPDATE_CHECK': 'false',
+      },
     );
     expect(decryptedFile.readAsStringSync(), 'Dash is cool');
   });
@@ -75,7 +80,7 @@ void main() {
               .having(
                 (it) => it,
                 'example',
-                contains('flg vault decrypt secret.txt.gpg'),
+                contains('dash vault decrypt secret.txt.gpg'),
               ),
         ),
       );
@@ -84,7 +89,10 @@ void main() {
       expect(
         () => withEnvironment(
           () => runner.run(['vault', 'decrypt', 'unknown.gpg']),
-          environment: {'FLG_VAULT_PASSPHRASE': 'asdfasdf'},
+          environment: {
+            'DASH_VAULT_PASSPHRASE': 'asdfasdf',
+            'SIDEKICK_ENABLE_UPDATE_CHECK': 'false',
+          },
         ),
         throwsA(
           isA<String>().having(
@@ -113,7 +121,7 @@ void main() {
               .having(
                 (it) => it,
                 'example',
-                contains('flg vault decrypt secret.txt.gpg'),
+                contains('dash vault decrypt secret.txt.gpg'),
               ),
         ),
       );
@@ -134,7 +142,7 @@ void main() {
               .having(
                 (it) => it,
                 'example',
-                contains('flg vault encrypt secret.txt'),
+                contains('dash vault encrypt secret.txt'),
               ),
         ),
       );
@@ -143,7 +151,10 @@ void main() {
       expect(
         () => withEnvironment(
           () => runner.run(['vault', 'encrypt', 'unknown.gpg']),
-          environment: {'FLG_VAULT_PASSPHRASE': 'asdfasdf'},
+          environment: {
+            'DASH_VAULT_PASSPHRASE': 'asdfasdf',
+            'SIDEKICK_ENABLE_UPDATE_CHECK': 'false',
+          },
         ),
         throwsA(
           isA<String>().having(
@@ -158,7 +169,10 @@ void main() {
       expect(
         () => withEnvironment(
           () => runner.run(['vault', 'encrypt', '/root/unknown.gpg']),
-          environment: {'FLG_VAULT_PASSPHRASE': 'asdfasdf'},
+          environment: {
+            'DASH_VAULT_PASSPHRASE': 'asdfasdf',
+            'SIDEKICK_ENABLE_UPDATE_CHECK': 'false',
+          },
         ),
         throwsA(
           isA<String>().having(
@@ -187,7 +201,7 @@ void main() {
               .having(
                 (it) => it,
                 'example',
-                contains('flg vault encrypt secret.txt.gpg'),
+                contains('dash vault encrypt secret.txt.gpg'),
               ),
         ),
       );
@@ -253,7 +267,10 @@ void main() {
           clearTextFile.absolute.path,
         ]);
       },
-      environment: {'FLG_VAULT_PASSPHRASE': 'asdfasdf'},
+      environment: {
+        'DASH_VAULT_PASSPHRASE': 'asdfasdf',
+        'SIDEKICK_ENABLE_UPDATE_CHECK': 'false',
+      },
     );
   });
 }
