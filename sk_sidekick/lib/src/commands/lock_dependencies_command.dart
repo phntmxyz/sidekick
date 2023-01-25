@@ -104,8 +104,10 @@ class LockDependenciesCommand extends Command {
           includeMin: true,
         );
       }
-      assert(range.allows(latestVersion),
-          'Latest version $latestVersion is not allowed by $range');
+      assert(
+        range.allows(latestVersion),
+        'Latest version $latestVersion is not allowed by $range',
+      );
 
       switch (type) {
         case 'transitive':
