@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.0.2](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v1.0.1..sidekick_core-v1.0.2) (2023-1-25)
+
+- Update templates to `sidekick_core: ^1.0.0` and `sidekick_plugin_installer: ^0.3.0`  [#214](https://github.com/phntmxyz/sidekick/pull/214)
+- Don't show a warning when `flutterSdkPath` or `dartSdkPath` is an absolute path. [#214](https://github.com/phntmxyz/sidekick/pull/214)
+
 ## [1.0.1](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v1.0.0..sidekick_core-v1.0.1) (2023-1-25)
 
 - Support for sidekick_plugin_installer:3.0.0 [#213](https://github.com/phntmxyz/sidekick/pull/213)
