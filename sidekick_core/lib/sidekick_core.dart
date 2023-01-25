@@ -101,6 +101,13 @@ SidekickCommandRunner initializeSidekick({
       throw "Could not find directory $parameterName at '$path'. The resolved path is: ${projectRoot.directory(path).path}";
     }
 
+    if (fromProjectRoot != null && fromRepoRoot == fromProjectRoot) {
+      if (fromProjectRoot.isAbsolute) {
+        // identical absolute paths, all good
+        return fromProjectRoot;
+      }
+    }
+
     if (fromProjectRoot != null && fromRepoRoot == null) {
       // path has been migrated, all good
       return fromProjectRoot;
