@@ -45,8 +45,8 @@ class _EncryptCommand extends Command {
 
   @override
   String? get usageFooter => '\n${green('Example usage:')}\n'
-      '> $cliName vault encrypt secret.txt.gpg\n'
-      '> $cliName vault encrypt --passpharse="****" --vault-location="secret.txt.gpg" path/to/secret.txt';
+      '> ${SidekickContext.cliName} vault encrypt secret.txt.gpg\n'
+      '> ${SidekickContext.cliName} vault encrypt --passpharse="****" --vault-location="secret.txt.gpg" path/to/secret.txt';
 
   final SidekickVault vault;
 
@@ -92,8 +92,8 @@ class _DecryptCommand extends Command {
 
   @override
   String? get usageFooter => '\n${green('Example usage:')}\n'
-      '> $cliName vault decrypt secret.txt.gpg\n'
-      '> $cliName vault decrypt --passpharse="****" --output="write/to/decrypted.txt" secret.txt.gpg';
+      '> ${SidekickContext.cliName} vault decrypt secret.txt.gpg\n'
+      '> ${SidekickContext.cliName} vault decrypt --passpharse="****" --output="write/to/decrypted.txt" secret.txt.gpg';
 
   final SidekickVault vault;
 
