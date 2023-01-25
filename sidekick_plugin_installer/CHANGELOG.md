@@ -1,5 +1,10 @@
 # Changelog
 
+## [0.3.0](https://github.com/phntmxyz/sidekick/compare/sidekick_plugin_installer-v0.2.1..sidekick_plugin_installer-v0.3.0) (2023-1-25)
+
+- Update sidekick_core to `1.0.0` https://github.com/phntmxyz/sidekick/commit/e22cc2d61fc8b9eeca33097b240fdadeb8f8e006
+- Simplify install script path pattern check [#139](https://github.com/phntmxyz/sidekick/pull/139)
+
 ## 0.2.1
 
 - Make `PluginContext.name` nullable, because it is not available in protocol v1. (#137)
