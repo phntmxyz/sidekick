@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.1](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v1.0.0..sidekick_core-v1.0.1) (2023-1-25)
+
+- Support for sidekick_plugin_installer:3.0.0 [#213](https://github.com/phntmxyz/sidekick/pull/213)
+
 ## [1.0.0](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v0.15.1..sidekick_core-v1.0.0) (2023-1-25)
 
 ### Breaking API & Behaviour Changes
