@@ -102,6 +102,10 @@ sidekick:
 packages:
   sidekick_core:
     dependency: "direct main"
+    source: hosted
+    description:
+      name: sidekick_core
+      url: "https://pub.dev"
     version: "${lockedSidekickCoreVersion ?? '0.0.0'}"
 ''');
 

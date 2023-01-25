@@ -154,10 +154,10 @@ abstract class VersionChecker {
   static Version? getResolvedVersion(DartPackage package, String dependency) {
     try {
       final resolvedVersion =
-      _readFromYaml(package.lockfile, ['packages', dependency, 'version']);
+          _readFromYaml(package.lockfile, ['packages', dependency, 'version']);
       return resolvedVersion.match(
-            () => null,
-            (t) => t != null ? Version.parse(t) : null,
+        () => null,
+        (t) => t != null ? Version.parse(t) : null,
       );
     } catch (e) {
       return null;
