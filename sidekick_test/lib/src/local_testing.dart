@@ -47,12 +47,14 @@ final bool analyzeGeneratedCode = env['SIDEKICK_ANALYZE'] == 'true';
 ///   override to use the local sidekick_core dependency
 /// - [sidekickCoreVersion] the dependency of sidekick_core in the pubspec.
 ///   Only written to pubspec if value is not null.
+/// - [lockedSidekickCoreVersion] the used version in pubspec.lock
 /// - [sidekickCliVersion] sidekick: cli_version: <sidekickCliVersion> in the
 ///   pubspec. Only written to pubspec if value is not null.
 R insideFakeProjectWithSidekick<R>(
   R Function(Directory projectRoot) callback, {
   bool overrideSidekickCoreWithLocalDependency = false,
   String? sidekickCoreVersion,
+  String? lockedSidekickCoreVersion,
   String? sidekickCliVersion,
   bool insideGitRepo = false,
 }) {
@@ -93,6 +95,14 @@ ${sidekickCliVersion == null ? '' : '''
 sidekick:
   cli_version: $sidekickCliVersion
 '''}
+''');
+  fakeSidekickDir.file('pubspec.lock')
+    ..createSync()
+    ..writeAsStringSync('''
+packages:
+  sidekick_core:
+    dependency: "direct main"
+    version: "${lockedSidekickCoreVersion ?? '0.0.0'}"
 ''');
 
   final fakeSidekickLibDir = fakeSidekickDir.directory('lib')..createSync();

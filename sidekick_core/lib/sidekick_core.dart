@@ -323,9 +323,9 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
   /// CLI version listed in the pubspec at the path ['sidekick', 'cli_version']
   void _checkCliVersionIntegrity() {
     try {
-      final sidekickCoreVersion = VersionChecker.getMinimumVersionConstraint(
+      final sidekickCoreVersion = VersionChecker.getResolvedVersion(
         SidekickContext.sidekickPackage,
-        ['dependencies', 'sidekick_core'],
+        'sidekick_core',
       );
       if (sidekickCoreVersion == null) {
         // Couldn't parse sidekick_core version. Most likely because it uses

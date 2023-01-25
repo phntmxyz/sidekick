@@ -14,7 +14,7 @@ void main() {
   });
 
   final expectedCliVersionIntegrityWarnings = [
-    contains('sidekick_core:0.0.2'),
+    contains('sidekick_core:0.0.5'),
     contains('sidekick.cli_version 0.0.1'),
     contains('dash sidekick update'),
   ];
@@ -42,8 +42,9 @@ void main() {
           },
         );
       },
-      sidekickCoreVersion: "0.0.2",
+      sidekickCoreVersion: "^0.0.2",
       sidekickCliVersion: "0.0.1",
+      lockedSidekickCoreVersion: "0.0.5", // might be higher
     );
   });
 
@@ -60,12 +61,13 @@ void main() {
 
             await runner.run(['-h']);
 
-            expect(fakeStderr.lines.isEmpty, isTrue);
+            expect(fakeStderr.lines.join('\n'), '');
           },
         );
       },
       sidekickCoreVersion: "0.0.1",
       sidekickCliVersion: "0.0.1",
+      lockedSidekickCoreVersion: "0.0.1",
     );
   });
 
@@ -90,8 +92,9 @@ void main() {
           },
         );
       },
-      sidekickCoreVersion: "0.0.2",
+      sidekickCoreVersion: "0.0.5",
       sidekickCliVersion: "0.0.1",
+      lockedSidekickCoreVersion: "0.0.5",
     );
   });
 
@@ -111,8 +114,9 @@ void main() {
           },
         );
       },
-      sidekickCoreVersion: "0.0.2",
+      sidekickCoreVersion: "0.0.5",
       sidekickCliVersion: "0.0.1",
+      lockedSidekickCoreVersion: "0.0.5",
     );
   });
 
@@ -137,8 +141,9 @@ void main() {
           },
         );
       },
-      sidekickCoreVersion: "0.0.2",
+      sidekickCoreVersion: "0.0.5",
       sidekickCliVersion: "0.0.1",
+      lockedSidekickCoreVersion: "0.0.5",
     );
   });
 }
