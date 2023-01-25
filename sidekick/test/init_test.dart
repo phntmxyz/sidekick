@@ -372,7 +372,7 @@ void main() {
             .readAsStringSync();
         expect(runFunctionFile, contains("mainProjectPath: '.',"));
 
-        final packages = Repository(root: project).findAllPackages();
+        final packages = findAllPackages(project);
         final expectedPackages = {
           DartPackage(project, 'root_with_packages'),
           DartPackage(project.directory('packages/package_a'), 'package_a'),
