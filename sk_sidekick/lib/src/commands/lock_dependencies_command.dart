@@ -45,7 +45,7 @@ class LockDependenciesCommand extends Command {
     }
 
     systemDart(
-      ['pub', 'upgrade'],
+      ['pub', 'get'],
       workingDirectory: package.root,
       throwOnError: () => "Couldn't update dependencies in ${package.root}",
     );
