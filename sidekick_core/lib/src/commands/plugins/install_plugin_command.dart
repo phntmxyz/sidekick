@@ -162,7 +162,7 @@ class InstallPluginCommand extends Command {
       // update when sidekick_core removes support for old sidekick_plugin_installer protocol
       min: Version.none,
       // update when sidekick_core supports new sidekick_plugin_installer protocol
-      max: Version(0, 3, 0),
+      max: Version(0, 4, 0),
     );
 
     // old CLIs shouldn't install new plugins
@@ -172,7 +172,7 @@ class InstallPluginCommand extends Command {
             'Please run ${yellow('${SidekickContext.cliName} sidekick update')} to update your CLI.';
       } else {
         throw 'The plugin is too old to be installed to your CLI '
-            'because it depends on an outdated version of sidekick_plugin_installer.';
+            'because it depends on an outdated version ($pluginInstallerProtocolVersion) of sidekick_plugin_installer.';
       }
     }
 
