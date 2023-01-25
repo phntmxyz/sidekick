@@ -62,11 +62,14 @@ class InstallPluginCommand extends Command {
 
     final packageNameOrGitUrlOrLocalPath = args.rest.first;
     final versionConstraint = args.rest.length > 1 ? args.rest[1] : null;
+    final exactRef = [
+      if (gitPath != null) "plugin in git repository at path '$gitPath'",
+      if (gitRef != null) "at git reference '$gitRef'",
+      if (versionConstraint != null) versionConstraint,
+    ].join(' ');
+
     print(
-      white('Installing $packageNameOrGitUrlOrLocalPath '
-          '${gitPath != null ? "plugin in git repository at path '$gitPath'" : ''} '
-          '${gitRef != null ? "at git reference '$gitRef'" : ''} '
-          '${versionConstraint != null ? '$versionConstraint ' : ''}'
+      white('Installing $packageNameOrGitUrlOrLocalPath $exactRef '
           'for ${SidekickContext.cliName}'),
     );
     env['SIDEKICK_PLUGIN_VERSION_CONSTRAINT'] = versionConstraint;
