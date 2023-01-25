@@ -1,5 +1,4 @@
 import 'package:sidekick_core/sidekick_core.dart' hide withEnvironment;
-import 'package:sidekick_test/sidekick_test.dart';
 import 'package:sidekick_vault/sidekick_vault.dart';
 import 'package:test/test.dart';
 
@@ -273,4 +272,99 @@ void main() {
       },
     );
   });
+}
+
+/// Fakes a sidekick package by writing required files and environment variables
+///
+/// Optional Parameters:
+/// - [overrideSidekickCoreWithLocalDependency] whether to add a dependency
+///   override to use the local sidekick_core dependency
+/// - [sidekickCoreVersion] the dependency of sidekick_core in the pubspec.
+///   Only written to pubspec if value is not null.
+/// - [lockedSidekickCoreVersion] the used version in pubspec.lock
+/// - [sidekickCliVersion] sidekick: cli_version: <sidekickCliVersion> in the
+///   pubspec. Only written to pubspec if value is not null.
+R insideFakeProjectWithSidekick<R>(
+  R Function(Directory projectRoot) callback, {
+  bool overrideSidekickCoreWithLocalDependency = false,
+  String? sidekickCoreVersion,
+  String? lockedSidekickCoreVersion,
+  String? sidekickCliVersion,
+  bool insideGitRepo = false,
+}) {
+  final tempDir = Directory.systemTemp.createTempSync();
+  Directory projectRoot = tempDir;
+  if (insideGitRepo) {
+    'git init -q ${tempDir.path}'.run;
+    projectRoot = tempDir.directory('myProject')..createSync();
+  }
+
+  projectRoot.file('pubspec.yaml')
+    ..createSync()
+    ..writeAsStringSync('''
+name: main_project
+
+environment:
+  sdk: '>=2.14.0 <3.0.0'
+''');
+  projectRoot.file('dash').createSync();
+
+  final fakeSidekickDir = projectRoot.directory('packages/dash')
+    ..createSync(recursive: true);
+
+  fakeSidekickDir.file('pubspec.yaml')
+    ..createSync()
+    ..writeAsStringSync('''
+name: dash
+
+environment:
+  sdk: '>=2.14.0 <3.0.0'
+  
+${sidekickCoreVersion == null && !overrideSidekickCoreWithLocalDependency ? '' : '''
+dependencies:
+  sidekick_core: ${sidekickCoreVersion ?? '0.0.0'}
+'''}
+
+${sidekickCliVersion == null ? '' : '''
+sidekick:
+  cli_version: $sidekickCliVersion
+'''}
+''');
+  fakeSidekickDir.file('pubspec.lock')
+    ..createSync()
+    ..writeAsStringSync('''
+packages:
+  sidekick_core:
+    dependency: "direct main"
+    source: hosted
+    description:
+      name: sidekick_core
+      url: "https://pub.dev"
+    version: "${lockedSidekickCoreVersion ?? '0.0.0'}"
+''');
+
+  final fakeSidekickLibDir = fakeSidekickDir.directory('lib')..createSync();
+
+  fakeSidekickLibDir.file('src/dash_project.dart').createSync(recursive: true);
+  fakeSidekickLibDir.file('dash_sidekick.dart').createSync();
+
+  env['SIDEKICK_PACKAGE_HOME'] = fakeSidekickDir.absolute.path;
+  env['SIDEKICK_ENTRYPOINT_HOME'] = projectRoot.absolute.path;
+  if (!env.exists('SIDEKICK_ENABLE_UPDATE_CHECK')) {
+    env['SIDEKICK_ENABLE_UPDATE_CHECK'] = 'false';
+  }
+
+  addTearDown(() {
+    projectRoot.deleteSync(recursive: true);
+    env['SIDEKICK_PACKAGE_HOME'] = null;
+    env['SIDEKICK_ENTRYPOINT_HOME'] = null;
+    env['SIDEKICK_ENABLE_UPDATE_CHECK'] = null;
+  });
+
+  Directory cwd = projectRoot;
+  return IOOverrides.runZoned<R>(
+    () => callback(projectRoot),
+    getCurrentDirectory: () => cwd,
+    setCurrentDirectory: (dir) => cwd = Directory(dir),
+  );
 }
