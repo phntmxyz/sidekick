@@ -125,7 +125,11 @@ void _format(
   Map<int, Iterable<File>> filesWithLineLength, {
   bool verify = false,
 }) {
-  for (final entry in filesWithLineLength.entries) {
+  // remove map entries with 0 files, otherwise the `format` command crashes
+  // because it expects at least one file or directory
+  final filteredFilesWithLineLength =
+      filesWithLineLength.entries.where((entry) => entry.value.isNotEmpty);
+  for (final entry in filteredFilesWithLineLength) {
     final exitCode = dart(
       [
         'format',
