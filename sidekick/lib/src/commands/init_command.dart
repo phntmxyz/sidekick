@@ -218,6 +218,9 @@ class InitCommand extends Command {
       ['format', cliPackage.path],
       progress: dcli.Progress.printStdErr(),
     );
+    print(
+      green('Successfully generated ${cliName}_sidekick 🎉'),
+    );
   }
 }
 
