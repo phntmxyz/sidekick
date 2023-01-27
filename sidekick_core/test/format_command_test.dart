@@ -55,14 +55,10 @@ name: dashi
         temp.deleteSync(recursive: true);
       });
     });
-    test(
-        'should return 80 as default if format argument is not present in pubspec',
-        () {
+    test('should return 80 as default if format argument is not present in pubspec', () {
       expect(getLineLength(package), 80);
     });
-    test(
-        'should return 80 as default if line_length argument is not present in pubspec',
-        () {
+    test('should return 80 as default if line_length argument is not present in pubspec', () {
       pubspecYamlFile.writeAsStringSync('''
 name: dashi
 format:
@@ -102,7 +98,6 @@ format:
               mainContent: _mainFileUnformatted,
             );
             final runner = initializeSidekick(
-              name: 'dash',
               dartSdkPath: systemDartSdkPath(),
             );
             runner.addCommand(FormatCommand());
@@ -136,7 +131,6 @@ name: dashi
               mainContent: _mainFileUnformatted,
             );
             final runner = initializeSidekick(
-              name: 'dash',
               dartSdkPath: systemDartSdkPath(),
             );
             runner.addCommand(FormatCommand());
@@ -165,7 +159,6 @@ name: dashi
               mainContent: _mainFileUnformatted,
             );
             final runner = initializeSidekick(
-              name: 'dash',
               dartSdkPath: systemDartSdkPath(),
             );
             runner.addCommand(FormatCommand());
@@ -196,7 +189,6 @@ format:
               mainContent: _mainFileUnformatted,
             );
             final runner = initializeSidekick(
-              name: 'dash',
               dartSdkPath: systemDartSdkPath(),
             );
             runner.addCommand(FormatCommand());
@@ -227,7 +219,6 @@ format:
               mainContent: _mainFileUnformatted,
             );
             final runner = initializeSidekick(
-              name: 'dash',
               dartSdkPath: systemDartSdkPath(),
             );
             runner.addCommand(FormatCommand());
@@ -256,7 +247,6 @@ name: dashi
               mainContent: _mainFileUnformatted,
             );
             final runner = initializeSidekick(
-              name: 'dash',
               dartSdkPath: systemDartSdkPath(),
             );
             runner.addCommand(
