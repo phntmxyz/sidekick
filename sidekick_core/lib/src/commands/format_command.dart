@@ -11,7 +11,7 @@ class FormatCommand extends Command {
   @override
   String get name => 'format';
 
-  /// glob patterns of packages whose dependencies should not be loaded
+  /// glob patterns of packages whose files should not be formatted.
   ///
   /// Search starts at repository root.
   ///
