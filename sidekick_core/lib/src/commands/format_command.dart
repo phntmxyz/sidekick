@@ -49,23 +49,20 @@ class FormatCommand extends Command {
     );
     argParser.addFlag(
       'verify',
-      help:
-          'Only verifies that all code is formatted, does not actually format it',
+      help: 'Only verifies that all code is formatted, does not actually format it',
     );
   }
 
   @override
   Future<void> run() async {
     final String? packageName = argResults?['package'] as String?;
-    final int? lineLength =
-        int.tryParse(argResults?['line-length'] as String? ?? '');
+    final int? lineLength = int.tryParse(argResults?['line-length'] as String? ?? '');
     final bool verify = argResults?['verify'] as bool? ?? false;
 
     final root = SidekickContext.projectRoot;
     final List<DartPackage> allPackages = findAllPackages(root);
     if (packageName != null) {
-      final package =
-          allPackages.where((it) => it.name == packageName).firstOrNull;
+      final package = allPackages.where((it) => it.name == packageName).firstOrNull;
       if (package == null) {
         throw "Package with name $packageName not found in repository "
             "${SidekickContext.repository?.path}";
@@ -89,71 +86,37 @@ class FormatCommand extends Command {
     // Key: line length
     // Value: all files to be formatted with the line length specified by key
 
+    // Getting all Dart files exluding files which are starting with a .
+    final allFiles = SidekickContext.projectRoot
+        .listSync(recursive: true)
+        .whereType<File>()
+        .filter((file) => file.extension == '.dart')
+        .filter(
+          (file) => file.uri.pathSegments.none(
+            (element) => element.startsWith('.'),
+          ),
+        )
+        .toList();
+
+    // Getting all directories excluding directories which are starting with a . and sort them by length
+    final sortedPackages = allPackages.sortedByDescending((element) => element.root.path.length);
+
     final lineLengthsAndFiles = <int, List<File>>{};
-    for (final package
-        in allPackages.filter((package) => !excluded.contains(package))) {
+
+    for (final package in sortedPackages) {
       final lineLength = getLineLength(package);
-      final allFilesInPackage = package.root
-          .listSync(recursive: true)
-          .whereType<File>()
-          .filter((file) => file.extension == '.dart')
-          .filter(
-            (file) => file.uri.pathSegments.none(
-              (element) => element.startsWith('.'),
-            ),
-          )
-          .filter((file) {
-        // exclude files from packages nested inside the current package
-        //
-        // e.g.
-        // package_bar: 80
-        //   package_bar_example: 120
-        //
-        // if this step was omitted, the result would be
-        // {
-        //   80: [package_bar/main.dart, package_bar/example/main.dart, ...],
-        //   120: [package_bar/example/main.dart, ...],
-        // }
-        // that is wrong, the correct result is
-        // {
-        //   80: [package_bar/main.dart, ...],
-        //   120: [package_bar/example/main.dart, ...],
-        // }
-
-        // get all packages except the current package in iteration
-        final allOtherPackages = ([...allPackages]..remove(package));
-        return allOtherPackages.any((otherPackage) {
-          // does any of the other packages also contain the current file?
-          if (file.path.contains(otherPackage.root.path)) {
-            // exclude file if path of other package matches the file path more closely
-            //
-            // e.g.
-            // package: packages/bar
-            // otherPackage: packages/bar/example
-            // file: packages/bar/example/main.dart
-            //
-            // otherPackage matches file path more closely,
-            // so the file should be excluded for the current package
-
-            return otherPackage.root.path.length < package.root.path.length;
-          }
-          return true;
-        });
-      });
-
-      (lineLengthsAndFiles[lineLength] ??= []).addAll(allFilesInPackage);
+      final filesInPackage = allFiles.where((file) => file.path.contains(package.root.path)).toList();
+      allFiles.removeWhere((file) => filesInPackage.contains(file));
+      (lineLengthsAndFiles[lineLength] ??= []).addAll(filesInPackage);
     }
 
     // exclude files from excludeGlob
     final excludedFiles = excludeGlob.expand(
-      (rule) => Glob("${root.path}/$rule")
-          .listSync(root: root.path)
-          .whereType<File>(),
+      (rule) => Glob("${root.path}/$rule").listSync(root: root.path).whereType<File>(),
     );
     for (final files in lineLengthsAndFiles.values) {
       files.removeWhere(
-        (file) =>
-            excludedFiles.any((excludedFile) => file.path == excludedFile.path),
+        (file) => excludedFiles.any((excludedFile) => file.path == excludedFile.path),
       );
     }
 
@@ -191,7 +154,6 @@ void _format(
 int getLineLength(DartPackage package) {
   final yamlFile = package.root.file('pubspec.yaml').readAsStringSync();
   final pubspecData = loadYaml(yamlFile) as YamlMap;
-  final mapData =
-      pubspecData.map((key, value) => MapEntry(key.toString(), value));
+  final mapData = pubspecData.map((key, value) => MapEntry(key.toString(), value));
   return (mapData['format'] as Map?)?['line_length'] as int? ?? 80;
 }
