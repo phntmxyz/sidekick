@@ -1,5 +1,4 @@
 import 'package:glob/glob.dart';
-import 'package:glob/list_local_fs.dart';
 import 'package:meta/meta.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:yaml/yaml.dart';
@@ -71,20 +70,8 @@ class FormatCommand extends Command {
       // _format(package, globalLineLength: lineLength);
       return;
     }
-    final globExcludes = excludeGlob
-        .expand((rule) {
-          // start search at repo root
-          return Glob("${root.path}/$rule").listSync(root: root.path);
-        })
-        .whereType<Directory>()
-        .mapNotNull((e) => DartPackage.fromDirectory(e));
 
-    final excluded = [
-      ...globExcludes,
-    ];
-
-    // Key: line length
-    // Value: all files to be formatted with the line length specified by key
+    final globExcludes = excludeGlob.map<Glob>((rule) => Glob("${root.path}/$rule"));
 
     // Getting all Dart files exluding files which are starting with a .
     final allFiles = SidekickContext.projectRoot
@@ -94,6 +81,11 @@ class FormatCommand extends Command {
         .filter(
           (file) => file.uri.pathSegments.none(
             (element) => element.startsWith('.'),
+          ),
+        )
+        .whereNot(
+          (file) => globExcludes.any(
+            (glob) => glob.matches(file.path),
           ),
         )
         .toList();
@@ -108,16 +100,6 @@ class FormatCommand extends Command {
       final filesInPackage = allFiles.where((file) => file.path.contains(package.root.path)).toList();
       allFiles.removeWhere((file) => filesInPackage.contains(file));
       (lineLengthsAndFiles[lineLength] ??= []).addAll(filesInPackage);
-    }
-
-    // exclude files from excludeGlob
-    final excludedFiles = excludeGlob.expand(
-      (rule) => Glob("${root.path}/$rule").listSync(root: root.path).whereType<File>(),
-    );
-    for (final files in lineLengthsAndFiles.values) {
-      files.removeWhere(
-        (file) => excludedFiles.any((excludedFile) => file.path == excludedFile.path),
-      );
     }
 
     if (lineLength != null) {
