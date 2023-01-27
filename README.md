@@ -99,6 +99,17 @@ This commands code is part of your CLI, intended to be modified to your needs.
 Gets all dependencies for all packages in your project.
 This will become your most used command in no time!
 
+### format
+
+Formats all Dart files in the project. Default will be 80.
+You can change the line length for all files by passing `--line-length <length>`.
+Or you can change the line length for a specific package by adding the following to the `pubspec.yaml` of the package:
+
+```yaml
+format:
+  line-length: 120
+```
+
 ### flutter
 
 Runs the bundled `flutter` runtime (provided via [flutter-wrapper](https://github.com/passsy/flutter_wrapper)) with any arguments.
