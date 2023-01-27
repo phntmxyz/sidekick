@@ -95,10 +95,16 @@ class FormatCommand extends Command {
     final lineLengthsAndFiles = <int, List<File>>{};
 
     for (final package in sortedPackages) {
-      final resolvedLineLength = lineLength ?? getLineLength(package);
+      final lineLength = getLineLength(package);
       final filesInPackage = allFiles.where(package.containsPath).toList();
       allFiles.removeWhere((file) => filesInPackage.contains(file));
-      (lineLengthsAndFiles[resolvedLineLength] ??= []).addAll(filesInPackage);
+      (lineLengthsAndFiles[lineLength] ??= []).addAll(filesInPackage);
+    }
+
+    if (lineLength != null) {
+      final tempMap = [...lineLengthsAndFiles.values];
+      lineLengthsAndFiles.clear();
+      (lineLengthsAndFiles[lineLength] ??= []).addAll(tempMap.expand((e) => e));
     }
     _format(lineLengthsAndFiles, verify: verify);
   }
