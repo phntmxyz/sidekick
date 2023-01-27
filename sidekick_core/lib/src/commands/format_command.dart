@@ -60,33 +60,26 @@ class FormatCommand extends Command {
 
     final root = SidekickContext.projectRoot;
     final List<DartPackage> allPackages = findAllPackages(root);
+    final globExcludes = excludeGlob.map<Glob>((rule) => Glob("${root.path}/$rule"));
     if (packageName != null) {
       final package = allPackages.where((it) => it.name == packageName).firstOrNull;
       if (package == null) {
         throw "Package with name $packageName not found in repository "
             "${SidekickContext.repository?.path}";
       }
-      // only format for selected package
-      // _format(package, globalLineLength: lineLength);
+      final int lineLength = getLineLength(package);
+      final allDartFiles = package.root.listSync(recursive: true).filterAllFiles(
+            globExcludes,
+          );
+      _format({lineLength: allDartFiles}, verify: verify);
       return;
     }
-
-    final globExcludes = excludeGlob.map<Glob>((rule) => Glob("${root.path}/$rule"));
 
     // Getting all Dart files exluding files which are starting with a .
     final allFiles = SidekickContext.projectRoot
         .listSync(recursive: true)
-        .whereType<File>()
-        .filter((file) => file.extension == '.dart')
-        .filter(
-          (file) => file.uri.pathSegments.none(
-            (element) => element.startsWith('.'),
-          ),
-        )
-        .whereNot(
-          (file) => globExcludes.any(
-            (glob) => glob.matches(file.path),
-          ),
+        .filterAllFiles(
+          globExcludes,
         )
         .toList();
 
@@ -108,6 +101,23 @@ class FormatCommand extends Command {
       (lineLengthsAndFiles[lineLength] ??= []).addAll(tempMap.expand((e) => e));
     }
     _format(lineLengthsAndFiles, verify: verify);
+  }
+}
+
+extension on Iterable<FileSystemEntity> {
+  Iterable<File> filterAllFiles(Iterable<Glob> globExcludes) {
+    return whereType<File>()
+        .filter((file) => file.extension == '.dart')
+        .filter(
+          (file) => file.uri.pathSegments.none(
+            (element) => element.startsWith('.'),
+          ),
+        )
+        .whereNot(
+          (file) => globExcludes.any(
+            (glob) => glob.matches(file.path),
+          ),
+        );
   }
 }
 
