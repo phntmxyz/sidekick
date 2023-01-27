@@ -48,29 +48,34 @@ class FormatCommand extends Command {
     );
     argParser.addFlag(
       'verify',
-      help: 'Only verifies that all code is formatted, does not actually format it',
+      help:
+          'Only verifies that all code is formatted, does not actually format it',
     );
   }
 
   @override
   Future<void> run() async {
     final String? packageName = argResults?['package'] as String?;
-    final int? lineLength = int.tryParse(argResults?['line-length'] as String? ?? '');
+    final int? lineLength =
+        int.tryParse(argResults?['line-length'] as String? ?? '');
     final bool verify = argResults?['verify'] as bool? ?? false;
 
     final root = SidekickContext.projectRoot;
     final List<DartPackage> allPackages = findAllPackages(root);
-    final globExcludes = excludeGlob.map<Glob>((rule) => Glob("${root.path}/$rule"));
+    final globExcludes =
+        excludeGlob.map<Glob>((rule) => Glob("${root.path}/$rule"));
     if (packageName != null) {
-      final package = allPackages.where((it) => it.name == packageName).firstOrNull;
+      final package =
+          allPackages.where((it) => it.name == packageName).firstOrNull;
       if (package == null) {
         throw "Package with name $packageName not found in repository "
             "${SidekickContext.repository?.path}";
       }
       final int lineLength = getLineLength(package);
-      final allDartFiles = package.root.listSync(recursive: true).filterAllFiles(
-            globExcludes,
-          );
+      final allDartFiles =
+          package.root.listSync(recursive: true).filterAllFiles(
+                globExcludes,
+              );
       _format({lineLength: allDartFiles}, verify: verify);
       return;
     }
@@ -84,13 +89,16 @@ class FormatCommand extends Command {
         .toList();
 
     // Getting all directories excluding directories which are starting with a . and sort them by length
-    final sortedPackages = allPackages.sortedByDescending((element) => element.root.path.length);
+    final sortedPackages =
+        allPackages.sortedByDescending((element) => element.root.path.length);
 
     final lineLengthsAndFiles = <int, List<File>>{};
 
     for (final package in sortedPackages) {
       final lineLength = getLineLength(package);
-      final filesInPackage = allFiles.where((file) => file.path.contains(package.root.path)).toList();
+      final filesInPackage = allFiles
+          .where((file) => file.path.contains(package.root.path))
+          .toList();
       allFiles.removeWhere((file) => filesInPackage.contains(file));
       (lineLengthsAndFiles[lineLength] ??= []).addAll(filesInPackage);
     }
@@ -146,6 +154,7 @@ void _format(
 int getLineLength(DartPackage package) {
   final yamlFile = package.root.file('pubspec.yaml').readAsStringSync();
   final pubspecData = loadYaml(yamlFile) as YamlMap;
-  final mapData = pubspecData.map((key, value) => MapEntry(key.toString(), value));
+  final mapData =
+      pubspecData.map((key, value) => MapEntry(key.toString(), value));
   return (mapData['format'] as Map?)?['line_length'] as int? ?? 80;
 }
