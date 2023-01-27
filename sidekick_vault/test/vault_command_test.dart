@@ -10,15 +10,16 @@ void main() {
   late CommandRunner runner;
   late SidekickVault vault;
   setUp(() async {
-    runner = initializeSidekick(name: 'flg');
-    final tempVault = Directory.systemTemp.createTempSync();
-    await Directory('test/vault').copyRecursively(tempVault);
-    vault = SidekickVault(
-      location: tempVault,
-      environmentVariableName: 'FLG_VAULT_PASSPHRASE',
-    );
-
-    runner.addCommand(VaultCommand(vault: vault));
+    await insideFakeProjectWithSidekick((projectRoot) async {
+      final tempVault = Directory.systemTemp.createTempSync();
+      await Directory('test/vault').copyRecursively(tempVault);
+      vault = SidekickVault(
+        location: tempVault,
+        environmentVariableName: 'DASH_VAULT_PASSPHRASE',
+      );
+      runner = initializeSidekick();
+      runner.addCommand(VaultCommand(vault: vault));
+    });
   });
 
   test('encrypt/decrypt a file', () async {
@@ -56,7 +57,10 @@ void main() {
           'secret.txt.gpg',
         ]);
       },
-      environment: {'FLG_VAULT_PASSPHRASE': 'asdfasdf'},
+      environment: {
+        'DASH_VAULT_PASSPHRASE': 'asdfasdf',
+        'SIDEKICK_ENABLE_UPDATE_CHECK': 'false',
+      },
     );
     expect(decryptedFile.readAsStringSync(), 'Dash is cool');
   });
@@ -75,7 +79,7 @@ void main() {
               .having(
                 (it) => it,
                 'example',
-                contains('flg vault decrypt secret.txt.gpg'),
+                contains('dash vault decrypt secret.txt.gpg'),
               ),
         ),
       );
@@ -84,7 +88,10 @@ void main() {
       expect(
         () => withEnvironment(
           () => runner.run(['vault', 'decrypt', 'unknown.gpg']),
-          environment: {'FLG_VAULT_PASSPHRASE': 'asdfasdf'},
+          environment: {
+            'DASH_VAULT_PASSPHRASE': 'asdfasdf',
+            'SIDEKICK_ENABLE_UPDATE_CHECK': 'false',
+          },
         ),
         throwsA(
           isA<String>().having(
@@ -113,7 +120,7 @@ void main() {
               .having(
                 (it) => it,
                 'example',
-                contains('flg vault decrypt secret.txt.gpg'),
+                contains('dash vault decrypt secret.txt.gpg'),
               ),
         ),
       );
@@ -134,7 +141,7 @@ void main() {
               .having(
                 (it) => it,
                 'example',
-                contains('flg vault encrypt secret.txt'),
+                contains('dash vault encrypt secret.txt'),
               ),
         ),
       );
@@ -143,7 +150,10 @@ void main() {
       expect(
         () => withEnvironment(
           () => runner.run(['vault', 'encrypt', 'unknown.gpg']),
-          environment: {'FLG_VAULT_PASSPHRASE': 'asdfasdf'},
+          environment: {
+            'DASH_VAULT_PASSPHRASE': 'asdfasdf',
+            'SIDEKICK_ENABLE_UPDATE_CHECK': 'false',
+          },
         ),
         throwsA(
           isA<String>().having(
@@ -158,7 +168,10 @@ void main() {
       expect(
         () => withEnvironment(
           () => runner.run(['vault', 'encrypt', '/root/unknown.gpg']),
-          environment: {'FLG_VAULT_PASSPHRASE': 'asdfasdf'},
+          environment: {
+            'DASH_VAULT_PASSPHRASE': 'asdfasdf',
+            'SIDEKICK_ENABLE_UPDATE_CHECK': 'false',
+          },
         ),
         throwsA(
           isA<String>().having(
@@ -187,7 +200,7 @@ void main() {
               .having(
                 (it) => it,
                 'example',
-                contains('flg vault encrypt secret.txt.gpg'),
+                contains('dash vault encrypt secret.txt.gpg'),
               ),
         ),
       );
@@ -253,7 +266,105 @@ void main() {
           clearTextFile.absolute.path,
         ]);
       },
-      environment: {'FLG_VAULT_PASSPHRASE': 'asdfasdf'},
+      environment: {
+        'DASH_VAULT_PASSPHRASE': 'asdfasdf',
+        'SIDEKICK_ENABLE_UPDATE_CHECK': 'false',
+      },
     );
   });
+}
+
+/// Fakes a sidekick package by writing required files and environment variables
+///
+/// Optional Parameters:
+/// - [overrideSidekickCoreWithLocalDependency] whether to add a dependency
+///   override to use the local sidekick_core dependency
+/// - [sidekickCoreVersion] the dependency of sidekick_core in the pubspec.
+///   Only written to pubspec if value is not null.
+/// - [lockedSidekickCoreVersion] the used version in pubspec.lock
+/// - [sidekickCliVersion] sidekick: cli_version: <sidekickCliVersion> in the
+///   pubspec. Only written to pubspec if value is not null.
+R insideFakeProjectWithSidekick<R>(
+  R Function(Directory projectRoot) callback, {
+  bool overrideSidekickCoreWithLocalDependency = false,
+  String? sidekickCoreVersion,
+  String? lockedSidekickCoreVersion,
+  String? sidekickCliVersion,
+  bool insideGitRepo = false,
+}) {
+  final tempDir = Directory.systemTemp.createTempSync();
+  Directory projectRoot = tempDir;
+  if (insideGitRepo) {
+    'git init -q ${tempDir.path}'.run;
+    projectRoot = tempDir.directory('myProject')..createSync();
+  }
+
+  projectRoot.file('pubspec.yaml')
+    ..createSync()
+    ..writeAsStringSync('''
+name: main_project
+
+environment:
+  sdk: '>=2.14.0 <3.0.0'
+''');
+  projectRoot.file('dash').createSync();
+
+  final fakeSidekickDir = projectRoot.directory('packages/dash')
+    ..createSync(recursive: true);
+
+  fakeSidekickDir.file('pubspec.yaml')
+    ..createSync()
+    ..writeAsStringSync('''
+name: dash
+
+environment:
+  sdk: '>=2.14.0 <3.0.0'
+  
+${sidekickCoreVersion == null && !overrideSidekickCoreWithLocalDependency ? '' : '''
+dependencies:
+  sidekick_core: ${sidekickCoreVersion ?? '0.0.0'}
+'''}
+
+${sidekickCliVersion == null ? '' : '''
+sidekick:
+  cli_version: $sidekickCliVersion
+'''}
+''');
+  fakeSidekickDir.file('pubspec.lock')
+    ..createSync()
+    ..writeAsStringSync('''
+packages:
+  sidekick_core:
+    dependency: "direct main"
+    source: hosted
+    description:
+      name: sidekick_core
+      url: "https://pub.dev"
+    version: "${lockedSidekickCoreVersion ?? '0.0.0'}"
+''');
+
+  final fakeSidekickLibDir = fakeSidekickDir.directory('lib')..createSync();
+
+  fakeSidekickLibDir.file('src/dash_project.dart').createSync(recursive: true);
+  fakeSidekickLibDir.file('dash_sidekick.dart').createSync();
+
+  env['SIDEKICK_PACKAGE_HOME'] = fakeSidekickDir.absolute.path;
+  env['SIDEKICK_ENTRYPOINT_HOME'] = projectRoot.absolute.path;
+  if (!env.exists('SIDEKICK_ENABLE_UPDATE_CHECK')) {
+    env['SIDEKICK_ENABLE_UPDATE_CHECK'] = 'false';
+  }
+
+  addTearDown(() {
+    projectRoot.deleteSync(recursive: true);
+    env['SIDEKICK_PACKAGE_HOME'] = null;
+    env['SIDEKICK_ENTRYPOINT_HOME'] = null;
+    env['SIDEKICK_ENABLE_UPDATE_CHECK'] = null;
+  });
+
+  Directory cwd = projectRoot;
+  return IOOverrides.runZoned<R>(
+    () => callback(projectRoot),
+    getCurrentDirectory: () => cwd,
+    setCurrentDirectory: (dir) => cwd = Directory(dir),
+  );
 }

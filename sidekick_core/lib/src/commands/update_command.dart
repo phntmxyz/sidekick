@@ -79,20 +79,18 @@ class UpdateCommand extends Command {
       pubspecKeys: ['dependencies', 'sidekick_core'],
       newMinimumVersion: to,
     );
-    try {
-      _dartCommand(
-        ['pub', 'get'],
-        workingDirectory: SidekickContext.sidekickPackage.root,
-        progress: Progress.devNull(),
-      );
-    } catch (e) {
+    _dartCommand(
+      ['pub', 'get'],
+      workingDirectory: SidekickContext.sidekickPackage.root,
+      progress: Progress.devNull(),
       // This pub get is a nice to have, and it doesn't matter if it fails or
       // not. It may fail when the Dart SDK version has been updated, because
       // `_dartCommand` still uses the "old" Dart SDK.
       // The new SDK will be downloaded with the next execution.
 
       // For all other errors: They become visible the next time the cli is executed
-    }
+      nothrow: true,
+    );
   }
 
   /// Runs the update script `update_sidekick_cli.dart` in a new process using
@@ -112,10 +110,10 @@ class UpdateCommand extends Command {
         SidekickContext.sidekickPackage.buildDir.file('update.dart')
           ..createSync(recursive: true)
           ..writeAsStringSync('''
-  import 'package:sidekick_core/src/update_sidekick_cli.dart' as update;
-  Future<void> main(List<String> args) async {
+import 'package:sidekick_core/src/update_sidekick_cli.dart' as update;
+Future<void> main(List<String> args) async {
   await update.main(args);
-  }
+}
   ''');
     try {
       // Do not change the arguments in a breaking way. The `update_sidekick_cli.dart`
@@ -165,6 +163,7 @@ void Function(
   List<String> args, {
   Progress? progress,
   Directory? workingDirectory,
+  bool nothrow,
 }) get _dartCommand {
   return sidekickDartRuntime.isDownloaded() ? sidekickDartRuntime.dart : dart;
 }

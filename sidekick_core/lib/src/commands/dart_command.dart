@@ -12,6 +12,6 @@ class DartCommand extends ForwardCommand {
 
   @override
   Future<void> run() async {
-    exitCode = dart(argResults!.arguments);
+    exitCode = dart(argResults!.arguments, nothrow: true);
   }
 }

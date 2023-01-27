@@ -34,7 +34,6 @@ environment:
           setUpPackages(dir);
 
           final runner = initializeSidekick(
-            name: 'dash',
             dartSdkPath: systemDartSdkPath(),
           );
           runner.addCommand(DepsCommand());
@@ -64,7 +63,6 @@ environment:
           setUpPackages(dir);
 
           final runner = initializeSidekick(
-            name: 'dash',
             dartSdkPath: systemDartSdkPath(),
           );
           runner.addCommand(
@@ -110,7 +108,6 @@ environment:
           IOOverrides.current!.setCurrentDirectory(otherDir.path);
 
           final runner = initializeSidekick(
-            name: 'dash',
             dartSdkPath: systemDartSdkPath(),
           );
 
@@ -157,7 +154,6 @@ environment:
           IOOverrides.current!.setCurrentDirectory(otherDir.path);
 
           final runner = initializeSidekick(
-            name: 'dash',
             dartSdkPath: systemDartSdkPath(),
           );
 
@@ -202,7 +198,6 @@ environment:
             ..writeAsStringSync('name: broken');
 
           final runner = initializeSidekick(
-            name: 'dash',
             dartSdkPath: systemDartSdkPath(),
           );
           runner.addCommand(DepsCommand());

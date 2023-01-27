@@ -23,7 +23,6 @@ void main() {
         packageLocation: tempDir,
         mainProjectPath: '.',
         shouldSetFlutterSdkPath: true,
-        sidekickCliVersion: Version.none,
       );
 
       template.generate(props);
@@ -63,6 +62,7 @@ void main() {
 
       expect(generatedFilePaths, expectedFiles);
       expect(generatedExecutableFilePaths, expectedExecutables);
+      overrideSidekickCoreWithLocalPath(tempDir);
 
       run('dart pub get', workingDirectory: tempDir.path);
       if (analyzeGeneratedCode) {

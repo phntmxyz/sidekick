@@ -11,10 +11,10 @@ class DartAnalyzeCommand extends ForwardCommand {
   @override
   Future<void> run() async {
     // running in root of project, includes all packages
-    final exitCode = dart(
+    exitCode = dart(
       ['analyze', ...argResults!.arguments],
       workingDirectory: SidekickContext.projectRoot,
+      nothrow: true,
     );
-    exit(exitCode);
   }
 }

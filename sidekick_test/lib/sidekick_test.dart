@@ -2,5 +2,7 @@
 library sidekick_test;
 
 export 'package:mocktail/mocktail.dart';
+
+export 'src/delegated_command.dart';
 export 'src/fake_sdk.dart';
 export 'src/local_testing.dart';

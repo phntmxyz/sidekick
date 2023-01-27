@@ -18,6 +18,6 @@ jobs:
       - name: Install dependencies
         run: ./sk deps
       - name: lint
-        run: ./sk analyze
+        run: ./sk analyze --fatal-infos
       - name: publishable
         run: ./sk verify-publish-state

@@ -65,8 +65,7 @@ class InitCommand extends Command {
       throw 'Entrypoint directory ${entrypointDir.path} does not exist';
     }
 
-    bool isGitDir(Directory dir) => dir.directory('.git').existsSync();
-    final repoRoot = entrypointDir.findParent(isGitDir) ?? entrypointDir;
+    final Directory projectRoot = entrypointDir;
 
     final cliPackageDir = Directory(
       argResults!['cliPackageDirectory'] as String? ??
@@ -75,26 +74,23 @@ class InitCommand extends Command {
             'Must be an absolute path or a path '
             'relative to the repository root (${entrypointDir.path}).\n'
             'Or press enter to use the suggested directory.\n',
-            validator: DirectoryIsWithinOrEqualValidator(repoRoot),
-            defaultValue: repoRoot.directory('packages').path,
+            validator: DirectoryIsWithinOrEqualValidator(projectRoot),
+            defaultValue: projectRoot.directory('packages').path,
           ),
     );
-    if (!cliPackageDir.isWithinOrEqual(repoRoot)) {
-      throw 'CLI package directory ${cliPackageDir.path} is not within or equal to ${repoRoot.path}';
+    if (!cliPackageDir.isWithinOrEqual(projectRoot)) {
+      throw 'CLI package directory ${cliPackageDir.path} is not within or equal to ${projectRoot.path}';
     }
 
     final mainProjectPath = argResults!['mainProjectPath'] as String?;
     DartPackage? mainProject = mainProjectPath != null
-        ? DartPackage.fromDirectory(
-            Directory(mainProjectPath),
-          )
-        : (DartPackage.fromDirectory(entrypointDir) ??
-            DartPackage.fromDirectory(repoRoot));
+        ? DartPackage.fromDirectory(Directory(mainProjectPath))
+        : DartPackage.fromDirectory(projectRoot);
     if (mainProjectPath != null && mainProject == null) {
       throw 'mainProjectPath was given, but no DartPackage could be found at the given path $mainProjectPath';
     }
-    if (mainProject != null && !mainProject.root.isWithinOrEqual(repoRoot)) {
-      throw 'Main project ${mainProject.root.path} is not within or equal to ${repoRoot.path}';
+    if (mainProject != null && !mainProject.root.isWithinOrEqual(projectRoot)) {
+      throw 'Main project ${mainProject.root.path} is not within or equal to ${projectRoot.path}';
     }
 
     final cliName = argResults!['cliName'] as String? ??
@@ -103,7 +99,7 @@ class InitCommand extends Command {
             '${dcli.green('Please select a name for your sidekick CLI.')}\n'
             'We know, selecting a name is hard. Here are some suggestions:',
           );
-          final suggester = NameSuggester(projectDir: repoRoot);
+          final suggester = NameSuggester(projectDir: projectRoot);
           final name = suggester.askUserForName();
           if (name == null) {
             throw 'No cliName provided. Call `sidekick init --cliName <your-name>`';
@@ -123,7 +119,7 @@ class InitCommand extends Command {
 
     print("\nGenerating ${cliName}_sidekick");
 
-    final packages = Repository(root: repoRoot).findAllPackages();
+    final packages = findAllPackages(projectRoot);
 
     if (mainProject == null && packages.isNotEmpty) {
       // Ask user for a main project (optional)
@@ -140,7 +136,7 @@ class InitCommand extends Command {
 
     await createSidekickPackage(
       cliName: cliName,
-      repoRoot: repoRoot,
+      repoRoot: projectRoot,
       packageDir: cliPackageDir,
       entrypointDir: entrypointDir,
       mainProject: mainProject,
@@ -177,12 +173,10 @@ class InitCommand extends Command {
       mainProjectPath: mainProject != null
           ? relative(mainProject.root.path, from: repoRoot.absolute.path)
           : null,
-      shouldSetFlutterSdkPath: Repository(root: repoRoot)
-          .findAllPackages()
-          .any((package) => package.isFlutterPackage),
+      shouldSetFlutterSdkPath:
+          findAllPackages(repoRoot).any((package) => package.isFlutterPackage),
       entrypointLocation: entrypoint,
       packageLocation: cliPackage,
-      sidekickCliVersion: core.version,
     );
     SidekickTemplate().generate(props);
 

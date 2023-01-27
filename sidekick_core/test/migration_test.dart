@@ -117,7 +117,7 @@ void main() {
       );
       fail('should have thrown');
     } catch (e) {
-      expect(e, "something went wrong");
+      expect(e, contains("something went wrong"));
     }
 
     expect(executed, [
