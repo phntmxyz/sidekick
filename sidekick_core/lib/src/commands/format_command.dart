@@ -95,16 +95,14 @@ class FormatCommand extends Command {
     final lineLengthsAndFiles = <int, List<File>>{};
 
     for (final package in sortedPackages) {
-      final lineLength = getLineLength(package);
-      final filesInPackage = allFiles.where(package.containsPath).toList();
+      final resolvedLineLength = lineLength ?? getLineLength(package);
+      final filesInPackage = allFiles
+          .where((file) => file.path.contains(package.root.path))
+          .toList();
       allFiles.removeWhere((file) => filesInPackage.contains(file));
-      (lineLengthsAndFiles[lineLength] ??= []).addAll(filesInPackage);
-    }
-
-    if (lineLength != null) {
-      final tempMap = [...lineLengthsAndFiles.values];
-      lineLengthsAndFiles.clear();
-      (lineLengthsAndFiles[lineLength] ??= []).addAll(tempMap.expand((e) => e));
+      if (filesInPackage.isNotEmpty) {
+        (lineLengthsAndFiles[resolvedLineLength] ??= []).addAll(filesInPackage);
+      }
     }
     _format(lineLengthsAndFiles, verify: verify);
   }
@@ -133,9 +131,7 @@ void _format(
 }) {
   // remove map entries with 0 files, otherwise the `format` command crashes
   // because it expects at least one file or directory
-  final filteredFilesWithLineLength =
-      filesWithLineLength.entries.where((entry) => entry.value.isNotEmpty);
-  for (final entry in filteredFilesWithLineLength) {
+  for (final entry in filesWithLineLength.entries) {
     final exitCode = dart(
       [
         'format',
