@@ -4,28 +4,6 @@ import 'package:sidekick_test/fake_stdio.dart';
 import 'package:sidekick_test/sidekick_test.dart';
 import 'package:test/test.dart';
 
-const String _mainFileUnformatted = '''
-void main() {
-  final test = ['Hello', 'World', 'This', 'is', 'a', 'test', 'for', 'the', 'format', 'command'];
-}
-''';
-const String _mainFileFormatted = '''
-void main() {
-  final test = [
-    'Hello',
-    'World',
-    'This',
-    'is',
-    'a',
-    'test',
-    'for',
-    'the',
-    'format',
-    'command'
-  ];
-}
-''';
-
 void main() {
   void setupProject(
     Directory tempDir, {
@@ -303,5 +281,62 @@ name: dashi
         );
       });
     });
+    test('Exclude hidden folders', () async {
+      await insideFakeProjectWithSidekick((dir) async {
+        final fakeStdOut = FakeStdoutStream();
+        await overrideIoStreams(
+          stdout: () => fakeStdOut,
+          body: () async {
+            setupProject(
+              dir,
+              pubspecContent: '''
+name: dashi
+''',
+              mainContent: _mainFileUnformatted,
+            );
+            final hiddenFolderFile = dir.file('.hidden/file.dart')
+              ..createSync(recursive: true);
+            hiddenFolderFile.writeAsStringSync(_mainFileUnformatted);
+
+            final runner = initializeSidekick(dartSdkPath: systemDartSdkPath());
+            runner.addCommand(FormatCommand());
+            await runner.run(['format']);
+
+            expect(exitCode, 0);
+            expect(
+              dir.file('lib/main.dart').readAsStringSync(),
+              _mainFileFormatted,
+            );
+            expect(
+              dir.file('.hidden/file.dart').readAsStringSync(),
+              _mainFileUnformatted,
+            );
+          },
+        );
+      });
+    });
   });
 }
+
+const String _mainFileUnformatted = '''
+void main() {
+  final test = ['Hello', 'World', 'This', 'is', 'a', 'test', 'for', 'the', 'format', 'command'];
+}
+''';
+
+const String _mainFileFormatted = '''
+void main() {
+  final test = [
+    'Hello',
+    'World',
+    'This',
+    'is',
+    'a',
+    'test',
+    'for',
+    'the',
+    'format',
+    'command'
+  ];
+}
+''';
