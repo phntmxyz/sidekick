@@ -110,11 +110,6 @@ extension on Iterable<FileSystemEntity> {
   Iterable<File> filterAllFiles(Iterable<Glob> globExcludes) {
     return whereType<File>()
         .filter((file) => file.extension == '.dart')
-        .filter(
-          (file) => file.uri.pathSegments.none(
-            (element) => element.startsWith('.'),
-          ),
-        )
         .whereNot(
           (file) => globExcludes.any(
             (glob) => glob.matches(file.path),
