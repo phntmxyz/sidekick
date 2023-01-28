@@ -80,7 +80,7 @@ class FormatCommand extends Command {
       return;
     }
 
-    // Getting all Dart files exluding files which are starting with a .
+    // Getting all Dart files excluding files that are starting with "."
     final allFiles = SidekickContext.projectRoot
         .listSync(recursive: true)
         .filterAllFiles(
