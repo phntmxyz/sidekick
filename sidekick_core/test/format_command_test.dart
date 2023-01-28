@@ -29,11 +29,13 @@ void main() {
 void main() {
   void setupProject(
     Directory tempDir, {
-    required String pubspecContent,
+    String? pubspecContent,
     required String mainContent,
   }) {
-    final pubspec = tempDir.file('pubspec.yaml')..createSync();
-    pubspec.writeAsStringSync(pubspecContent);
+    if (pubspecContent != null) {
+      final pubspec = tempDir.file('pubspec.yaml')..createSync();
+      pubspec.writeAsStringSync(pubspecContent);
+    }
     final mainFile = tempDir.file('lib/main.dart')..createSync(recursive: true);
     mainFile.writeAsStringSync(mainContent);
   }
@@ -261,6 +263,40 @@ name: dashi
             expect(exitCode, 0);
             expect(
               dir.file('lib/main.dart').readAsStringSync(),
+              _mainFileUnformatted,
+            );
+          },
+        );
+      });
+    });
+    test('Excluding package build dir', () async {
+      await insideFakeProjectWithSidekick((dir) async {
+        final fakeStdOut = FakeStdoutStream();
+        await overrideIoStreams(
+          stdout: () => fakeStdOut,
+          body: () async {
+            setupProject(
+              dir,
+              pubspecContent: '''
+name: dashi
+''',
+              mainContent: _mainFileUnformatted,
+            );
+            final buildFile = dir.file('build/build.dart')
+              ..createSync(recursive: true);
+            buildFile.writeAsStringSync(_mainFileUnformatted);
+
+            final runner = initializeSidekick(dartSdkPath: systemDartSdkPath());
+            runner.addCommand(FormatCommand());
+            await runner.run(['format']);
+
+            expect(exitCode, 0);
+            expect(
+              dir.file('lib/main.dart').readAsStringSync(),
+              _mainFileFormatted,
+            );
+            expect(
+              dir.file('build/build.dart').readAsStringSync(),
               _mainFileUnformatted,
             );
           },
