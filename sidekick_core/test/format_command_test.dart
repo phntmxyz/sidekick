@@ -59,259 +59,212 @@ format:
   group('Format Command', () {
     test('Should format the example folder different than /lib', () async {
       await insideFakeProjectWithSidekick((dir) async {
-        final fakeStdOut = FakeStdoutStream();
-        await overrideIoStreams(
-          stdout: () => fakeStdOut,
-          body: () async {
-            setupProject(
-              dir,
-              pubspecContent: '''
+        setupProject(
+          dir,
+          pubspecContent: '''
 name: dashi
 ''',
-              mainContent: _mainFileUnformatted,
-            );
-            setupProject(
-              dir.directory('example')..createSync(),
-              pubspecContent: '''
+          mainContent: _mainFileUnformatted,
+        );
+        setupProject(
+          dir.directory('example')..createSync(),
+          pubspecContent: '''
 name: dashi_example
 format:
   line_length: 120
 ''',
-              mainContent: _mainFileUnformatted,
-            );
-            final runner = initializeSidekick(
-              dartSdkPath: systemDartSdkPath(),
-            );
-            runner.addCommand(FormatCommand());
-            await runner.run(['format']);
+          mainContent: _mainFileUnformatted,
+        );
+        final runner = initializeSidekick(
+          dartSdkPath: systemDartSdkPath(),
+        );
+        runner.addCommand(FormatCommand());
+        await runner.run(['format']);
 
-            expect(exitCode, 0);
-            expect(
-              dir.file('lib/main.dart').readAsStringSync(),
-              _mainFileFormatted,
-            );
-            expect(
-              dir.file('example/lib/main.dart').readAsStringSync(),
-              _mainFileUnformatted,
-            );
-          },
+        expect(exitCode, 0);
+        expect(
+          dir.file('lib/main.dart').readAsStringSync(),
+          _mainFileFormatted,
+        );
+        expect(
+          dir.file('example/lib/main.dart').readAsStringSync(),
+          _mainFileUnformatted,
         );
       });
     });
 
     test('Format the File to 80 if nothing else is set in Pubspec', () async {
       await insideFakeProjectWithSidekick((dir) async {
-        final fakeStdOut = FakeStdoutStream();
-        await overrideIoStreams(
-          stdout: () => fakeStdOut,
-          body: () async {
-            setupProject(
-              dir,
-              pubspecContent: '''
+        setupProject(
+          dir,
+          pubspecContent: '''
 name: dashi
 ''',
-              mainContent: _mainFileUnformatted,
-            );
-            final runner = initializeSidekick(
-              dartSdkPath: systemDartSdkPath(),
-            );
-            runner.addCommand(FormatCommand());
-            await runner.run(['format']);
+          mainContent: _mainFileUnformatted,
+        );
+        final runner = initializeSidekick(
+          dartSdkPath: systemDartSdkPath(),
+        );
+        runner.addCommand(FormatCommand());
+        await runner.run(['format']);
 
-            expect(exitCode, 0);
-            expect(
-              dir.file('lib/main.dart').readAsStringSync(),
-              _mainFileFormatted,
-            );
-          },
+        expect(exitCode, 0);
+        expect(
+          dir.file('lib/main.dart').readAsStringSync(),
+          _mainFileFormatted,
         );
       });
     });
     test('Format the File to 120 if set as Command Argument', () async {
       await insideFakeProjectWithSidekick((dir) async {
-        final fakeStdOut = FakeStdoutStream();
-        await overrideIoStreams(
-          stdout: () => fakeStdOut,
-          body: () async {
-            setupProject(
-              dir,
-              pubspecContent: '''
+        setupProject(
+          dir,
+          pubspecContent: '''
 name: dashi
 ''',
-              mainContent: _mainFileUnformatted,
-            );
-            final runner = initializeSidekick(
-              dartSdkPath: systemDartSdkPath(),
-            );
-            runner.addCommand(FormatCommand());
-            await runner.run(['format', '--line-length', '120']);
+          mainContent: _mainFileUnformatted,
+        );
+        final runner = initializeSidekick(
+          dartSdkPath: systemDartSdkPath(),
+        );
+        runner.addCommand(FormatCommand());
+        await runner.run(['format', '--line-length', '120']);
 
-            expect(exitCode, 0);
-            expect(
-              dir.file('lib/main.dart').readAsStringSync(),
-              _mainFileUnformatted,
-            );
-          },
+        expect(exitCode, 0);
+        expect(
+          dir.file('lib/main.dart').readAsStringSync(),
+          _mainFileUnformatted,
         );
       });
     });
     test('Format the File to 120 if set in PubspecYaml', () async {
       await insideFakeProjectWithSidekick((dir) async {
-        final fakeStdOut = FakeStdoutStream();
-        await overrideIoStreams(
-          stdout: () => fakeStdOut,
-          body: () async {
-            setupProject(
-              dir,
-              pubspecContent: '''
+        setupProject(
+          dir,
+          pubspecContent: '''
 name: dashi
 format:
   line_length: 120
 ''',
-              mainContent: _mainFileUnformatted,
-            );
-            final runner = initializeSidekick(
-              dartSdkPath: systemDartSdkPath(),
-            );
-            runner.addCommand(FormatCommand());
-            await runner.run(['format']);
+          mainContent: _mainFileUnformatted,
+        );
+        final runner = initializeSidekick(
+          dartSdkPath: systemDartSdkPath(),
+        );
+        runner.addCommand(FormatCommand());
+        await runner.run(['format']);
 
-            expect(exitCode, 0);
-            expect(
-              dir.file('lib/main.dart').readAsStringSync(),
-              _mainFileUnformatted,
-            );
-          },
+        expect(exitCode, 0);
+        expect(
+          dir.file('lib/main.dart').readAsStringSync(),
+          _mainFileUnformatted,
         );
       });
     });
     test('Format the File to 80 if set in PubspecYaml', () async {
       await insideFakeProjectWithSidekick((dir) async {
-        final fakeStdOut = FakeStdoutStream();
-        await overrideIoStreams(
-          stdout: () => fakeStdOut,
-          body: () async {
-            setupProject(
-              dir,
-              pubspecContent: '''
+        setupProject(
+          dir,
+          pubspecContent: '''
 name: dashi
 format:
   line_length: 80
 ''',
-              mainContent: _mainFileUnformatted,
-            );
-            final runner = initializeSidekick(
-              dartSdkPath: systemDartSdkPath(),
-            );
-            runner.addCommand(FormatCommand());
-            await runner.run(['format']);
+          mainContent: _mainFileUnformatted,
+        );
+        final runner = initializeSidekick(
+          dartSdkPath: systemDartSdkPath(),
+        );
+        runner.addCommand(FormatCommand());
+        await runner.run(['format']);
 
-            expect(exitCode, 0);
-            expect(
-              dir.file('lib/main.dart').readAsStringSync(),
-              _mainFileFormatted,
-            );
-          },
+        expect(exitCode, 0);
+        expect(
+          dir.file('lib/main.dart').readAsStringSync(),
+          _mainFileFormatted,
         );
       });
     });
     test('Excluding all Files in lib/', () async {
       await insideFakeProjectWithSidekick((dir) async {
-        final fakeStdOut = FakeStdoutStream();
-        await overrideIoStreams(
-          stdout: () => fakeStdOut,
-          body: () async {
-            setupProject(
-              dir,
-              pubspecContent: '''
+        setupProject(
+          dir,
+          pubspecContent: '''
 name: dashi
 ''',
-              mainContent: _mainFileUnformatted,
-            );
-            final runner = initializeSidekick(
-              dartSdkPath: systemDartSdkPath(),
-            );
-            runner.addCommand(
-              FormatCommand(
-                excludeGlob: ['lib/**'],
-              ),
-            );
-            await runner.run(['format']);
+          mainContent: _mainFileUnformatted,
+        );
+        final runner = initializeSidekick(
+          dartSdkPath: systemDartSdkPath(),
+        );
+        runner.addCommand(
+          FormatCommand(
+            excludeGlob: ['lib/**'],
+          ),
+        );
+        await runner.run(['format']);
 
-            expect(exitCode, 0);
-            expect(
-              dir.file('lib/main.dart').readAsStringSync(),
-              _mainFileUnformatted,
-            );
-          },
+        expect(exitCode, 0);
+        expect(
+          dir.file('lib/main.dart').readAsStringSync(),
+          _mainFileUnformatted,
         );
       });
     });
     test('Excluding package build dir', () async {
       await insideFakeProjectWithSidekick((dir) async {
-        final fakeStdOut = FakeStdoutStream();
-        await overrideIoStreams(
-          stdout: () => fakeStdOut,
-          body: () async {
-            setupProject(
-              dir,
-              pubspecContent: '''
+        setupProject(
+          dir,
+          pubspecContent: '''
 name: dashi
 ''',
-              mainContent: _mainFileUnformatted,
-            );
-            final buildFile = dir.file('build/build.dart')
-              ..createSync(recursive: true);
-            buildFile.writeAsStringSync(_mainFileUnformatted);
+          mainContent: _mainFileUnformatted,
+        );
+        final buildFile = dir.file('build/build.dart')
+          ..createSync(recursive: true);
+        buildFile.writeAsStringSync(_mainFileUnformatted);
 
-            final runner = initializeSidekick(dartSdkPath: systemDartSdkPath());
-            runner.addCommand(FormatCommand());
-            await runner.run(['format']);
+        final runner = initializeSidekick(dartSdkPath: systemDartSdkPath());
+        runner.addCommand(FormatCommand());
+        await runner.run(['format']);
 
-            expect(exitCode, 0);
-            expect(
-              dir.file('lib/main.dart').readAsStringSync(),
-              _mainFileFormatted,
-            );
-            expect(
-              dir.file('build/build.dart').readAsStringSync(),
-              _mainFileUnformatted,
-            );
-          },
+        expect(exitCode, 0);
+        expect(
+          dir.file('lib/main.dart').readAsStringSync(),
+          _mainFileFormatted,
+        );
+        expect(
+          dir.file('build/build.dart').readAsStringSync(),
+          _mainFileUnformatted,
         );
       });
     });
+
     test('Exclude hidden folders', () async {
       await insideFakeProjectWithSidekick((dir) async {
-        final fakeStdOut = FakeStdoutStream();
-        await overrideIoStreams(
-          stdout: () => fakeStdOut,
-          body: () async {
-            setupProject(
-              dir,
-              pubspecContent: '''
+        setupProject(
+          dir,
+          pubspecContent: '''
 name: dashi
 ''',
-              mainContent: _mainFileUnformatted,
-            );
-            final hiddenFolderFile = dir.file('.hidden/file.dart')
-              ..createSync(recursive: true);
-            hiddenFolderFile.writeAsStringSync(_mainFileUnformatted);
+          mainContent: _mainFileUnformatted,
+        );
+        final hiddenFolderFile = dir.file('.hidden/file.dart')
+          ..createSync(recursive: true);
+        hiddenFolderFile.writeAsStringSync(_mainFileUnformatted);
 
-            final runner = initializeSidekick(dartSdkPath: systemDartSdkPath());
-            runner.addCommand(FormatCommand());
-            await runner.run(['format']);
+        final runner = initializeSidekick(dartSdkPath: systemDartSdkPath());
+        runner.addCommand(FormatCommand());
+        await runner.run(['format']);
 
-            expect(exitCode, 0);
-            expect(
-              dir.file('lib/main.dart').readAsStringSync(),
-              _mainFileFormatted,
-            );
-            expect(
-              dir.file('.hidden/file.dart').readAsStringSync(),
-              _mainFileUnformatted,
-            );
-          },
+        expect(exitCode, 0);
+        expect(
+          dir.file('lib/main.dart').readAsStringSync(),
+          _mainFileFormatted,
+        );
+        expect(
+          dir.file('.hidden/file.dart').readAsStringSync(),
+          _mainFileUnformatted,
         );
       });
     });
