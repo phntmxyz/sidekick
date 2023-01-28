@@ -99,7 +99,9 @@ class FormatCommand extends Command {
       final filesInPackage = allFiles
           .where((file) => file.path.contains(package.root.path))
           .toList();
-      allFiles.removeWhere((file) => filesInPackage.contains(file));
+      for (final file in filesInPackage) {
+        allFiles.remove(file);
+      }
       if (filesInPackage.isNotEmpty) {
         (lineLengthsAndFiles[resolvedLineLength] ??= []).addAll(filesInPackage);
       }
