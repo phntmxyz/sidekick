@@ -73,9 +73,7 @@ class FormatCommand extends Command {
       }
       final int lineLength = getLineLength(package);
       final allDartFiles =
-          package.root.listSync(recursive: true).filterAllFiles(
-                globExcludes,
-              );
+          package.root.listSync(recursive: true).filterAllFiles(globExcludes);
       _format({lineLength: allDartFiles}, verify: verify);
       return;
     }
