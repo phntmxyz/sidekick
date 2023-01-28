@@ -81,9 +81,7 @@ class FormatCommand extends Command {
     // Getting all Dart files exluding files which are starting with a .
     final allFiles = SidekickContext.projectRoot
         .listSync(recursive: true)
-        .filterAllFiles(
-          globExcludes,
-        )
+        .filterAllFiles(globExcludes)
         .toList();
 
     // Getting all directories excluding directories which are starting with a . and sort them by length
