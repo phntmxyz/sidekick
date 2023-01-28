@@ -47,11 +47,9 @@ void main() {
       pubspecYamlFile = temp.file('pubspec.yaml')..writeAsStringSync('''
 name: dashi
 ''');
-      env['SIDEKICK_PACKAGE_HOME'] = temp.path;
       package = DartPackage.fromDirectory(temp)!;
 
       addTearDown(() {
-        env['SIDEKICK_PACKAGE_HOME'] = null;
         temp.deleteSync(recursive: true);
       });
     });
