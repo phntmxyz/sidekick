@@ -133,6 +133,7 @@ void _format(
         ...entry.value.map((file) => file.path),
         if (verify) '--set-exit-if-changed',
       ],
+      nothrow: verify,
     );
     if (exitCode != 0) {
       throw "Formatting failed with exit code $exitCode";
