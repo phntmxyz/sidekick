@@ -4,9 +4,19 @@ import 'package:sidekick_core/sidekick_core.dart';
 import 'package:yaml/yaml.dart';
 
 /// Formats the Code for all Flutter/Dart packages in the repository
+///
+/// You can specify the line length per package in the pubspec.yaml. When not
+/// specified the default line length of 80 is used.
+///
+/// ```yaml
+/// name: my_package
+///
+/// format:
+///   line_length: 120
+/// ```
 class FormatCommand extends Command {
   @override
-  String get description => 'Formatting the code for all packages';
+  String get description => 'Formats all Dart files in the repository.';
 
   @override
   String get name => 'format';
@@ -35,16 +45,17 @@ class FormatCommand extends Command {
   ///   `third_party/circle/packageA` and `third_party/circle/packageB`.
   final List<String> excludeGlob;
 
+  /// The default line length to be used when format.line_length is not
+  /// specified in pubspec.yaml.
+  final int defaultLineLength;
+
   FormatCommand({
     this.excludeGlob = const [],
+    this.defaultLineLength = 80,
   }) {
     argParser.addOption(
       'package',
       abbr: 'p',
-    );
-    argParser.addOption(
-      'line-length',
-      abbr: 'l',
     );
     argParser.addFlag(
       'verify',
@@ -56,8 +67,6 @@ class FormatCommand extends Command {
   @override
   Future<void> run() async {
     final String? packageName = argResults?['package'] as String?;
-    final int? lineLength =
-        int.tryParse(argResults?['line-length'] as String? ?? '');
     final bool verify = argResults?['verify'] as bool? ?? false;
 
     final root = SidekickContext.projectRoot;
@@ -71,9 +80,14 @@ class FormatCommand extends Command {
         throw "Package with name $packageName not found in repository "
             "${SidekickContext.repository?.path}";
       }
-      final int lineLength = getLineLength(package);
+      final int lineLength = getLineLength(package) ?? defaultLineLength;
       final allDartFiles = package.root.findFilesToFormat(globExcludes);
-      _format({lineLength: allDartFiles}, verify: verify);
+      _format(
+        name: "package:${package.name}",
+        lineLength: lineLength,
+        files: allDartFiles,
+        verify: verify,
+      );
       return;
     }
 
@@ -81,25 +95,32 @@ class FormatCommand extends Command {
     final allFiles =
         SidekickContext.projectRoot.findFilesToFormat(globExcludes).toList();
 
-    // Getting all directories excluding directories which are starting with a . and sort them by length
     final sortedPackages =
         allPackages.sortedByDescending((element) => element.root.path.length);
 
-    final lineLengthsAndFiles = <int, List<File>>{};
-
     for (final package in sortedPackages) {
-      final resolvedLineLength = lineLength ?? getLineLength(package);
+      final resolvedLineLength = getLineLength(package) ?? defaultLineLength;
       final filesInPackage = allFiles
           .where((file) => file.path.contains(package.root.path))
           .toList();
       for (final file in filesInPackage) {
         allFiles.remove(file);
       }
-      if (filesInPackage.isNotEmpty) {
-        (lineLengthsAndFiles[resolvedLineLength] ??= []).addAll(filesInPackage);
-      }
+      _format(
+        name: "package:${package.name}",
+        lineLength: resolvedLineLength,
+        files: filesInPackage,
+        verify: verify,
+      );
     }
-    _format(lineLengthsAndFiles, verify: verify);
+    if (allFiles.isNotEmpty) {
+      _format(
+        name: "Other",
+        lineLength: defaultLineLength,
+        files: allFiles,
+        verify: verify,
+      );
+    }
   }
 }
 
@@ -148,35 +169,41 @@ extension on Directory {
   }
 }
 
-void _format(
-  Map<int, Iterable<File>> filesWithLineLength, {
+void _format({
+  required String name,
+  required int lineLength,
+  required Iterable<File> files,
   bool verify = false,
 }) {
-  // remove map entries with 0 files, otherwise the `format` command crashes
-  // because it expects at least one file or directory
-  for (final entry in filesWithLineLength.entries) {
-    final exitCode = dart(
-      [
-        'format',
-        '-l',
-        '${entry.key}',
-        ...entry.value.map((file) => file.path),
-        if (verify) '--set-exit-if-changed',
-      ],
-      nothrow: verify,
-    );
-    if (exitCode != 0) {
-      throw "Formatting failed with exit code $exitCode";
-    }
-    print("\n");
+  if (verify) {
+    print("Verifying $name");
+  } else {
+    print("Formatting $name");
+  }
+  if (files.isEmpty) {
+    print("No files to format");
+    return;
+  }
+  final exitCode = dart(
+    [
+      'format',
+      '-l',
+      '$lineLength',
+      ...files.map((file) => file.path),
+      if (verify) '--set-exit-if-changed',
+    ],
+    nothrow: verify,
+  );
+  if (exitCode != 0) {
+    throw "Formatting failed with exit code $exitCode. See above for details.";
   }
 }
 
 @visibleForTesting
-int getLineLength(DartPackage package) {
+int? getLineLength(DartPackage package) {
   final yamlFile = package.root.file('pubspec.yaml').readAsStringSync();
   final pubspecData = loadYaml(yamlFile) as YamlMap;
   final mapData =
       pubspecData.map((key, value) => MapEntry(key.toString(), value));
-  return (mapData['format'] as Map?)?['line_length'] as int? ?? 80;
+  return (mapData['format'] as Map?)?['line_length'] as int?;
 }

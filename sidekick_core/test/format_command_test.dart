@@ -33,19 +33,15 @@ name: dashi
         temp.deleteSync(recursive: true);
       });
     });
-    test(
-        'should return 80 as default if format argument is not present in pubspec',
-        () {
-      expect(getLineLength(package), 80);
+    test('no pubspec returns nothing', () {
+      expect(getLineLength(package), isNull);
     });
-    test(
-        'should return 80 as default if line_length argument is not present in pubspec',
-        () {
+    test('line_length argument is not present in pubspec returns nothing', () {
       pubspecYamlFile.writeAsStringSync('''
 name: dashi
 format:
 ''');
-      expect(getLineLength(package), 80);
+      expect(getLineLength(package), isNull);
     });
     test('should return the set line_length from the pubspec if present', () {
       pubspecYamlFile.writeAsStringSync('''
@@ -64,7 +60,7 @@ format:
           pubspecContent: '''
 name: dashi
 ''',
-          mainContent: _mainFileUnformatted,
+          mainContent: _dartFile140,
         );
         setupProject(
           dir.directory('example')..createSync(),
@@ -73,7 +69,7 @@ name: dashi_example
 format:
   line_length: 120
 ''',
-          mainContent: _mainFileUnformatted,
+          mainContent: _dartFile140,
         );
         final runner = initializeSidekick(
           dartSdkPath: systemDartSdkPath(),
@@ -84,11 +80,11 @@ format:
         expect(exitCode, 0);
         expect(
           dir.file('lib/main.dart').readAsStringSync(),
-          _mainFileFormatted,
+          _dartFile80,
         );
         expect(
           dir.file('example/lib/main.dart').readAsStringSync(),
-          _mainFileUnformatted,
+          _dartFile120,
         );
       });
     });
@@ -100,7 +96,7 @@ format:
           pubspecContent: '''
 name: dashi
 ''',
-          mainContent: _mainFileUnformatted,
+          mainContent: _dartFile140,
         );
         final runner = initializeSidekick(
           dartSdkPath: systemDartSdkPath(),
@@ -111,32 +107,62 @@ name: dashi
         expect(exitCode, 0);
         expect(
           dir.file('lib/main.dart').readAsStringSync(),
-          _mainFileFormatted,
+          _dartFile80,
         );
       });
     });
-    test('Format the File to 120 if set as Command Argument', () async {
+
+    test('defaultLineLength is applied when not specified in pubspec.yaml',
+        () async {
       await insideFakeProjectWithSidekick((dir) async {
         setupProject(
           dir,
           pubspecContent: '''
 name: dashi
 ''',
-          mainContent: _mainFileUnformatted,
+          mainContent: _dartFile140,
         );
         final runner = initializeSidekick(
           dartSdkPath: systemDartSdkPath(),
         );
-        runner.addCommand(FormatCommand());
-        await runner.run(['format', '--line-length', '120']);
+        runner.addCommand(FormatCommand(defaultLineLength: 120));
+        await runner.run(['format']);
 
         expect(exitCode, 0);
         expect(
           dir.file('lib/main.dart').readAsStringSync(),
-          _mainFileUnformatted,
+          _dartFile120,
         );
       });
     });
+
+    test('defaultLineLength is not applied when pubspec.yaml states a length',
+        () async {
+      await insideFakeProjectWithSidekick((dir) async {
+        setupProject(
+          dir,
+          pubspecContent: '''
+name: dashi
+
+format:
+  line_length: 100
+''',
+          mainContent: _dartFile140,
+        );
+        final runner = initializeSidekick(
+          dartSdkPath: systemDartSdkPath(),
+        );
+        runner.addCommand(FormatCommand(defaultLineLength: 120));
+        await runner.run(['format']);
+
+        expect(exitCode, 0);
+        expect(
+          dir.file('lib/main.dart').readAsStringSync(),
+          _dartFile100,
+        );
+      });
+    });
+
     test('Format the File to 120 if set in PubspecYaml', () async {
       await insideFakeProjectWithSidekick((dir) async {
         setupProject(
@@ -146,7 +172,7 @@ name: dashi
 format:
   line_length: 120
 ''',
-          mainContent: _mainFileUnformatted,
+          mainContent: _dartFile140,
         );
         final runner = initializeSidekick(
           dartSdkPath: systemDartSdkPath(),
@@ -157,7 +183,7 @@ format:
         expect(exitCode, 0);
         expect(
           dir.file('lib/main.dart').readAsStringSync(),
-          _mainFileUnformatted,
+          _dartFile120,
         );
       });
     });
@@ -170,7 +196,7 @@ name: dashi
 format:
   line_length: 80
 ''',
-          mainContent: _mainFileUnformatted,
+          mainContent: _dartFile140,
         );
         final runner = initializeSidekick(
           dartSdkPath: systemDartSdkPath(),
@@ -181,10 +207,11 @@ format:
         expect(exitCode, 0);
         expect(
           dir.file('lib/main.dart').readAsStringSync(),
-          _mainFileFormatted,
+          _dartFile80,
         );
       });
     });
+
     test('Excluding all Files in lib/', () async {
       await insideFakeProjectWithSidekick((dir) async {
         setupProject(
@@ -192,7 +219,7 @@ format:
           pubspecContent: '''
 name: dashi
 ''',
-          mainContent: _mainFileUnformatted,
+          mainContent: _dartFile140,
         );
         final runner = initializeSidekick(
           dartSdkPath: systemDartSdkPath(),
@@ -207,10 +234,11 @@ name: dashi
         expect(exitCode, 0);
         expect(
           dir.file('lib/main.dart').readAsStringSync(),
-          _mainFileUnformatted,
+          _dartFile140,
         );
       });
     });
+
     test('Excluding package build dir', () async {
       await insideFakeProjectWithSidekick((dir) async {
         setupProject(
@@ -218,11 +246,11 @@ name: dashi
           pubspecContent: '''
 name: dashi
 ''',
-          mainContent: _mainFileUnformatted,
+          mainContent: _dartFile140,
         );
         final buildFile = dir.file('build/build.dart')
           ..createSync(recursive: true);
-        buildFile.writeAsStringSync(_mainFileUnformatted);
+        buildFile.writeAsStringSync(_dartFile140);
 
         final runner = initializeSidekick(dartSdkPath: systemDartSdkPath());
         runner.addCommand(FormatCommand());
@@ -231,11 +259,11 @@ name: dashi
         expect(exitCode, 0);
         expect(
           dir.file('lib/main.dart').readAsStringSync(),
-          _mainFileFormatted,
+          _dartFile80,
         );
         expect(
           dir.file('build/build.dart').readAsStringSync(),
-          _mainFileUnformatted,
+          _dartFile140,
         );
       });
     });
@@ -247,11 +275,11 @@ name: dashi
           pubspecContent: '''
 name: dashi
 ''',
-          mainContent: _mainFileUnformatted,
+          mainContent: _dartFile140,
         );
         final hiddenFolderFile = dir.file('.hidden/file.dart')
           ..createSync(recursive: true);
-        hiddenFolderFile.writeAsStringSync(_mainFileUnformatted);
+        hiddenFolderFile.writeAsStringSync(_dartFile140);
 
         final runner = initializeSidekick(dartSdkPath: systemDartSdkPath());
         runner.addCommand(FormatCommand());
@@ -260,36 +288,107 @@ name: dashi
         expect(exitCode, 0);
         expect(
           dir.file('lib/main.dart').readAsStringSync(),
-          _mainFileFormatted,
+          _dartFile80,
         );
         expect(
           dir.file('.hidden/file.dart').readAsStringSync(),
-          _mainFileUnformatted,
+          _dartFile140,
         );
       });
     });
   });
 }
 
-const String _mainFileUnformatted = '''
+const String _dartFile140 = '''
 void main() {
-  final test = ['Hello', 'World', 'This', 'is', 'a', 'test', 'for', 'the', 'format', 'command'];
+  final forty = ['123456', '78901234'];
+  final sixty = ['1234567890', '1234567890', '1234567890'];
+  final eighty = ['1234567890', '1234567890', '1234567890', '1234567890', '1'];
+  final hundred = ['1234567890', '1234567890', '1234567890', '1234567890', '1234567890', '123456'];
+  final hundredTwenty = ['1234567890', '1234567890', '1234567890', '1234567890', '1234567890', '1234567890', '123456'];
+  final hundredForty = ['1234567890', '1234567890', '1234567890', '1234567890', '1234567890', '1234567890', '1234567890', '1234567890123'];
 }
 ''';
 
-const String _mainFileFormatted = '''
+const String _dartFile80 = '''
 void main() {
-  final test = [
-    'Hello',
-    'World',
-    'This',
-    'is',
-    'a',
-    'test',
-    'for',
-    'the',
-    'format',
-    'command'
+  final forty = ['123456', '78901234'];
+  final sixty = ['1234567890', '1234567890', '1234567890'];
+  final eighty = ['1234567890', '1234567890', '1234567890', '1234567890', '1'];
+  final hundred = [
+    '1234567890',
+    '1234567890',
+    '1234567890',
+    '1234567890',
+    '1234567890',
+    '123456'
+  ];
+  final hundredTwenty = [
+    '1234567890',
+    '1234567890',
+    '1234567890',
+    '1234567890',
+    '1234567890',
+    '1234567890',
+    '123456'
+  ];
+  final hundredForty = [
+    '1234567890',
+    '1234567890',
+    '1234567890',
+    '1234567890',
+    '1234567890',
+    '1234567890',
+    '1234567890',
+    '1234567890123'
+  ];
+}
+''';
+
+const String _dartFile100 = '''
+void main() {
+  final forty = ['123456', '78901234'];
+  final sixty = ['1234567890', '1234567890', '1234567890'];
+  final eighty = ['1234567890', '1234567890', '1234567890', '1234567890', '1'];
+  final hundred = ['1234567890', '1234567890', '1234567890', '1234567890', '1234567890', '123456'];
+  final hundredTwenty = [
+    '1234567890',
+    '1234567890',
+    '1234567890',
+    '1234567890',
+    '1234567890',
+    '1234567890',
+    '123456'
+  ];
+  final hundredForty = [
+    '1234567890',
+    '1234567890',
+    '1234567890',
+    '1234567890',
+    '1234567890',
+    '1234567890',
+    '1234567890',
+    '1234567890123'
+  ];
+}
+''';
+
+const String _dartFile120 = '''
+void main() {
+  final forty = ['123456', '78901234'];
+  final sixty = ['1234567890', '1234567890', '1234567890'];
+  final eighty = ['1234567890', '1234567890', '1234567890', '1234567890', '1'];
+  final hundred = ['1234567890', '1234567890', '1234567890', '1234567890', '1234567890', '123456'];
+  final hundredTwenty = ['1234567890', '1234567890', '1234567890', '1234567890', '1234567890', '1234567890', '123456'];
+  final hundredForty = [
+    '1234567890',
+    '1234567890',
+    '1234567890',
+    '1234567890',
+    '1234567890',
+    '1234567890',
+    '1234567890',
+    '1234567890123'
   ];
 }
 ''';
