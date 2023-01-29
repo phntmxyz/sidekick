@@ -49,6 +49,7 @@ Available commands:
   clean            Cleans the project
   dart             Calls dart
   deps             Gets dependencies for all packages
+  format           Formats all Dart files in the project
   flutter          Call the Flutter SDK associated with the project
   sidekick         Manages the sidekick CLI
 
@@ -98,6 +99,16 @@ This commands code is part of your CLI, intended to be modified to your needs.
 
 Gets all dependencies for all packages in your project.
 This will become your most used command in no time!
+
+### format
+
+Formats all Dart files in the project. Default is `80`.
+Change the line length for a specific package by adding the following to the `pubspec.yaml` of the package:
+
+```yaml
+format:
+  line-length: 120
+```
 
 ### flutter
 
