@@ -76,7 +76,6 @@ format:
         runner.addCommand(FormatCommand());
         await runner.run(['format']);
 
-        expect(exitCode, 0);
         expect(
           dir.file('lib/main.dart').readAsStringSync(),
           _dartFile80,
@@ -103,11 +102,65 @@ name: dashi
         runner.addCommand(FormatCommand());
         await runner.run(['format']);
 
-        expect(exitCode, 0);
-        expect(
-          dir.file('lib/main.dart').readAsStringSync(),
-          _dartFile80,
+        expect(dir.file('lib/main.dart').readAsStringSync(), _dartFile80);
+      });
+    });
+
+    test('Formats a single package', () async {
+      await insideFakeProjectWithSidekick((dir) async {
+        setupProject(
+          dir.directory('dashi')..createSync(),
+          pubspecContent: '''
+name: dashi
+''',
+          mainContent: _dartFile140,
         );
+        setupProject(
+          dir.directory('moshi')..createSync(),
+          pubspecContent: '''
+name: moshi
+''',
+          mainContent: _dartFile140,
+        );
+        final runner = initializeSidekick(
+          dartSdkPath: systemDartSdkPath(),
+        );
+        runner.addCommand(FormatCommand());
+        await runner.run(['format', '-p', 'moshi']);
+
+        expect(
+          dir.file('dashi/lib/main.dart').readAsStringSync(),
+          _dartFile140,
+        );
+        expect(dir.file('moshi/lib/main.dart').readAsStringSync(), _dartFile80);
+      });
+    });
+
+    test('Formats files not in a package with default-line-length', () async {
+      await insideFakeProjectWithSidekick((dir) async {
+        dir.file('pubspec.yaml').deleteSync();
+        dir.file('some.dart').writeAsStringSync(_dartFile140);
+        final runner = initializeSidekick(
+          dartSdkPath: systemDartSdkPath(),
+        );
+        runner.addCommand(FormatCommand(defaultLineLength: 100));
+        await runner.run(['format']);
+
+        expect(dir.file('some.dart').readAsStringSync(), _dartFile100);
+      });
+    });
+
+    test('Formats files not in a package by default with 80', () async {
+      await insideFakeProjectWithSidekick((dir) async {
+        dir.file('pubspec.yaml').deleteSync();
+        dir.file('some.dart').writeAsStringSync(_dartFile140);
+        final runner = initializeSidekick(
+          dartSdkPath: systemDartSdkPath(),
+        );
+        runner.addCommand(FormatCommand());
+        await runner.run(['format']);
+
+        expect(dir.file('some.dart').readAsStringSync(), _dartFile80);
       });
     });
 
@@ -127,11 +180,7 @@ name: dashi
         runner.addCommand(FormatCommand(defaultLineLength: 120));
         await runner.run(['format']);
 
-        expect(exitCode, 0);
-        expect(
-          dir.file('lib/main.dart').readAsStringSync(),
-          _dartFile120,
-        );
+        expect(dir.file('lib/main.dart').readAsStringSync(), _dartFile120);
       });
     });
 
@@ -154,11 +203,7 @@ format:
         runner.addCommand(FormatCommand(defaultLineLength: 120));
         await runner.run(['format']);
 
-        expect(exitCode, 0);
-        expect(
-          dir.file('lib/main.dart').readAsStringSync(),
-          _dartFile100,
-        );
+        expect(dir.file('lib/main.dart').readAsStringSync(), _dartFile100);
       });
     });
 
@@ -179,11 +224,7 @@ format:
         runner.addCommand(FormatCommand());
         await runner.run(['format']);
 
-        expect(exitCode, 0);
-        expect(
-          dir.file('lib/main.dart').readAsStringSync(),
-          _dartFile120,
-        );
+        expect(dir.file('lib/main.dart').readAsStringSync(), _dartFile120);
       });
     });
     test('Format the File to 80 if set in PubspecYaml', () async {
@@ -203,11 +244,7 @@ format:
         runner.addCommand(FormatCommand());
         await runner.run(['format']);
 
-        expect(exitCode, 0);
-        expect(
-          dir.file('lib/main.dart').readAsStringSync(),
-          _dartFile80,
-        );
+        expect(dir.file('lib/main.dart').readAsStringSync(), _dartFile80);
       });
     });
 
@@ -230,11 +267,7 @@ name: dashi
         );
         await runner.run(['format']);
 
-        expect(exitCode, 0);
-        expect(
-          dir.file('lib/main.dart').readAsStringSync(),
-          _dartFile140,
-        );
+        expect(dir.file('lib/main.dart').readAsStringSync(), _dartFile140);
       });
     });
 
@@ -255,15 +288,8 @@ name: dashi
         runner.addCommand(FormatCommand());
         await runner.run(['format']);
 
-        expect(exitCode, 0);
-        expect(
-          dir.file('lib/main.dart').readAsStringSync(),
-          _dartFile80,
-        );
-        expect(
-          dir.file('build/build.dart').readAsStringSync(),
-          _dartFile140,
-        );
+        expect(dir.file('lib/main.dart').readAsStringSync(), _dartFile80);
+        expect(dir.file('build/build.dart').readAsStringSync(), _dartFile140);
       });
     });
 
@@ -284,15 +310,24 @@ name: dashi
         runner.addCommand(FormatCommand());
         await runner.run(['format']);
 
-        expect(exitCode, 0);
-        expect(
-          dir.file('lib/main.dart').readAsStringSync(),
-          _dartFile80,
+        expect(dir.file('lib/main.dart').readAsStringSync(), _dartFile80);
+        expect(dir.file('.hidden/file.dart').readAsStringSync(), _dartFile140);
+      });
+    });
+
+    test('--verify throws, but does not format', () async {
+      await insideFakeProjectWithSidekick((dir) async {
+        dir.file('some.dart').writeAsStringSync(_dartFile140);
+        final runner = initializeSidekick(
+          dartSdkPath: systemDartSdkPath(),
         );
-        expect(
-          dir.file('.hidden/file.dart').readAsStringSync(),
-          _dartFile140,
+        runner.addCommand(FormatCommand());
+        expectLater(
+          () => runner.run(['format', '--verify']),
+          throwsA(isA<DartFileFormatException>()),
         );
+
+        expect(dir.file('some.dart').readAsStringSync(), _dartFile140);
       });
     });
   });

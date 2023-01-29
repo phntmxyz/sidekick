@@ -64,6 +64,8 @@ class FormatCommand extends Command {
     );
   }
 
+  bool foundFormatError = false;
+
   @override
   Future<void> run() async {
     final String? packageName = argResults?['package'] as String?;
@@ -88,10 +90,10 @@ class FormatCommand extends Command {
         files: allDartFiles,
         verify: verify,
       );
+      _verifyThrow();
       return;
     }
 
-    // Getting all Dart files excluding files that are starting with "."
     final allFiles =
         SidekickContext.projectRoot.findFilesToFormat(globExcludes).toList();
 
@@ -120,6 +122,48 @@ class FormatCommand extends Command {
         files: allFiles,
         verify: verify,
       );
+    }
+    _verifyThrow();
+  }
+
+  void _verifyThrow() {
+    final bool verify = argResults?['verify'] as bool? ?? false;
+    if (verify && foundFormatError) {
+      throw DartFileFormatException(
+        'Dart files are not correctly formatted. '
+        'Run "${SidekickContext.cliName} sidekick format" to format the code.',
+      );
+    }
+  }
+
+  void _format({
+    required String name,
+    required int lineLength,
+    required Iterable<File> files,
+    bool verify = false,
+  }) {
+    if (verify) {
+      print("Verifying $name");
+    } else {
+      print("Formatting $name");
+    }
+    if (files.isEmpty) {
+      print("No files to format");
+      return;
+    }
+    final exitCode = dart(
+      [
+        'format',
+        '-l',
+        '$lineLength',
+        ...files.map((file) => file.path),
+        if (verify) '--set-exit-if-changed',
+        if (verify) '--output=none',
+      ],
+      nothrow: verify,
+    );
+    if (exitCode != 0) {
+      foundFormatError = true;
     }
   }
 }
@@ -169,36 +213,6 @@ extension on Directory {
   }
 }
 
-void _format({
-  required String name,
-  required int lineLength,
-  required Iterable<File> files,
-  bool verify = false,
-}) {
-  if (verify) {
-    print("Verifying $name");
-  } else {
-    print("Formatting $name");
-  }
-  if (files.isEmpty) {
-    print("No files to format");
-    return;
-  }
-  final exitCode = dart(
-    [
-      'format',
-      '-l',
-      '$lineLength',
-      ...files.map((file) => file.path),
-      if (verify) '--set-exit-if-changed',
-    ],
-    nothrow: verify,
-  );
-  if (exitCode != 0) {
-    throw "Formatting failed with exit code $exitCode. See above for details.";
-  }
-}
-
 @visibleForTesting
 int? getLineLength(DartPackage package) {
   final yamlFile = package.root.file('pubspec.yaml').readAsStringSync();
@@ -206,4 +220,10 @@ int? getLineLength(DartPackage package) {
   final mapData =
       pubspecData.map((key, value) => MapEntry(key.toString(), value));
   return (mapData['format'] as Map?)?['line_length'] as int?;
+}
+
+class DartFileFormatException implements Exception {
+  final String message;
+
+  DartFileFormatException(this.message);
 }
