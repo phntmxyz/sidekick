@@ -2,6 +2,14 @@
 
 A place to store project secrets within a git repository, encrypted with GPG
 
+## Install the plugin
+
+Installing the vault is quite easy. Just run the following command in your project:
+
+```bash
+<<your_cli>> sidekick plugins install sidekick_vault
+```
+
 ## Manage vault with VaultCommand
 
 ### Add file to vault
