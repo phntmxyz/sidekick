@@ -1,6 +1,5 @@
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_core/src/commands/format_command.dart';
-import 'package:sidekick_test/fake_stdio.dart';
 import 'package:sidekick_test/sidekick_test.dart';
 import 'package:test/test.dart';
 
