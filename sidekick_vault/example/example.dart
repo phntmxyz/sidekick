@@ -3,7 +3,7 @@ import 'package:sidekick_vault/sidekick_vault.dart';
 
 void main() {
   final vault = SidekickVault(
-    location: repository.root.directory('vault'),
+    location: SidekickContext.projectRoot.directory('vault'),
     // environment variable where CIs can inject the vault password
     environmentVariableName: 'FLT_VAULT_PASSPHRASE',
   );

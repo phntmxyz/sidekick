@@ -1,6 +1,6 @@
 name: sidekick_core
-description: Reusable code pieces for sidekick CLIs. Provides a project and useful helper methods when working with files
-version: 0.15.1
+description: Shared sidekick commands, plugin engine, migrations, templates and utilities for sidekick CLIs
+version: 1.0.2
 repository: https://github.com/phntmxyz/sidekick/tree/main/sidekick_core
 issue_tracker: https://github.com/phntmxyz/sidekick/labels/sidekick_core
 
@@ -9,7 +9,7 @@ environment:
 
 dependencies:
   args: ^2.1.0
-  dartx: '>=0.7.1 <2.0.0'
+  dartx: ^1.1.0
   dcli: ^1.15.0
   glob: ^2.0.2
   http: ^0.13.5

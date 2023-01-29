@@ -62,11 +62,14 @@ class InstallPluginCommand extends Command {
 
     final packageNameOrGitUrlOrLocalPath = args.rest.first;
     final versionConstraint = args.rest.length > 1 ? args.rest[1] : null;
+    final exactRef = [
+      if (gitPath != null) "plugin in git repository at path '$gitPath'",
+      if (gitRef != null) "at git reference '$gitRef'",
+      if (versionConstraint != null) versionConstraint,
+    ].join(' ');
+
     print(
-      white('Installing $packageNameOrGitUrlOrLocalPath '
-          '${gitPath != null ? "plugin in git repository at path '$gitPath'" : ''} '
-          '${gitRef != null ? "at git reference '$gitRef'" : ''} '
-          '${versionConstraint != null ? '$versionConstraint ' : ''}'
+      white('Installing $packageNameOrGitUrlOrLocalPath $exactRef '
           'for ${SidekickContext.cliName}'),
     );
     env['SIDEKICK_PLUGIN_VERSION_CONSTRAINT'] = versionConstraint;
@@ -162,17 +165,17 @@ class InstallPluginCommand extends Command {
       // update when sidekick_core removes support for old sidekick_plugin_installer protocol
       min: Version.none,
       // update when sidekick_core supports new sidekick_plugin_installer protocol
-      max: Version(0, 3, 0),
+      max: Version(0, 4, 0),
     );
 
     // old CLIs shouldn't install new plugins
     if (!supportedInstallerVersions.allows(pluginInstallerProtocolVersion)) {
       if (pluginInstallerProtocolVersion < supportedInstallerVersions.max!) {
         throw "The plugin doesn't support your CLI's version.\n"
-            'Please run ${yellow('$cliName sidekick update')} to update your CLI.';
+            'Please run ${yellow('${SidekickContext.cliName} sidekick update')} to update your CLI.';
       } else {
         throw 'The plugin is too old to be installed to your CLI '
-            'because it depends on an outdated version of sidekick_plugin_installer.';
+            'because it depends on an outdated version ($pluginInstallerProtocolVersion) of sidekick_plugin_installer.';
       }
     }
 
@@ -264,7 +267,7 @@ Directory _getPackageRootDirForHostedOrGitSource(ArgResults args) {
         'The --$parameter parameter is not yet supported by the pub tool in '
         'the Dart SDK your sidekick CLI is using.\n'
         'It is available from Dart $requiredVersion.\n'
-        'Try running ${cyan('$cliName sidekick update')} to update the Dart SDK of your sidekick CLI.';
+        'Try running ${cyan('${SidekickContext.cliName} sidekick update')} to update the Dart SDK of your sidekick CLI.';
     if (progress.lines.contains('Could not find an option named "git-path".')) {
       throw parameterNotAvailableErrorMessage('git-path', '2.17');
     }

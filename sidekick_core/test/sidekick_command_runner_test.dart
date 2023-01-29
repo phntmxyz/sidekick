@@ -14,7 +14,7 @@ void main() {
   });
 
   final expectedCliVersionIntegrityWarnings = [
-    contains('sidekick_core:0.0.2'),
+    contains('sidekick_core:0.0.5'),
     contains('sidekick.cli_version 0.0.1'),
     contains('dash sidekick update'),
   ];
@@ -29,7 +29,7 @@ void main() {
         await overrideIoStreams(
           stderr: () => fakeStderr,
           body: () async {
-            final runner = initializeSidekick(name: 'dash');
+            final runner = initializeSidekick();
 
             await runner.run(['-h']);
 
@@ -42,8 +42,9 @@ void main() {
           },
         );
       },
-      sidekickCoreVersion: "0.0.2",
+      sidekickCoreVersion: "^0.0.2",
       sidekickCliVersion: "0.0.1",
+      lockedSidekickCoreVersion: "0.0.5", // might be higher
     );
   });
 
@@ -56,16 +57,17 @@ void main() {
         await overrideIoStreams(
           stderr: () => fakeStderr,
           body: () async {
-            final runner = initializeSidekick(name: 'dash');
+            final runner = initializeSidekick();
 
             await runner.run(['-h']);
 
-            expect(fakeStderr.lines.isEmpty, isTrue);
+            expect(fakeStderr.lines.join('\n'), '');
           },
         );
       },
       sidekickCoreVersion: "0.0.1",
       sidekickCliVersion: "0.0.1",
+      lockedSidekickCoreVersion: "0.0.1",
     );
   });
 
@@ -79,7 +81,7 @@ void main() {
         await overrideIoStreams(
           stderr: () => fakeStderr,
           body: () async {
-            final runner = initializeSidekick(name: 'dash');
+            final runner = initializeSidekick();
 
             await runner.run(['-h']);
 
@@ -90,8 +92,9 @@ void main() {
           },
         );
       },
-      sidekickCoreVersion: "0.0.2",
+      sidekickCoreVersion: "0.0.5",
       sidekickCliVersion: "0.0.1",
+      lockedSidekickCoreVersion: "0.0.5",
     );
   });
 
@@ -102,9 +105,7 @@ void main() {
         await overrideIoStreams(
           stderr: () => fakeStderr,
           body: () async {
-            final runner = initializeSidekick(
-              name: 'dash',
-            );
+            final runner = initializeSidekick();
             runner.addCommand(SidekickCommand());
 
             await runner.run(['sidekick', 'update', '-h']);
@@ -113,8 +114,9 @@ void main() {
           },
         );
       },
-      sidekickCoreVersion: "0.0.2",
+      sidekickCoreVersion: "0.0.5",
       sidekickCliVersion: "0.0.1",
+      lockedSidekickCoreVersion: "0.0.5",
     );
   });
 
@@ -126,9 +128,7 @@ void main() {
         await overrideIoStreams(
           stderr: () => fakeStderr,
           body: () async {
-            final runner = initializeSidekick(
-              name: 'dash',
-            );
+            final runner = initializeSidekick();
             runner.addCommand(_WrapperCommand());
 
             await runner.run(['wrapper', 'update', '-h']);
@@ -141,8 +141,9 @@ void main() {
           },
         );
       },
-      sidekickCoreVersion: "0.0.2",
+      sidekickCoreVersion: "0.0.5",
       sidekickCliVersion: "0.0.1",
+      lockedSidekickCoreVersion: "0.0.5",
     );
   });
 }

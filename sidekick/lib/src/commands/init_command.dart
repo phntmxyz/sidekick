@@ -67,7 +67,7 @@ class InitCommand extends Command {
     installFlutterWrapper(inputs);
 
     print(
-      'Your sidekick CLI ${dcli.green(inputs.cliName)} has been successfully created! 🎉',
+      green('Successfully generated ${inputs.cliName}_sidekick 🎉'),
     );
   }
 
@@ -204,7 +204,6 @@ class InitCommand extends Command {
           .any((package) => package.isFlutterPackage),
       entrypointLocation: entrypoint,
       packageLocation: cliPackage,
-      sidekickCliVersion: core.version,
     );
     SidekickTemplate().generate(props);
 

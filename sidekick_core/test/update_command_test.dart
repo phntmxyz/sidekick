@@ -30,7 +30,6 @@ void main() {
         }
 
         final runner = initializeSidekick(
-          name: 'dash',
           dartSdkPath: systemDartSdkPath(),
         );
 
@@ -94,7 +93,6 @@ void main() {
 
     Future<void> code(Directory projectDir) async {
       final runner = initializeSidekick(
-        name: 'dash',
         dartSdkPath: systemDartSdkPath(),
       );
 

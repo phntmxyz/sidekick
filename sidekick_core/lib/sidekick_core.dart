@@ -25,6 +25,8 @@ export 'package:sidekick_core/src/commands/bash_command.dart';
 export 'package:sidekick_core/src/commands/dart_command.dart';
 export 'package:sidekick_core/src/commands/deps_command.dart';
 export 'package:sidekick_core/src/commands/flutter_command.dart';
+export 'package:sidekick_core/src/commands/format_command.dart'
+    show FormatCommand;
 export 'package:sidekick_core/src/commands/install_global_command.dart';
 export 'package:sidekick_core/src/commands/plugins/plugins_command.dart';
 export 'package:sidekick_core/src/commands/recompile_command.dart';
@@ -35,9 +37,7 @@ export 'package:sidekick_core/src/dart_runtime.dart';
 export 'package:sidekick_core/src/directory_ext.dart';
 export 'package:sidekick_core/src/file_util.dart';
 export 'package:sidekick_core/src/flutter.dart';
-export 'package:sidekick_core/src/flutterw.dart';
 export 'package:sidekick_core/src/forward_command.dart';
-export 'package:sidekick_core/src/git.dart';
 export 'package:sidekick_core/src/repository.dart';
 export 'package:sidekick_core/src/sidekick_context.dart' show SidekickContext;
 export 'package:sidekick_core/src/sidekick_package.dart';
@@ -48,11 +48,9 @@ export 'package:sidekick_core/src/template/sidekick_package.template.dart';
 /// This is used by the update command to determine if your sidekick cli
 /// requires an update
 // DO NOT MANUALLY EDIT THIS VERSION, instead run `sk bump-version sidekick_core`
-final Version version = Version.parse('0.15.1');
+final Version version = Version.parse('1.0.2');
 
 /// Initializes sidekick, call this at the very start of your CLI program
-///
-/// Set [name] to the name of your CLI entrypoint
 ///
 /// All paths are resolved relative to the location of the
 /// [SidekickContext.entryPoint], or absolute.
@@ -73,7 +71,7 @@ final Version version = Version.parse('0.15.1');
 /// In a multi package repository you might use the same when the main package
 /// is in projectRoot, or `mainProjectPath = 'packages/my_app'` when it is in a subfolder.
 SidekickCommandRunner initializeSidekick({
-  required String name,
+  @Deprecated('Not used anymore') String? name,
   String? description,
   String? mainProjectPath,
   String? flutterSdkPath,
@@ -103,6 +101,13 @@ SidekickCommandRunner initializeSidekick({
 
     if (fromRepoRoot == null && fromProjectRoot == null) {
       throw "Could not find directory $parameterName at '$path'. The resolved path is: ${projectRoot.directory(path).path}";
+    }
+
+    if (fromProjectRoot != null && fromRepoRoot == fromProjectRoot) {
+      if (fromProjectRoot.isAbsolute) {
+        // identical absolute paths, all good
+        return fromProjectRoot;
+      }
     }
 
     if (fromProjectRoot != null && fromRepoRoot == null) {
@@ -210,29 +215,23 @@ SidekickCommandRunner initializeSidekick({
   }
 
   final runner = SidekickCommandRunner._(
-    cliName: name,
     description: description ??
         'A sidekick CLI to equip Dart/Flutter projects with custom tasks',
     mainProject: mainProject,
-    workingDirectory: Directory.current,
     flutterSdk: flutterSdk,
     dartSdk: dartSdk,
   );
   return runner;
 }
 
-/// A CommandRunner that mounts the sidekick globals
-// ignore: deprecated_member_use_from_same_package
-/// [entryWorkingDirectory], [cliName], [repository], [mainProject].
+/// A CommandRunner that makes lookups in [SidekickContext] faster
 class SidekickCommandRunner<T> extends CommandRunner<T> {
   SidekickCommandRunner._({
-    required String cliName,
     required String description,
     this.mainProject,
-    required this.workingDirectory,
     this.flutterSdk,
     this.dartSdk,
-  }) : super(cliName, description) {
+  }) : super(SidekickContext.cliName, description) {
     argParser.addFlag(
       'version',
       negatable: false,
@@ -244,7 +243,6 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
   Repository get repository => findRepository();
 
   final DartPackage? mainProject;
-  final Directory workingDirectory;
   final Directory? flutterSdk;
   final Directory? dartSdk;
 
@@ -256,7 +254,8 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
     _activeRunner = this;
     final newCache = SidekickContextCache(debugName: debugName);
     internalSidekickContextCache = newCache;
-    _entryWorkingDirectory = workingDirectory;
+    final Directory? oldWorkingDirectory = _entryWorkingDirectory;
+    _entryWorkingDirectory = Directory.current;
 
     return () {
       _activeRunner = oldRunner;
@@ -270,7 +269,7 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
         return true;
       }());
       internalSidekickContextCache = oldCache;
-      _entryWorkingDirectory = _activeRunner?.workingDirectory;
+      _entryWorkingDirectory = oldWorkingDirectory;
     };
   }
 
@@ -333,9 +332,9 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
   /// CLI version listed in the pubspec at the path ['sidekick', 'cli_version']
   void _checkCliVersionIntegrity() {
     try {
-      final sidekickCoreVersion = VersionChecker.getMinimumVersionConstraint(
+      final sidekickCoreVersion = VersionChecker.getResolvedVersion(
         SidekickContext.sidekickPackage,
-        ['dependencies', 'sidekick_core'],
+        'sidekick_core',
       );
       if (sidekickCoreVersion == null) {
         // Couldn't parse sidekick_core version. Most likely because it uses
@@ -409,13 +408,15 @@ bool get _isUpdateCheckEnabled =>
 
 typedef Unmount = void Function();
 
-@Deprecated('noop')
-void deinitializeSidekick() {}
-
 /// The runner that is currently executing, used for nesting
 SidekickCommandRunner? _activeRunner;
 
-/// The working directory (cwd) from which the cli was started
+/// The working directory (cwd) from which the cli run method was started
+///
+/// Can be useful in case a command has changed the current working directory
+/// and the initial working directory is needed
+///
+/// Nested calls to the cli run method may return different directories
 Directory get entryWorkingDirectory =>
     _entryWorkingDirectory ?? Directory.current;
 Directory? _entryWorkingDirectory;
@@ -423,16 +424,13 @@ Directory? _entryWorkingDirectory;
 /// Name of the cli program
 ///
 /// Usually a short acronym, like 3 characters
-String get cliName {
-  if (_activeRunner == null) {
-    throw OutOfCommandRunnerScopeException('cliName');
-  }
-  return _activeRunner!.executableName;
-}
+@Deprecated('Use SidekickContext.cliName')
+String get cliName => SidekickContext.cliName;
 
 /// Name of the cli program (if running a generated sidekick CLI)
 /// or null (if running the global sidekick CLI)
-String? get cliNameOrNull => _activeRunner?.executableName;
+@Deprecated('Use SidekickContext.cliName')
+String? get cliNameOrNull => SidekickContext.cliName;
 
 /// The root of the repository which contains all projects
 @Deprecated('Use SidekickContext.projectRoot or SidekickContext.repository')

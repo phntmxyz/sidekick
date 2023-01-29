@@ -2,67 +2,13 @@
 
 A place to store project secrets within a git repository, encrypted with GPG
 
-# Create the Vault
+## Install the plugin
 
-1. Create a `vault` directory in your project
+Installing the vault is quite easy. Just run the following command in your project:
 
-2. Place a `README.md` in `vault`
-
-    ````markdown
-    # Vault
-    
-    This vault contains gpg encrypted passwords and certificates.
-    
-    To get the password to the vault ask one of the administrators.
-    This password is available on CI as environment variable `FLT_VAULT_PASSPHRASE`
-   
-   ## List existing secrets
-
-   ```
-   <cli-name> vault list
-   ```
-    
-    ## Encrypt secrets
-    
-    ```
-    <cli-name> vault encrypt file.csv
-    ```
-    
-    ## Decrypt secrets
-    
-    ```
-    <cli-name> vault decrypt file.csv.gpg
-    ```
-    ````
-
-3. Place a `.gitignore` in `vault`
-
-    ```gitignore
-    # Ignore everything in this folder which isn't gpg encrypted
-    *
-    !*.gpg
-    
-    # Exceptions
-    !README.md
-    !.gitignore
-    ```
-
-4. Register the `VaultCommand` in your sidekick CLI
-
-   ```dart
-   import 'package:sidekick_vault/sidekick_vault.dart';
-   
-   final vault = SidekickVault(
-     location: FlgProject.root.directory('vault'),
-     environmentVariableName: 'FLG_VAULT_PASSPHRASE',
-   );
-   
-   final runner = FlgCommandRunner()
-       ..addCommand(FlutterCommand())
-       ..addCommand(InstallGlobalCommand())
-       // more commands
-       ..addCommand(VaultCommand(vault: vault)); // <-- Add the VaultCommand
-   ```
+```bash
+<<your_cli>> sidekick plugins install sidekick_vault
+```
 
 ## Manage vault with VaultCommand
 
@@ -73,10 +19,10 @@ A place to store project secrets within a git repository, encrypted with GPG
 ```
 
 ```bash
-<cli-name> vault encrypt --passpharse="****" --vault-location="secret.txt.gpg" path/to/secret.txt
+<cli-name> vault encrypt --passphrase="****" --vault-location="secret.txt.gpg" path/to/secret.txt
 ```
 
-The `passpharse` is optional.
+The `passphrase` is optional.
 It will be retrieved from the environment variables or asked via `stdin`.
 
 The file will be saved at `vault-location` (optional) inside the vault directory.
@@ -89,10 +35,10 @@ The filename (`secret.txt`) will be used as fallback.
 ```
 
 ```bash
-<cli-name> vault decrypt --passpharse="****" --output="write/to/decrypted.txt" secret.txt.gpg';
+<cli-name> vault decrypt --passphrase="****" --output="write/to/decrypted.txt" secret.txt.gpg';
 ```
 
-The `passpharse` is optional.
+The `passphrase` is optional.
 It will be retrieved from the environment variables or asked via `stdin`.
 
 `output` is optional.

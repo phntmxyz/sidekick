@@ -15,7 +15,6 @@ late SkProject skProject;
 
 Future<void> runSk(List<String> args) async {
   final runner = initializeSidekick(
-    name: 'sk',
     dartSdkPath: systemDartSdkPath(),
   );
 
@@ -25,6 +24,7 @@ Future<void> runSk(List<String> args) async {
     ..addCommand(DartCommand())
     ..addCommand(DepsCommand(excludeGlob: ['**/templates/**']))
     ..addCommand(DartAnalyzeCommand())
+    ..addCommand(FormatCommand())
     ..addCommand(LockDependenciesCommand())
     ..addCommand(ReleaseCommand())
     ..addCommand(VerifyPublishStateCommand())

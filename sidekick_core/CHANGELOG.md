@@ -1,5 +1,38 @@
 # Changelog
 
+## [1.0.2](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v1.0.1..sidekick_core-v1.0.2) (2023-1-25)
+
+- Update templates to `sidekick_core: ^1.0.0` and `sidekick_plugin_installer: ^0.3.0`  [#214](https://github.com/phntmxyz/sidekick/pull/214)
+- Don't show a warning when `flutterSdkPath` or `dartSdkPath` is an absolute path. [#214](https://github.com/phntmxyz/sidekick/pull/214)
+
+## [1.0.1](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v1.0.0..sidekick_core-v1.0.1) (2023-1-25)
+
+- Support for sidekick_plugin_installer:3.0.0 [#213](https://github.com/phntmxyz/sidekick/pull/213)
+
+## [1.0.0](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v0.15.1..sidekick_core-v1.0.0) (2023-1-25)
+
+### Breaking API & Behaviour Changes
+- Sidekick CLIs now works without a git repository. The `projectRoot` is defined where the shell `entryPoint` is located.
+- New `SidekickContext` with getters for `sidekickPackage`, `cliName`, `projectRoot`, `entryPoint` and `repository` [#178](https://github.com/phntmxyz/sidekick/pull/178)
+- Deprecation of `Repository` and top-level `repository` [#178](https://github.com/phntmxyz/sidekick/pull/178)
+- Behaviour: paths for `initializeSidekick()` are now relative to `projectRoot`, not `repository`. Sidekick will print warnings when you're using wrong paths [#178](https://github.com/phntmxyz/sidekick/pull/178)
+- Removal of `git()`. It was unused. Since sidekick doesn't require git anymore it was removed. [#208](https://github.com/phntmxyz/sidekick/pull/208)
+- Behaviour: `flutter` and `dart` throw by default when failing. Use `nothrow: true` to ignore errors (`exitCode != 0`) [#206](https://github.com/phntmxyz/sidekick/pull/206)
+- Behaviour: `flutter` and `dart` default to `Directory.current`, not `entryWorkingDirectory` [#206](https://github.com/phntmxyz/sidekick/pull/206)
+- Removal of `flutterw()`. `flutter` and `dart` do not fall back to `flutterw()`. It is now available as plugin https://github.com/passsy/flutterw_sidekick_plugin [#208](https://github.com/phntmxyz/sidekick/pull/208)
+- Deprecate top-level `cliName`/`cliNameOrNull` in favor of `SidekickContext.cliName` [#208](https://github.com/phntmxyz/sidekick/pull/208)
+- Deprecate `name` of `initializeSidekick()`. The name is now inferred from the `pubspec.yaml` from the package name (`<name>_sidekick`). [#209](https://github.com/phntmxyz/sidekick/pull/209)
+- Deprecate `findRepository()` in favor of `SidekickContext.repository` or `SidekickContext.projectRoot` [#178](https://github.com/phntmxyz/sidekick/pull/178)
+- Removal of `deinitializeSidekick()` [#208](https://github.com/phntmxyz/sidekick/pull/208)
+
+### Other Changes
+- New `List<DartPackage> findAllPackages(Directory)` function to find packages in directories such as `SidekickContext.projectRoot` or `SidekickContext.repository` [#178](https://github.com/phntmxyz/sidekick/pull/178)
+- Require latest dartx version `1.1.0` [#208](https://github.com/phntmxyz/sidekick/pull/208)
+- Update template to use Dart 2.18.6 [#195](https://github.com/phntmxyz/sidekick/pull/195)
+- Show the exact version of the plugin during install [#203](https://github.com/phntmxyz/sidekick/pull/203)
+- Print `pub get` errors when installing plugin [#203](https://github.com/phntmxyz/sidekick/pull/203)
+- Fix misleading update message [#210](https://github.com/phntmxyz/sidekick/pull/210)
+
 ## [0.15.1](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v0.15.0..sidekick_core-v0.15.1) (2023-1-18)
 
 - **bugfix**: sidekick update - Ignore insignificant `pub get` errors [#190](https://github.com/phntmxyz/sidekick/pull/190)

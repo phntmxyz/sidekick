@@ -65,6 +65,7 @@ class SidekickTemplate {
 class SidekickTemplateProperties {
   /// Name of the CLI.
   ///
+  // ignore: deprecated_member_use_from_same_package
   /// Do not rename it to `cliName` which would conflict with [cliName]
   final String name;
 
@@ -124,6 +125,7 @@ Future<void> main(List<String> arguments) async {
       'DepsCommand()',
       'CleanCommand()',
       'DartAnalyzeCommand()',
+      'FormatCommand()',
       'SidekickCommand()',
     ];
 
@@ -135,7 +137,6 @@ import 'package:sidekick_core/sidekick_core.dart';
 
 Future<void> run${name.pascalCase}(List<String> args) async {
   final runner = initializeSidekick(
-    name: '${name.snakeCase}',
     ${mainProjectPath != null ? "mainProjectPath: '$mainProjectPath'," : ''}
     ${shouldSetFlutterSdkPath! ? 'flutterSdkPath: systemFlutterSdkPath(),' : 'dartSdkPath: systemDartSdkPath(),'}
   );

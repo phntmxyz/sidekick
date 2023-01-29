@@ -61,6 +61,12 @@ void main() {
         );
         process.stderrStream().listen(printOnFailure);
         await process.shouldExit(0);
+        expect(
+          process.stdout,
+          isNot(
+            contains('Successfully generated dashi_sidekick 🎉'),
+          ),
+        );
       },
       timeout: const Timeout(Duration(minutes: 5)),
     );
@@ -92,6 +98,12 @@ void main() {
                 'CLI package directory ${tempDir.path} is not within or equal to ${projectRoot.path}',
               ),
           isTrue,
+        );
+        expect(
+          process.stdout,
+          isNot(
+            contains('Successfully generated dashi_sidekick 🎉'),
+          ),
         );
       },
       timeout: const Timeout(Duration(minutes: 5)),
@@ -126,6 +138,12 @@ void main() {
               ),
           isTrue,
         );
+        expect(
+          process.stdout,
+          isNot(
+            contains('Successfully generated dashi_sidekick 🎉'),
+          ),
+        );
       },
       timeout: const Timeout(Duration(minutes: 5)),
     );
@@ -158,6 +176,12 @@ void main() {
               ),
           isTrue,
         );
+        expect(
+          process.stdout,
+          isNot(
+            contains('Successfully generated dashi_sidekick 🎉'),
+          ),
+        );
       },
       timeout: const Timeout(Duration(minutes: 5)),
     );
@@ -174,6 +198,12 @@ void main() {
         expect(
           await process.stderr.rest.contains(invalidCliNameErrorMessage),
           isTrue,
+        );
+        expect(
+          process.stdout,
+          isNot(
+            contains('Successfully generated dashi_sidekick 🎉'),
+          ),
         );
       },
     );
@@ -194,6 +224,12 @@ void main() {
             'The CLI name rm is already taken by an executable on your system see [/bin/rm]',
           ),
         );
+        expect(
+          process.stdout,
+          isNot(
+            contains('Successfully generated dashi_sidekick 🎉'),
+          ),
+        );
       },
     );
   });
@@ -208,6 +244,12 @@ void main() {
         final process = await cachedGlobalSidekickCli.run(
           ['init', '-n', 'dashi'],
           workingDirectory: projectRoot,
+        );
+        final stdout = await process.stdoutStream().join('\n');
+
+        expect(
+          stdout,
+          contains('Successfully generated dashi_sidekick 🎉'),
         );
         await process.shouldExit(0);
         final entrypoint = File("${projectRoot.path}/dashi");
@@ -273,6 +315,12 @@ void main() {
           ],
           workingDirectory: Directory.current,
         );
+        final stdout = await process.stdoutStream().join('\n');
+
+        expect(
+          stdout,
+          contains('Successfully generated dashi_sidekick 🎉'),
+        );
         printOnFailure(await process.stdoutStream().join('\n'));
         printOnFailure(await process.stderrStream().join('\n'));
         await process.shouldExit(0);
@@ -337,6 +385,13 @@ void main() {
           process.stdout,
           emitsThrough(contains('Generating dashi_sidekick')),
         );
+        final stdout = await process.stdoutStream().join('\n');
+
+        expect(
+          stdout,
+          contains('Successfully generated dashi_sidekick 🎉'),
+        );
+
         printOnFailure(await process.stdoutStream().join('\n'));
         printOnFailure(await process.stderrStream().join('\n'));
         await process.shouldExit(0);
@@ -362,7 +417,7 @@ void main() {
             .readAsStringSync();
         expect(runFunctionFile, contains("mainProjectPath: '.',"));
 
-        final packages = Repository(root: project).findAllPackages();
+        final packages = findAllPackages(project);
         final expectedPackages = {
           DartPackage(project, 'root_with_packages'),
           DartPackage(project.directory('packages/package_a'), 'package_a'),
