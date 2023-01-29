@@ -156,6 +156,7 @@ class FormatCommand extends Command {
         'format',
         '-l',
         '$lineLength',
+        if (!verify) '--fix',
         ...files.map((file) => file.path),
         if (verify) '--set-exit-if-changed',
         if (verify) '--output=none',
