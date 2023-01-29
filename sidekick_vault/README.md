@@ -73,10 +73,10 @@ A place to store project secrets within a git repository, encrypted with GPG
 ```
 
 ```bash
-<cli-name> vault encrypt --passpharse="****" --vault-location="secret.txt.gpg" path/to/secret.txt
+<cli-name> vault encrypt --passphrase="****" --vault-location="secret.txt.gpg" path/to/secret.txt
 ```
 
-The `passpharse` is optional.
+The `passphrase` is optional.
 It will be retrieved from the environment variables or asked via `stdin`.
 
 The file will be saved at `vault-location` (optional) inside the vault directory.
@@ -89,10 +89,10 @@ The filename (`secret.txt`) will be used as fallback.
 ```
 
 ```bash
-<cli-name> vault decrypt --passpharse="****" --output="write/to/decrypted.txt" secret.txt.gpg';
+<cli-name> vault decrypt --passphrase="****" --output="write/to/decrypted.txt" secret.txt.gpg';
 ```
 
-The `passpharse` is optional.
+The `passphrase` is optional.
 It will be retrieved from the environment variables or asked via `stdin`.
 
 `output` is optional.
