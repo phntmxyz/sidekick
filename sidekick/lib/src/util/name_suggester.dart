@@ -19,12 +19,12 @@ class NameSuggester {
         .sortedBy((it) => it.length);
     final names = [
       ...suggestions,
-      'Enter your own',
+      '<Enter your own>',
     ];
 
     final String answer = dcli.menu(
       options: names,
-      prompt: 'Type the number of the fitting acronym or choose Enter your own',
+      prompt: 'Select cliName:',
     );
     if (answer == '') {
       // no name provided, default in terminal without stdin
@@ -35,10 +35,8 @@ class NameSuggester {
         'Enter your CLI name:',
         validator: const CliNameValidator(),
       );
-      print('');
       return manualName;
     } else {
-      print('');
       return answer;
     }
   }

@@ -66,30 +66,41 @@ class InitCommand extends Command {
     // optional steps to further improve the CLI
     installFlutterWrapper(inputs);
 
-    print(
-      green('Successfully generated ${inputs.cliName}_sidekick 🎉'),
-    );
+    print(green('Successfully generated ${inputs.cliName}_sidekick 🎉'));
   }
 
   /// Collects all information needed to create a sidekick CLI
   ///
   /// Does only file system reads, no writes
   _InitInputs _collectInformation() {
+    print(
+      'Creating a sidekick CLI requires the following information:\n'
+      '${white('projectRoot', bold: false)}\n'
+      '    The path to the project/repository to manage with the CLI.\n'
+      '    This is where the shell entryPoint will be placed.\n'
+      '${white('cliName', bold: false)}\n'
+      '    The name of the CLI (entryPoint name)\n'
+      '${white('cliPackageDirectory', bold: false)}\n'
+      '    The directory where the dart package of the CLI should be saved.',
+    );
+    sleepForUser(2000);
+    print("Let's get started!\n");
+    sleepForUser(600);
+
     final projectRoot = Directory(
       argResults!['entrypointDirectory'] as String? ??
           argResults!.rest.firstOrNull ??
           () {
             print(
-              '${green('Enter the directory in which the entrypoint script should be created.')}\n'
-              'Or press enter to use the current directory.',
+              '${green('projectRoot - Enter the directory in which the entrypoint script should be created.\n')}'
+              '(absolute or relative to ${Directory.current.absolute.path})\n'
+              'Or press enter to use the current directory (${Directory.current.absolute.path})',
             );
             final answer = dcli.ask(
               'Set entryPoint directory:',
-              validator: const DirectoryExistsValidator(),
-              defaultValue: Directory.current.path,
+              defaultValue: '.',
             );
-            print('');
-            return answer;
+            return relative(answer);
           }(),
     ).canonicalized;
     if (!projectRoot.existsSync()) {
@@ -97,48 +108,17 @@ class InitCommand extends Command {
         'Info: projectRoot directory containing the entryPoint does not exist yet. '
         'It will be created at ${projectRoot.path}\n'
         "Info: Please double check your entryPoint directory, "
-        "you're about to create a sidekick CLI in an empty directory.",
+        "you're about to create a sidekick CLI in an empty directory.\n\n",
       );
     }
-
-    final packageDir = Directory(
-      argResults!['cliPackageDirectory'] as String? ??
-          () {
-            print(
-              '${green('Enter the directory in which the CLI package should be created.')}\n'
-              'Must be an absolute path or a path '
-              'relative to the repository root (${projectRoot.path}).\n'
-              'Or press enter to use the suggested directory.\n',
-            );
-            final answer = dcli.ask(
-              'Set CLI package directory:',
-              validator: DirectoryIsWithinOrEqualValidator(projectRoot),
-              defaultValue: projectRoot.directory('packages').path,
-            );
-            print('');
-            return answer;
-          }(),
-    );
-    if (!packageDir.isWithinOrEqual(projectRoot)) {
-      throw 'CLI package directory ${packageDir.path} is not within or equal to ${projectRoot.path}';
-    }
-
-    final mainProjectPath = argResults!['mainProjectPath'] as String?;
-    DartPackage? mainProject = mainProjectPath != null
-        ? DartPackage.fromDirectory(Directory(mainProjectPath))
-        : DartPackage.fromDirectory(projectRoot);
-    if (mainProjectPath != null && mainProject == null) {
-      throw 'mainProjectPath was given, but no DartPackage could be found at the given path $mainProjectPath';
-    }
-    if (mainProject != null && !mainProject.root.isWithinOrEqual(projectRoot)) {
-      throw 'Main project ${mainProject.root.path} is not within or equal to ${projectRoot.path}';
-    }
+    print(
+        '${white('projectRoot:', bold: false)} ${projectRoot.absolute.path}\n');
 
     final cliName = argResults!['cliName'] as String? ??
         () {
           print(
-            '${dcli.green('Please select a name for your sidekick CLI.')}\n'
-            'We know, selecting a name is hard. Here are some suggestions:',
+            '${dcli.green('cliName - Select a name for your sidekick CLI.')}\n'
+            'We know, selecting a name is hard. Here are some suggestions, or provide your own',
           );
           final suggester = NameSuggester(projectDir: projectRoot);
           final name = suggester.askUserForName();
@@ -156,6 +136,46 @@ class InitCommand extends Command {
       ..removeWhere((element) => element.contains('.sidekick/bin/$cliName'));
     if (cliNameCollisions.isNotEmpty) {
       throw 'The CLI name $cliName is already taken by an executable on your system see $cliNameCollisions';
+    }
+
+    print('${white('cliName:', bold: false)} $cliName\n');
+
+    final packageDir = Directory(
+      argResults!['cliPackageDirectory'] as String? ??
+          () {
+            print(
+              '${green('cliPackageDirectory - Enter the directory in which the ${cliName}_sidekick CLI package should be created.')}\n'
+              '(absolute or relative to ${projectRoot.absolute.path})\n'
+              'I.e. directory `packages` in mono-repos,\n'
+              'or press enter for the ${projectRoot.absolute.path} directory\n',
+            );
+            final answer = dcli.ask(
+              'Set CLI package directory:',
+              validator: DirectoryIsWithinOrEqualValidator(projectRoot),
+              defaultValue: projectRoot.absolute.path,
+            );
+            if (isAbsolute(answer)) {
+              return answer;
+            }
+            return join(projectRoot.path, answer);
+          }(),
+    );
+    if (!packageDir.isWithinOrEqual(projectRoot)) {
+      throw 'CLI package directory ${packageDir.path} is not within or equal to ${projectRoot.path}';
+    }
+    print(
+      '${white('cliPackageDirectory:', bold: false)} ${packageDir.absolute.path}\n',
+    );
+
+    final mainProjectPath = argResults!['mainProjectPath'] as String?;
+    DartPackage? mainProject = mainProjectPath != null
+        ? DartPackage.fromDirectory(Directory(mainProjectPath))
+        : DartPackage.fromDirectory(projectRoot);
+    if (mainProjectPath != null && mainProject == null) {
+      throw 'mainProjectPath was given, but no DartPackage could be found at the given path $mainProjectPath';
+    }
+    if (mainProject != null && !mainProject.root.isWithinOrEqual(projectRoot)) {
+      throw 'Main project ${mainProject.root.path} is not within or equal to ${projectRoot.path}';
     }
 
     final List<DartPackage> packages = projectRoot.existsSync()
@@ -291,4 +311,10 @@ class _InitInputs {
     this.mainProject,
     this.packages = const [],
   });
+}
+
+void sleepForUser(int milliseconds) {
+  if (Terminal().hasTerminal) {
+    sleep(milliseconds, interval: Interval.milliseconds);
+  }
 }
