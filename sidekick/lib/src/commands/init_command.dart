@@ -267,11 +267,11 @@ class InitCommand extends Command {
     final flutterPackages = [
       if (inputs.mainProject != null) inputs.mainProject!,
       ...inputs.packages
-    ].filter((package) => package.isFlutterPackage).toList();
+    ].filter((package) => package.isFlutterPackage).toSet();
 
     if (flutterPackages.isNotEmpty) {
       print(
-        'Sidekick detected (${flutterPackages.length}) Flutter packages in your project.\n',
+        'Sidekick detected ${flutterPackages.length} Flutter package(s) in your project.\n',
       );
       print(
         "It's recommended to bind an exact Flutter version to your project "

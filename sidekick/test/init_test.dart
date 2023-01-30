@@ -457,7 +457,7 @@ void main() {
         output,
         allOf([
           contains('flutterw_sidekick_plugin'),
-          contains('Sidekick detected 1 Flutter packages in your project.'),
+          contains('Sidekick detected 1 Flutter package(s) in your project.'),
           contains(
             'Do you want pin the Flutter version of this project with flutterw?',
           ),
