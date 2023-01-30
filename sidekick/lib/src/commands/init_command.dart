@@ -290,8 +290,19 @@ class InitCommand extends Command {
             env['SIDEKICK_INIT_APPROVE_FLUTTERW_INSTALL'] == 'true' || false,
       );
       if (confirmFlutterwInstall) {
-        "${entryPoint.path} sidekick plugins install flutterw_sidekick_plugin"
-            .run;
+        print('Preparing the ${inputs.cliName} CLI');
+        final capture = Progress.capture();
+        try {
+          // Reduce initial noise when running the CLI for the first time
+          dcli.start(entryPoint.path, progress: capture);
+        } catch (e) {
+          printerr(red(capture.lines.join('\n')));
+          rethrow;
+        }
+        dcli.startFromArgs(
+          entryPoint.path,
+          ['sidekick', 'plugins', 'install', 'flutterw_sidekick_plugin'],
+        );
       }
     }
   }
