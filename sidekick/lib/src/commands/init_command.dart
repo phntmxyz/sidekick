@@ -281,9 +281,8 @@ class InitCommand extends Command {
       );
 
       print(
-        dcli.green(
-          'Do you want pin the Flutter version of this project with flutterw?',
-        ),
+        '${dcli.green('Do you want pin the Flutter version of this project with flutterw?')}\n'
+        'This will download the Flutter SDK ~900mb',
       );
       final confirmFlutterwInstall = dcli.confirm(
         'Install flutterw_sidekick_plugin?',
