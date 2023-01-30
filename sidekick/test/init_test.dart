@@ -42,10 +42,10 @@ void main() {
 
   group('sidekick init - argument validation', () {
     test(
-      'throws when entrypointDirectory does not exist',
+      'Creates projectRoot when it does not exist',
       () async {
         final tempDir = Directory.systemTemp.createTempSync();
-        addTearDown(() => tempDir.deleteSync());
+        addTearDown(() => tempDir.deleteSync(recursive: true));
 
         final projectRoot =
             setupTemplateProject('test/templates/minimal_dart_package');
@@ -54,19 +54,13 @@ void main() {
             'init',
             '-n',
             'dashi',
-            '--entrypointDirectory',
+            '--projectRoot',
             tempDir.directory('foo').path,
           ],
           workingDirectory: projectRoot,
         );
         process.stderrStream().listen(printOnFailure);
-        await process.shouldExit(255);
-        expect(
-          await process.stderrStream().contains(
-                'Entrypoint directory ${tempDir.directory('foo').path} does not exist',
-              ),
-          isTrue,
-        );
+        await process.shouldExit(0);
         expect(
           process.stdout,
           isNot(
@@ -78,7 +72,7 @@ void main() {
     );
 
     test(
-      'throws when cliPackageDirectory is not inside entrypointDirectory',
+      'throws when cliPackageDirectory is not inside projectRoot',
       () async {
         final tempDir = Directory.systemTemp.createTempSync();
         addTearDown(() => tempDir.deleteSync());
@@ -90,7 +84,7 @@ void main() {
             'init',
             '-n',
             'dashi',
-            '--entrypointDirectory',
+            '--projectRoot',
             projectRoot.path,
             '--cliPackageDirectory',
             tempDir.path
@@ -116,7 +110,7 @@ void main() {
     );
 
     test(
-      'throws when mainProjectPath is not inside entrypointDirectory',
+      'throws when mainProjectPath is not inside projectRoot',
       () async {
         final tempDir = Directory.systemTemp.createTempSync();
         addTearDown(() => tempDir.deleteSync(recursive: true));
@@ -129,7 +123,7 @@ void main() {
             'init',
             '-n',
             'dashi',
-            '--entrypointDirectory',
+            '--projectRoot',
             projectRoot.path,
             '--mainProjectPath',
             tempDir.path
@@ -167,7 +161,7 @@ void main() {
             'init',
             '-n',
             'dashi',
-            '--entrypointDirectory',
+            '--projectRoot',
             projectRoot.path,
             '--mainProjectPath',
             tempDir.path
@@ -262,11 +256,11 @@ void main() {
         expect(entrypoint.existsSync(), isTrue);
 
         overrideSidekickCoreWithLocalPath(
-          projectRoot.directory('packages/dashi_sidekick'),
+          projectRoot.directory('dashi_sidekick'),
         );
 
         final runFunctionFile = projectRoot
-            .file('packages/dashi_sidekick/lib/dashi_sidekick.dart')
+            .file('dashi_sidekick/lib/dashi_sidekick.dart')
             .readAsStringSync();
         expect(runFunctionFile, contains("mainProjectPath: '.',"));
         expect(runFunctionFile, isNot(contains('dartSdkPath:')));
@@ -306,14 +300,14 @@ void main() {
       () async {
         final cliDir = Directory.systemTemp.createTempSync();
         addTearDown(() => cliDir.deleteSync(recursive: true));
-        final entrypointDir = cliDir.directory('foo/custom/entrypointDirectory')
+        final entrypointDir = cliDir.directory('foo/custom/projectRoot')
           ..createSync(recursive: true);
         final process = await cachedGlobalSidekickCli.run(
           [
             'init',
             '-n',
             'dashi',
-            '--entrypointDirectory',
+            '--projectRoot',
             entrypointDir.path,
             '--cliPackageDirectory',
             entrypointDir.directory('my/custom/cliDir').path,
@@ -389,7 +383,7 @@ void main() {
 
         await expectLater(
           process.stdout,
-          emitsThrough('Generating dashi_sidekick'),
+          emitsThrough(contains('Generating dashi_sidekick')),
         );
         final stdout = await process.stdoutStream().join('\n');
 
@@ -401,10 +395,6 @@ void main() {
         printOnFailure(await process.stdoutStream().join('\n'));
         printOnFailure(await process.stderrStream().join('\n'));
         await process.shouldExit(0);
-
-        // check git is initialized
-        final git = Directory("${project.path}/.git");
-        expect(git.existsSync(), isTrue);
 
         // check entrypoint executes fine
         final entrypoint = File("${project.path}/dashi");
@@ -442,4 +432,46 @@ void main() {
       timeout: const Timeout(Duration(minutes: 5)),
     );
   });
+
+  test(
+    'Installs optional flutterw_sidekick_plugin',
+    () async {
+      final projectRoot =
+          setupTemplateProject('test/templates/minimal_flutter_package');
+      final process = await cachedGlobalSidekickCli.run(
+        [
+          'init',
+          '-n',
+          'dashi',
+          '--projectRoot',
+          '.',
+        ],
+        workingDirectory: projectRoot,
+        environment: {
+          'SIDEKICK_INIT_APPROVE_FLUTTERW_INSTALL': 'true',
+        },
+      );
+      process.stdoutStream().listen((line) {
+        if (line.contains('Code generation successful')) {
+          overrideSidekickCoreWithLocalPath(
+            projectRoot.directory('dashi_sidekick'),
+          );
+        }
+        print(line);
+      });
+      process.stderrStream().listen(printOnFailure);
+      final output = await process.stdoutStream().join('\n');
+      expect(
+        output,
+        allOf([
+          contains('flutterw_sidekick_plugin'),
+          contains('Sidekick detected 1 Flutter package(s) in your project.'),
+          contains(
+            'Do you want pin the Flutter version of this project with flutterw?',
+          ),
+        ]),
+      );
+    },
+    timeout: const Timeout(Duration(minutes: 5)),
+  );
 }

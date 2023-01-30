@@ -16,7 +16,7 @@ void main() {
 
         // check install.sh is executable
         final installSh =
-            File("${cli.root.path}/packages/dashi_sidekick/tool/install.sh");
+            File("${cli.root.path}/dashi_sidekick/tool/install.sh");
         expect(installSh.existsSync(), isTrue);
         expect(installSh.statSync().modeString(), 'rwxr-xr-x');
 
