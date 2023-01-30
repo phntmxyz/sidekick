@@ -465,6 +465,5 @@ void main() {
       );
     },
     timeout: const Timeout(Duration(minutes: 5)),
-    skip: 'Enable when sidekick_core 1.0 has been release with SidekickContext',
   );
 }

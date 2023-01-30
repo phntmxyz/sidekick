@@ -34,10 +34,6 @@ void main() {
         });
       },
       timeout: const Timeout(Duration(minutes: 5)),
-      // TODO: migrate sidekick_vault installer to use SidekickContext API.
-      //  The installer currently relies on a git repository, should be replaced
-      //  with projectRoot
-      skip: 'Enable after sidekick_core: 1.0.0',
     );
 
     // TODO adapt this test to use --git-ref and --git-path as well
