@@ -17,7 +17,7 @@ class InitCommand extends Command {
   @override
   String get invocation => super.invocation.replaceFirst(
         '[arguments]',
-        '<projectRoot?>',
+        '[<projectRoot-directory>]',
       );
 
   InitCommand() {
