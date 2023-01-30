@@ -62,11 +62,11 @@ class InitCommand extends Command {
     await _createSidekickPackage(inputs);
     print("Code generation successful");
 
+    print(green('Successfully generated ${inputs.cliName}_sidekick 🎉'));
+
     // Post-install phase:
     // optional steps to further improve the CLI
     installFlutterWrapper(inputs);
-
-    print(green('Successfully generated ${inputs.cliName}_sidekick 🎉'));
   }
 
   /// Collects all information needed to create a sidekick CLI
@@ -270,6 +270,8 @@ class InitCommand extends Command {
     ].filter((package) => package.isFlutterPackage).toSet();
 
     if (flutterPackages.isNotEmpty) {
+      print('One more thing...');
+      sleepForUser(1000);
       print(
         'Sidekick detected ${flutterPackages.length} Flutter package(s) in your project.\n',
       );
