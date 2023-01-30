@@ -451,6 +451,14 @@ void main() {
           'SIDEKICK_INIT_APPROVE_FLUTTERW_INSTALL': 'true',
         },
       );
+      process.stdoutStream().listen((line) {
+        if (line.contains('Code generation successful')) {
+          overrideSidekickCoreWithLocalPath(
+            projectRoot.directory('dashi_sidekick'),
+          );
+        }
+        print(line);
+      });
       process.stderrStream().listen(printOnFailure);
       final output = await process.stdoutStream().join('\n');
       expect(
