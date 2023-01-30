@@ -65,7 +65,7 @@ jobs:
           export PATH="$PATH":"$HOME/.pub-cache/bin"
           mkdir tmp
           cd tmp
-          sidekick init --cliName dashi --entrypointDirectory . --cliPackageDirectory .
+          sidekick init --cliName dashi --projectRoot . --cliPackageDirectory .
           ./dashi -h
           ./dashi sidekick -h
           ./dashi sidekick plugins install sidekick_vault
