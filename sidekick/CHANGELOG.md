@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.0.0](https://github.com/phntmxyz/sidekick/compare/sidekick-v0.10.0..sidekick-v1.0.0) (2023-1-30)
+
+- Update to `sidekick_core: ^1.0.0` [#214](https://github.com/phntmxyz/sidekick/pull/214)
+- Does not create a git repo `git init` anymore [#219](https://github.com/phntmxyz/sidekick/pull/219)
+- No absolute path required for `projectRoot`. It's now relative to working directory [#219](https://github.com/phntmxyz/sidekick/pull/219)
+- Creates empty folder when `projectRoot` doesn't exist (Fixes [#205](https://github.com/phntmxyz/sidekick/issues/205)) [#219](https://github.com/phntmxyz/sidekick/pull/219)
+- Rename option `entrypointDirectory` -> `projectRoot` [#219](https://github.com/phntmxyz/sidekick/pull/219)
+- Install flutterw using [flutterw_sidekick_plugin](https://github.com/passsy/flutterw_sidekick_plugin) when a flutter package is detected [#219](https://github.com/phntmxyz/sidekick/pull/219)
+
 ## [0.10.0](https://github.com/phntmxyz/sidekick/compare/sidekick-v0.9.0..sidekick-v0.10.0) (2023-1-25)
 
 - Update to `sidekick_core: 1.0.0` [#214](https://github.com/phntmxyz/sidekick/pull/214)
