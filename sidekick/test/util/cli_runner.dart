@@ -43,7 +43,7 @@ final _cachedSidekickCli = waitForEx(() async {
 
   final cli = SidekickCli._(_cachedSidekickCliDir!, 'dashi');
   overrideSidekickCoreWithLocalPath(
-    cli.root.directory('packages/dashi_sidekick'),
+    cli.root.directory('dashi_sidekick'),
   );
 
   // run the entrypoint to kick off compilation

@@ -256,11 +256,11 @@ void main() {
         expect(entrypoint.existsSync(), isTrue);
 
         overrideSidekickCoreWithLocalPath(
-          projectRoot.directory('packages/dashi_sidekick'),
+          projectRoot.directory('dashi_sidekick'),
         );
 
         final runFunctionFile = projectRoot
-            .file('packages/dashi_sidekick/lib/dashi_sidekick.dart')
+            .file('dashi_sidekick/lib/dashi_sidekick.dart')
             .readAsStringSync();
         expect(runFunctionFile, contains("mainProjectPath: '.',"));
         expect(runFunctionFile, isNot(contains('dartSdkPath:')));
@@ -400,7 +400,7 @@ void main() {
         final entrypoint = File("${project.path}/dashi");
         expect(entrypoint.existsSync(), isTrue);
         overrideSidekickCoreWithLocalPath(
-          project.directory('packages/dashi_sidekick'),
+          project.directory('dashi_sidekick'),
         );
         final dashProcess = await TestProcess.start(
           entrypoint.path,
@@ -413,7 +413,7 @@ void main() {
 
         // root is mainProjectPath
         final runFunctionFile = project
-            .file('packages/dashi_sidekick/lib/dashi_sidekick.dart')
+            .file('dashi_sidekick/lib/dashi_sidekick.dart')
             .readAsStringSync();
         expect(runFunctionFile, contains("mainProjectPath: '.',"));
 
@@ -423,7 +423,7 @@ void main() {
           DartPackage(project.directory('packages/package_a'), 'package_a'),
           DartPackage(project.directory('packages/package_b'), 'package_b'),
           DartPackage(
-            project.directory('packages/dashi_sidekick'),
+            project.directory('dashi_sidekick'),
             'dashi_sidekick',
           ),
         };
