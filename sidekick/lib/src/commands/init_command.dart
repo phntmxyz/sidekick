@@ -156,7 +156,7 @@ class InitCommand extends Command {
             print(
               '${green('cliPackageDirectory - Enter the directory in which the ${cliName}_sidekick CLI package should be created.')}\n'
               '(absolute or relative to ${projectRoot.absolute.path})\n'
-              'I.e. directory `packages` in mono-repos,\n'
+              'E.g. directory `packages` in mono-repos,\n'
               'or press enter for the ${defaultDir.absolute.path} directory\n',
             );
             final answer = dcli.ask(
