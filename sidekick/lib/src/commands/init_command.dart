@@ -30,7 +30,7 @@ class InitCommand extends Command {
       'projectRoot',
       abbr: 'r',
       help:
-          'The directory in which the CLI entrypoint script should be created. '
+          'The directory in which the CLI entryPoint script should be created. '
           'Usually the root of your repository.',
     );
     argParser.addOption(
@@ -92,7 +92,7 @@ class InitCommand extends Command {
           argResults!.rest.firstOrNull ??
           () {
             print(
-              '${green('projectRoot - Enter the directory in which the entrypoint script should be created.\n')}'
+              '${green('projectRoot - Enter the directory in which the entryPoint script should be created.\n')}'
               '(absolute or relative to ${Directory.current.absolute.path})\n'
               'Or press enter to use the current directory (${Directory.current.absolute.path})',
             );
@@ -221,7 +221,7 @@ class InitCommand extends Command {
     final Directory cliPackage =
         inputs.packageDir.directory('${inputs.cliName}_sidekick');
 
-    final entrypoint = inputs.projectRoot.file(inputs.cliName.snakeCase);
+    final entryPoint = inputs.projectRoot.file(inputs.cliName.snakeCase);
     final props = SidekickTemplateProperties(
       name: inputs.cliName,
       mainProjectPath: inputs.mainProject != null
@@ -232,7 +232,7 @@ class InitCommand extends Command {
           : null,
       shouldSetFlutterSdkPath: findAllPackages(inputs.projectRoot)
           .any((package) => package.isFlutterPackage),
-      entrypointLocation: entrypoint,
+      entrypointLocation: entryPoint,
       packageLocation: cliPackage,
     );
     SidekickTemplate().generate(props);
@@ -262,7 +262,7 @@ class InitCommand extends Command {
 
   /// Asks user to install flutterw_sidekick_plugin when a Flutter package is detected
   void installFlutterWrapper(_InitInputs inputs) {
-    final entrypoint = inputs.projectRoot.file(inputs.cliName);
+    final entryPoint = inputs.projectRoot.file(inputs.cliName);
 
     final flutterPackages = [
       if (inputs.mainProject != null) inputs.mainProject!,
@@ -290,7 +290,7 @@ class InitCommand extends Command {
             env['SIDEKICK_INIT_APPROVE_FLUTTERW_INSTALL'] == 'true' || false,
       );
       if (confirmFlutterwInstall) {
-        "${entrypoint.path} sidekick plugins install flutterw_sidekick_plugin"
+        "${entryPoint.path} sidekick plugins install flutterw_sidekick_plugin"
             .run;
       }
     }
