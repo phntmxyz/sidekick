@@ -97,7 +97,7 @@ class InitCommand extends Command {
               'Or press enter to use the current directory (${Directory.current.absolute.path})',
             );
             final answer = dcli.ask(
-              'Set entryPoint directory:',
+              'Set projectRoot directory:',
               defaultValue: '.',
             );
             return relative(answer);
@@ -105,7 +105,7 @@ class InitCommand extends Command {
     ).canonicalized;
     if (!projectRoot.existsSync()) {
       print(
-        'Info: projectRoot directory containing the entryPoint does not exist yet. '
+        'Info: projectRoot directory in which entryPoint script should be created does not exist yet. '
         'It will be created at ${projectRoot.path}\n'
         "Info: Please double check your entryPoint directory, "
         "you're about to create a sidekick CLI in an empty directory.\n\n",
