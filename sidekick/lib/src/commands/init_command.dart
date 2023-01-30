@@ -143,16 +143,25 @@ class InitCommand extends Command {
     final packageDir = Directory(
       argResults!['cliPackageDirectory'] as String? ??
           () {
+            final Directory defaultDir = () {
+              final packagesDir = projectRoot.directory('packages');
+              if (packagesDir.existsSync()) {
+                return packagesDir;
+              } else {
+                return projectRoot;
+              }
+            }();
+
             print(
               '${green('cliPackageDirectory - Enter the directory in which the ${cliName}_sidekick CLI package should be created.')}\n'
               '(absolute or relative to ${projectRoot.absolute.path})\n'
               'I.e. directory `packages` in mono-repos,\n'
-              'or press enter for the ${projectRoot.absolute.path} directory\n',
+              'or press enter for the ${defaultDir.absolute.path} directory\n',
             );
             final answer = dcli.ask(
               'Set CLI package directory:',
               validator: DirectoryIsWithinOrEqualValidator(projectRoot),
-              defaultValue: projectRoot.absolute.path,
+              defaultValue: defaultDir.absolute.path,
             );
             if (isAbsolute(answer)) {
               return answer;
