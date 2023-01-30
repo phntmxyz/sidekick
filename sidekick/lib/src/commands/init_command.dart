@@ -112,7 +112,8 @@ class InitCommand extends Command {
       );
     }
     print(
-        '${white('projectRoot:', bold: false)} ${projectRoot.absolute.path}\n');
+      '${white('projectRoot:', bold: false)} ${projectRoot.absolute.path}\n',
+    );
 
     final cliName = argResults!['cliName'] as String? ??
         () {
@@ -187,9 +188,8 @@ class InitCommand extends Command {
       throw 'Main project ${mainProject.root.path} is not within or equal to ${projectRoot.path}';
     }
 
-    final List<DartPackage> packages = projectRoot.existsSync()
-        ? Repository(root: projectRoot).findAllPackages()
-        : [];
+    final List<DartPackage> packages =
+        projectRoot.existsSync() ? findAllPackages(projectRoot) : [];
 
     if (mainProject == null && packages.isNotEmpty) {
       // Ask user for a main project (optional)
@@ -225,11 +225,12 @@ class InitCommand extends Command {
     final props = SidekickTemplateProperties(
       name: inputs.cliName,
       mainProjectPath: inputs.mainProject != null
-          ? relative(inputs.mainProject!.root.path,
-              from: inputs.projectRoot.absolute.path)
+          ? relative(
+              inputs.mainProject!.root.path,
+              from: inputs.projectRoot.absolute.path,
+            )
           : null,
-      shouldSetFlutterSdkPath: Repository(root: inputs.projectRoot)
-          .findAllPackages()
+      shouldSetFlutterSdkPath: findAllPackages(inputs.projectRoot)
           .any((package) => package.isFlutterPackage),
       entrypointLocation: entrypoint,
       packageLocation: cliPackage,
@@ -270,7 +271,8 @@ class InitCommand extends Command {
 
     if (flutterPackages.isNotEmpty) {
       print(
-          'Sidekick detected (${flutterPackages.length}) Flutter packages in your project.\n');
+        'Sidekick detected (${flutterPackages.length}) Flutter packages in your project.\n',
+      );
       print(
         "It's recommended to bind an exact Flutter version to your project "
         "and share the same version with your coworkers and CI. There are two ways to accomplish this:\n"
