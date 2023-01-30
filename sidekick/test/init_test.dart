@@ -42,7 +42,7 @@ void main() {
 
   group('sidekick init - argument validation', () {
     test(
-      'Creates entrypointDirectory when it does not exist',
+      'Creates projectRoot when it does not exist',
       () async {
         final tempDir = Directory.systemTemp.createTempSync();
         addTearDown(() => tempDir.deleteSync(recursive: true));
@@ -54,7 +54,7 @@ void main() {
             'init',
             '-n',
             'dashi',
-            '--entrypointDirectory',
+            '--projectRoot',
             tempDir.directory('foo').path,
           ],
           workingDirectory: projectRoot,
@@ -72,7 +72,7 @@ void main() {
     );
 
     test(
-      'throws when cliPackageDirectory is not inside entrypointDirectory',
+      'throws when cliPackageDirectory is not inside projectRoot',
       () async {
         final tempDir = Directory.systemTemp.createTempSync();
         addTearDown(() => tempDir.deleteSync());
@@ -84,7 +84,7 @@ void main() {
             'init',
             '-n',
             'dashi',
-            '--entrypointDirectory',
+            '--projectRoot',
             projectRoot.path,
             '--cliPackageDirectory',
             tempDir.path
@@ -110,7 +110,7 @@ void main() {
     );
 
     test(
-      'throws when mainProjectPath is not inside entrypointDirectory',
+      'throws when mainProjectPath is not inside projectRoot',
       () async {
         final tempDir = Directory.systemTemp.createTempSync();
         addTearDown(() => tempDir.deleteSync(recursive: true));
@@ -123,7 +123,7 @@ void main() {
             'init',
             '-n',
             'dashi',
-            '--entrypointDirectory',
+            '--projectRoot',
             projectRoot.path,
             '--mainProjectPath',
             tempDir.path
@@ -161,7 +161,7 @@ void main() {
             'init',
             '-n',
             'dashi',
-            '--entrypointDirectory',
+            '--projectRoot',
             projectRoot.path,
             '--mainProjectPath',
             tempDir.path
@@ -300,14 +300,14 @@ void main() {
       () async {
         final cliDir = Directory.systemTemp.createTempSync();
         addTearDown(() => cliDir.deleteSync(recursive: true));
-        final entrypointDir = cliDir.directory('foo/custom/entrypointDirectory')
+        final entrypointDir = cliDir.directory('foo/custom/projectRoot')
           ..createSync(recursive: true);
         final process = await cachedGlobalSidekickCli.run(
           [
             'init',
             '-n',
             'dashi',
-            '--entrypointDirectory',
+            '--projectRoot',
             entrypointDir.path,
             '--cliPackageDirectory',
             entrypointDir.directory('my/custom/cliDir').path,
@@ -443,7 +443,7 @@ void main() {
           'init',
           '-n',
           'dashi',
-          '--entrypointDirectory',
+          '--projectRoot',
           '.',
         ],
         workingDirectory: projectRoot,

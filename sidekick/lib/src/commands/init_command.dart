@@ -14,6 +14,12 @@ class InitCommand extends Command {
   @override
   String get name => 'init';
 
+  @override
+  String get invocation => super.invocation.replaceFirst(
+        '[arguments]',
+        '<projectRoot?>',
+      );
+
   InitCommand() {
     argParser.addOption(
       'cliName',
@@ -21,28 +27,22 @@ class InitCommand extends Command {
       help: 'The name of the CLI to be created (entryPoint name).',
     );
     argParser.addOption(
-      'entrypointDirectory',
-      abbr: 'e',
+      'projectRoot',
+      abbr: 'r',
       help:
           'The directory in which the CLI entrypoint script should be created. '
-          'This will be the projectRoot',
+          'Usually the root of your repository.',
     );
     argParser.addOption(
       'cliPackageDirectory',
       abbr: 'c',
-      help: 'The directory in which the CLI package should be created. \n'
-          'This directory must be within the entrypointDirectory, '
-          'or if the entrypointDirectory is inside a git repository, '
-          'the cliPackageDirectory must be within the same git repository.',
+      help: 'The directory in which the CLI dart package should be created.',
     );
     argParser.addOption(
       'mainProjectPath',
       abbr: 'm',
       help:
-          'Optionally sets the mainProject, the package that ultimately builds your app. \n'
-          'This directory must be within the entrypointDirectory, '
-          'or if the entrypointDirectory is inside a git repository, '
-          'the mainProjectPath must be within the same git repository.',
+          'Optionally sets the mainProject, the package that ultimately builds your app.',
     );
   }
 
@@ -88,7 +88,7 @@ class InitCommand extends Command {
     sleepForUser(600);
 
     final projectRoot = Directory(
-      argResults!['entrypointDirectory'] as String? ??
+      argResults!['projectRoot'] as String? ??
           argResults!.rest.firstOrNull ??
           () {
             print(
