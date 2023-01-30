@@ -65,7 +65,7 @@ cd "${CLI_PACKAGE_DIR}" || exit
   else
     echoerr "Compilation failed. Trying dart pub upgrade"
     LOCK_FILE=$(cat pubspec.lock)
-    runSilent "${DART}" pub upgrade
+    runSilent "${DART}" pub upgrade --major-versions
     echoerr "- Compiling sidekick cli with updated dependencies"
     if runSilent "${DART}" compile exe -o "${EXE}" bin/main.dart; then
       deleteLine
