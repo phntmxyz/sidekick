@@ -1,5 +1,6 @@
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_core/src/version_checker.dart';
+import 'package:sidekick_test/sidekick_test.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -290,6 +291,26 @@ packages:
 
       final actual = VersionChecker.getResolvedVersion(package, 'foo');
       expect(actual, Version(42, 0, 0));
+    });
+  });
+
+  group('getDartVersion', () {
+    test('parses version and channel from version info string', () {
+      const versionInfostring =
+          'Dart SDK version: 2.18.4 (stable) (Tue Nov 1 15:15:07 2022 +0000) on "macos_arm64"';
+      final fakeDart = fakePrintingDartSdk(versionInfostring).file('bin/dart');
+
+      final expected =
+          SdkVersion(version: Version(2, 18, 4), channel: 'stable');
+      final actual = VersionChecker.getDartVersion(fakeDart.path);
+      expect(actual, expected);
+    });
+
+    test('does not crash with real Dart SDK', () {
+      expect(
+        () => VersionChecker.getDartVersion(systemDartExecutable()!),
+        returnsNormally,
+      );
     });
   });
 }

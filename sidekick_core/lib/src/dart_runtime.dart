@@ -1,9 +1,14 @@
 import 'package:dcli/dcli.dart' as dcli;
 import 'package:sidekick_core/sidekick_core.dart';
+import 'package:sidekick_core/src/version_checker.dart';
 
 /// default Dart runtime which is currently used to execute this sidekick CLI
 final sidekickDartRuntime =
     SidekickDartRuntime(SidekickContext.sidekickPackage.root);
+
+/// Version and channel of [sidekickDartRuntime]
+final sidekickDartVersion =
+    VersionChecker.getDartVersion(sidekickDartRuntime.dartSdkPath.path);
 
 /// The bundled Dart runtime of a sidekick CLI
 class SidekickDartRuntime {

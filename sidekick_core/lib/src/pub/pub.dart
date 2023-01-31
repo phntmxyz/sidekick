@@ -14,11 +14,11 @@
 /// - publish a sidekick_pub package containing the required modified pub code and depend on it
 library pub;
 
-import 'dart:io';
-import 'package:dcli/dcli.dart';
+import 'package:sidekick_core/sidekick_core.dart';
 
 /// Copied from https://github.com/dart-lang/pub/blob/master/lib/src/source/hosted.dart#L54
 /// This is needed to normalize a given pub server url.
+/// Depends on [sidekickDartVersion]
 ///
 /// Validates and normalizes a [hostedUrl] which is pointing to a pub server.
 ///
@@ -32,11 +32,16 @@ import 'package:dcli/dcli.dart';
 /// unless the path is merely `/`, in which case we normalize to the bare
 /// domain.
 ///
+/// If [sidekickDartVersion] < 2.19:
 /// We change `https://pub.dev` to `https://pub.dartlang.org`, this  maintains
 /// avoids churn for `pubspec.lock`-files which contain
 /// `https://pub.dartlang.org`.
+/// Else:
+/// We change `https://pub.dartlang.org` to `https://pub.dev`, this  maintains
+/// backwards compatibility with `pubspec.lock`-files which contain
+/// `https://pub.dartlang.org`.
 ///
-/// Throws [FormatException] if there is anything wrong [hostedUrl].
+/// Throws [FormatException] if there is anything wrong with [hostedUrl].
 ///
 /// [1]: ../../../doc/repository-spec-v2.md
 Uri validateAndNormalizeHostedUrl(String hostedUrl) {
@@ -90,14 +95,23 @@ Uri validateAndNormalizeHostedUrl(String hostedUrl) {
   //
   // Clearly, a bit of investigation is necessary before we update this to
   // pub.dev, it might be attractive to do next time we change the server API.
-  if (u == Uri.parse('https://pub.dev')) {
-    print('Using https://pub.dartlang.org instead of https://pub.dev.');
-    u = Uri.parse('https://pub.dartlang.org');
+  if (sidekickDartVersion.version < Version(2, 19, 0)) {
+    if (u == Uri.parse('https://pub.dev')) {
+      print('Using https://pub.dartlang.org instead of https://pub.dev.');
+      u = Uri.parse('https://pub.dartlang.org');
+    }
+  } else {
+    if (u == Uri.parse('https://pub.dartlang.org')) {
+      print('Using https://pub.dev instead of https://pub.dartlang.org.');
+      u = Uri.parse('https://pub.dev');
+    }
   }
+
   return u;
 }
 
 /// Copied from https://github.com/dart-lang/pub/blob/master/lib/src/source/hosted.dart#L138
+/// Depends on [sidekickDartVersion]
 ///
 /// Gets the default URL for the package server for hosted dependencies.
 final String defaultUrl = () {
@@ -113,7 +127,9 @@ final String defaultUrl = () {
   // Clearly, a bit of investigation is necessary before we update this to
   // pub.dev, it might be attractive to do next time we change the server API.
   try {
-    var defaultHostedUrl = 'https://pub.dartlang.org';
+    var defaultHostedUrl = sidekickDartVersion.version < Version(2, 19, 0)
+        ? 'https://pub.dartlang.org'
+        : 'https://pub.dev';
     // Allow the defaultHostedUrl to be overriden when running from tests
     if (runningFromTest) {
       defaultHostedUrl = Platform.environment['_PUB_TEST_DEFAULT_HOSTED_URL'] ??
