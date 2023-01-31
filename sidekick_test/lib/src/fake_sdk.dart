@@ -79,3 +79,20 @@ exit 1''');
 
   return temp;
 }
+
+/// Creates a fake Dart SDK with a `dart` executable that prints the given text
+Directory fakePrintingDartSdk(String text) {
+  final temp = Directory.systemTemp.createTempSync('fake_dart');
+  addTearDown(() => temp.deleteSync(recursive: true));
+
+  final textFile = temp.file('text')..writeAsStringSync(text);
+  final exe = temp.file('bin/dart')
+    ..createSync(recursive: true)
+    ..writeAsStringSync('''
+#!/bin/bash
+cat ${textFile.path}
+''');
+  dcli.run('chmod 755 ${exe.path}');
+
+  return temp;
+}

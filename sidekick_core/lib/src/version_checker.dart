@@ -184,8 +184,8 @@ abstract class VersionChecker {
     return Version.parse(latestVersion);
   }
 
-  /// Whether [dartExecutablePath] is the latest stable version of Dart
-  static Future<bool> isLatestStableDart(String dartExecutablePath) async {
+  /// Returns the channel and version of the Dart SDK at the given path
+  static SdkVersion getDartVersion(String dartExecutablePath) {
     // e.g. Dart SDK version: 2.18.4 (stable) (Tue Nov 1 15:15:07 2022 +0000) on "macos_arm64"
     final dartVersionResult = '$dartExecutablePath --version'
         .start(progress: Progress.capture())
@@ -196,12 +196,22 @@ abstract class VersionChecker {
 
     final dartVersionRegExp = RegExp(r'Dart SDK version: (\S+) \((\S+)\)');
     final match = dartVersionRegExp.firstMatch(dartVersionResult)!;
-    final currentChannel = match.group(2)!;
+    final version = Version.parse(match.group(1)!);
+    final channel = match.group(2)!;
+
+    return SdkVersion(version: version, channel: channel);
+  }
+
+  /// Whether [dartExecutablePath] is the latest stable version of Dart
+  static Future<bool> isLatestStableDart(String dartExecutablePath) async {
+    final dartVersion = getDartVersion(dartExecutablePath);
+    final currentChannel = dartVersion.channel;
+    final currentVersion = dartVersion.version;
+
     if (currentChannel != 'stable') {
       return false;
     }
 
-    final currentVersion = Version.parse(match.group(1)!);
     final latestVersion = await getLatestStableDartVersion();
 
     return currentVersion == latestVersion;
@@ -311,4 +321,23 @@ class _None<T> extends _Option<T> {
 
   @override
   B match<B>(B Function() onNone, B Function(T t) onSome) => onNone();
+}
+
+/// Bundles the [Version] and channel ([String]) of a Dart or Flutter SDK
+class SdkVersion {
+  SdkVersion({required this.version, required this.channel});
+
+  final Version version;
+  final String channel;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is SdkVersion &&
+          runtimeType == other.runtimeType &&
+          version == other.version &&
+          channel == other.channel;
+
+  @override
+  int get hashCode => version.hashCode ^ channel.hashCode;
 }
