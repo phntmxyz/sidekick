@@ -33,15 +33,15 @@ extension FileModifier on File {
     writeAsStringSync(mutated);
   }
 
-  void replaceFirst(String text, String replacement) {
+  void replaceFirst(Pattern text, String replacement) {
     final original = readAsStringSync();
-    final startIndex = original.indexOf(text);
-    if (startIndex == -1) {
-      throw "String '$text' not found in ${absolute.path}";
+    final Match? match = text.allMatches(original).firstOrNull;
+    if (match == null) {
+      throw "${text.runtimeType} '$text' not found in ${absolute.path}";
     }
     final mutated = original.replaceRange(
-      startIndex,
-      startIndex + text.length,
+      match.start,
+      match.end,
       replacement,
     );
     writeAsStringSync(mutated);
