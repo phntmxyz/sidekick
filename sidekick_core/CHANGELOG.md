@@ -1,5 +1,11 @@
 # Changelog
 
+## [1.1.0](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v1.0.2..sidekick_core-v1.1.0) (2023-2-3)
+
+- New: `FormatCommand` (`<cli> format`) to format all your project dart code [#192](https://github.com/phntmxyz/sidekick/pull/192)
+- Fix: plugin install with Dart 2.19 (default pub hosted url changed) [#221](https://github.com/phntmxyz/sidekick/pull/221)
+- install script does major dependency update [#220](https://github.com/phntmxyz/sidekick/pull/220)
+
 ## [1.0.2](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v1.0.1..sidekick_core-v1.0.2) (2023-1-25)
 
 - Update templates to `sidekick_core: ^1.0.0` and `sidekick_plugin_installer: ^0.3.0`  [#214](https://github.com/phntmxyz/sidekick/pull/214)
