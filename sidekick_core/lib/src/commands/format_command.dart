@@ -162,6 +162,9 @@ class FormatCommand extends Command {
         if (verify) '--output=none',
       ],
       nothrow: verify,
+      // Lines like `Changed x.dart`, `Formatted x files (y changed) in z seconds`
+      // should only be printed when the change is actually written to the files (when verify is false)
+      progress: verify ? Progress.devNull() : Progress.print(),
     );
     if (exitCode != 0) {
       foundFormatError = true;

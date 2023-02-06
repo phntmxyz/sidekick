@@ -1,5 +1,6 @@
-import 'package:sidekick_core/sidekick_core.dart';
+import 'package:sidekick_core/sidekick_core.dart' hide isEmpty;
 import 'package:sidekick_core/src/commands/format_command.dart';
+import 'package:sidekick_test/fake_stdio.dart';
 import 'package:sidekick_test/sidekick_test.dart';
 import 'package:test/test.dart';
 
@@ -318,22 +319,75 @@ name: dashi
     test('--verify throws, but does not format', () async {
       await insideFakeProjectWithSidekick((dir) async {
         dir.file('some.dart').writeAsStringSync(_dartFile140);
-        final runner = initializeSidekick(
-          dartSdkPath: systemDartSdkPath(),
-        );
-        runner.addCommand(FormatCommand());
-        expectLater(
-          () => runner.run(['format', '--verify']),
-          throwsA(
-            isA<DartFileFormatException>().having(
-              (p0) => p0.toString(),
-              'String representation',
-              'Dart files are not correctly formatted. Run "dash format" to format the code.',
-            ),
-          ),
+        final fakeStdout = FakeStdoutStream();
+        final fakeStderr = FakeStdoutStream();
+        overrideIoStreams(
+          stderr: () => fakeStderr,
+          stdout: () => fakeStdout,
+          body: () {
+            final runner = initializeSidekick(
+              dartSdkPath: systemDartSdkPath(),
+            );
+            runner.addCommand(FormatCommand());
+            expectLater(
+              () => runner.run(['format', '--verify']),
+              throwsA(
+                isA<DartFileFormatException>().having(
+                  (p0) => p0.toString(),
+                  'String representation',
+                  'Dart files are not correctly formatted. Run "dash format" to format the code.',
+                ),
+              ),
+            );
+
+            expect(dir.file('some.dart').readAsStringSync(), _dartFile140);
+          },
         );
 
-        expect(dir.file('some.dart').readAsStringSync(), _dartFile140);
+        expect(fakeStderr.lines, isEmpty);
+        // shouldn't print lines like `Changed x.dart`, `Formatted x files (y changed) in z seconds`
+        expect(
+          fakeStdout.lines,
+          ['Verifying package:dash', 'Verifying package:main_project'],
+        );
+      });
+    });
+
+    test('prints informative output when formatting files', () async {
+      await insideFakeProjectWithSidekick((dir) async {
+        final fakeStdout = FakeStdoutStream();
+        final fakeStderr = FakeStdoutStream();
+        await overrideIoStreams(
+          stderr: () => fakeStderr,
+          stdout: () => fakeStdout,
+          body: () async {
+            setupProject(dir, mainContent: _dartFile80);
+            final runner = initializeSidekick(
+              dartSdkPath: systemDartSdkPath(),
+            );
+            runner.addCommand(FormatCommand());
+            await runner.run(['format']);
+          },
+        );
+
+        expect(fakeStderr.lines, isEmpty);
+        expect(
+          fakeStdout.lines,
+          containsAll(
+            [
+              'Formatting package:dash',
+              stringContainsInOrder(
+                ['Formatted', 'packages/dash/lib/dash_sidekick.dart'],
+              ),
+              stringContainsInOrder(
+                ['Formatted', 'packages/dash/lib/src/dash_project.dart'],
+              ),
+              stringContainsInOrder(
+                ['Formatted 2 files (2 changed) in', 'seconds'],
+              ),
+            ],
+          ),
+        );
       });
     });
   });
