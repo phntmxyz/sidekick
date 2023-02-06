@@ -318,7 +318,8 @@ name: dashi
 
     test('--verify throws, but does not format', () async {
       await insideFakeProjectWithSidekick((dir) async {
-        dir.file('some.dart').writeAsStringSync(_dartFile140);
+        final unformattedFile = dir.file('some.dart')
+          ..writeAsStringSync(_dartFile140);
         final fakeStdout = FakeStdoutStream();
         final fakeStderr = FakeStdoutStream();
         overrideIoStreams(
@@ -331,20 +332,25 @@ name: dashi
             runner.addCommand(FormatCommand());
             expectLater(
               () => runner.run(['format', '--verify']),
-              throwsA(
-                isA<DartFileFormatException>().having(
-                  (p0) => p0.toString(),
-                  'String representation',
-                  'Dart files are not correctly formatted. Run "dash format" to format the code.',
-                ),
-              ),
+              throwsA(isA<DartFileFormatException>()),
             );
 
             expect(dir.file('some.dart').readAsStringSync(), _dartFile140);
           },
         );
 
-        expect(fakeStderr.lines, isEmpty);
+        expect(
+          fakeStderr.lines,
+          contains(
+            stringContainsInOrder(
+              [
+                'Following Dart files are not formatted correctly:',
+                unformattedFile.path,
+                'Run "dash format" to format the code.'
+              ],
+            ),
+          ),
+        );
         // shouldn't print lines like `Changed x.dart`, `Formatted x files (y changed) in z seconds`
         expect(
           fakeStdout.lines,

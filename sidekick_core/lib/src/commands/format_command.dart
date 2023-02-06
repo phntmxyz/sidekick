@@ -65,6 +65,7 @@ class FormatCommand extends Command {
   }
 
   bool foundFormatError = false;
+  List<String> unformattedFiles = [];
 
   @override
   Future<void> run() async {
@@ -129,10 +130,11 @@ class FormatCommand extends Command {
   void _verifyThrow() {
     final bool verify = argResults?['verify'] as bool? ?? false;
     if (verify && foundFormatError) {
-      throw DartFileFormatException(
-        'Dart files are not correctly formatted. '
-        'Run "${SidekickContext.cliName} format" to format the code.',
-      );
+      final message = 'Following Dart files are not formatted correctly:\n'
+          '${unformattedFiles.join('\n')}\n'
+          'Run "${SidekickContext.cliName} format" to format the code.';
+      printerr(red(message));
+      throw DartFileFormatException(message);
     }
   }
 
@@ -151,6 +153,8 @@ class FormatCommand extends Command {
       print("No files to format");
       return;
     }
+    final progress =
+        verify ? Progress.capture() : Progress.print(capture: true);
     final exitCode = dart(
       [
         'format',
@@ -164,10 +168,15 @@ class FormatCommand extends Command {
       nothrow: verify,
       // Lines like `Changed x.dart`, `Formatted x files (y changed) in z seconds`
       // should only be printed when the change is actually written to the files (when verify is false)
-      progress: verify ? Progress.devNull() : Progress.print(),
+      progress: progress,
     );
     if (exitCode != 0) {
       foundFormatError = true;
+      unformattedFiles.addAll(
+        progress.lines
+            .where((it) => it.startsWith('Changed '))
+            .map((it) => it.substring('Changed '.length)),
+      );
     }
   }
 }
@@ -232,5 +241,5 @@ class DartFileFormatException implements Exception {
   DartFileFormatException(this.message);
 
   @override
-  String toString() => message;
+  String toString() => 'DartFileFormatException{message: $message}';
 }
