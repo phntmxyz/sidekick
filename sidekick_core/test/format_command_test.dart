@@ -324,9 +324,12 @@ name: dashi
 ''',
           mainContent: _dartFile140,
         );
-        final hiddenFolderFile = dir.file('file.g.dart')
+        final gFile = dir.file('file.g.dart')..createSync(recursive: true);
+        gFile.writeAsStringSync(_dartFile140);
+
+        final freezedFile = dir.file('file.freezed.dart')
           ..createSync(recursive: true);
-        hiddenFolderFile.writeAsStringSync(_dartFile140);
+        freezedFile.writeAsStringSync(_dartFile140);
 
         final runner = initializeSidekick(dartSdkPath: systemDartSdkPath());
         runner.addCommand(FormatCommand(formatGenerated: false));
@@ -334,6 +337,7 @@ name: dashi
 
         expect(dir.file('lib/main.dart').readAsStringSync(), _dartFile80);
         expect(dir.file('file.g.dart').readAsStringSync(), _dartFile140);
+        expect(dir.file('file.freezed.dart').readAsStringSync(), _dartFile140);
       });
     });
 
@@ -346,9 +350,12 @@ name: dashi
 ''',
           mainContent: _dartFile140,
         );
-        final hiddenFolderFile = dir.file('file.g.dart')
+        final gFile = dir.file('file.g.dart')..createSync(recursive: true);
+        gFile.writeAsStringSync(_dartFile140);
+
+        final freezedFile = dir.file('file.freezed.dart')
           ..createSync(recursive: true);
-        hiddenFolderFile.writeAsStringSync(_dartFile140);
+        freezedFile.writeAsStringSync(_dartFile140);
 
         final runner = initializeSidekick(dartSdkPath: systemDartSdkPath());
         runner.addCommand(FormatCommand());
@@ -356,6 +363,7 @@ name: dashi
 
         expect(dir.file('lib/main.dart').readAsStringSync(), _dartFile80);
         expect(dir.file('file.g.dart').readAsStringSync(), _dartFile80);
+        expect(dir.file('file.freezed.dart').readAsStringSync(), _dartFile80);
       });
     });
 

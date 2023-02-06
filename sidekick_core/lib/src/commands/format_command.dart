@@ -54,11 +54,21 @@ class FormatCommand extends Command {
   /// Defaults to `true`
   final bool formatGenerated;
 
+  /// generated code files that should be excluded from formatting when
+  /// [formatGenerated] is `false`
+  static const _generatedCodeFiles = [
+    '**.freezed.dart',
+    '**.g.dart',
+  ];
+
   FormatCommand({
-    this.excludeGlob = const [],
+    List<String> excludeGlob = const [],
     this.defaultLineLength = 80,
     this.formatGenerated = true,
-  }) {
+  }) : excludeGlob = [
+          ...excludeGlob,
+          if (!formatGenerated) ..._generatedCodeFiles,
+        ] {
     argParser.addOption(
       'package',
       abbr: 'p',
@@ -90,11 +100,10 @@ class FormatCommand extends Command {
       }
       final int lineLength = getLineLength(package) ?? defaultLineLength;
       final allDartFiles = package.root.findFilesToFormat(globExcludes);
-      final withoutGenerated = filterGeneratedFiles(allDartFiles).toList();
       _format(
         name: "package:${package.name}",
         lineLength: lineLength,
-        files: withoutGenerated,
+        files: allDartFiles,
         verify: verify,
       );
       _verifyThrow();
@@ -103,18 +112,17 @@ class FormatCommand extends Command {
 
     final allFiles =
         SidekickContext.projectRoot.findFilesToFormat(globExcludes).toList();
-    final withoutGenerated = filterGeneratedFiles(allFiles).toList();
 
     final sortedPackages =
         allPackages.sortedByDescending((element) => element.root.path.length);
 
     for (final package in sortedPackages) {
       final resolvedLineLength = getLineLength(package) ?? defaultLineLength;
-      final filesInPackage = withoutGenerated
+      final filesInPackage = allFiles
           .where((file) => file.path.contains(package.root.path))
           .toList();
       for (final file in filesInPackage) {
-        withoutGenerated.remove(file);
+        allFiles.remove(file);
       }
       _format(
         name: "package:${package.name}",
@@ -123,11 +131,11 @@ class FormatCommand extends Command {
         verify: verify,
       );
     }
-    if (withoutGenerated.isNotEmpty) {
+    if (allFiles.isNotEmpty) {
       _format(
         name: "Other",
         lineLength: defaultLineLength,
-        files: withoutGenerated,
+        files: allFiles,
         verify: verify,
       );
     }
@@ -174,17 +182,6 @@ class FormatCommand extends Command {
     if (exitCode != 0) {
       foundFormatError = true;
     }
-  }
-
-  Iterable<File> filterGeneratedFiles(Iterable<File> files) {
-    if (formatGenerated) return files;
-    return files
-        .where(
-          (file) =>
-              !file.path.endsWith('.g.dart') &&
-              !file.path.endsWith('.freezed.dart'),
-        )
-        .toList();
   }
 }
 
