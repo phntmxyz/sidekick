@@ -324,7 +324,13 @@ name: dashi
         runner.addCommand(FormatCommand());
         expectLater(
           () => runner.run(['format', '--verify']),
-          throwsA(isA<DartFileFormatException>()),
+          throwsA(
+            isA<DartFileFormatException>().having(
+              (p0) => p0.toString(),
+              'String representation',
+              'Dart files are not correctly formatted. Run "dash format" to format the code.',
+            ),
+          ),
         );
 
         expect(dir.file('some.dart').readAsStringSync(), _dartFile140);

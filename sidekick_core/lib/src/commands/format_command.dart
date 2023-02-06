@@ -131,7 +131,7 @@ class FormatCommand extends Command {
     if (verify && foundFormatError) {
       throw DartFileFormatException(
         'Dart files are not correctly formatted. '
-        'Run "${SidekickContext.cliName} sidekick format" to format the code.',
+        'Run "${SidekickContext.cliName} format" to format the code.',
       );
     }
   }
@@ -227,4 +227,7 @@ class DartFileFormatException implements Exception {
   final String message;
 
   DartFileFormatException(this.message);
+
+  @override
+  String toString() => message;
 }
