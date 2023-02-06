@@ -49,7 +49,9 @@ class FormatCommand extends Command {
   /// specified in pubspec.yaml.
   final int defaultLineLength;
 
-  /// When true, generated files (`.g.dart`, or `.freezed.dart`) formatted as well.
+  /// Set to false to *not* format generated files (`.g.dart`, or `.freezed.dart`)
+  ///
+  /// Defaults to `true`
   final bool formatGenerated;
 
   FormatCommand({
