@@ -49,9 +49,13 @@ class FormatCommand extends Command {
   /// specified in pubspec.yaml.
   final int defaultLineLength;
 
+  /// When true, generated files (`.g.dart`, or `.freezed.dart`) formatted as well.
+  final bool formatGenerated;
+
   FormatCommand({
     this.excludeGlob = const [],
     this.defaultLineLength = 80,
+    this.formatGenerated = true,
   }) {
     argParser.addOption(
       'package',
@@ -84,10 +88,11 @@ class FormatCommand extends Command {
       }
       final int lineLength = getLineLength(package) ?? defaultLineLength;
       final allDartFiles = package.root.findFilesToFormat(globExcludes);
+      final withoutGenerated = filterGeneratedFiles(allDartFiles).toList();
       _format(
         name: "package:${package.name}",
         lineLength: lineLength,
-        files: allDartFiles,
+        files: withoutGenerated,
         verify: verify,
       );
       _verifyThrow();
@@ -96,17 +101,18 @@ class FormatCommand extends Command {
 
     final allFiles =
         SidekickContext.projectRoot.findFilesToFormat(globExcludes).toList();
+    final withoutGenerated = filterGeneratedFiles(allFiles).toList();
 
     final sortedPackages =
         allPackages.sortedByDescending((element) => element.root.path.length);
 
     for (final package in sortedPackages) {
       final resolvedLineLength = getLineLength(package) ?? defaultLineLength;
-      final filesInPackage = allFiles
+      final filesInPackage = withoutGenerated
           .where((file) => file.path.contains(package.root.path))
           .toList();
       for (final file in filesInPackage) {
-        allFiles.remove(file);
+        withoutGenerated.remove(file);
       }
       _format(
         name: "package:${package.name}",
@@ -115,11 +121,11 @@ class FormatCommand extends Command {
         verify: verify,
       );
     }
-    if (allFiles.isNotEmpty) {
+    if (withoutGenerated.isNotEmpty) {
       _format(
         name: "Other",
         lineLength: defaultLineLength,
-        files: allFiles,
+        files: withoutGenerated,
         verify: verify,
       );
     }
@@ -166,6 +172,17 @@ class FormatCommand extends Command {
     if (exitCode != 0) {
       foundFormatError = true;
     }
+  }
+
+  Iterable<File> filterGeneratedFiles(Iterable<File> files) {
+    if (formatGenerated) return files;
+    return files
+        .where(
+          (file) =>
+              !file.path.endsWith('.g.dart') &&
+              !file.path.endsWith('.freezed.dart'),
+        )
+        .toList();
   }
 }
 
