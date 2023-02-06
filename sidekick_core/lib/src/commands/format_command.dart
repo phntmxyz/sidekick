@@ -49,10 +49,26 @@ class FormatCommand extends Command {
   /// specified in pubspec.yaml.
   final int defaultLineLength;
 
+  /// Set to false to *not* format generated files (`.g.dart`, or `.freezed.dart`)
+  ///
+  /// Defaults to `true`
+  final bool formatGenerated;
+
+  /// generated code files that should be excluded from formatting when
+  /// [formatGenerated] is `false`
+  static const _generatedCodeFiles = [
+    '**.freezed.dart',
+    '**.g.dart',
+  ];
+
   FormatCommand({
-    this.excludeGlob = const [],
+    List<String> excludeGlob = const [],
     this.defaultLineLength = 80,
-  }) {
+    this.formatGenerated = true,
+  }) : excludeGlob = [
+          ...excludeGlob,
+          if (!formatGenerated) ..._generatedCodeFiles,
+        ] {
     argParser.addOption(
       'package',
       abbr: 'p',

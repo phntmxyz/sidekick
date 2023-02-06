@@ -315,6 +315,58 @@ name: dashi
       });
     });
 
+    test('formatGenerated = false', () async {
+      await insideFakeProjectWithSidekick((dir) async {
+        setupProject(
+          dir,
+          pubspecContent: '''
+name: dashi
+''',
+          mainContent: _dartFile140,
+        );
+        final gFile = dir.file('file.g.dart')..createSync(recursive: true);
+        gFile.writeAsStringSync(_dartFile140);
+
+        final freezedFile = dir.file('file.freezed.dart')
+          ..createSync(recursive: true);
+        freezedFile.writeAsStringSync(_dartFile140);
+
+        final runner = initializeSidekick(dartSdkPath: systemDartSdkPath());
+        runner.addCommand(FormatCommand(formatGenerated: false));
+        await runner.run(['format']);
+
+        expect(dir.file('lib/main.dart').readAsStringSync(), _dartFile80);
+        expect(dir.file('file.g.dart').readAsStringSync(), _dartFile140);
+        expect(dir.file('file.freezed.dart').readAsStringSync(), _dartFile140);
+      });
+    });
+
+    test('default: formatGenerated = true', () async {
+      await insideFakeProjectWithSidekick((dir) async {
+        setupProject(
+          dir,
+          pubspecContent: '''
+name: dashi
+''',
+          mainContent: _dartFile140,
+        );
+        final gFile = dir.file('file.g.dart')..createSync(recursive: true);
+        gFile.writeAsStringSync(_dartFile140);
+
+        final freezedFile = dir.file('file.freezed.dart')
+          ..createSync(recursive: true);
+        freezedFile.writeAsStringSync(_dartFile140);
+
+        final runner = initializeSidekick(dartSdkPath: systemDartSdkPath());
+        runner.addCommand(FormatCommand());
+        await runner.run(['format']);
+
+        expect(dir.file('lib/main.dart').readAsStringSync(), _dartFile80);
+        expect(dir.file('file.g.dart').readAsStringSync(), _dartFile80);
+        expect(dir.file('file.freezed.dart').readAsStringSync(), _dartFile80);
+      });
+    });
+
     test('--verify throws, but does not format', () async {
       await insideFakeProjectWithSidekick((dir) async {
         dir.file('some.dart').writeAsStringSync(_dartFile140);
