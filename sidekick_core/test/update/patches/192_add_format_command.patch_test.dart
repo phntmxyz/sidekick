@@ -71,6 +71,25 @@ Future<void> runDash(List<String> args) async {
 }
 ''';
 
+const _caseWithExludeGlob = '''
+Future<void> runDash(List<String> args) async {
+  final runner = initializeSidekick(
+    flutterSdkPath: systemFlutterSdkPath(),
+  );
+  runner
+    ..addCommand(DartCommand())
+    ..addCommand(SidekickCommand())
+    ..addCommand(FormatCommand(excludeGlob: ['**/*.g.dart']));
+
+  try {
+    return await runner.run(args);
+  } on UsageException catch (e) {
+    print(e);
+    exit(64); // usage error
+  }
+}
+''';
+
 final _testCases = [
   _TestCase(
     name: 'default case',
@@ -97,6 +116,20 @@ Future<void> runDash(List<String> args) async {
     name: 'patch was already applied',
     fileContentBefore: _expectedResult,
     fileContentAfter: _expectedResult,
+    errorMatcher: isA<String>().having(
+      (e) => e,
+      'error',
+      allOf(
+        contains("Format command already exists"),
+        contains("lib/dash_sidekick.dart"),
+        contains('github.com/phntmxyz/sidekick/pull/192'),
+      ),
+    ),
+  ),
+  _TestCase(
+    name: 'patch was already applied with excludeGlob',
+    fileContentBefore: _caseWithExludeGlob,
+    fileContentAfter: _caseWithExludeGlob,
     errorMatcher: isA<String>().having(
       (e) => e,
       'error',
