@@ -11,6 +11,6 @@ final addFormatCommand192 = MigrationStep.inline(
     );
   },
   name: 'Add a format command',
-  targetVersion: Version(1, 0, 0),
+  targetVersion: Version(1, 1, 0),
   pullRequestLink: 'github.com/phntmxyz/sidekick/pull/192',
 );
