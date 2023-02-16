@@ -127,8 +127,7 @@ Future<void> runDash(List<String> args) async {
 }
 ''';
       const initialCliFileContentWithMyImport = '''
-\nimport 'package:my_package/src/my_command.dart';
-Future<void> runDash(List<String> args) async {
+\nimport 'package:my_package/src/my_command.dart';Future<void> runDash(List<String> args) async {
   final runner = initializeSidekick(
     name: 'dash',
     flutterSdkPath: systemFlutterSdkPath(),
@@ -207,7 +206,7 @@ Future<void> runDash(List<String> args) async {
           registerPlugin(
             sidekickCli:
                 DartPackage.fromDirectory(dir.directory('packages/dash'))!,
-            import: "import 'package:my_package/src/my_command.dart';\n",
+            import: "import 'package:my_package/src/my_command.dart';",
             command: 'MyCommand()',
           );
           expect(
@@ -226,7 +225,7 @@ Future<void> runDash(List<String> args) async {
           registerPlugin(
             sidekickCli:
                 DartPackage.fromDirectory(dir.directory('packages/dash'))!,
-            import: "import 'package:my_package/src/my_command.dart';\n",
+            import: "import 'package:my_package/src/my_command.dart';",
             command: 'MyCommand()',
           );
           expect(
