@@ -126,6 +126,24 @@ Future<void> runDash(List<String> args) async {
   }
 }
 ''';
+      const initialCliFileContentWithMyImport = '''
+\nimport 'package:my_package/src/my_command.dart';
+Future<void> runDash(List<String> args) async {
+  final runner = initializeSidekick(
+    name: 'dash',
+    flutterSdkPath: systemFlutterSdkPath(),
+  );
+  runner
+    ..addCommand(DartCommand())
+    ..addCommand(SidekickCommand());
+  try {
+    return await runner.run(args);
+  } on UsageException catch (e) {
+    print(e);
+    exit(64); // usage error
+  }
+}
+''';
       const initialCliFileContentWithMyCommand = '''
 Future<void> runDash(List<String> args) async {
   final runner = initializeSidekick(
@@ -145,7 +163,7 @@ Future<void> runDash(List<String> args) async {
 }
 ''';
 
-      test('Registering a new plugin adds a new command', () {
+      test('A command gets added', () {
         insideFakeProjectWithSidekick((dir) async {
           dir.file('packages/dash/lib/dash.dart').writeAsStringSync(
                 initialCliFileContent,
@@ -163,7 +181,7 @@ Future<void> runDash(List<String> args) async {
       });
 
       test(
-          'Registering a plugin does not double add the command if already present',
+          'A command does not get double added if the command is already present',
           () {
         insideFakeProjectWithSidekick((dir) async {
           dir.file('packages/dash/lib/dash.dart').writeAsStringSync(
@@ -177,6 +195,43 @@ Future<void> runDash(List<String> args) async {
           expect(
             dir.file('packages/dash/lib/dash.dart').readAsStringSync(),
             initialCliFileContentWithMyCommand,
+          );
+        });
+      });
+
+      test('A import gets added', () {
+        insideFakeProjectWithSidekick((dir) async {
+          dir.file('packages/dash/lib/dash.dart').writeAsStringSync(
+                initialCliFileContent,
+              );
+          registerPlugin(
+            sidekickCli:
+                DartPackage.fromDirectory(dir.directory('packages/dash'))!,
+            import: "import 'package:my_package/src/my_command.dart';\n",
+            command: 'MyCommand()',
+          );
+          expect(
+            dir.file('packages/dash/lib/dash.dart').readAsStringSync(),
+            initialCliFileContentWithMyImport,
+          );
+        });
+      });
+      test(
+          'A import does not get double added if the command is already present',
+          () {
+        insideFakeProjectWithSidekick((dir) async {
+          dir.file('packages/dash/lib/dash.dart').writeAsStringSync(
+                initialCliFileContentWithMyImport,
+              );
+          registerPlugin(
+            sidekickCli:
+                DartPackage.fromDirectory(dir.directory('packages/dash'))!,
+            import: "import 'package:my_package/src/my_command.dart';\n",
+            command: 'MyCommand()',
+          );
+          expect(
+            dir.file('packages/dash/lib/dash.dart').readAsStringSync(),
+            initialCliFileContentWithMyImport,
           );
         });
       });
