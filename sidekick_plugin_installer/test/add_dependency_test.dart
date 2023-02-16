@@ -108,6 +108,79 @@ dependencies:
 ''',
       );
     });
+    group('Register plugin', () {
+      const initialCliFileContent = '''
+Future<void> runDash(List<String> args) async {
+  final runner = initializeSidekick(
+    name: 'dash',
+    flutterSdkPath: systemFlutterSdkPath(),
+  );
+  runner
+    ..addCommand(DartCommand())
+    ..addCommand(SidekickCommand());
+  try {
+    return await runner.run(args);
+  } on UsageException catch (e) {
+    print(e);
+    exit(64); // usage error
+  }
+}
+''';
+      const initialCliFileContentWithMyCommand = '''
+Future<void> runDash(List<String> args) async {
+  final runner = initializeSidekick(
+    name: 'dash',
+    flutterSdkPath: systemFlutterSdkPath(),
+  );
+  runner
+    ..addCommand(DartCommand())
+    ..addCommand(SidekickCommand())
+    ..addCommand(MyCommand());
+  try {
+    return await runner.run(args);
+  } on UsageException catch (e) {
+    print(e);
+    exit(64); // usage error
+  }
+}
+''';
+
+      test('Registering a new plugin adds a new command', () {
+        insideFakeProjectWithSidekick((dir) async {
+          dir.file('packages/dash/lib/dash.dart').writeAsStringSync(
+                initialCliFileContent,
+              );
+          registerPlugin(
+            sidekickCli:
+                DartPackage.fromDirectory(dir.directory('packages/dash'))!,
+            command: 'MyCommand()',
+          );
+          expect(
+            dir.file('packages/dash/lib/dash.dart').readAsStringSync(),
+            initialCliFileContentWithMyCommand,
+          );
+        });
+      });
+
+      test(
+          'Registering a plugin does not double add the command if already present',
+          () {
+        insideFakeProjectWithSidekick((dir) async {
+          dir.file('packages/dash/lib/dash.dart').writeAsStringSync(
+                initialCliFileContentWithMyCommand,
+              );
+          registerPlugin(
+            sidekickCli:
+                DartPackage.fromDirectory(dir.directory('packages/dash'))!,
+            command: 'MyCommand()',
+          );
+          expect(
+            dir.file('packages/dash/lib/dash.dart').readAsStringSync(),
+            initialCliFileContentWithMyCommand,
+          );
+        });
+      });
+    });
   });
 
   group('throws error when arguments are not valid because', () {
