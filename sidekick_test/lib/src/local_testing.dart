@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:dartx/dartx_io.dart';
@@ -132,10 +133,25 @@ packages:
   });
 
   Directory cwd = projectRoot;
+
+  // Use FileSystemEntity.typeSync and FileSystemEntity.type of old zone,
+  // otherwise doesn't work correctly in Dart >= 2.18
+  final oldZone = Zone.current;
+
   return IOOverrides.runZoned<R>(
     () => callback(projectRoot),
     getCurrentDirectory: () => cwd,
     setCurrentDirectory: (dir) => cwd = Directory(dir),
+    fseGetTypeSync: (String path, bool followLinks) {
+      return oldZone.run(
+        () => FileSystemEntity.typeSync(path, followLinks: followLinks),
+      );
+    },
+    fseGetType: (String path, bool followLinks) {
+      return oldZone.run(
+        () => FileSystemEntity.type(path, followLinks: followLinks),
+      );
+    },
   );
 }
 
