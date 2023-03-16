@@ -11,8 +11,7 @@ void main() {
               initialCliFileContentWithoutImportAndCommand,
             );
         registerPlugin(
-          sidekickCli:
-              DartPackage.fromDirectory(dir.directory('packages/dash'))!,
+          sidekickCli: DartPackage.fromDirectory(dir.directory('packages/dash'))!,
           command: 'MyCommand()',
         );
         expect(
@@ -22,16 +21,13 @@ void main() {
       });
     });
 
-    test(
-        'A command does not get double added if the command is already present',
-        () {
+    test('A command does not get double added if the command is already present', () {
       insideFakeProjectWithSidekick((dir) async {
         dir.file('packages/dash/lib/dash.dart').writeAsStringSync(
               initialCliFileContentWithMyCommand,
             );
         registerPlugin(
-          sidekickCli:
-              DartPackage.fromDirectory(dir.directory('packages/dash'))!,
+          sidekickCli: DartPackage.fromDirectory(dir.directory('packages/dash'))!,
           command: 'MyCommand()',
         );
         expect(
@@ -47,8 +43,7 @@ void main() {
               initialCliFileContentWithoutImportAndCommand,
             );
         registerPlugin(
-          sidekickCli:
-              DartPackage.fromDirectory(dir.directory('packages/dash'))!,
+          sidekickCli: DartPackage.fromDirectory(dir.directory('packages/dash'))!,
           import: "import 'package:my_package/src/my_command.dart';",
           command: 'MyCommand()',
         );
@@ -58,15 +53,13 @@ void main() {
         );
       });
     });
-    test('A import does not get double added if the command is already present',
-        () {
+    test('A import does not get double added if the command is already present', () {
       insideFakeProjectWithSidekick((dir) async {
         dir.file('packages/dash/lib/dash.dart').writeAsStringSync(
               initialCliFileContentWithMyImport,
             );
         registerPlugin(
-          sidekickCli:
-              DartPackage.fromDirectory(dir.directory('packages/dash'))!,
+          sidekickCli: DartPackage.fromDirectory(dir.directory('packages/dash'))!,
           import: "import 'package:my_package/src/my_command.dart';",
           command: 'MyCommand()',
         );
@@ -134,7 +127,7 @@ Future<void> runDash(List<String> args) async {
 }
 ''';
 const initialCliFileContentWithMyImport = '''
-\nimport 'package:my_package/src/my_command.dart';Future<void> runDash(List<String> args) async {
+import 'package:my_package/src/my_command.dart';Future<void> runDash(List<String> args) async {
   final runner = initializeSidekick(
     name: 'dash',
     flutterSdkPath: systemFlutterSdkPath(),

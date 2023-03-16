@@ -21,11 +21,11 @@ Future<void> addImport(File file, String import) async {
       return;
     }
     // find position to insert import alphabetically
-    final after = imports
-        .firstOrNullWhere((line) => line.toSource().compareTo(import) > 0);
+    final after = imports.firstOrNullWhere((line) => line.toSource().compareTo(import) > 0);
     final position = after?.end ?? imports.lastOrNull?.end ?? 0;
     final content = file.readAsStringSync();
-    final update = content.replaceRange(position, position, '\n$import');
+    final positionedImport = position != 0 ? '\n$import' : import;
+    final update = content.replaceRange(position, position, positionedImport);
     file.writeAsStringSync(update);
   }
 }
