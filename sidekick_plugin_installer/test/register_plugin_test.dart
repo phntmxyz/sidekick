@@ -135,7 +135,6 @@ Future<void> runDash(List<String> args) async {
 ''';
 const initialCliFileContentWithMyImport = '''
 import 'package:my_package/src/my_command.dart';
-
 Future<void> runDash(List<String> args) async {
   final runner = initializeSidekick(
     name: 'dash',
