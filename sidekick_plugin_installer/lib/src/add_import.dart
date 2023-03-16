@@ -17,14 +17,26 @@ Future<void> addImport(File file, String import) async {
 
   if (parsed is ParsedUnitResult) {
     final imports = parsed.unit.directives.whereType<ImportDirective>();
+    if (imports.map((e) => e.toSource()).contains(import)) {
+      return;
+    }
     // find position to insert import alphabetically
-    final after = imports
-        .firstOrNullWhere((line) => line.toSource().compareTo(import) > 0);
-    final position = after?.end ?? imports.lastOrNull?.end ?? 0;
-    // TODO only add if import does not yet exist
-
+    final after = imports.firstOrNullWhere((line) {
+      return line.toSource() > import;
+    });
+    final position = after?.beginToken.offset ?? imports.lastOrNull?.end ?? 0;
     final content = file.readAsStringSync();
-    final update = content.replaceRange(position, position, '\n$import');
+
+    final positionedImport = () {
+      if (position == 0) {
+        return '$import\n';
+      }
+      final insertAfterLastImport = after == null;
+      final hasPreviousImport = after != null;
+      return '${insertAfterLastImport ? '\n' : ''}$import${hasPreviousImport ? '\n' : ''}';
+    }();
+
+    final update = content.replaceRange(position, position, positionedImport);
     file.writeAsStringSync(update);
   }
 }

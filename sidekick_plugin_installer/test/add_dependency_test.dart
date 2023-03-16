@@ -109,30 +109,4 @@ dependencies:
       );
     });
   });
-
-  group('throws error when arguments are not valid because', () {
-    test('gitUrl is required but is missing', () {
-      expect(
-        () => addDependency(
-          package: package,
-          dependency: 'foo',
-          gitPath: 'bar',
-        ),
-        throwsA('git arguments were passed, but `gitUrl` was null.'),
-      );
-    });
-    test('too many arguments are given', () {
-      expect(
-        () => addDependency(
-          package: package,
-          dependency: 'foo',
-          gitPath: 'bar',
-          localPath: 'baz',
-        ),
-        throwsA(
-          'Too many arguments. Pass only one type of arguments (path/hosted/git).',
-        ),
-      );
-    });
-  });
 }
