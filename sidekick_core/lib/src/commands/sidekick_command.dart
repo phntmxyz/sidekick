@@ -12,7 +12,7 @@ class SidekickCommand extends Command {
 
   SidekickCommand() {
     addSubcommand(PluginsCommand());
-    addSubcommand(AddCommandCommand());
+    addSubcommand(CreateCommandCommand());
     addSubcommand(RecompileCommand());
     addSubcommand(InstallGlobalCommand());
     addSubcommand(UpdateCommand());

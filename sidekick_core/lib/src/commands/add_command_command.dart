@@ -2,18 +2,18 @@ import 'package:recase/recase.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 
 /// Adds a new command to the current sidekick CLI
-class AddCommandCommand extends Command {
+class CreateCommandCommand extends Command {
   @override
   final String description = 'Creates a new command';
 
   @override
-  final String name = 'add-command';
+  final String name = 'create-command';
 
   @override
   String get invocation =>
       super.invocation.replaceFirst('[arguments]', '[name]');
 
-  AddCommandCommand() {
+  CreateCommandCommand() {
     argParser.addOption(
       'description',
       abbr: 'd',
