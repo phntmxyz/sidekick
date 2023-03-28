@@ -48,7 +48,7 @@ class ${commandName.pascalCase}Command extends Command {
   @override
   final String name = '${commandName.paramCase}';
   
-  AddCommandCommand() {
+  ${commandName.pascalCase}Command() {
     argParser.addOption(
       'name',
       abbr: 'n',
@@ -70,6 +70,7 @@ class ${commandName.pascalCase}Command extends Command {
     final apiPackage = SidekickContext.projectRoot
      .directory('packages/${SidekickContext.cliName}_api');
     
+    print(green('\$name finished successfully 🎉'));
     // TODO implement your logic
   }
 }

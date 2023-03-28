@@ -43,24 +43,30 @@ Future<void> runMycli(List<String> args) async {
         );
 
         runner.addCommand(CreateCommandCommand());
-        await runner.run(['create-command', 'awesome']);
+        await runner.run(['create-command', 'awesome-thing']);
 
         final commandFile = dir
             .directory('packages/dash/lib/src/commands')
-            .file('awesome_command.dart');
+            .file('awesome_thing_command.dart');
         expect(commandFile.existsSync(), isTrue);
         expect(
           commandFile.readAsStringSync(),
-          contains('class AwesomeCommand'),
+          contains('class AwesomeThingCommand'),
+        );
+        expect(
+          commandFile.readAsStringSync(),
+          contains('AwesomeThingCommand()'),
         );
 
         expect(
           registryFile.readAsStringSync(),
-          contains('..addCommand(AwesomeCommand());'),
+          contains('..addCommand(AwesomeThingCommand());'),
         );
         expect(
           registryFile.readAsStringSync(),
-          contains("import 'package:dash/src/commands/awesome_command.dart';"),
+          contains(
+            "import 'package:dash/src/commands/awesome_thing_command.dart';\n",
+          ),
         );
       });
     });
