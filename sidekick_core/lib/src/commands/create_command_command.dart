@@ -37,6 +37,7 @@ class CreateCommandCommand extends Command {
       return;
     }
 
+    print('- Writing ${relative(commandFile.path)}');
     commandFile.parent.createSync(recursive: true);
     commandFile.writeAsStringSync('''
 import 'package:sidekick_core/sidekick_core.dart';
@@ -79,6 +80,8 @@ class ${commandName.pascalCase}Command extends Command {
     // register command
     final commandRegisteringFile = SidekickContext.sidekickPackage.libDir
         .file('${SidekickContext.cliName}_sidekick.dart');
+    print('- Registering ${commandName.pascalCase}Command '
+        'in ${relative(commandRegisteringFile.path)}');
     // add import
     _addImport(
       commandRegisteringFile,
@@ -92,6 +95,11 @@ class ${commandName.pascalCase}Command extends Command {
           '\n    '
           '..addCommand(${commandName.pascalCase}Command())',
     );
+
+    print('Done ✓');
+    print('');
+    print('You can now run your command with:');
+    print(green('${SidekickContext.cliName} $commandName'));
   }
 
   String singleRestArgOrThrow(ArgResults argResults, String name) {
