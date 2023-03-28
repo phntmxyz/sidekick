@@ -1,8 +1,5 @@
-import 'package:dcli/dcli.dart';
 import 'package:sidekick_core/sidekick_core.dart' hide isEmpty;
-import 'package:sidekick_core/src/commands/add_command_command.dart';
-import 'package:sidekick_core/src/commands/format_command.dart';
-import 'package:sidekick_test/fake_stdio.dart';
+import 'package:sidekick_core/src/commands/create_command_command.dart';
 import 'package:sidekick_test/sidekick_test.dart';
 import 'package:test/test.dart';
 

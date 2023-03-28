@@ -1,4 +1,3 @@
-// TODO rename file
 import 'package:recase/recase.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 
@@ -77,8 +76,8 @@ class ${commandName.pascalCase}Command extends Command {
 ''');
 
     // register command
-    final commandRegisteringFile =
-        SidekickContext.sidekickPackage.libDir.file('${cliName}_sidekick.dart');
+    final commandRegisteringFile = SidekickContext.sidekickPackage.libDir
+        .file('${SidekickContext.cliName}_sidekick.dart');
     // add import
     _addImport(
       commandRegisteringFile,

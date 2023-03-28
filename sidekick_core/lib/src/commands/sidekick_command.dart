@@ -1,5 +1,5 @@
 import 'package:sidekick_core/sidekick_core.dart';
-import 'package:sidekick_core/src/commands/add_command_command.dart';
+import 'package:sidekick_core/src/commands/create_command_command.dart';
 import 'package:sidekick_core/src/commands/update_command.dart';
 
 /// Sidekick CLI tools directly shipped from the sidekick_core package
