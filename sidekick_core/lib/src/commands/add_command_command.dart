@@ -1,3 +1,4 @@
+// TODO rename file
 import 'package:recase/recase.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 
@@ -37,6 +38,7 @@ class CreateCommandCommand extends Command {
       return;
     }
 
+    commandFile.parent.createSync(recursive: true);
     commandFile.writeAsStringSync('''
 import 'package:sidekick_core/sidekick_core.dart';
 
@@ -119,7 +121,8 @@ void _addImport(File file, String import) {
   final content = file.readAsStringSync();
   final lastImport =
       content.lastIndexOf(RegExp('^import .*;\n', multiLine: true));
-  final firstSemicolonAfterImport = content.indexOf(';', lastImport);
+  final firstSemicolonAfterImport =
+      lastImport == -1 ? -1 : content.indexOf(';', lastImport);
 
   String updated;
   if (lastImport == -1) {
