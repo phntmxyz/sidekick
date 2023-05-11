@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.1](https://github.com/phntmxyz/sidekick/compare/sidekick_plugin_installer-v0.3.0..sidekick_plugin_installer-v0.3.1) (2023-5-11)
+
+- Add topics to `pubspec.yaml`
+- Prevent double imports when registering a plugin [#179](https://github.com/phntmxyz/sidekick/pull/179) https://github.com/phntmxyz/sidekick/commit/ce8f44d0ea8f6d74a2f3ca75c86684780cd92543
+- Update `sidekick_core` dependency to `1.0.0`
+
 ## [0.3.0](https://github.com/phntmxyz/sidekick/compare/sidekick_plugin_installer-v0.2.1..sidekick_plugin_installer-v0.3.0) (2023-1-25)
 
 - Update sidekick_core to `1.0.0` https://github.com/phntmxyz/sidekick/commit/e22cc2d61fc8b9eeca33097b240fdadeb8f8e006
