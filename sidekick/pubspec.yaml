@@ -3,6 +3,9 @@ description: Creates a CLI for your flutter app for custom tasks and automation
 version: 1.0.0
 repository: https://github.com/phntmxyz/sidekick/tree/main/sidekick
 issue_tracker: https://github.com/phntmxyz/sidekick/labels/sidekick
+topics:
+  - sidekick
+  - cli
 
 environment:
   sdk: '>=2.14.0 <3.0.0'

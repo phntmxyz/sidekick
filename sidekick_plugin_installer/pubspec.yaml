@@ -3,6 +3,9 @@ description: Helpers for plugin installers to easily install themselves into a s
 version: 0.3.0
 repository: https://github.com/phntmxyz/sidekick/tree/main/sidekick_plugin_installer
 issue_tracker: https://github.com/phntmxyz/sidekick/labels/sidekick_plugin_installer
+topics:
+  - sidekick
+  - cli
 
 environment:
   sdk: '>=2.14.0 <3.0.0'
