@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.9.1](https://github.com/phntmxyz/sidekick/compare/sidekick_vault-v0.9.0..sidekick_vault-v0.9.1) (2023-5-11)
+
+- Add topics to `pubspec.yaml`
+- Update readme [#218](https://github.com/phntmxyz/sidekick/pull/218) https://github.com/phntmxyz/sidekick/commit/eb644414f6a7f3efb760b7ad06b3c55abd94d819
+- Update `sidekick_core` dependency to `1.0.0`
+
 ## [0.9.0](https://github.com/phntmxyz/sidekick/compare/sidekick_vault-v0.8.1..sidekick_vault-v0.9.0) (2023-1-25)
 
 - Update sidekick_core to 1.0.0 [#212](https://github.com/phntmxyz/sidekick/pull/212)
