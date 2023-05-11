@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.2.0](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v1.1.0..sidekick_core-v1.2.0) (2023-5-11)
+
+- Add topics to `pubspec.yaml`
+- Add `CreateCommand` (register and generate a command) [#226](https://github.com/phntmxyz/sidekick/pull/226) https://github.com/phntmxyz/sidekick/commit/74771b8508e24804826bad4e40a7a80531ded8e3
+- Add migration to install `FormatCommand` on update [#225](https://github.com/phntmxyz/sidekick/pull/225) https://github.com/phntmxyz/sidekick/commit/a8bd02510f1a9acbaca9e868a2e43cb0ffdf5cb1
+- Fix `FormatCommand` `--verify` exception message, print unformatted files [#224](https://github.com/phntmxyz/sidekick/pull/224) https://github.com/phntmxyz/sidekick/commit/b30030c11731f8b39e31884fb57a8c1d751384c0
+- `FormatCommand.formatGenerated` allows ignoring generated files (.g.dart) [#223](https://github.com/phntmxyz/sidekick/pull/223) https://github.com/phntmxyz/sidekick/commit/46b4a64cafafa83cfa62623fb1c986691e18b202
+
 ## [1.1.0](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v1.0.2..sidekick_core-v1.1.0) (2023-2-3)
 
 - New: `FormatCommand` (`<cli> format`) to format all your project dart code [#192](https://github.com/phntmxyz/sidekick/pull/192)
