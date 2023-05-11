@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.1](https://github.com/phntmxyz/sidekick/compare/sidekick-v1.0.0..sidekick-v1.0.1) (2023-5-11)
+
+- Add topics to `pubspec.yaml`.
+
 ## [1.0.0](https://github.com/phntmxyz/sidekick/compare/sidekick-v0.10.0..sidekick-v1.0.0) (2023-1-30)
 
 - Update to `sidekick_core: ^1.0.0` [#214](https://github.com/phntmxyz/sidekick/pull/214)
