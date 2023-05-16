@@ -57,7 +57,7 @@ cd "${CLI_PACKAGE_DIR}" || exit
     deleteLine
     echoerr "✔ Compiling sidekick cli"
   else
-    echoerr "Compilation failed. Trying dart pub upgrade"
+    echoerr "Compilation failed. Trying dart pub upgrade (Retry 1)"
     LOCK_FILE=$(cat pubspec.lock)
     runSilent "${DART}" pub upgrade
     echoerr "- Compiling sidekick cli with updated dependencies"
@@ -65,9 +65,17 @@ cd "${CLI_PACKAGE_DIR}" || exit
       deleteLine
       echoerr "✔ Compiling sidekick cli with updated dependencies"
     else
-      echoerr "Compilation with updated dependencies failed, too. Restoring pubspec.lock"
-      echo "$LOCK_FILE" > pubspec.lock
-      exit 1
+      echoerr "Compilation failed again. Trying dart pub upgrade --major-versions (Retry 2)"
+      runSilent "${DART}" pub upgrade --major-versions
+      echoerr "- Compiling sidekick cli with major updated dependencies"
+      if runSilent "${DART}" compile exe -o "${EXE}" bin/main.dart; then
+        deleteLine
+        echoerr "✔ Compiling sidekick cli with major updated dependencies"
+      else
+        echoerr "Compilation with updated and major updated dependencies failed. Restoring pubspec.lock"
+        echo "$LOCK_FILE" > pubspec.lock
+        exit 1
+      fi
     fi
   fi
   echoerr "🎉Success!\n"
