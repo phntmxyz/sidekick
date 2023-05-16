@@ -66,7 +66,7 @@ dependencies:
         pubspecYamlFile.readAsStringSync(),
         '''
 name: dashi
-dependencies: 
+dependencies:
   bar: 0.0.0
   foo: 1.2.4
 ''',

@@ -1,4 +1,4 @@
-import 'package:dcli/dcli.dart';
+import 'package:path/path.dart' show absolute;
 import 'package:sidekick_core/sidekick_core.dart';
 
 /// The package that contains the generated sidekick cli code
