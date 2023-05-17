@@ -24,8 +24,14 @@ dependencies:
 
 dev_dependencies:
   lint: ^1.5.0
+  # Include again when updated to Dart 3
+  #sidekick_test:
+  #  path: ../sidekick_test
   sidekick_test:
-    path: ../sidekick_test
+    git:
+      url: https://github.com/phntmxyz/sidekick.git
+      ref: sidekick_core-v1.2.0
+      path: sidekick_test
   test: ^1.17.0
   test_process: ^2.0.2
 

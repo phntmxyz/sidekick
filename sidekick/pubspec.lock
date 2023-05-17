@@ -524,9 +524,11 @@ packages:
   sidekick_test:
     dependency: "direct dev"
     description:
-      path: "../sidekick_test"
-      relative: true
-    source: path
+      path: sidekick_test
+      ref: "sidekick_core-v1.2.0"
+      resolved-ref: "389474ba9630aae17b225f0b9a2957906ad94ee9"
+      url: "https://github.com/phntmxyz/sidekick.git"
+    source: git
     version: "1.0.0"
   source_map_stack_trace:
     dependency: transitive
