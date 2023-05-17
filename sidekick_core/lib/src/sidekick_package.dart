@@ -3,7 +3,7 @@ import 'package:sidekick_core/sidekick_core.dart';
 
 /// The package that contains the generated sidekick cli code
 class SidekickPackage extends DartPackage {
-  SidekickPackage(Directory root, String name) : super(root, name);
+  SidekickPackage(super.root, super.name);
 
   static SidekickPackage? fromDirectory(Directory directory) {
     final dartPackage = DartPackage.fromDirectory(directory);
