@@ -16,7 +16,7 @@ dependencies:
   sidekick_core: ^1.0.0
 
 dev_dependencies:
-  lint: ^1.0.0
+  lint: '>=1.5.0 <3.0.0'
   pubspec: ^2.3.0
   # Include again when updated to Dart 3
   #sidekick_test:
