@@ -112,10 +112,8 @@ class LockDependenciesCommand extends Command {
       switch (type) {
         case 'transitive':
           transitiveDependencies[packageName] = range;
-          break;
         case 'direct main':
           directDependencies[packageName] = range;
-          break;
         // case 'direct dev' is irrelevant
       }
     }

@@ -51,10 +51,10 @@ abstract class MigrationStep {
 class _InlineMigrationStep extends MigrationStep {
   const _InlineMigrationStep(
     this.block, {
-    required String name,
-    required Version targetVersion,
+    required super.name,
+    required super.targetVersion,
     this.pullRequestLink,
-  }) : super(name: name, targetVersion: targetVersion);
+  });
 
   /// Link to the pull request on GitHub introducing this patch
   final String? pullRequestLink;
@@ -79,12 +79,11 @@ class GitPatchMigrationStep extends MigrationStep {
     this.patch, {
     required this.description,
     this.pullRequestLink,
-    required Version targetVersion,
+    required super.targetVersion,
     required this.workingDirectory,
   }) : super(
           name:
               '$description${pullRequestLink != null ? ' ($pullRequestLink)' : ''}',
-          targetVersion: targetVersion,
         );
 
   /// A function that returns the git patch to be applied for this migration step

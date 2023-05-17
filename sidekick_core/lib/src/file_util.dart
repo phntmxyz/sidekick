@@ -1,4 +1,4 @@
-import 'package:dcli/dcli.dart' hide absolute;
+import 'package:dcli/dcli.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 
 extension FileModifier on File {

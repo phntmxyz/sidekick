@@ -8,15 +8,16 @@ topics:
   - cli
 
 environment:
-  sdk: '>=2.14.0 <3.0.0'
+  sdk: '>=2.19.0 <3.999.0'
 
 dependencies:
   args: ^2.1.0
   dartx: ^1.1.0
-  dcli: ^1.15.0
+  dcli: ^2.2.0
   glob: ^2.0.2
   http: ^0.13.5
   meta: ^1.5.0
+  path: ^1.8.1
   # transitive from dcli
   pub_semver: ^2.1.1
   recase: ^4.1.0
@@ -25,7 +26,7 @@ dependencies:
 
 dev_dependencies:
   fake_http_client: ^1.0.0
-  lint: ^1.5.0
+  lint: ^2.0.0
   sidekick_test:
     path: ../sidekick_test
   test: ^1.20.0

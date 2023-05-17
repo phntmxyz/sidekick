@@ -1,4 +1,4 @@
-import 'package:dcli/dcli.dart' show absolute;
+import 'package:path/path.dart' show absolute;
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:yaml/yaml.dart';
 

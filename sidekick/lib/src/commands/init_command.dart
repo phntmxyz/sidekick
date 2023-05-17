@@ -4,7 +4,7 @@ import 'package:sidekick/src/util/dcli_ask_validators.dart';
 import 'package:sidekick/src/util/directory_extension.dart';
 import 'package:sidekick/src/util/name_suggester.dart';
 import 'package:sidekick_core/sidekick_core.dart'
-    hide mainProject, repository, cliName, cliNameOrNull, entryWorkingDirectory;
+    hide cliName, cliNameOrNull, entryWorkingDirectory, mainProject, repository;
 import 'package:sidekick_core/sidekick_core.dart' as core;
 
 class InitCommand extends Command {

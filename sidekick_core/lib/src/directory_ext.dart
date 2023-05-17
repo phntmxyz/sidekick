@@ -1,6 +1,4 @@
-import 'dart:io';
-
-import 'package:dcli/dcli.dart';
+import 'package:sidekick_core/sidekick_core.dart';
 
 extension DirectoryExt on Directory {
   /// Recursively goes up and tries to find a [Directory] matching [predicate]

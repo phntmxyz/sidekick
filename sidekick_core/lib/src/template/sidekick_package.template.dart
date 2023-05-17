@@ -188,7 +188,7 @@ version: 0.0.1
 publish_to: none
 
 environment:
-  sdk: '>=2.18.6 <3.0.0'
+  sdk: '>=2.19.0 <3.0.0'
 
 executables:
   main:
@@ -197,7 +197,7 @@ dependencies:
   sidekick_core: $constraintRange
 
 dev_dependencies:
-  lint: ^1.5.3
+  lint: ^2.0.0
 
 # generated code, do not edit this manually
 sidekick:

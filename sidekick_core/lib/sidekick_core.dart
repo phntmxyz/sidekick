@@ -1,10 +1,13 @@
+/// The core library for Sidekick CLIs
 library sidekick_core;
 
 import 'dart:io';
 
+import 'package:args/args.dart';
 import 'package:args/command_runner.dart';
 import 'package:dartx/dartx_io.dart';
 import 'package:dcli/dcli.dart';
+import 'package:path/path.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:sidekick_core/src/commands/update_command.dart';
 import 'package:sidekick_core/src/dart_package.dart';
@@ -14,10 +17,12 @@ import 'package:sidekick_core/src/version_checker.dart';
 
 export 'dart:io' hide sleep;
 
+export 'package:args/args.dart';
 export 'package:args/command_runner.dart';
 export 'package:dartx/dartx.dart';
 export 'package:dartx/dartx_io.dart';
-export 'package:dcli/dcli.dart' hide run, start, startFromArgs, absolute;
+export 'package:dcli/dcli.dart' hide run, start, startFromArgs;
+export 'package:path/path.dart' hide absolute;
 export 'package:pub_semver/pub_semver.dart' show Version;
 export 'package:sidekick_core/src/cli_util.dart';
 export 'package:sidekick_core/src/commands/analyze_command.dart';
