@@ -43,7 +43,7 @@ class ReleaseCommand extends Command {
     if (package == null) {
       print(green('Which package do you want to release?'));
       package = dcli.menu(
-        prompt: 'Select package',
+        'Select package',
         options: [
           skProject.sidekickPackage,
           skProject.sidekickCorePackage,
@@ -243,7 +243,7 @@ ${changelog.readAsStringSync().replaceFirst('# Changelog', '').trimLeft()}''');
       ),
     );
     return menu(
-      prompt: 'Please select a release type',
+      'Please select a release type',
       options: ['major', 'minor', 'patch'],
       defaultOption: 'minor',
       format: (option) {
