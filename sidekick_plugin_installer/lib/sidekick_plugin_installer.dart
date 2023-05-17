@@ -1,3 +1,4 @@
+/// Support library for sidekick plugins
 library sidekick_plugin_installer;
 
 export 'package:sidekick_plugin_installer/src/add_dependency.dart';

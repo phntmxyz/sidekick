@@ -1,3 +1,4 @@
+/// A library for storing secrets GPG encrypted in a directory
 library sidekick_vault;
 
 export 'package:sidekick_vault/src/commands/vault_command.dart';
