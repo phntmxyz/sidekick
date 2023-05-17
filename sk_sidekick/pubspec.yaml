@@ -11,7 +11,6 @@ executables:
 
 dependencies:
   dcli: ^2.2.2
-  path: ^1.8.0
   pub_semver: ^2.1.1
   sidekick_core:
     path: ../sidekick_core
