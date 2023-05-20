@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_core/src/commands/update_command.dart';
+import 'package:sidekick_core/src/pub/dart_archive.dart';
 import 'package:sidekick_core/src/version_checker.dart';
 import 'package:sidekick_test/sidekick_test.dart';
 import 'package:test/test.dart';
@@ -15,10 +16,8 @@ void main() {
       Future<void> code(Directory projectDir) async {
         final sidekickDir = projectDir.directory('packages/dash');
         final expectedFilesToGenerate = [
-          'tool/download_dart.sh',
           'tool/install.sh',
           'tool/run.sh',
-          'tool/sidekick_config.sh',
         ].map(sidekickDir.file);
 
         for (final file in expectedFilesToGenerate) {
@@ -33,7 +32,7 @@ void main() {
           dartSdkPath: systemDartSdkPath(),
         );
 
-        final targetVersion = Version(0, 12, 0);
+        final targetVersion = Version(1, 1, 0);
 
         runner.addCommand(UpdateCommand());
         await runner.run(['update', targetVersion.toString()]);
@@ -97,7 +96,7 @@ void main() {
       );
 
       runner.addCommand(UpdateCommand());
-      await runner.run(['update', '0.1.0']);
+      await runner.run(['update', '1.0.0']);
 
       final package = SidekickContext.sidekickPackage;
       final sidekickVersionAfterUpdate =
@@ -110,8 +109,8 @@ void main() {
         package,
         ['dependencies', 'sidekick_core'],
       );
-      expect(sidekickVersionAfterUpdate, Version(0, 5, 0));
-      expect(sidekickCoreVersionAfterUpdate, Version(0, 5, 0));
+      expect(sidekickVersionAfterUpdate, Version(1, 1, 0));
+      expect(sidekickCoreVersionAfterUpdate, Version(1, 1, 0));
 
       expect(
         printLog,
@@ -125,8 +124,8 @@ void main() {
         await insideFakeProjectWithSidekick(
           code,
           overrideSidekickCoreWithLocalDependency: true,
-          sidekickCliVersion: '0.5.0',
-          sidekickCoreVersion: '0.5.0',
+          sidekickCliVersion: '1.1.0',
+          sidekickCoreVersion: '1.1.0',
         );
       },
       zoneSpecification: ZoneSpecification(
@@ -137,4 +136,94 @@ void main() {
       ),
     );
   });
+
+  test('UpdateCommand executes update script with downloaded Dart SDK',
+      () async {
+    final printLog = <String>[];
+
+    Future<void> code(Directory projectDir) async {
+      VersionChecker.testFakeGetLatestDependencyVersion = (
+        String dependency, {
+        Version? dartSdkVersion,
+      }) async {
+        if (dependency == 'sidekick_core') {
+          if (dartSdkVersion == null) {
+            return Version(2, 0, 0);
+          }
+          // TODO make update to 3.0 a separate test
+          if (dartSdkVersion >= Version(3, 0, 0)) {
+            // update to Dart 3.0.0 not yet possible
+            return null;
+          }
+          if (dartSdkVersion >= Version(2, 0, 0)) {
+            return Version(1, 2, 0);
+          }
+        }
+        throw 'unknown dependency $dependency';
+      };
+      addTearDown(
+        () => VersionChecker.testFakeGetLatestDependencyVersion = null,
+      );
+
+      final runner = initializeSidekick(
+        dartSdkPath: systemDartSdkPath(),
+      );
+
+      runner.addCommand(UpdateCommand()..dartArchive = MockDartArchive());
+      // TODO fake the sidekick_core downloading from pub.dev and inject a custom update script (update_sidekick_cli.dart)
+      // which prints the input information and does update sidekick_core
+      await runner.run(['update']);
+
+      final cliPackage = SidekickContext.sidekickPackage;
+      final sidekickVersionAfterUpdate =
+          VersionChecker.getMinimumVersionConstraint(
+        cliPackage,
+        ['sidekick', 'cli_version'],
+      );
+      expect(sidekickVersionAfterUpdate, Version(1, 2, 0));
+
+      final updatePackage = DartPackage.fromDirectory(
+        cliPackage.buildDir.directory('update_1_2_0'),
+      )!;
+
+      final dartSdkConstraint = VersionChecker.getMinimumVersionConstraint(
+        updatePackage,
+        ['environment', 'sdk'],
+      );
+      expect(dartSdkConstraint, Version.parse('2.19.6'));
+
+      final dartSdkPath = cliPackage.buildDir.directory('cache/dart-sdk');
+      final versionFile = dartSdkPath.file('version');
+      final dartSdkVersion =
+          Version.parse(versionFile.readAsStringSync().trim());
+      expect(dartSdkVersion, Version.parse('2.19.6'));
+    }
+
+    await runZoned(
+      () async {
+        await insideFakeProjectWithSidekick(
+          code,
+          overrideSidekickCoreWithLocalDependency: true,
+          sidekickCliVersion: '1.1.0',
+          sidekickCoreVersion: '1.1.0',
+        );
+      },
+      zoneSpecification: ZoneSpecification(
+        print: (_, __, ___, line) {
+          printLog.add(line);
+          stdout.writeln(line);
+        },
+      ),
+    );
+  });
+}
+
+class MockDartArchive implements DartArchive {
+  @override
+  Stream<Version> getLatestDartVersions() async* {
+    final versions = [Version(2, 19, 2), Version(2, 19, 6), Version(3, 0, 0)];
+    for (final v in versions) {
+      yield v;
+    }
+  }
 }

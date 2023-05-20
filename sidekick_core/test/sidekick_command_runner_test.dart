@@ -169,7 +169,10 @@ class _UpdateCommand extends Command {
 }
 
 void fakeGetLatestDependencyVersion(Map<String, Version> latestVersions) {
-  VersionChecker.testFakeGetLatestDependencyVersion =
-      (String dependency) async => latestVersions[dependency]!;
+  VersionChecker.testFakeGetLatestDependencyVersion = (
+    String dependency, {
+    Version? dartSdkVersion,
+  }) async =>
+      latestVersions[dependency]!;
   addTearDown(() => VersionChecker.testFakeGetLatestDependencyVersion = null);
 }

@@ -3,6 +3,9 @@ import 'dart:io';
 
 import 'package:dartx/dartx_io.dart';
 import 'package:dcli/dcli.dart';
+import 'package:dcli/posix.dart';
+import 'package:sidekick_test/src/download_dart.sh.template.dart';
+import 'package:sidekick_test/src/sidekick_config.sh.template.dart';
 import 'package:test/test.dart';
 
 /// True when dependencies should be linked to local sidekick dependencies
@@ -115,6 +118,16 @@ packages:
   fakeSidekickLibDir.file('src/dash_project.dart').createSync(recursive: true);
   fakeSidekickLibDir.file('dash_sidekick.dart').createSync();
 
+  // tool dir
+  final toolDir = fakeSidekickDir.directory('tool')..createSync();
+  toolDir.file('download_dart.sh')
+    ..createSync(recursive: true)
+    ..writeAsStringSync(downloadDartSh);
+  final sidekickConfig = toolDir.file('sidekick_config.sh')
+    ..createSync(recursive: true)
+    ..writeAsStringSync(sidekickConfigSh);
+  chmod(sidekickConfig.path, permission: '755');
+
   env['SIDEKICK_PACKAGE_HOME'] = fakeSidekickDir.absolute.path;
   env['SIDEKICK_ENTRYPOINT_HOME'] = projectRoot.absolute.path;
   if (!env.exists('SIDEKICK_ENABLE_UPDATE_CHECK')) {
@@ -126,7 +139,7 @@ packages:
   }
 
   addTearDown(() {
-    projectRoot.deleteSync(recursive: true);
+    // projectRoot.deleteSync(recursive: true);
     env['SIDEKICK_PACKAGE_HOME'] = null;
     env['SIDEKICK_ENTRYPOINT_HOME'] = null;
     env['SIDEKICK_ENABLE_UPDATE_CHECK'] = null;

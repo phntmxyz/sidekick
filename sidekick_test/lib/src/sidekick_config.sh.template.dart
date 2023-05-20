@@ -1,0 +1,1 @@
+../../../sidekick_core/lib/src/template/sidekick_config.sh.template.dart
