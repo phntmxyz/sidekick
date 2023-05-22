@@ -168,7 +168,6 @@ abstract class VersionChecker {
       );
     }
 
-    throw 'Internet access!';
     final response =
         await get(Uri.parse('https://pub.dev/api/packages/$dependency'));
 

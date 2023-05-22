@@ -9,7 +9,6 @@ class DartArchive {
   final StorageApi _api = StorageApi(Client());
 
   Stream<Version> getLatestDartVersions() async* {
-    throw 'Internet access!';
     String? nextToken;
     do {
       const prefix = 'channels/stable/release/';

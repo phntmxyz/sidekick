@@ -15,6 +15,27 @@ void main() {
         'sidekick cli version is $sidekickCliVersion', () async {
       final printLog = <String>[];
 
+      VersionChecker.testFakeGetLatestDependencyVersion = (
+        String dependency, {
+        Version? dartSdkVersion,
+      }) async {
+        if (dependency == 'sidekick_core') {
+          if (dartSdkVersion == null) {
+            return Version(2, 0, 0);
+          }
+          if (dartSdkVersion >= Version(3, 0, 0)) {
+            // update to Dart 3.0.0 not yet possible
+            return null;
+          }
+          if (dartSdkVersion >= Version(2, 0, 0)) {
+            return Version(1, 2, 0);
+          }
+        }
+        throw 'unknown dependency $dependency';
+      };
+      addTearDown(
+        () => VersionChecker.testFakeGetLatestDependencyVersion = null,
+      );
       UpdateExecutorTemplate.testFakeCreateUpdateExecutorTemplate = ({
         required Directory location,
         required Version dartSdkVersion,
@@ -54,7 +75,7 @@ void main() {
 
         final targetVersion = Version(1, 1, 0);
 
-        runner.addCommand(UpdateCommand());
+        runner.addCommand(UpdateCommand()..dartArchive = MockDartArchive());
         await runner.run(['update', targetVersion.toString()]);
 
         final package = SidekickContext.sidekickPackage;
@@ -111,11 +132,33 @@ void main() {
     final printLog = <String>[];
 
     Future<void> code(Directory projectDir) async {
+      VersionChecker.testFakeGetLatestDependencyVersion = (
+        String dependency, {
+        Version? dartSdkVersion,
+      }) async {
+        if (dependency == 'sidekick_core') {
+          if (dartSdkVersion == null) {
+            return Version(2, 0, 0);
+          }
+          if (dartSdkVersion >= Version(3, 0, 0)) {
+            // update to Dart 3.0.0 not yet possible
+            return null;
+          }
+          if (dartSdkVersion >= Version(2, 0, 0)) {
+            return Version(1, 2, 0);
+          }
+        }
+        throw 'unknown dependency $dependency';
+      };
+      addTearDown(
+        () => VersionChecker.testFakeGetLatestDependencyVersion = null,
+      );
+
       final runner = initializeSidekick(
         dartSdkPath: systemDartSdkPath(),
       );
 
-      runner.addCommand(UpdateCommand());
+      runner.addCommand(UpdateCommand()..dartArchive = MockDartArchive());
       await runner.run(['update', '1.0.0']);
 
       final package = SidekickContext.sidekickPackage;
