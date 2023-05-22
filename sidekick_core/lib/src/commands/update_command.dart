@@ -108,7 +108,7 @@ class UpdateCommand extends Command {
 
     if (coreVersionToInstall <= currentSidekickCliVersion) {
       print('No need to update because you are already using the '
-          'latest sidekick_core version for Dart $dartVersionToInstall.');
+          'latest sidekick_core:$currentSidekickCliVersion version for Dart $dartVersionToInstall.');
       return;
     }
 

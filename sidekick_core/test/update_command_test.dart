@@ -11,7 +11,7 @@ import 'package:test/test.dart';
 void main() {
   for (final sidekickCliVersion in [null, "0.0.0"]) {
     test(
-        'UpdateCommand generates new files when current '
+        'UpdateCommand generates new tool/ files when current '
         'sidekick cli version is $sidekickCliVersion', () async {
       final printLog = <String>[];
 
@@ -28,6 +28,10 @@ void main() {
           oldSidekickCoreVersion: oldSidekickCoreVersion,
         );
       };
+      addTearDown(() {
+        return UpdateExecutorTemplate.testFakeCreateUpdateExecutorTemplate =
+            null;
+      });
 
       Future<void> code(Directory projectDir) async {
         final sidekickDir = projectDir.directory('packages/dash');
@@ -130,8 +134,8 @@ void main() {
 
       expect(
         printLog,
-        contains('No need to update because you are already using the '
-            'latest sidekick cli version.'),
+        contains('No need to update because you are already using the latest '
+            'sidekick_core:1.1.0 version for Dart 2.19.6.'),
       );
     }
 
@@ -193,6 +197,10 @@ void main() {
           oldSidekickCoreVersion: oldSidekickCoreVersion,
         );
       };
+      addTearDown(() {
+        return UpdateExecutorTemplate.testFakeCreateUpdateExecutorTemplate =
+            null;
+      });
 
       final runner = initializeSidekick(
         dartSdkPath: systemDartSdkPath(),

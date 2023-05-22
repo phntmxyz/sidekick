@@ -139,7 +139,7 @@ packages:
   }
 
   addTearDown(() {
-    // projectRoot.deleteSync(recursive: true);
+    projectRoot.deleteSync(recursive: true);
     env['SIDEKICK_PACKAGE_HOME'] = null;
     env['SIDEKICK_ENTRYPOINT_HOME'] = null;
     env['SIDEKICK_ENABLE_UPDATE_CHECK'] = null;
