@@ -1,6 +1,7 @@
 import 'package:meta/meta.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_core/src/pub/dart_archive.dart';
+import 'package:sidekick_core/src/template/update_executor.template.dart';
 import 'package:sidekick_core/src/version_checker.dart';
 
 /// Updates the sidekick cli
@@ -107,36 +108,50 @@ class UpdateCommand extends Command {
 
     if (coreVersionToInstall <= currentSidekickCliVersion) {
       print('No need to update because you are already using the '
-          'latest sidekick cli version.');
+          'latest sidekick_core version for Dart $dartVersionToInstall.');
       return;
     }
 
-    // kick of the update process
-    updateSidekickCli(
-      from: currentSidekickCliVersion,
-      to: coreVersionToInstall,
+    // Download the new Dart SDK version
+    // Update the Dart SDK version in pubspec.yaml, so that the download_dart.sh
+    // script can pick up the correct version
+    print('Downloading Dart SDK $dartVersionToInstall');
+    VersionChecker.updateVersionConstraint(
+      package: SidekickContext.sidekickPackage,
+      pubspecKeys: ['environment', 'sdk'],
+      newMinimumVersion: dartVersionToInstall,
+      preferCaret: false,
+    );
+    sidekickDartRuntime.download();
+
+    final updateName = 'update_${coreVersionToInstall.canonicalizedVersion}'
+        .replaceAll('.', '_');
+    final updateScriptDir =
+        SidekickContext.sidekickPackage.buildDir.directory(updateName);
+
+    final executor = UpdateExecutor(
+      location: updateScriptDir,
+      oldSidekickCoreVersion: currentSidekickCliVersion,
+      newSidekickCoreVersion: coreVersionToInstall,
       dartSdkVersion: dartVersionToInstall,
     );
-  }
 
-  /// Updates the sidekick cli to the new [to] version by loading `sidekick_core`
-  /// with version `to` from pub and running the bundled update script from that
-  /// package version.
-  ///
-  /// The update script is located at `lib/src/update_sidekick_cli.dart`
-  void updateSidekickCli({
-    required Version from,
-    required Version to,
-    required Version dartSdkVersion,
-  }) {
-    // run the update script (`update_sidekick_cli.dart`) from the updated
-    // sidekick_core with version [to]
-    startUpdateScriptProcess(
-      coreFrom: from,
-      coreTo: to,
-      dartSdkVersion: dartSdkVersion,
-    );
+    try {
+      // Write update package with just the updated sidekick_core dependency and the chosen Dart SDK version
+      // This prevents any version conflicts and the entire sidekick update will
+      // be executed from the new sidekick_core version and can be updated.
+      executor.generateUpdatePackage();
 
+      // Execute the update script of the new sidekick_core version with the new Dart SDK version
+      executor.pubGet();
+      executor.executeSidekickUpdate();
+    } finally {
+      // cleanup
+      updateScriptDir.deleteSync(recursive: true);
+    }
+
+    // Run pub get on cli package to download the new sidekick_core version
+    // (sidekick_core was updated by the update script)
     _dartCommand(
       ['pub', 'get'],
       workingDirectory: SidekickContext.sidekickPackage.root,
@@ -149,82 +164,6 @@ class UpdateCommand extends Command {
       // For all other errors: They become visible the next time the cli is executed
       nothrow: true,
     );
-  }
-
-  /// Runs the update script `update_sidekick_cli.dart` in a new process using
-  /// the `sidekick_core` package at the exact version that is specified in
-  /// pubspec.lock
-  ///
-  /// The current process - running `sidekick update` - can't access code of other
-  /// version of sidekick_core. Dependencies can't be changed at runtime.
-  /// This workaround allows accessing any version of sidekick_core.
-  ///
-  /// Make sure to update the sidekick_core dependency before starting this
-  /// process.
-  void startUpdateScriptProcess({
-    required Version coreFrom,
-    required Version coreTo,
-    required Version dartSdkVersion,
-  }) {
-    final updateName =
-        'update_${coreTo.canonicalizedVersion}'.replaceAll('.', '_');
-    final updateScriptDir =
-        SidekickContext.sidekickPackage.buildDir.directory(updateName);
-    updateScriptDir.file('pubspec.yaml')
-      ..createSync(recursive: true)
-      ..writeAsStringSync('''
-name: $updateName
-environment:
-  sdk: '>=${dartSdkVersion.canonicalizedVersion} <${dartSdkVersion.nextBreaking.canonicalizedVersion}'
-dependencies:
-  sidekick_core: ${coreTo.canonicalizedVersion}
-
-''');
-
-    final updateScript = updateScriptDir.file('bin/update.dart')
-      ..createSync(recursive: true)
-      ..writeAsStringSync('''
-import 'package:sidekick_core/src/update_sidekick_cli.dart' as update;
-Future<void> main(List<String> args) async {
-  await update.main(args);
-}
-  ''');
-
-    // Download the new Dart SDK
-    // update the Dart SDK version in pubspec.yaml, so that the download_dart.sh
-    // script can pick up the correct version
-    print('Downloading Dart SDK $dartSdkVersion');
-    VersionChecker.updateVersionConstraint(
-      package: SidekickContext.sidekickPackage,
-      pubspecKeys: ['environment', 'sdk'],
-      newMinimumVersion: dartSdkVersion,
-      preferCaret: false,
-    );
-    sidekickDartRuntime.download();
-
-    _dartCommand(
-      ['pub', 'get'],
-      workingDirectory: updateScriptDir,
-      progress: Progress.printStdErr(),
-    );
-
-    try {
-      // Do not change the arguments in a breaking way. The `update_sidekick_cli.dart`
-      // script will be called from another sidekick_core version. Changes will break
-      // the update process.
-      // Only add parameters, never remove any.
-      _dartCommand(
-        [
-          updateScript.path,
-          SidekickContext.cliName,
-          coreFrom.canonicalizedVersion,
-          coreTo.canonicalizedVersion,
-        ],
-        progress: Progress.print(),
-      );
-    } finally {
-      updateScript.deleteSync();
-    }
   }
 }
 
@@ -268,4 +207,61 @@ void Function(
 extension UpdateCommandTestInjector on UpdateCommand {
   @visibleForTesting
   set dartArchive(DartArchive archive) => _dartArchive = archive;
+}
+
+/// Creates a temporary update package that executes `update_sidekick_cli.dart`
+/// from sidekick_core at version [newSidekickCoreVersion] with Dart SDK version
+/// [dartSdkVersion] in a separate process.
+class UpdateExecutor {
+  UpdateExecutor({
+    required this.location,
+    required this.dartSdkVersion,
+    required this.oldSidekickCoreVersion,
+    required this.newSidekickCoreVersion,
+  });
+
+  final Directory location;
+  final Version dartSdkVersion;
+  final Version oldSidekickCoreVersion;
+  final Version newSidekickCoreVersion;
+
+  /// First generate the update package
+  void generateUpdatePackage() {
+    final template = UpdateExecutorTemplate(
+      location: location,
+      dartSdkVersion: dartSdkVersion,
+      oldSidekickCoreVersion: oldSidekickCoreVersion,
+      newSidekickCoreVersion: newSidekickCoreVersion,
+    );
+    template.generate();
+  }
+
+  /// Load the sidekick_core dependency from pub.dev
+  void pubGet() {
+    sidekickDartRuntime.dart(
+      ['pub', 'get'],
+      workingDirectory: location,
+      progress: Progress.printStdErr(),
+    );
+  }
+
+  /// Execute the update script from the new sidekick_core version
+  void executeSidekickUpdate() {
+    final script = location.file('bin/update.dart');
+    script.verifyExistsOrThrow();
+
+    // Do not change the arguments in a breaking way. The `update_sidekick_cli.dart`
+    // script will be called from another sidekick_core version. Changes will break
+    // the update process.
+    // Only add parameters, never remove any.
+    sidekickDartRuntime.dart(
+      [
+        script.path,
+        SidekickContext.cliName,
+        oldSidekickCoreVersion.canonicalizedVersion,
+        newSidekickCoreVersion.canonicalizedVersion,
+      ],
+      progress: Progress.print(),
+    );
+  }
 }

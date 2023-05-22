@@ -33,7 +33,7 @@ Future<void> main(List<String> args) async {
         // Always execute template updates
         UpdateToolsMigration(targetSidekickCoreVersion),
         UpdateEntryPointMigration(targetSidekickCoreVersion),
-        UpdateSidekickCoreDependency(targetSidekickCoreVersion),
+        UpdateSidekickCoreDependencyMigration(targetSidekickCoreVersion),
         // Migration steps from git patches
         ...patchMigrations,
       ],
@@ -123,8 +123,8 @@ class UpdateEntryPointMigration extends MigrationStep {
 }
 
 /// Updates the sidekick_core dependency in pubspec.yaml
-class UpdateSidekickCoreDependency extends MigrationStep {
-  UpdateSidekickCoreDependency(Version targetVersion)
+class UpdateSidekickCoreDependencyMigration extends MigrationStep {
+  UpdateSidekickCoreDependencyMigration(Version targetVersion)
       : super(
           name: 'Update sidekick_core dependency',
           targetVersion: targetVersion,
