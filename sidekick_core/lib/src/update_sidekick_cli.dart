@@ -54,8 +54,8 @@ Future<void> main(List<String> args) async {
         }
 
         printerr(context.stackTrace.toString());
-        // TODO make errors interactive and allow skipping
-        return MigrationErrorHandling.abort;
+        // TODO make errors interactive
+        return MigrationErrorHandling.skip;
       },
     );
 
