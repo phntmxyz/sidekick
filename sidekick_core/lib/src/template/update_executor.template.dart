@@ -26,7 +26,7 @@ class UpdateExecutorTemplate {
         newSidekickCoreVersion: newSidekickCoreVersion,
       );
     }
-    return UpdateExecutorTemplate._(
+    return UpdateExecutorTemplate.raw(
       location: location,
       dartSdkVersion: dartSdkVersion,
       oldSidekickCoreVersion: oldSidekickCoreVersion,
@@ -34,7 +34,7 @@ class UpdateExecutorTemplate {
     );
   }
 
-  UpdateExecutorTemplate._({
+  UpdateExecutorTemplate.raw({
     required this.location,
     required this.dartSdkVersion,
     required this.oldSidekickCoreVersion,

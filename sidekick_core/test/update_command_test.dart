@@ -14,6 +14,21 @@ void main() {
         'UpdateCommand generates new files when current '
         'sidekick cli version is $sidekickCliVersion', () async {
       final printLog = <String>[];
+
+      UpdateExecutorTemplate.testFakeCreateUpdateExecutorTemplate = ({
+        required Directory location,
+        required Version dartSdkVersion,
+        required Version newSidekickCoreVersion,
+        required Version oldSidekickCoreVersion,
+      }) {
+        return LocalUpdateExecutorTemplate(
+          location: location,
+          dartSdkVersion: dartSdkVersion,
+          newSidekickCoreVersion: newSidekickCoreVersion,
+          oldSidekickCoreVersion: oldSidekickCoreVersion,
+        );
+      };
+
       Future<void> code(Directory projectDir) async {
         final sidekickDir = projectDir.directory('packages/dash');
         final expectedFilesToGenerate = [
@@ -171,7 +186,7 @@ void main() {
         required Version newSidekickCoreVersion,
         required Version oldSidekickCoreVersion,
       }) {
-        return _LocalUpdateExecutorTemplate(
+        return _PrintOnlyUpdateExecutorTemplate(
           location: location,
           dartSdkVersion: dartSdkVersion,
           newSidekickCoreVersion: newSidekickCoreVersion,
@@ -233,8 +248,10 @@ class MockDartArchive implements DartArchive {
 }
 
 /// Does not actually update anything, but prints the information injected into the update script
-class _LocalUpdateExecutorTemplate with Fake implements UpdateExecutorTemplate {
-  _LocalUpdateExecutorTemplate({
+class _PrintOnlyUpdateExecutorTemplate
+    with Fake
+    implements UpdateExecutorTemplate {
+  _PrintOnlyUpdateExecutorTemplate({
     required this.location,
     required this.dartSdkVersion,
     required this.oldSidekickCoreVersion,
@@ -270,5 +287,25 @@ Future<void> main(List<String> args) async {
   print('Dart Version: \${Platform.version}');
 }
   ''');
+  }
+}
+
+class LocalUpdateExecutorTemplate extends UpdateExecutorTemplate {
+  LocalUpdateExecutorTemplate({
+    required Directory location,
+    required Version dartSdkVersion,
+    required Version oldSidekickCoreVersion,
+    required Version newSidekickCoreVersion,
+  }) : super.raw(
+          location: location,
+          dartSdkVersion: dartSdkVersion,
+          oldSidekickCoreVersion: oldSidekickCoreVersion,
+          newSidekickCoreVersion: newSidekickCoreVersion,
+        );
+
+  @override
+  void generate() {
+    super.generate();
+    overrideSidekickCoreWithLocalPath(location);
   }
 }
