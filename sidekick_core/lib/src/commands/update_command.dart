@@ -80,7 +80,7 @@ class UpdateCommand extends Command {
       defaultOption: latestDartVersion,
       format: (Object? option) {
         // ignore: cast_nullable_to_non_nullable
-        final version = Version.parse(option as String);
+        final version = option as Version;
         if (version.ignorePatch == currentMinVersionIgnoringPatch) {
           return '$version (current)';
         }
