@@ -136,6 +136,7 @@ void main() {
       sidekickCoreReleases: [
         sidekick_core('1.1.0', sdk: '>=2.12.0 <3.0.0'),
       ],
+      dartSdkVersion: Version.parse('2.19.6'),
       dartSdks: [
         Version.parse('2.18.0'),
         Version.parse('2.19.2'),
@@ -295,12 +296,14 @@ class UpdateCommandTestCase {
 
   final List<PublishedPackage> sidekickCoreReleases;
   final List<Version> dartSdks;
+  final Version? dartSdkVersion;
 
   UpdateCommandTestCase({
     this.initialSidekickCliVersion,
     this.initialSidekickCoreVersion,
     required this.sidekickCoreReleases,
     required this.dartSdks,
+    this.dartSdkVersion,
   });
 
   final printLog = <String>[];
@@ -368,11 +371,14 @@ class UpdateCommandTestCase {
           () => VersionChecker.testFakeGetLatestDependencyVersion = null,
         );
 
+        final sdk = dartSdkVersion ?? dartSdks.first;
+
         await insideFakeProjectWithSidekick(
           (dir) async {
             _projectDir = dir;
             await code();
           },
+          dartSdkConstraint: '>=$sdk <${sdk.nextBreaking}',
           overrideSidekickCoreWithLocalDependency: true,
           sidekickCliVersion: initialSidekickCliVersion?.toString() ?? '1.1.0',
           sidekickCoreVersion:

@@ -60,6 +60,7 @@ R insideFakeProjectWithSidekick<R>(
   String? sidekickCoreVersion,
   String? lockedSidekickCoreVersion,
   String? sidekickCliVersion,
+  String dartSdkConstraint = '>=2.14.0 <3.0.0',
   bool insideGitRepo = false,
 }) {
   final tempDir = Directory.systemTemp.createTempSync();
@@ -88,7 +89,7 @@ environment:
 name: dash
 
 environment:
-  sdk: '>=2.14.0 <3.0.0'
+  sdk: '$dartSdkConstraint'
   
 ${sidekickCoreVersion == null && !overrideSidekickCoreWithLocalDependency ? '' : '''
 dependencies:

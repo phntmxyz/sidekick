@@ -132,7 +132,8 @@ class UpdateCommand extends Command {
       return;
     }
     print(
-      'Updating sidekick to version $coreVersionToInstall (Dart $dartVersionToInstall)',
+      'Updating sidekick from $currentSidekickCliVersion (Dart $currentMinVersion) '
+      'to $coreVersionToInstall (Dart $dartVersionToInstall)',
     );
 
     // Download the new Dart SDK version
