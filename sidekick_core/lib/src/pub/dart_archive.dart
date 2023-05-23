@@ -3,10 +3,9 @@ import 'dart:convert';
 import 'package:http/http.dart';
 import 'package:pub_semver/pub_semver.dart';
 
+/// Load data from the Dart SDK Archive https://dart.dev/get-dart/archive
 class DartArchive {
-  static const String base =
-      'https://storage.googleapis.com/storage/v1/b/dart-archive/';
-
+  /// Returns the latest dart versions
   Stream<Version> getLatestDartVersions() async* {
     final url = Uri.parse(
       'https://storage.googleapis.com/storage/v1/b/dart-archive/o?delimiter=/&prefix=channels/stable/release/',
@@ -27,16 +26,5 @@ class DartArchive {
         // ignore
       }
     }
-  }
-}
-
-class DartVersionInfo {
-  final String raw;
-
-  DartVersionInfo(this.raw);
-
-  @override
-  String toString() {
-    return 'DartVersionInfo{raw: $raw}';
   }
 }
