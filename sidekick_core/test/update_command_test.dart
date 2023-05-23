@@ -112,13 +112,9 @@ void main() {
             null;
       });
       await command.update();
-      // Dart SDK has been updated
-      final dartSdkPath =
-          SidekickContext.sidekickPackage.buildDir.directory('cache/dart-sdk');
-      final versionFile = dartSdkPath.file('version');
-      final dartSdkVersion =
-          Version.parse(versionFile.readAsStringSync().trim());
-      expect(dartSdkVersion, Version.parse('2.19.1'));
+
+      // Downloaded correct Dart version
+      expect(testCase.downloadedDartSdkVersion, Version.parse('2.19.1'));
 
       // Correct arguments have been injected
       expect(testCase.printLog, contains('Arguments: [dash, 1.1.0, 1.2.0]'));
@@ -127,6 +123,40 @@ void main() {
       final fullLog = testCase.printLog.join('\n');
       expect(fullLog, contains('Downloading Dart SDK 2.19.1'));
       expect(fullLog, contains('Dart Version: 2.19.1'));
+    });
+  });
+
+  test('Update to Dart 3 with sidekick 2.0', () async {
+    final testCase = _UpdateCommandTestCase(
+      initialSidekickCliVersion: Version.parse('1.2.0'),
+      initialSidekickCoreVersion: Version.parse('1.2.0'),
+      sidekickCoreReleases: [
+        _sidekick_core('1.2.0', sdk: '>=2.12.0 <3.0.0'),
+        _sidekick_core('2.0.0', sdk: '>=3.0.0 <3.999.0'),
+      ],
+      dartSdkVersion: Version.parse('2.19.6'),
+      dartSdks: [
+        Version.parse('2.18.0'),
+        Version.parse('2.19.6'),
+        Version.parse('3.0.0'),
+        Version.parse('3.0.1'),
+        Version.parse('4.0.0'),
+      ],
+    );
+    await testCase.execute((command) async {
+      _PrintOnlyUpdateExecutorTemplate.register();
+      await command.update();
+
+      // Dart SDK has been updated
+      expect(testCase.downloadedDartSdkVersion, Version.parse('3.0.1'));
+
+      // Correct arguments have been injected
+      expect(testCase.printLog, contains('Arguments: [dash, 1.2.0, 2.0.0]'));
+
+      // Update script has been executed with correct Dart SDK
+      final fullLog = testCase.printLog.join('\n');
+      expect(fullLog, contains('Downloading Dart SDK 3.0.1'));
+      expect(fullLog, contains('Dart Version: 3.0.1'));
     });
   });
 }
@@ -173,6 +203,7 @@ class _UpdateCommandTestCase {
 
   final printLog = <String>[];
   final command = UpdateCommand();
+
   Directory get projectDir => _projectDir;
   late Directory _projectDir;
 
@@ -204,7 +235,8 @@ class _UpdateCommandTestCase {
   }
 
   Future<void> execute(
-      Future<void> Function(_UpdateCommandUnderTest command) code) async {
+    Future<void> Function(_UpdateCommandUnderTest command) code,
+  ) async {
     await runZoned(
       () async {
         VersionChecker.testFakeGetLatestDependencyVersion = (
@@ -224,25 +256,9 @@ class _UpdateCommandTestCase {
           () => VersionChecker.testFakeGetLatestDependencyVersion = null,
         );
 
-        UpdateExecutorTemplate.testFakeCreateUpdateExecutorTemplate = ({
-          required Directory location,
-          required Version dartSdkVersion,
-          required Version newSidekickCoreVersion,
-          required Version oldSidekickCoreVersion,
-        }) {
-          return _LocalUpdateExecutorTemplate(
-            location: location,
-            dartSdkVersion: dartSdkVersion,
-            newSidekickCoreVersion: newSidekickCoreVersion,
-            oldSidekickCoreVersion: oldSidekickCoreVersion,
-          );
-        };
-        addTearDown(() {
-          return UpdateExecutorTemplate.testFakeCreateUpdateExecutorTemplate =
-              null;
-        });
+        _LocalUpdateExecutorTemplate.register();
 
-        final sdk = dartSdkVersion ?? dartSdks.first!;
+        final sdk = dartSdkVersion ?? dartSdks.first;
 
         await insideFakeProjectWithSidekick(
           (dir) async {
@@ -285,6 +301,7 @@ class _UpdateCommandUnderTest {
 
 class _MockDartArchive implements DartArchive {
   final List<Version> versions = [];
+
   @override
   Stream<Version> getLatestDartVersions() async* {
     for (final v in versions) {
@@ -303,6 +320,25 @@ class _PrintOnlyUpdateExecutorTemplate
     required this.oldSidekickCoreVersion,
     required this.newSidekickCoreVersion,
   });
+
+  static void register() {
+    UpdateExecutorTemplate.testFakeCreateUpdateExecutorTemplate = ({
+      required Directory location,
+      required Version dartSdkVersion,
+      required Version newSidekickCoreVersion,
+      required Version oldSidekickCoreVersion,
+    }) {
+      return _PrintOnlyUpdateExecutorTemplate(
+        location: location,
+        dartSdkVersion: dartSdkVersion,
+        newSidekickCoreVersion: newSidekickCoreVersion,
+        oldSidekickCoreVersion: oldSidekickCoreVersion,
+      );
+    };
+    addTearDown(() {
+      return UpdateExecutorTemplate.testFakeCreateUpdateExecutorTemplate = null;
+    });
+  }
 
   @override
   final Directory location;
@@ -349,6 +385,25 @@ class _LocalUpdateExecutorTemplate extends UpdateExecutorTemplate {
           oldSidekickCoreVersion: oldSidekickCoreVersion,
           newSidekickCoreVersion: newSidekickCoreVersion,
         );
+
+  static void register() {
+    UpdateExecutorTemplate.testFakeCreateUpdateExecutorTemplate = ({
+      required Directory location,
+      required Version dartSdkVersion,
+      required Version newSidekickCoreVersion,
+      required Version oldSidekickCoreVersion,
+    }) {
+      return _LocalUpdateExecutorTemplate(
+        location: location,
+        dartSdkVersion: dartSdkVersion,
+        newSidekickCoreVersion: newSidekickCoreVersion,
+        oldSidekickCoreVersion: oldSidekickCoreVersion,
+      );
+    };
+    addTearDown(() {
+      return UpdateExecutorTemplate.testFakeCreateUpdateExecutorTemplate = null;
+    });
+  }
 
   @override
   void generate() {
