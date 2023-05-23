@@ -105,6 +105,7 @@ dependencies:
   sidekick_core:
     git:
       url: https://github.com/phntmxyz/sidekick
+      ref: main-1.X
       path: sidekick_core
 ''',
       );
