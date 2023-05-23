@@ -1,4 +1,5 @@
-import 'package:googleapis/storage/v1.dart';
+import 'dart:convert';
+
 import 'package:http/http.dart';
 import 'package:pub_semver/pub_semver.dart';
 
@@ -6,34 +7,25 @@ class DartArchive {
   static const String base =
       'https://storage.googleapis.com/storage/v1/b/dart-archive/';
 
-  final StorageApi _api = StorageApi(Client());
-
   Stream<Version> getLatestDartVersions() async* {
-    String? nextToken;
-    do {
-      const prefix = 'channels/stable/release/';
-      const delimiter = '/';
-      final objects = await _api.objects.list(
-        'dart-archive',
-        prefix: prefix,
-        delimiter: delimiter,
-        pageToken: nextToken,
-      );
-      nextToken = objects.nextPageToken;
-      final prefixes = objects.prefixes;
-      if (prefixes == null) {
-        continue;
+    final url = Uri.parse(
+        'https://storage.googleapis.com/storage/v1/b/dart-archive/o?delimiter=/&prefix=channels/stable/release/');
+    final response = await get(url);
+    if (response.statusCode != 200) {
+      throw Exception('Received status code ${response.statusCode}');
+    }
+    final json = jsonDecode(response.body);
+
+    final prefixes = json['prefixes'] as List<dynamic>;
+    for (final path in prefixes) {
+      try {
+        final rawVersion = (path as String).replaceAll(RegExp('[^\\d.]*'), '');
+        final version = Version.parse(rawVersion);
+        yield version;
+      } catch (_) {
+        // ignore
       }
-      for (final path in prefixes) {
-        try {
-          final rawVersion = path.replaceAll(RegExp('[^\\d.]*'), '');
-          final version = Version.parse(rawVersion);
-          yield version;
-        } catch (_) {
-          // ignore
-        }
-      }
-    } while (nextToken != null);
+    }
   }
 }
 
