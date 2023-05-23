@@ -197,7 +197,7 @@ dependencies:
   sidekick_core: $constraintRange
 
 dev_dependencies:
-  lint: ^1.5.3
+  lint: '>=1.5.3 <3.0.0'
 
 # generated code, do not edit this manually
 sidekick:
