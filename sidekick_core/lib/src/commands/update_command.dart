@@ -73,23 +73,28 @@ class UpdateCommand extends Command {
 
     final latestDartVersion = compatibleSdks.last;
 
-    print(white('Which Dart SDK version do you want to use?'));
-    final dartVersionToInstall = menu(
-      prompt: 'Dart Version',
-      options: [...compatibleSdks],
-      defaultOption: latestDartVersion,
-      format: (Object? option) {
-        // ignore: cast_nullable_to_non_nullable
-        final version = option as Version;
-        if (version.ignorePatch == currentMinVersionIgnoringPatch) {
-          return '$version (current)';
-        }
-        if (version.ignorePatch == latestDartVersion) {
-          return '$version (latest)';
-        }
-        return version.toString();
-      },
-    );
+    final Version dartVersionToInstall;
+    if (compatibleSdks.length > 1) {
+      print(white('Which Dart SDK version do you want to use?'));
+      dartVersionToInstall = menu(
+        prompt: 'Dart Version',
+        options: [...compatibleSdks],
+        defaultOption: latestDartVersion,
+        format: (Object? option) {
+          // ignore: cast_nullable_to_non_nullable
+          final version = option as Version;
+          if (version.ignorePatch == currentMinVersionIgnoringPatch) {
+            return '$version (current)';
+          }
+          if (version.ignorePatch == latestDartVersion) {
+            return '$version (latest)';
+          }
+          return version.toString();
+        },
+      );
+    } else {
+      dartVersionToInstall = compatibleSdks.first;
+    }
 
     final Version mappedSidekickCoreVersion = sdksWithValidCoreMapping
         .firstWhere((entry) => entry.key == dartVersionToInstall)
@@ -115,14 +120,16 @@ class UpdateCommand extends Command {
     // Download the new Dart SDK version
     // Update the Dart SDK version in pubspec.yaml, so that the download_dart.sh
     // script can pick up the correct version
-    print('Downloading Dart SDK $dartVersionToInstall');
-    VersionChecker.updateVersionConstraint(
-      package: SidekickContext.sidekickPackage,
-      pubspecKeys: ['environment', 'sdk'],
-      newMinimumVersion: dartVersionToInstall,
-      preferCaret: false,
-    );
-    sidekickDartRuntime.download();
+    if (currentMinVersion != dartVersionToInstall) {
+      print('Downloading Dart SDK $dartVersionToInstall');
+      VersionChecker.updateVersionConstraint(
+        package: SidekickContext.sidekickPackage,
+        pubspecKeys: ['environment', 'sdk'],
+        newMinimumVersion: dartVersionToInstall,
+        preferCaret: false,
+      );
+      sidekickDartRuntime.download();
+    }
 
     final updateName = 'update_${coreVersionToInstall.canonicalizedVersion}'
         .replaceAll('.', '_');
