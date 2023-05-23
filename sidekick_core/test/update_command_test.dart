@@ -129,11 +129,12 @@ void main() {
     });
   }
 
-  test('UpdateCommand does not downgrade', () async {
+  test('UpdateCommand does not update when no update exists', () async {
     final updateCommand = UpdateCommandTestCase(
+      initialSidekickCliVersion: Version.parse('1.1.0'),
+      initialSidekickCoreVersion: Version.parse('1.1.0'),
       sidekickCoreReleases: [
         sidekick_core('1.1.0', sdk: '>=2.12.0 <3.0.0'),
-        sidekick_core('2.0.0', sdk: '>=3.0.0 <3.999.0'),
       ],
       dartSdks: [
         Version.parse('2.18.0'),
@@ -143,14 +144,36 @@ void main() {
     );
     await updateCommand.execute(() async {
       await updateCommand.update();
-      expect(updateCommand.sidekickCliVersion, Version(1, 1, 0));
-      expect(updateCommand.sidekickCoreVersion, Version(1, 1, 0));
 
       expect(
         updateCommand.printLog,
         contains('No need to update because you are already using the latest '
             'sidekick_core:1.1.0 version for Dart 2.19.6.'),
       );
+      expect(updateCommand.sidekickCliVersion, Version.parse('1.1.0'));
+      expect(updateCommand.sidekickCoreVersion, Version.parse('1.1.0'));
+    });
+  });
+
+  test('UpdateCommand updates the dart sdk', () async {
+    final updateCommand = UpdateCommandTestCase(
+      initialSidekickCliVersion: Version.parse('1.1.0'),
+      initialSidekickCoreVersion: Version.parse('1.1.0'),
+      sidekickCoreReleases: [
+        sidekick_core('1.1.0', sdk: '>=2.12.0 <3.0.0'),
+      ],
+      dartSdks: [
+        Version.parse('2.18.0'),
+        Version.parse('2.19.1'),
+      ],
+    );
+    await updateCommand.execute(() async {
+      await updateCommand.update();
+      expect(
+        updateCommand.printLog,
+        contains('Successfully updated the Dart SDK to 2.19.1.'),
+      );
+      expect(updateCommand.downloadedDartSdkVersion, Version.parse('2.19.1'));
     });
   });
 
@@ -284,6 +307,17 @@ class UpdateCommandTestCase {
   final command = UpdateCommand();
   Directory get projectDir => _projectDir!;
   Directory? _projectDir;
+
+  Version? get downloadedDartSdkVersion {
+    final dartSdkPath =
+        SidekickContext.sidekickPackage.buildDir.directory('cache/dart-sdk');
+    final versionFile = dartSdkPath.file('version');
+    try {
+      return Version.parse(versionFile.readAsStringSync().trim());
+    } catch (_) {
+      return null;
+    }
+  }
 
   Version? get sidekickCliVersion {
     final package = SidekickContext.sidekickPackage;

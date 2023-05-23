@@ -125,7 +125,8 @@ class UpdateCommand extends Command {
         .maxBy((entry) => entry.key)!
         .key;
 
-    if (coreVersionToInstall <= currentSidekickCliVersion) {
+    if (coreVersionToInstall <= currentSidekickCliVersion &&
+        currentMinVersion == dartVersionToInstall) {
       print('No need to update because you are already using the '
           'latest sidekick_core:$currentSidekickCliVersion version for Dart $dartVersionToInstall.');
       return;
@@ -148,30 +149,34 @@ class UpdateCommand extends Command {
       sidekickDartRuntime.download();
     }
 
-    final updateName = 'update_${coreVersionToInstall.canonicalizedVersion}'
-        .replaceAll('.', '_');
-    final updateScriptDir =
-        SidekickContext.sidekickPackage.buildDir.directory(updateName);
+    if (coreVersionToInstall != currentSidekickCliVersion) {
+      final updateName = 'update_${coreVersionToInstall.canonicalizedVersion}'
+          .replaceAll('.', '_');
+      final updateScriptDir =
+          SidekickContext.sidekickPackage.buildDir.directory(updateName);
 
-    final executor = UpdateExecutor(
-      location: updateScriptDir,
-      oldSidekickCoreVersion: currentSidekickCliVersion,
-      newSidekickCoreVersion: coreVersionToInstall,
-      dartSdkVersion: dartVersionToInstall,
-    );
+      final executor = UpdateExecutor(
+        location: updateScriptDir,
+        oldSidekickCoreVersion: currentSidekickCliVersion,
+        newSidekickCoreVersion: coreVersionToInstall,
+        dartSdkVersion: dartVersionToInstall,
+      );
 
-    try {
-      // Write update package with just the updated sidekick_core dependency and the chosen Dart SDK version
-      // This prevents any version conflicts and the entire sidekick update will
-      // be executed from the new sidekick_core version and can be updated.
-      executor.generateUpdatePackage();
+      try {
+        // Write update package with just the updated sidekick_core dependency and the chosen Dart SDK version
+        // This prevents any version conflicts and the entire sidekick update will
+        // be executed from the new sidekick_core version and can be updated.
+        executor.generateUpdatePackage();
 
-      // Execute the update script of the new sidekick_core version with the new Dart SDK version
-      executor.pubGet();
-      executor.executeSidekickUpdate();
-    } finally {
-      // cleanup
-      updateScriptDir.deleteSync(recursive: true);
+        // Execute the update script of the new sidekick_core version with the new Dart SDK version
+        executor.pubGet();
+        executor.executeSidekickUpdate();
+      } finally {
+        // cleanup
+        updateScriptDir.deleteSync(recursive: true);
+      }
+    } else {
+      print('Successfully updated the Dart SDK to $dartVersionToInstall.');
     }
 
     // Run pub get on cli package to download the new sidekick_core version
