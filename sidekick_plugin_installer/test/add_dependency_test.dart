@@ -24,7 +24,7 @@ void main() {
 name: foo
 
 environment:
-  sdk: ^3.0.0
+  sdk: '>=2.12.0 <4.0.0'
 ''');
     package = DartPackage.fromDirectory(packageDir)!;
     overrideSidekickDartRuntimeWithSystemDartRuntime(packageDir);
@@ -42,7 +42,7 @@ environment:
 name: bar
 
 environment:
-  sdk: ^3.0.0
+  sdk: '>=2.12.0 <4.0.0'
 ''');
 
       addDependency(
@@ -57,7 +57,7 @@ environment:
 name: foo
 
 environment:
-  sdk: ^3.0.0
+  sdk: '>=2.12.0 <4.0.0'
 dependencies:
   bar:
     path: ${barDir.path}
@@ -78,7 +78,7 @@ dependencies:
 name: foo
 
 environment:
-  sdk: ^3.0.0
+  sdk: '>=2.12.0 <4.0.0'
 dependencies:
   sidekick_core: ^0.10.0
 ''',
@@ -91,6 +91,7 @@ dependencies:
         dependency: 'sidekick_core',
         gitUrl: 'https://github.com/phntmxyz/sidekick',
         gitPath: 'sidekick_core',
+        gitRef: 'main-1.X',
       );
 
       expect(
@@ -99,11 +100,12 @@ dependencies:
 name: foo
 
 environment:
-  sdk: ^3.0.0
+  sdk: '>=2.12.0 <4.0.0'
 dependencies:
   sidekick_core:
     git:
       url: https://github.com/phntmxyz/sidekick
+      ref: main-1.X
       path: sidekick_core
 ''',
       );
