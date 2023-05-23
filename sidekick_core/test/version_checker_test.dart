@@ -64,12 +64,12 @@ dependencies:
 
       expect(
         pubspecYamlFile.readAsStringSync(),
-        '''
+        equalsIgnoringWhitespace('''
 name: dashi
-dependencies: 
+dependencies:
   bar: 0.0.0
   foo: 1.2.4
-''',
+'''),
       );
     });
     test('sets whole block when it does not yet exist in pubspec', () async {
