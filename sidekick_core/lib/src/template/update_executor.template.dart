@@ -50,11 +50,11 @@ class UpdateExecutorTemplate {
     location.file('pubspec.yaml')
       ..createSync(recursive: true)
       ..writeAsStringSync('''
-name: update_${oldSidekickCoreVersion.canonicalizedVersion.replaceAll('.', '_')}
+name: update_${newSidekickCoreVersion.canonicalizedVersion.replaceAll('.', '_')}
 environment:
   sdk: '>=${dartSdkVersion.canonicalizedVersion} <${dartSdkVersion.nextBreaking.canonicalizedVersion}'
 dependencies:
-  sidekick_core: ${oldSidekickCoreVersion.canonicalizedVersion}
+  sidekick_core: ${newSidekickCoreVersion.canonicalizedVersion}
 
 ''');
 
