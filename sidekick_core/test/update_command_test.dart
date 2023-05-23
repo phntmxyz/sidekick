@@ -73,7 +73,7 @@ void main() {
           dartSdkPath: systemDartSdkPath(),
         );
 
-        final targetVersion = Version(1, 1, 0);
+        final targetVersion = Version(1, 2, 0);
 
         runner.addCommand(UpdateCommand()..dartArchive = MockDartArchive());
         await runner.run(['update', targetVersion.toString()]);
@@ -145,7 +145,7 @@ void main() {
             return null;
           }
           if (dartSdkVersion >= Version(2, 0, 0)) {
-            return Version(1, 2, 0);
+            return Version(1, 1, 0);
           }
         }
         throw 'unknown dependency $dependency';
@@ -159,7 +159,7 @@ void main() {
       );
 
       runner.addCommand(UpdateCommand()..dartArchive = MockDartArchive());
-      await runner.run(['update', '1.0.0']);
+      await runner.run(['update']);
 
       final package = SidekickContext.sidekickPackage;
       final sidekickVersionAfterUpdate =

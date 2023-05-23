@@ -60,7 +60,6 @@ class UpdateCommand extends Command {
         futureDartSdkVersionWithLatestPatch
             .zip(mappedSidekickCoreVersions,
                 (Version sdkVersion, Version? coreVersion) {
-              print('Dart SDK $sdkVersion maps to sidekick_core:$coreVersion');
               return MapEntry(sdkVersion, coreVersion);
             })
             .where((entry) => entry.value != null)
