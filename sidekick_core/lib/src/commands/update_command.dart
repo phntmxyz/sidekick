@@ -120,8 +120,9 @@ class UpdateCommand extends Command {
       }
     }
 
-    final dartVersionToInstall = sdksWithValidCoreMapping
-        .firstWhere((entry) => entry.value == coreVersionToInstall)
+    final Version dartVersionToInstall = sdksWithValidCoreMapping
+        .where((entry) => entry.value == coreVersionToInstall)
+        .maxBy((entry) => entry.key)!
         .key;
 
     if (coreVersionToInstall <= currentSidekickCliVersion) {
