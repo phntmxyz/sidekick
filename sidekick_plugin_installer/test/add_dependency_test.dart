@@ -91,6 +91,7 @@ dependencies:
         dependency: 'sidekick_core',
         gitUrl: 'https://github.com/phntmxyz/sidekick',
         gitPath: 'sidekick_core',
+        gitRef: 'main-1.X',
       );
 
       expect(
