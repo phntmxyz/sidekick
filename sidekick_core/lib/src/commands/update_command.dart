@@ -139,7 +139,8 @@ class UpdateCommand extends Command {
     // Download the new Dart SDK version
     // Update the Dart SDK version in pubspec.yaml, so that the download_dart.sh
     // script can pick up the correct version
-    if (currentMinVersion != dartVersionToInstall) {
+    if (currentMinVersion != dartVersionToInstall ||
+        !sidekickDartRuntime.isDownloaded()) {
       print('Downloading Dart SDK $dartVersionToInstall');
       VersionChecker.updateVersionConstraint(
         package: SidekickContext.sidekickPackage,
