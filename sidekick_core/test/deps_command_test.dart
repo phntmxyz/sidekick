@@ -20,7 +20,7 @@ void main() {
 name: ${package.snakeCase}
 
 environment:
-  sdk: ^2.10.0
+  sdk: ^2.12.0
 ''');
     }
   }
