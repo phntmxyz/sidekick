@@ -38,17 +38,6 @@ abstract class VersionChecker {
     return latest == current;
   }
 
-  /// Updates the version constraint of [dependency] to the latest version
-  static Future<void> updateVersionConstraintToLatest(
-    DartPackage package,
-    String dependency,
-  ) async =>
-      updateVersionConstraint(
-        package: package,
-        pubspecKeys: ['dependencies', dependency],
-        newMinimumVersion: await getLatestDependencyVersion(dependency),
-      );
-
   /// Sets the version constraint at [pubspecKeys] in pubspec.yaml to [newMinimumVersion]
   ///
   /// If [pinVersion] is true, the new version constraint will only allow [newMinimumVersion]
@@ -58,6 +47,7 @@ abstract class VersionChecker {
     required List<String> pubspecKeys,
     required Version newMinimumVersion,
     bool pinVersion = false,
+    bool preferCaret = true,
   }) {
     final pubspec = package.pubspec;
     final pubspecContent = pubspec.readAsStringSync();
@@ -66,9 +56,9 @@ abstract class VersionChecker {
 
     final newVersionConstraint = pinVersion
         ? newMinimumVersion.canonicalizedVersion
-        : newMinimumVersion.major > 0
+        : newMinimumVersion.major > 0 && preferCaret
             ? '^${newMinimumVersion.canonicalizedVersion}'
-            : ">=${newMinimumVersion.canonicalizedVersion} <1.0.0";
+            : ">=${newMinimumVersion.canonicalizedVersion} <${newMinimumVersion.nextBreaking.canonicalizedVersion}";
 
     // This whole ceremony creates missing keys until reaching the actual key to update
     final existingKeys = [];
@@ -165,9 +155,17 @@ abstract class VersionChecker {
   }
 
   /// Returns the latest version of [dependency] available on pub.dev
-  static Future<Version> getLatestDependencyVersion(String dependency) async {
+  ///
+  /// Set [dartSdkVersion] to find the latest version that supports the given Dart SDK version
+  static Future<Version?> getLatestDependencyVersion(
+    String dependency, {
+    Version? dartSdkVersion,
+  }) async {
     if (testFakeGetLatestDependencyVersion != null) {
-      return testFakeGetLatestDependencyVersion!(dependency);
+      return testFakeGetLatestDependencyVersion!(
+        dependency,
+        dartSdkVersion: dartSdkVersion,
+      );
     }
 
     final response =
@@ -177,11 +175,34 @@ abstract class VersionChecker {
       throw "Package '$dependency' not found on pub.dev";
     }
 
+    final json = jsonDecode(response.body) as Map<String, dynamic>;
     final latestVersion =
-        ((jsonDecode(response.body) as Map<String, dynamic>)['latest']
-            as Map<String, dynamic>)['version'] as String;
+        (json['latest'] as Map<String, dynamic>)['version'] as String;
 
-    return Version.parse(latestVersion);
+    if (dartSdkVersion == null) {
+      return Version.parse(latestVersion);
+    }
+
+    // find the latest version that supports the given Dart SDK version
+    final versions = json['versions'] as List<dynamic>;
+    for (final release in versions.reversed) {
+      release as Map<String, dynamic>;
+      final pubspec = release['pubspec'] as Map<String, dynamic>;
+      final versionRaw = release['version'] as String;
+      final version = Version.parse(versionRaw);
+      if (version.isPreRelease) {
+        // ignore pre-release versions
+        continue;
+      }
+      final environment = pubspec['environment'] as Map<String, dynamic>;
+      final sdk = environment['sdk'] as String?;
+      if (sdk != null && VersionConstraint.parse(sdk).allows(dartSdkVersion)) {
+        return Version.parse(latestVersion);
+      }
+    }
+
+    // No version of [dependency] found that supports Dart SDK [dartSdkVersion]
+    return null;
   }
 
   /// Returns the channel and version of the Dart SDK at the given path
@@ -234,8 +255,10 @@ abstract class VersionChecker {
 
   /// Set to override behavior of [getLatestDependencyVersion] in tests
   @visibleForTesting
-  static Future<Version> Function(String dependency)?
-      testFakeGetLatestDependencyVersion;
+  static Future<Version?> Function(
+    String dependency, {
+    Version? dartSdkVersion,
+  })? testFakeGetLatestDependencyVersion;
 }
 
 /// Returns the string specified by [path] in [yamlFile]

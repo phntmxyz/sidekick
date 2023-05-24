@@ -3,7 +3,10 @@ import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_core/src/version_checker.dart';
 
 /// default Dart runtime which is currently used to execute this sidekick CLI
-final sidekickDartRuntime =
+///
+/// Can't be final because every test may define a different runtime and it can't
+/// be cached per process
+SidekickDartRuntime get sidekickDartRuntime =>
     SidekickDartRuntime(SidekickContext.sidekickPackage.root);
 
 /// Version and channel of [sidekickDartRuntime]

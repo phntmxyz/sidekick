@@ -3,6 +3,9 @@ import 'dart:io';
 
 import 'package:dartx/dartx_io.dart';
 import 'package:dcli/dcli.dart';
+import 'package:dcli/posix.dart';
+import 'package:sidekick_test/src/download_dart.sh.template.dart';
+import 'package:sidekick_test/src/sidekick_config.sh.template.dart';
 import 'package:test/test.dart';
 
 /// True when dependencies should be linked to local sidekick dependencies
@@ -57,6 +60,7 @@ R insideFakeProjectWithSidekick<R>(
   String? sidekickCoreVersion,
   String? lockedSidekickCoreVersion,
   String? sidekickCliVersion,
+  String dartSdkConstraint = '>=2.14.0 <3.0.0',
   bool insideGitRepo = false,
 }) {
   final tempDir = Directory.systemTemp.createTempSync();
@@ -85,7 +89,7 @@ environment:
 name: dash
 
 environment:
-  sdk: '>=2.14.0 <3.0.0'
+  sdk: '$dartSdkConstraint'
   
 ${sidekickCoreVersion == null && !overrideSidekickCoreWithLocalDependency ? '' : '''
 dependencies:
@@ -114,6 +118,16 @@ packages:
 
   fakeSidekickLibDir.file('src/dash_project.dart').createSync(recursive: true);
   fakeSidekickLibDir.file('dash_sidekick.dart').createSync();
+
+  // tool dir
+  final toolDir = fakeSidekickDir.directory('tool')..createSync();
+  toolDir.file('download_dart.sh')
+    ..createSync(recursive: true)
+    ..writeAsStringSync(downloadDartSh);
+  final sidekickConfig = toolDir.file('sidekick_config.sh')
+    ..createSync(recursive: true)
+    ..writeAsStringSync(sidekickConfigSh);
+  chmod(sidekickConfig.path, permission: '755');
 
   env['SIDEKICK_PACKAGE_HOME'] = fakeSidekickDir.absolute.path;
   env['SIDEKICK_ENTRYPOINT_HOME'] = projectRoot.absolute.path;

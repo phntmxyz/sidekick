@@ -1,0 +1,1 @@
+../../../sidekick_core/lib/src/template/download_dart.sh.template.dart
