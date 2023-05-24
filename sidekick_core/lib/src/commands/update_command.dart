@@ -56,8 +56,8 @@ class UpdateCommand extends Command {
       );
       if (sidekickCoreVersion != null) {
         final packageBundle = DartPackageBundle(
-          dartVersion: dartVersion,
-          packageVersion: sidekickCoreVersion,
+          dartSdkVersion: dartVersion,
+          sidekickCoreVersion: sidekickCoreVersion,
         );
         availableVersions.add(packageBundle);
       }
@@ -76,7 +76,9 @@ class UpdateCommand extends Command {
     final DartPackageBundle packageToInstall;
     if (version != null) {
       if (!version.isPreRelease &&
-          !availableVersions.map((e) => e.packageVersion).contains(version)) {
+          !availableVersions
+              .map((e) => e.sidekickCoreVersion)
+              .contains(version)) {
         print(
           "'$version' is not a valid/compatible sidekick_core version, "
           "visit https://pub.dev/packages/sidekick_core/versions for more info.",
@@ -86,13 +88,13 @@ class UpdateCommand extends Command {
 
       // check whether multiple dart versions are compatible with the given sidekick_core version
       final availableDartVersions = availableVersions
-          .filter((e) => e.packageVersion == version)
-          .map((e) => e.dartVersion);
+          .filter((e) => e.sidekickCoreVersion == version)
+          .map((e) => e.dartSdkVersion);
 
       if (availableDartVersions.length == 1) {
         packageToInstall = DartPackageBundle(
-          dartVersion: availableDartVersions.single,
-          packageVersion: version,
+          dartSdkVersion: availableDartVersions.single,
+          sidekickCoreVersion: version,
         );
       } else {
         // let user select which Dart version to upgrade to, default latest
@@ -114,8 +116,8 @@ class UpdateCommand extends Command {
           },
         );
         packageToInstall = DartPackageBundle(
-          dartVersion: dartVersionToInstall,
-          packageVersion: version,
+          dartSdkVersion: dartVersionToInstall,
+          sidekickCoreVersion: version,
         );
       }
     } else {
@@ -128,8 +130,8 @@ class UpdateCommand extends Command {
         packageToInstall = availableVersions.first;
       } else {
         final latestPackageBundle = availableVersions
-            .sortedBy((e) => e.packageVersion)
-            .thenBy((e) => e.dartVersion)
+            .sortedBy((e) => e.sidekickCoreVersion)
+            .thenBy((e) => e.dartSdkVersion)
             .last;
         print(white('Which versions do you want to install?'));
         packageToInstall = menu(
@@ -138,20 +140,21 @@ class UpdateCommand extends Command {
           defaultOption: latestPackageBundle,
           format: (Object? option) {
             final packageBundle = option! as DartPackageBundle;
-            final packageVersion = packageBundle.packageVersion;
-            final dartVersion = packageBundle.dartVersion;
+            final packageVersion = packageBundle.sidekickCoreVersion;
+            final dartVersion = packageBundle.dartSdkVersion;
 
             final description = StringBuffer(packageVersion);
             if (packageVersion == currentSidekickCliVersion) {
               description.write(' (current)');
-            } else if (packageVersion == latestPackageBundle.packageVersion) {
+            } else if (packageVersion ==
+                latestPackageBundle.sidekickCoreVersion) {
               description.write(' (latest)');
             }
 
             description.write(' with Dart $dartVersion');
             if (dartVersion == currentDartMinVersion) {
               description.write(' (current)');
-            } else if (dartVersion == latestPackageBundle.dartVersion) {
+            } else if (dartVersion == latestPackageBundle.dartSdkVersion) {
               description.write(' (latest)');
             }
 
@@ -160,8 +163,8 @@ class UpdateCommand extends Command {
         );
       }
     }
-    final coreVersionToInstall = packageToInstall.packageVersion;
-    final dartVersionToInstall = packageToInstall.dartVersion;
+    final coreVersionToInstall = packageToInstall.sidekickCoreVersion;
+    final dartVersionToInstall = packageToInstall.dartSdkVersion;
 
     if (coreVersionToInstall <= currentSidekickCliVersion &&
         currentDartMinVersion == dartVersionToInstall) {
@@ -333,19 +336,25 @@ class UpdateExecutor {
 
 /// Bundles a Dart version with the corresponding version of a package.
 class DartPackageBundle {
-  DartPackageBundle({required this.dartVersion, required this.packageVersion});
+  DartPackageBundle(
+      {required this.dartSdkVersion, required this.sidekickCoreVersion});
 
-  final Version dartVersion;
-  final Version packageVersion;
+  final Version dartSdkVersion;
+  final Version sidekickCoreVersion;
 
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is DartPackageBundle &&
           runtimeType == other.runtimeType &&
-          dartVersion == other.dartVersion &&
-          packageVersion == other.packageVersion;
+          dartSdkVersion == other.dartSdkVersion &&
+          sidekickCoreVersion == other.sidekickCoreVersion;
 
   @override
-  int get hashCode => dartVersion.hashCode ^ packageVersion.hashCode;
+  int get hashCode => dartSdkVersion.hashCode ^ sidekickCoreVersion.hashCode;
+
+  @override
+  String toString() {
+    return 'DartPackageBundle{dartSdkVersion: $dartSdkVersion, sidekickCoreVersion: $sidekickCoreVersion}';
+  }
 }
