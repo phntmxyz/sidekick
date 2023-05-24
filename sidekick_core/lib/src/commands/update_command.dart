@@ -75,7 +75,7 @@ class UpdateCommand extends Command {
 
     final DartPackageBundle packageToInstall;
     if (version != null) {
-      // `availableVersions` only contains non-pre-release versions. If a pre-release version is explicitly given, install it nonetheless 
+      // `availableVersions` only contains non-pre-release versions. If a pre-release version is explicitly given, install it nonetheless
       if (!version.isPreRelease &&
           !availableVersions
               .map((e) => e.sidekickCoreVersion)
