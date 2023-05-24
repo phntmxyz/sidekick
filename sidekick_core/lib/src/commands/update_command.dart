@@ -336,8 +336,10 @@ class UpdateExecutor {
 
 /// Bundles a Dart version with the corresponding version of a package.
 class DartPackageBundle {
-  DartPackageBundle(
-      {required this.dartSdkVersion, required this.sidekickCoreVersion});
+  DartPackageBundle({
+    required this.dartSdkVersion,
+    required this.sidekickCoreVersion,
+  });
 
   final Version dartSdkVersion;
   final Version sidekickCoreVersion;
