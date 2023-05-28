@@ -1,5 +1,6 @@
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_core/src/commands/update_command.dart';
+import 'package:sidekick_core/src/update/major_update_dependencies_migration.dart';
 import 'package:sidekick_core/src/update/migration.dart';
 import 'package:sidekick_core/src/update/patches/patch_migrations.dart';
 import 'package:sidekick_core/src/version_checker.dart';
@@ -30,10 +31,17 @@ Future<void> main(List<String> args) async {
       from: currentSidekickCliVersion,
       to: targetSidekickCoreVersion,
       migrations: [
-        // Always execute template updates
+        // Setting targetSidekickCoreVersion means that the migration should always be executed
         UpdateToolsMigration(targetSidekickCoreVersion),
         UpdateEntryPointMigration(targetSidekickCoreVersion),
+
+        // Run UpdateSidekickCoreDependencyMigration twice:
+        // 1. To make the major updates pass
+        // 2. To revert sidekick_core back to $targetSidekickCoreVersion
         UpdateSidekickCoreDependencyMigration(targetSidekickCoreVersion),
+        MajorUpdateDependenciesMigration(Version(2, 0, 0, pre: '0')),
+        UpdateSidekickCoreDependencyMigration(targetSidekickCoreVersion),
+
         // Migration steps from git patches
         ...patchMigrations,
       ],
