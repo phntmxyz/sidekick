@@ -4,9 +4,9 @@ import 'dart:io';
 import 'package:dartx/dartx_io.dart';
 import 'package:dcli/dcli.dart';
 import 'package:dcli/posix.dart';
+import 'package:path/path.dart';
 import 'package:sidekick_test/src/download_dart.sh.template.dart';
 import 'package:sidekick_test/src/sidekick_config.sh.template.dart';
-import 'package:path/path.dart';
 import 'package:test/test.dart';
 
 /// True when dependencies should be linked to local sidekick dependencies

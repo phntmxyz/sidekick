@@ -375,16 +375,11 @@ Future<void> main(List<String> args) async {
 /// Writes the normal [UpdateExecutorTemplate] but links the local sidekick_core package
 class _LocalUpdateExecutorTemplate extends UpdateExecutorTemplate {
   _LocalUpdateExecutorTemplate({
-    required Directory location,
-    required Version dartSdkVersion,
-    required Version oldSidekickCoreVersion,
-    required Version newSidekickCoreVersion,
-  }) : super.raw(
-          location: location,
-          dartSdkVersion: dartSdkVersion,
-          oldSidekickCoreVersion: oldSidekickCoreVersion,
-          newSidekickCoreVersion: newSidekickCoreVersion,
-        );
+    required super.location,
+    required super.dartSdkVersion,
+    required super.oldSidekickCoreVersion,
+    required super.newSidekickCoreVersion,
+  }) : super.raw();
 
   static void register() {
     UpdateExecutorTemplate.testFakeCreateUpdateExecutorTemplate = ({
