@@ -53,7 +53,7 @@ export 'package:sidekick_core/src/template/sidekick_package.template.dart';
 /// This is used by the update command to determine if your sidekick cli
 /// requires an update
 // DO NOT MANUALLY EDIT THIS VERSION, instead run `sk bump-version sidekick_core`
-final Version version = Version.parse('1.2.0');
+final Version version = Version.parse('1.3.0');
 
 /// Initializes sidekick, call this at the very start of your CLI program
 ///

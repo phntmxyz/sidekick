@@ -280,7 +280,7 @@ void main() {
         );
         printOnFailure(await dartDashProcess.stdoutStream().join('\n'));
         printOnFailure(await dartDashProcess.stderrStream().join('\n'));
-        dartDashProcess.shouldExit(0);
+        await dartDashProcess.shouldExit(0);
 
         final flutterDashProcess = await TestProcess.start(
           entrypoint.path,
@@ -290,7 +290,7 @@ void main() {
         );
         printOnFailure(await flutterDashProcess.stdoutStream().join('\n'));
         printOnFailure(await flutterDashProcess.stderrStream().join('\n'));
-        flutterDashProcess.shouldExit(0);
+        await flutterDashProcess.shouldExit(0);
       },
       timeout: const Timeout(Duration(minutes: 5)),
     );
@@ -339,7 +339,7 @@ void main() {
         );
         printOnFailure(await dashProcess.stdoutStream().join('\n'));
         printOnFailure(await dashProcess.stderrStream().join('\n'));
-        dashProcess.shouldExit(0);
+        await dashProcess.shouldExit(0);
 
         final runFunctionFile =
             cliPackage.file('lib/dashi_sidekick.dart').readAsStringSync();
@@ -355,7 +355,7 @@ void main() {
         );
         printOnFailure(await dartDashProcess.stdoutStream().join('\n'));
         printOnFailure(await dartDashProcess.stderrStream().join('\n'));
-        dartDashProcess.shouldExit(0);
+        await dartDashProcess.shouldExit(0);
 
         final flutterDashProcess = await TestProcess.start(
           entrypoint.path,
@@ -364,7 +364,7 @@ void main() {
         );
         printOnFailure(await flutterDashProcess.stdoutStream().join('\n'));
         printOnFailure(await flutterDashProcess.stderrStream().join('\n'));
-        flutterDashProcess.shouldExit(64);
+        await flutterDashProcess.shouldExit(64);
       },
       timeout: const Timeout(Duration(minutes: 5)),
     );
@@ -409,7 +409,7 @@ void main() {
         );
         dashProcess.stdoutStream().listen(printOnFailure);
         dashProcess.stderrStream().listen(printOnFailure);
-        dashProcess.shouldExit(0);
+        await dashProcess.shouldExit(0);
 
         // root is mainProjectPath
         final runFunctionFile = project

@@ -1,10 +1,8 @@
-import 'package:pub_semver/pub_semver.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_core/src/commands/update_command.dart';
 import 'package:sidekick_core/src/update/migration.dart';
 import 'package:sidekick_core/src/update/patches/patch_migrations.dart';
 import 'package:sidekick_core/src/version_checker.dart';
-import 'package:yaml_edit/yaml_edit.dart';
 
 /// Updates a sidekick CLI
 ///
@@ -35,8 +33,7 @@ Future<void> main(List<String> args) async {
         // Always execute template updates
         UpdateToolsMigration(targetSidekickCoreVersion),
         UpdateEntryPointMigration(targetSidekickCoreVersion),
-        // Always check for latest stable dart version
-        UseLatestDartVersionMigration(targetSidekickCoreVersion),
+        UpdateSidekickCoreDependencyMigration(targetSidekickCoreVersion),
         // Migration steps from git patches
         ...patchMigrations,
       ],
@@ -57,8 +54,8 @@ Future<void> main(List<String> args) async {
         }
 
         printerr(context.stackTrace.toString());
-        // TODO make errors interactive and allow skipping
-        return MigrationErrorHandling.abort;
+        // TODO make errors interactive
+        return MigrationErrorHandling.skip;
       },
     );
 
@@ -125,51 +122,20 @@ class UpdateEntryPointMigration extends MigrationStep {
   }
 }
 
-/// Update the embedded dart sdk to the latest stable version
-class UseLatestDartVersionMigration extends MigrationStep {
-  UseLatestDartVersionMigration(Version targetVersion)
+/// Updates the sidekick_core dependency in pubspec.yaml
+class UpdateSidekickCoreDependencyMigration extends MigrationStep {
+  UpdateSidekickCoreDependencyMigration(Version targetVersion)
       : super(
-          name: 'Update embedded dart version',
+          name: 'Update sidekick_core dependency',
           targetVersion: targetVersion,
         );
 
   @override
   Future<void> migrate(MigrationContext context) async {
-    final package = SidekickContext.sidekickPackage;
-
-    final pubspec = YamlEditor(package.pubspec.readAsStringSync());
-    final String? sdkConstraints =
-        pubspec.parseAt(['environment', 'sdk']).value as String?;
-    final currentDartVersion = () {
-      try {
-        final range = VersionConstraint.parse(sdkConstraints!) as VersionRange;
-        return range.min;
-      } catch (_) {
-        return null;
-      }
-    }();
-
-    if (currentDartVersion == null) {
-      throw 'Could not find dart version pubspec.yaml (environment.sdk)';
-    }
-    var latestDartVersion = await VersionChecker.getLatestStableDartVersion();
-
-    if (latestDartVersion >= Version(3, 0, 0)) {
-      // Do not upgrade to Dart 3 unless explicitly enabled
-      // fallback to latest 2.x version
-      latestDartVersion = Version(2, 19, 0);
-    }
-
-    if (currentDartVersion >= latestDartVersion) {
-      // Already using latest dart version
-      return;
-    }
-
-    // Update dart version to latest stable
-    pubspec.update(
-      ['environment', 'sdk'],
-      '>=$latestDartVersion <${latestDartVersion.nextMajor}',
+    VersionChecker.updateVersionConstraint(
+      package: SidekickContext.sidekickPackage,
+      pubspecKeys: ['dependencies', 'sidekick_core'],
+      newMinimumVersion: targetVersion,
     );
-    package.pubspec.writeAsStringSync(pubspec.toString());
   }
 }

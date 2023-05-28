@@ -448,12 +448,12 @@ String? _getGitUserName() =>
 void _warnIfNotOnDefaultBranch(Directory directory) {
   final currentBranch = _getCurrentBranch(directory);
 
-  const defaultBranch = 'main';
+  const defaultBranches = ['main', 'main-1.X'];
 
-  if (defaultBranch != currentBranch) {
+  if (!defaultBranches.contains(currentBranch)) {
     final proceed = confirm(
       "\n"
-      "You are on branch '$currentBranch', but releases should be made on branch $defaultBranch.\n"
+      "You are on branch '$currentBranch', but releases should be made only on branches $defaultBranches.\n"
       "Do you really want to continue?",
       defaultValue: false,
     );
