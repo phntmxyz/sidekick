@@ -102,7 +102,7 @@ class UpdateCommand extends Command {
         final latestDartVersion = availableDartVersions.max()!;
         print(white('Which Dart version do you want to install?'));
         final dartVersionToInstall = menu(
-          prompt: 'Dart version to install',
+          'Dart version to install',
           options: [...availableDartVersions],
           defaultOption: latestDartVersion,
           format: (Object? option) {
@@ -136,7 +136,7 @@ class UpdateCommand extends Command {
             .last;
         print(white('Which versions do you want to install?'));
         packageToInstall = menu(
-          prompt: 'Version to install',
+          'Version to install',
           options: [...availableVersions],
           defaultOption: latestPackageBundle,
           format: (Object? option) {
