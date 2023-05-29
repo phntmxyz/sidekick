@@ -2,6 +2,7 @@ import 'package:dcli/dcli.dart' as dcli;
 import 'package:pub_semver/pub_semver.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sk_sidekick/sk_sidekick.dart';
+import 'package:sk_sidekick/src/commands/bump_version_command.dart';
 import 'package:yaml/yaml.dart';
 
 class ReleaseCommand extends Command {
@@ -87,16 +88,26 @@ class ReleaseCommand extends Command {
 
     print("\nChangelog for this release:\n${grey(nextReleaseChangelog)}\n");
 
-    final versionBumpType = _askForBumpType(package);
+    final currentVersion = Version.parse(package.version);
+    final versionBumpType = _askForBumpType(package, currentVersion);
     final Version nextVersion = () {
-      final current = Version.parse(package.version);
       switch (versionBumpType) {
         case 'major':
-          return current.nextMajor;
+          final next = currentVersion.nextMajor;
+          final preview = _askForPreviewVersion();
+          if (preview) {
+            return next.copyWith(preRelease: 'preview.1');
+          }
+          return next;
         case 'minor':
-          return current.nextMinor;
+          return currentVersion.nextMinor;
         case 'patch':
-          return current.nextPatch;
+          return currentVersion.nextPatch;
+        case 'preview':
+          if (currentVersion.preRelease case ['preview', final int? n]) {
+            return currentVersion.copyWith(preRelease: 'preview.${n! + 1}');
+          }
+          throw 'Unknown pre-release format, expected: X.Y.Z-preview.<number>';
         default:
           throw StateError('Unknown bump type: $versionBumpType');
       }
@@ -126,7 +137,7 @@ ${changelog.readAsStringSync().replaceFirst('# Changelog', '').trimLeft()}''');
     await runSk([
       'bump-version',
       package.root.path,
-      '--$versionBumpType',
+      '--exact=$nextVersion',
       '--no-commit',
     ]);
     if (package == skProject.sidekickCorePackage) {
@@ -236,15 +247,21 @@ ${changelog.readAsStringSync().replaceFirst('# Changelog', '').trimLeft()}''');
     );
   }
 
-  String _askForBumpType(DartPackage package) {
+  String _askForBumpType(DartPackage package, Version current) {
     print(
       green(
         'Considering the changelog above, what kind of SemVer release is this?',
       ),
     );
+
     return menu(
       'Please select a release type',
-      options: ['major', 'minor', 'patch'],
+      options: [
+        'major',
+        'minor',
+        'patch',
+        if (current.preRelease case ['preview', _]) 'preview'
+      ],
       defaultOption: 'minor',
       format: (option) {
         switch (option) {
@@ -254,10 +271,18 @@ ${changelog.readAsStringSync().replaceFirst('# Changelog', '').trimLeft()}''');
             return 'Minor (new features) (default)';
           case 'patch':
             return 'Patch (bug fixes)';
+          case 'preview':
+            return 'Next Preview';
         }
         return option;
       },
     );
+  }
+
+  bool _askForPreviewVersion() {
+    print('');
+    print(green('Should this version be published as preview?'));
+    return confirm('Preview?', defaultValue: false);
   }
 
   /// Returns file `NEXT_RELEASE_CHANGELOG.md` which contains the changelog

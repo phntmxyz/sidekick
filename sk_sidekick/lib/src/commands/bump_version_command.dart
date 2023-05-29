@@ -26,6 +26,10 @@ class BumpVersionCommand extends Command {
       'patch',
       help: 'Bumps to the next patch version. e.g. 1.2.6 => 1.2.7',
     );
+    argParser.addOption(
+      'exact',
+      help: 'Sets an exact version. e.g. 1.2.6-dev.1',
+    );
     argParser.addFlag(
       'commit',
       help:
@@ -45,13 +49,19 @@ class BumpVersionCommand extends Command {
     final bool bumpMajor = argResults?['major'] as bool? ?? false;
     bool bumpMinor = argResults?['minor'] as bool? ?? false; // default
     final bool bumpPatch = argResults?['patch'] as bool? ?? false;
+    final exact = argResults?['exact'] as String?;
+    final exactVersion = exact != null ? Version.parse(exact) : null;
 
     final bool commit = argResults?['commit'] as bool? ?? false;
+
+    if (exact != null && (bumpMajor || bumpMinor || bumpPatch)) {
+      error('Either bump major, minor or patch or set an exact version');
+    }
 
     if (bumpMinor && bumpPatch) {
       error('Either bump minor or patch');
     }
-    if (!bumpMinor && !bumpPatch) {
+    if (!bumpMinor && !bumpPatch && exact == null) {
       // default to minor bump
       bumpMinor = true;
     }
@@ -62,6 +72,13 @@ class BumpVersionCommand extends Command {
     final version = pubSpec.version!;
 
     final newVersion = () {
+      if (exactVersion != null) {
+        if (exactVersion < version) {
+          error('Exact version $exactVersion must be greater '
+              'than current version $version');
+        }
+        return exactVersion;
+      }
       if (bumpMajor) {
         return version.nextMajor;
       }
