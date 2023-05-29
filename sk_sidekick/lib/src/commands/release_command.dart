@@ -104,10 +104,11 @@ class ReleaseCommand extends Command {
         case 'patch':
           return currentVersion.nextPatch;
         case 'preview':
-          if (currentVersion.preRelease case ['preview', final int? n]) {
-            return currentVersion.copyWith(preRelease: 'preview.${n! + 1}');
+          if (currentVersion.preRelease case ['preview', final int n]) {
+            return currentVersion.copyWith(preRelease: 'preview.${n + 1}');
           }
-          throw 'Unknown pre-release format, expected: X.Y.Z-preview.<number>';
+          throw 'Unknown pre-release format of $currentVersion, '
+              'expected: X.Y.Z-preview.<number>';
         default:
           throw StateError('Unknown bump type: $versionBumpType');
       }
