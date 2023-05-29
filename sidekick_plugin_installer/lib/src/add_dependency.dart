@@ -98,7 +98,7 @@ void addDependency({
       dependency,
     if (path) ...[
       '--path',
-      localPath!
+      localPath
     ] else if (hosted) ...[
       if (hostedUrl != null) ...['--hosted-url', hostedUrl],
     ] else if (git) ...[
