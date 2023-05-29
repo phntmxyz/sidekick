@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.0-preview.1](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v1.3.0..sidekick_core-v2.0.0-preview.1) (2023-5-30)
+
+- [Dart 3] Update sidekick_core & CI [#228](https://github.com/phntmxyz/sidekick/pull/228)
+
 ## [1.3.0](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v1.2.0..sidekick_core-v1.3.0) (2023-5-24)
 
 This release is necessary for future support for Dart 3.0. Please do update to this version, before upgrading to `sidekick_core: ^2.0.0` with Dart 3.0 support.
