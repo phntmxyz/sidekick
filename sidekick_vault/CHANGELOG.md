@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.0](https://github.com/phntmxyz/sidekick/compare/sidekick_vault-v0.9.1..sidekick_vault-v1.0.0) (2023-5-30)
+
+- Make sidekick_vault Dart 3 compatible
+
 ## [0.9.1](https://github.com/phntmxyz/sidekick/compare/sidekick_vault-v0.9.0..sidekick_vault-v0.9.1) (2023-5-11)
 
 - Add topics to `pubspec.yaml`
