@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.0](https://github.com/phntmxyz/sidekick/compare/sidekick_plugin_installer-v0.3.1..sidekick_plugin_installer-v1.0.0) (2023-5-30)
+
+- Make sidekick_plugin_installer Dart 3 compatible
+
 ## [0.3.1](https://github.com/phntmxyz/sidekick/compare/sidekick_plugin_installer-v0.3.0..sidekick_plugin_installer-v0.3.1) (2023-5-11)
 
 - Add topics to `pubspec.yaml`
