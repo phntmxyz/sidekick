@@ -3,9 +3,9 @@ import 'package:sidekick_vault/sidekick_vault.dart';
 import 'package:test/test.dart';
 
 void main() {
-  test('unlock with env', () {
-    withEnvironment(
-      () {
+  test('unlock with env', () async {
+    await withEnvironment(
+      () async {
         final vault = SidekickVault(
           location: Directory('test/vault'),
           environmentVariableName: 'VAULT_PASSPHRASE',
@@ -16,9 +16,9 @@ void main() {
     );
   });
 
-  test('wrong passphrase errors', () {
-    withEnvironment(
-      () {
+  test('wrong passphrase errors', () async {
+    await withEnvironment(
+      () async {
         final vault = SidekickVault(
           location: Directory('test/vault'),
           environmentVariableName: 'VAULT_PASSPHRASE',
@@ -41,9 +41,9 @@ void main() {
     );
   });
 
-  test('No env errors on CI', () {
-    withEnvironment(
-      () {
+  test('No env errors on CI', () async {
+    await withEnvironment(
+      () async {
         final vault = SidekickVault(
           location: Directory('test/vault'),
           environmentVariableName: 'VAULT_PASSPHRASE',

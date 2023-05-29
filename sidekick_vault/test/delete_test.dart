@@ -3,14 +3,14 @@ import 'package:sidekick_vault/sidekick_vault.dart';
 import 'package:test/test.dart';
 
 void main() {
-  test('delete entry from vault - without passphrase', () {
+  test('delete entry from vault - without passphrase', () async {
     final vaultDir = Directory.systemTemp.createTempSync();
     final tempFile = vaultDir.file('test.txt');
     tempFile.writeAsStringSync('clear text');
 
     // save file with passphrase
-    withEnvironment(
-      () {
+    await withEnvironment(
+      () async {
         final vault = SidekickVault(
           location: vaultDir,
           environmentVariableName: 'VAULT_PASSPHRASE',
@@ -31,9 +31,9 @@ void main() {
     expect(vaultDir.file('test.txt.gpg').existsSync(), isFalse);
   });
 
-  test('clears cache after delete', () {
-    withEnvironment(
-      () {
+  test('clears cache after delete', () async {
+    await withEnvironment(
+      () async {
         final vaultDir = Directory.systemTemp.createTempSync();
         final tempFile = vaultDir.file('test.txt');
         tempFile.writeAsStringSync('clear text');
