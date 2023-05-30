@@ -194,7 +194,8 @@ class UpdateCommand extends Command {
 
     if (coreVersionToInstall != currentSidekickCliVersion) {
       final updateName = makeValidPubPackageName(
-          'update_${coreVersionToInstall.canonicalizedVersion}');
+        'update_${coreVersionToInstall.canonicalizedVersion}',
+      );
       final updateScriptDir =
           SidekickContext.sidekickPackage.buildDir.directory(updateName);
 
