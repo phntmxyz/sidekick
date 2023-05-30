@@ -88,9 +88,8 @@ class UpdateCommand extends Command {
       }
 
       // check whether multiple dart versions are compatible with the given sidekick_core version
-      final availableDartVersions = availableVersions
-          .filter((e) => e.sidekickCoreVersion == version)
-          .map((e) => e.dartSdkVersion);
+      final List<Version> availableDartVersions =
+          futureDartSdkVersionWithLatestPatch;
 
       if (availableDartVersions.length == 1) {
         packageToInstall = DartPackageBundle(
