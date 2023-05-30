@@ -116,6 +116,22 @@ bool isValidPubPackageName(String name) {
   return _cliNameRegExp.hasMatch(name) && !_keywords.contains(name);
 }
 
+/// Converts any string to a valid pub package name to only use basic Latin
+/// letters and Arabic digits: [a-z0-9_].
+String makeValidPubPackageName(String name) {
+  final onlyValidLetters =
+      name.replaceAll(RegExp(r'\W'), '_').replaceAll('__', '_');
+  if (onlyValidLetters.isNotEmpty) {
+    final firstLetter = onlyValidLetters[0];
+    // Set first letter to 'n' if it's a digit
+    if (firstLetter.matches(RegExp(r'\d'))) {
+      return 'n$onlyValidLetters';
+    }
+  }
+
+  return onlyValidLetters;
+}
+
 /// Returns the list of all packages in the repository
 List<DartPackage> findAllPackages(Directory directory) {
   return directory
