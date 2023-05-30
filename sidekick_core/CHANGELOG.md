@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.0.0-preview.2](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v2.0.0-preview.1..sidekick_core-v2.0.0-preview.2) (2023-5-30)
+
+- Propose all dart versions when installing specific sidekick_core version https://github.com/phntmxyz/sidekick/commit/775d15661b715bd617f10159b5e1d4487b4f2396
+- Fix package name when installing sidekick_core preview versions https://github.com/phntmxyz/sidekick/commit/ebdf5b968b67d51b036732baa05ab26768990e1e
+- Handle pre-releases in update check https://github.com/phntmxyz/sidekick/commit/3560070892f485a84473c84d97acca2ca67f073c
+
 ## [2.0.0-preview.1](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v1.3.0..sidekick_core-v2.0.0-preview.1) (2023-5-30)
 
 - [Dart 3] Update sidekick_core & CI [#228](https://github.com/phntmxyz/sidekick/pull/228)
