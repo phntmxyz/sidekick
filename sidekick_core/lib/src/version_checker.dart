@@ -29,10 +29,16 @@ abstract class VersionChecker {
     required String dependency,
     List<String>? pubspecKeys,
   }) async {
-    final latest = await getLatestDependencyVersion(dependency);
-    final current = getMinimumVersionConstraint(
+    final Version? current = getMinimumVersionConstraint(
       package,
       pubspecKeys ?? ['dependencies', dependency],
+    );
+    if (current == null) {
+      return false;
+    }
+    final Version? latest = await getLatestDependencyVersion(
+      dependency,
+      preRelease: current.isPreRelease,
     );
 
     return latest == current;
@@ -160,6 +166,7 @@ abstract class VersionChecker {
   static Future<Version?> getLatestDependencyVersion(
     String dependency, {
     Version? dartSdkVersion,
+    bool preRelease = false,
   }) async {
     if (testFakeGetLatestDependencyVersion != null) {
       return testFakeGetLatestDependencyVersion!(
@@ -176,28 +183,30 @@ abstract class VersionChecker {
     }
 
     final json = jsonDecode(response.body) as Map<String, dynamic>;
-    final latestVersion =
-        (json['latest'] as Map<String, dynamic>)['version'] as String;
 
-    if (dartSdkVersion == null) {
-      return Version.parse(latestVersion);
-    }
+    // do not use json['latest']['version'] because it doesn't include pre-releases
 
-    // find the latest version that supports the given Dart SDK version
+    // versions is ordered from smallest semver to largest semver
     final versions = json['versions'] as List<dynamic>;
+    // reverse to first check the newest
     for (final release in versions.reversed) {
       release as Map<String, dynamic>;
       final pubspec = release['pubspec'] as Map<String, dynamic>;
       final versionRaw = release['version'] as String;
       final version = Version.parse(versionRaw);
-      if (version.isPreRelease) {
+      if (version.isPreRelease && !preRelease) {
         // ignore pre-release versions
         continue;
       }
+      if (dartSdkVersion == null) {
+        // return latest when
+        return version;
+      }
+      // find the latest version that supports the given Dart SDK version
       final environment = pubspec['environment'] as Map<String, dynamic>;
       final sdk = environment['sdk'] as String?;
       if (sdk != null && VersionConstraint.parse(sdk).allows(dartSdkVersion)) {
-        return Version.parse(latestVersion);
+        return version;
       }
     }
 
