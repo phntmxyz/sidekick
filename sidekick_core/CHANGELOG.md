@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.2](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v2.0.1..sidekick_core-v2.0.2) (2023-6-5)
+
+- Fix analysis issues in templates
+
 ## [2.0.1](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v2.0.0..sidekick_core-v2.0.1) (2023-6-5)
 
 - Update templates
