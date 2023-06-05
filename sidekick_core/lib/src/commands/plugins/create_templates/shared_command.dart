@@ -73,6 +73,7 @@ Future<void> main() async {
 ''';
 
   String get library => '''
+/// Sidekick plugin ${pluginName.titleCase}
 library ${pluginName.snakeCase};
 
 export 'package:${pluginName.snakeCase}/src/${commandName.snakeCase}_command.dart';
