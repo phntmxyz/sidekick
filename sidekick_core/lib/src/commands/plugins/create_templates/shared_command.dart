@@ -43,14 +43,14 @@ description: Generated sidekick plugin (template shared-command)
 version: 0.0.1
 
 environment:
-  sdk: '>=2.14.0 <3.0.0'
+  sdk: '>=3.0.0 <4.0.0'
 
 dependencies:
-  sidekick_core: ^1.0.0
+  sidekick_core: ^2.0.0
 
 dev_dependencies:
-  lint: ^1.5.0
-  sidekick_plugin_installer: ^0.3.0
+  lint: ^2.0.0
+  sidekick_plugin_installer: ^1.1.0
 ''';
 
   String get installTemplate => '''
