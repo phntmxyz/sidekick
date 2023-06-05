@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.1](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v2.0.0..sidekick_core-v2.0.1) (2023-6-5)
+
+- Update templates
+
 ## [2.0.0](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v2.0.0-preview.2..sidekick_core-v2.0.0) (2023-6-5)
 
 - Constrain upper bound of dcli to be 100% Dart 2.19 compatible for easy migration
