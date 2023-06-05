@@ -525,10 +525,10 @@ packages:
     dependency: "direct main"
     description:
       name: sidekick_core
-      sha256: c5abf18dfb0138c111161dedf12abfdaeb77c2104d41480e8a4d56b8bdedd937
+      sha256: "1f7a9080b3a6f3d579b7ec5078ce7e2d19f383b9e7d04c56c3575e691dba2a74"
       url: "https://pub.dev"
     source: hosted
-    version: "2.0.0"
+    version: "2.0.1"
   sidekick_test:
     dependency: "direct dev"
     description:
