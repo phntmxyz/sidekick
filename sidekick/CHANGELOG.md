@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.0](https://github.com/phntmxyz/sidekick/compare/sidekick-v1.0.1..sidekick-v2.0.0) (2023-6-5)
+
+- Dart 3 support
+
 ## [1.0.1](https://github.com/phntmxyz/sidekick/compare/sidekick-v1.0.0..sidekick-v1.0.1) (2023-5-11)
 
 - Add topics to `pubspec.yaml`.
