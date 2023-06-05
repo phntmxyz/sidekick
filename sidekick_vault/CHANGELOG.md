@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.1.0](https://github.com/phntmxyz/sidekick/compare/sidekick_vault-v1.0.0..sidekick_vault-v1.1.0) (2023-6-5)
+
+- Update to sidekick_core: 2.0.0 (stable)
+
 ## [1.0.0](https://github.com/phntmxyz/sidekick/compare/sidekick_vault-v0.9.1..sidekick_vault-v1.0.0) (2023-5-30)
 
 - Make sidekick_vault Dart 3 compatible
