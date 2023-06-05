@@ -14,7 +14,7 @@ environment:
 dependencies:
   actions_toolkit_dart: ^0.5.0
   dcli: ^2.2.0
-  sidekick_core: ^2.0.0-preview.1
+  sidekick_core: ^2.0.0
 
 dev_dependencies:
   dcli_core: ^2.2.0
