@@ -1,6 +1,4 @@
-import 'dart:io';
-
-import 'package:dcli/dcli.dart';
+import 'package:sidekick_core/sidekick_core.dart';
 import 'package:test/test.dart';
 
 import 'dcli_ask_validators_test.dart' as dcli_ask_validators_test;

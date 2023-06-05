@@ -1,5 +1,4 @@
 import 'package:dcli/dcli.dart' as dcli;
-import 'package:path/path.dart';
 import 'package:sidekick/src/util/directory_extension.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 

@@ -23,8 +23,8 @@ class NameSuggester {
     ];
 
     final String answer = dcli.menu(
+      'Select CLI name:',
       options: names,
-      prompt: 'Select CLI name:',
     );
     if (answer == '') {
       // no name provided, default in terminal without stdin

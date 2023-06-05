@@ -195,7 +195,7 @@ class InitCommand extends Command {
       // Ask user for a main project (optional)
       const none = 'None of the above';
       final userSelection = dcli.menu(
-        prompt: 'Which of the following packages is your primary app?',
+        'Which of the following packages is your primary app?',
         options: [...packages.map((it) => it.name), none],
         defaultOption: none,
       );

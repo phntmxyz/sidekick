@@ -29,7 +29,7 @@ void main() {
             '--hosted-url',
             'https://pub.flutter-io.cn/',
             'sidekick_vault',
-            '>=0.6.0 <1.0.0',
+            '>=1.0.0 <2.0.0',
           ]);
         });
       },
@@ -55,7 +55,7 @@ void main() {
         'git init'.start(workingDirectory: pluginDir.path);
         'git add .'.start(workingDirectory: pluginDir.path);
         withEnvironment(
-          () =>
+          () async =>
               'git commit -m "initial"'.start(workingDirectory: pluginDir.path),
           // without this, `git commit` crashes on CI
           environment: {
