@@ -103,6 +103,8 @@ class ReleaseCommand extends Command {
           return currentVersion.nextMinor;
         case 'patch':
           return currentVersion.nextPatch;
+        case 'stable':
+          return currentVersion.nextStable;
         case 'preview':
           if (currentVersion.preRelease case ['preview', final int n]) {
             return currentVersion.copyWith(preRelease: 'preview.${n + 1}');
@@ -255,29 +257,46 @@ ${changelog.readAsStringSync().replaceFirst('# Changelog', '').trimLeft()}''');
       ),
     );
 
-    return menu(
-      'Please select a release type',
-      options: [
-        'major',
-        'minor',
-        'patch',
-        if (current.preRelease case ['preview', _]) 'preview'
-      ],
-      defaultOption: 'minor',
-      format: (option) {
-        switch (option) {
-          case 'major':
-            return 'Major (breaking changes)';
-          case 'minor':
-            return 'Minor (new features) (default)';
-          case 'patch':
-            return 'Patch (bug fixes)';
-          case 'preview':
-            return 'Next Preview';
-        }
-        return option;
-      },
-    );
+    if (current.isPreview) {
+      return menu(
+        'Please select a release type',
+        options: [
+          'preview',
+          'stable',
+        ],
+        defaultOption: 'preview',
+        format: (option) {
+          switch (option) {
+            case 'preview':
+              return 'Next Preview ${current.nextPreview}';
+            case 'stable':
+              return 'Next Stable ${current.nextStable}';
+          }
+          return option;
+        },
+      );
+    } else {
+      return menu(
+        'Please select a release type',
+        options: [
+          'major',
+          'minor',
+          'patch',
+        ],
+        defaultOption: 'minor',
+        format: (option) {
+          switch (option) {
+            case 'major':
+              return 'Major ${current.nextMajor} (breaking changes)';
+            case 'minor':
+              return 'Minor ${current.nextMinor} (new features) (default)';
+            case 'patch':
+              return 'Patch ${current.nextPatch} (bug fixes)';
+          }
+          return option;
+        },
+      );
+    }
   }
 
   bool _askForPreviewVersion() {
@@ -517,6 +536,29 @@ extension on VersionConstraint {
     } else {
       throw 'Unknown $versionConstraint';
     }
+  }
+}
+
+extension on Version {
+  Version get nextPreview {
+    if (preRelease case ['preview', final int n]) {
+      return copyWith(preRelease: 'preview.${n + 1}');
+    }
+    return nextBreaking.copyWith(preRelease: 'preview.1');
+  }
+
+  Version get nextStable {
+    if (preRelease case ['preview', final int _]) {
+      return copyWith(preRelease: null, build: null);
+    }
+    return nextMinor;
+  }
+
+  bool get isPreview {
+    if (preRelease case ['preview', final int _]) {
+      return true;
+    }
+    return false;
   }
 }
 
