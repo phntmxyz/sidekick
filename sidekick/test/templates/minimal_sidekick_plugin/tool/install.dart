@@ -1,5 +1,5 @@
 import 'package:sidekick_core/sidekick_core.dart'
-    hide cliName, repository, mainProject;
+    hide cliName, mainProject, repository;
 import 'package:sidekick_plugin_installer/sidekick_plugin_installer.dart';
 
 Future<void> main() async {
