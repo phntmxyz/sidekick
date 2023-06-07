@@ -74,7 +74,7 @@ Future<GlobalSidekickCli> _buildGlobalSidekickCli() async {
   // remove local dependency on sidekick_test, it breaks because of the
   // relative path but can be safely removed because it's just a dev_dependency
   systemDart(
-    ['pub', 'remove', 'sidekick_test', '--offline'],
+    ['pub', 'remove', 'sidekick_test'],
     workingDirectory: copy,
   );
 
