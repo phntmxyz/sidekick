@@ -1,6 +1,6 @@
 import 'package:dcli/dcli.dart' as dcli;
 import 'package:pub_semver/pub_semver.dart';
-
+import 'package:pubspec_parse/pubspec_parse.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_core/src/pub/pub.dart' as pub;
 import 'package:sidekick_core/src/version_checker.dart';
@@ -124,8 +124,9 @@ class InstallPluginCommand extends Command {
     // lookup information with SidekickContext
     final workingDir = target.root.directory('build/plugins/${plugin.name}');
 
-    final pluginPubspec = PubSpec.fromFile(plugin.pubspec.absolute.path);
-    print('Preparing ${plugin.name}:${pluginPubspec.version} installer...');
+    final pluginVersion =
+        Pubspec.parse(plugin.pubspec.readAsStringSync()).version;
+    print('Preparing ${plugin.name}:$pluginVersion installer...');
     // copy installer from cache into build dir. We should not manipulate anything in the cache
     if (workingDir.existsSync()) {
       workingDir.deleteSync(recursive: true);
@@ -199,7 +200,7 @@ class InstallPluginCommand extends Command {
     }
 
     print(
-      white('Executing installer ${plugin.name}:${pluginPubspec.version}...'),
+      white('Executing installer ${plugin.name}:$pluginVersion ...'),
     );
     // Execute installer. Requires a tool/install.dart file to execute
     final installScript = workingDir.file('tool/install.dart');
@@ -213,7 +214,7 @@ class InstallPluginCommand extends Command {
 
     print(
       green(
-        'Installed ${plugin.name}:${pluginPubspec.version} for ${target.cliName}',
+        'Installed ${plugin.name}:$pluginVersion for ${target.cliName}',
       ),
     );
 

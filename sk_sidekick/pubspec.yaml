@@ -12,6 +12,7 @@ executables:
 dependencies:
   dcli: ^2.2.2
   pub_semver: ^2.1.1
+  pubspec_parse: ^1.2.0
   sidekick_core:
     path: ../sidekick_core
   yaml: ^3.1.1

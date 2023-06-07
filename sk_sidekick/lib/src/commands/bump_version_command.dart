@@ -1,3 +1,4 @@
+import 'package:pubspec_parse/pubspec_parse.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 
 class BumpVersionCommand extends Command {
@@ -68,8 +69,7 @@ class BumpVersionCommand extends Command {
 
     final package = DartPackage.fromArgResults(argResults!);
     final pubspecFile = package.pubspec;
-    final pubSpec = PubSpec.fromFile(pubspecFile.path);
-    final version = pubSpec.version!;
+    final version = Pubspec.parse(pubspecFile.readAsStringSync()).version!;
 
     final newVersion = () {
       if (exactVersion != null) {
