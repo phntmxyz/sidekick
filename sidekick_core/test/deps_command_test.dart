@@ -217,4 +217,34 @@ environment:
       );
     });
   });
+
+  test('print warning when getting deps outside of project', () async {
+    await insideFakeProjectWithSidekick((dir) async {
+      final fakeStdErr = FakeStdoutStream();
+      await overrideIoStreams(
+        stderr: () => fakeStdErr,
+        body: () async {
+          setUpPackages(dir);
+
+          // move to a different dir
+          final otherDir = Directory.systemTemp.createTempSync('');
+          addTearDown(() => otherDir.deleteSync());
+          IOOverrides.current!.setCurrentDirectory(otherDir.path);
+
+          final runner = initializeSidekick(dartSdkPath: systemDartSdkPath());
+
+          runner.addCommand(DepsCommand());
+          await runner.run(['deps']);
+
+          expect(exitCode, 0);
+          expect(
+            fakeStdErr.lines,
+            contains(
+                "Warning: You aren't getting the dependencies of the current "
+                "working directory, but of project 'dash'."),
+          );
+        },
+      );
+    });
+  });
 }

@@ -60,11 +60,13 @@ class DepsCommand extends Command {
         throw "Package with name $packageName not found in "
             "${SidekickContext.projectRoot.path}";
       }
+      _warnIfNotInProject();
       // only get deps for selected package
       _getDependencies(package);
       return;
     }
 
+    _warnIfNotInProject();
     final errorBuffer = StringBuffer();
 
     final globExcludes = excludeGlob
@@ -114,4 +116,24 @@ class DepsCommand extends Command {
     );
     print("\n");
   }
+
+  void _warnIfNotInProject() {
+    final currentDir = Directory.current;
+    final projectRoot = SidekickContext.projectRoot;
+    if (!currentDir.isWithinOrEqual(projectRoot)) {
+      printerr("Warning: You aren't getting the dependencies of the current "
+          "working directory, but of project '${SidekickContext.cliName}'.");
+    }
+  }
+}
+
+extension on Directory {
+  bool isWithinOrEqual(Directory dir) {
+    return this.isWithin(dir) ||
+        // canonicalize is necessary, otherwise '/a/b/c' != '/a/b/c/' != '/a/b/c/.' != '/a/b/c/../c'
+        dir.canonicalized.path == canonicalized.path;
+  }
+
+  /// A [Directory] whose path is the canonicalized path of [this].
+  Directory get canonicalized => Directory(canonicalize(path));
 }
