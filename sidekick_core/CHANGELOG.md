@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.3](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v2.0.2..sidekick_core-v2.0.3) (2023-6-30)
+
+- Show warning when using deps command outside of the project [#235](https://github.com/phntmxyz/sidekick/pull/235) https://github.com/phntmxyz/sidekick/commit/e6b1a7e634536b4bf07f5f688483394cc510d99e
+
 ## [2.0.2](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v2.0.1..sidekick_core-v2.0.2) (2023-6-5)
 
 - Fix analysis issues in templates
