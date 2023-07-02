@@ -55,6 +55,7 @@ environment:
   sdk: '>=${dartSdkVersion.canonicalizedVersion} <${dartSdkVersion.nextBreaking.canonicalizedVersion}'
 dependencies:
   sidekick_core: ${newSidekickCoreVersion.canonicalizedVersion}
+  pubspec2: '>=2.0.0 <2.5.0'
 
 ''');
 
