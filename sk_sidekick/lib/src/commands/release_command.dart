@@ -190,7 +190,7 @@ ${changelog.readAsStringSync().replaceFirst('# Changelog', '').trimLeft()}''');
     if (lock) {
       // delete release branch, it was only necessary for the commit.
       // The commit is still accessible with the tag
-      'git checkout $newChangelogAndVersionBranch'.runInRepo;
+      'git checkout $tag'.runInRepo;
       'git branch -D $releaseBranch'.runInRepo;
     }
 
