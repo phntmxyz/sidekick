@@ -81,6 +81,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.3.1"
+  checked_yaml:
+    dependency: transitive
+    description:
+      name: checked_yaml
+      sha256: feb6bed21949061731a7a75fc5d2aa727cf160b91af9a3e464c5e3a32e28b5ff
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.3"
   chunked_stream:
     dependency: transitive
     description:
@@ -449,6 +457,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.2"
+  pubspec_parse:
+    dependency: transitive
+    description:
+      name: pubspec_parse
+      sha256: c63b2876e58e194e4b0828fcb080ad0e06d051cb607a6be51a9e084f47cb9367
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.2.3"
   quiver:
     dependency: transitive
     description:
@@ -525,10 +541,10 @@ packages:
     dependency: "direct main"
     description:
       name: sidekick_core
-      sha256: c5abf18dfb0138c111161dedf12abfdaeb77c2104d41480e8a4d56b8bdedd937
+      sha256: "18558c9e728d50bdf442d3b8aefeb48072c4836d1f1c3dd191258a5d8788da49"
       url: "https://pub.dev"
     source: hosted
-    version: "2.0.0"
+    version: "2.0.4"
   sidekick_test:
     dependency: "direct dev"
     description:
