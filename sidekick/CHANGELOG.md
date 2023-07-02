@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.2](https://github.com/phntmxyz/sidekick/compare/sidekick-v2.0.1..sidekick-v2.0.2) (2023-7-2)
+
+- Use `sidekick_core` version with fix for dcli/pubspec2 dependency problem [#236](https://github.com/phntmxyz/sidekick/pull/236) https://github.com/phntmxyz/sidekick/commit/a20ce751298cea41c5ced495026e737dac0c8c93
+
 ## [2.0.1](https://github.com/phntmxyz/sidekick/compare/sidekick-v2.0.0..sidekick-v2.0.1) (2023-7-2)
 
 - Release with locked dependencies so installation is stable
