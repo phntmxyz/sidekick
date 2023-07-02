@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.4](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v2.0.3..sidekick_core-v2.0.4) (2023-7-2)
+
+- Constrain `pubspec2` dependency in to circumvent broken dependency chain [#236](https://github.com/phntmxyz/sidekick/pull/236) https://github.com/phntmxyz/sidekick/commit/9b367347133614fb9c0f2d66f7d3cc5c1a9dcf64
+
 ## [2.0.3](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v2.0.2..sidekick_core-v2.0.3) (2023-6-30)
 
 - Show warning when using deps command outside of the project [#235](https://github.com/phntmxyz/sidekick/pull/235) https://github.com/phntmxyz/sidekick/commit/e6b1a7e634536b4bf07f5f688483394cc510d99e
