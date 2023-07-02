@@ -17,6 +17,7 @@ void main() {
     });
     tempDir.file('test').writeAsString('# entrypoint file');
     final pubspecFile = sidekickDir.file('pubspec.yaml');
+    final oldHttpVersion = Version(0, 13, 6);
     pubspecFile.writeAsStringSync('''
 name: test_sidekick
 
@@ -25,7 +26,7 @@ environment:
 
 dependencies:
   # http updated to 1.0.0 with Dart 3 
-  http: ^0.13.6
+  http: ^$oldHttpVersion
 ''');
 
     overrideSidekickDartRuntimeWithSystemDartRuntime(sidekickDir);
@@ -62,7 +63,7 @@ dependencies:
     );
 
     expect(httpVersion, isNotNull);
-    expect(httpVersion!.allows(Version(1, 0, 0)), isTrue);
+    expect(httpVersion!.major, greaterThan(oldHttpVersion.major));
 
     final Version? coreVersion = VersionChecker.getMinimumVersionConstraint(
       DartPackage.fromDirectory(sidekickDir)!,
