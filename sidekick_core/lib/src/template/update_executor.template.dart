@@ -55,7 +55,9 @@ environment:
   sdk: '>=${dartSdkVersion.canonicalizedVersion} <${dartSdkVersion.nextBreaking.canonicalizedVersion}'
 dependencies:
   sidekick_core: ${newSidekickCoreVersion.canonicalizedVersion}
-
+dependency_overrides:
+  # `pubspec2` is a transitive dependency of `dcli`, but `pubspec2` v2.5.0 breaks `dcli` v2 (see https://github.com/onepub-dev/dcli/issues/218)
+  pubspec2: '>=2.0.0 <2.5.0'
 ''');
 
     final updateScript = location.file('bin/update.dart')
