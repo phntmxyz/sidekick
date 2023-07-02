@@ -20,14 +20,12 @@ dependencies:
   path: ^1.8.1
   # transitive from dcli
   pub_semver: ^2.1.1
+  # `pubspec2` is a transitive dependency of `dcli`, but `pubspec2` v2.5.0 breaks `dcli` v2 (see https://github.com/onepub-dev/dcli/issues/218)
+  pubspec2: '>=2.0.0 <2.5.0'
   pubspec_parse: ^1.2.0
   recase: ^4.1.0
   yaml: ^3.1.0
   yaml_edit: ^2.0.3
-
-dependency_overrides:
-  # `pubspec2` is a transitive dependency of `dcli`, but `pubspec2` v2.5.0 breaks `dcli` v2 (see https://github.com/onepub-dev/dcli/issues/218)
-  pubspec2: '>=2.0.0 <2.5.0'
 
 dev_dependencies:
   fake_http_client: ^1.0.0
