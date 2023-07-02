@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.0.1](https://github.com/phntmxyz/sidekick/compare/sidekick-v2.0.0..sidekick-v2.0.1) (2023-7-2)
+
+- Release with locked dependencies so installation is stable
+- Use new templates from [`sidekick_core`](https://github.com/phntmxyz/sidekick/commit/854b943d5f42bbfbfa6426a7a9ebde02311c4a2a)
+
 ## [2.0.0](https://github.com/phntmxyz/sidekick/compare/sidekick-v1.0.1..sidekick-v2.0.0) (2023-6-5)
 
 - Dart 3 support
