@@ -30,7 +30,7 @@ class SharedCodeTemplate extends PluginTemplateGenerator {
     final templateDirectory = pluginDirectory.directory('template')
       ..createSync();
     final pluginCommandTemplateFile = templateDirectory
-        .file('${props.pluginName.snakeCase}_command.template.dart')
+        .file('commands/${props.commandName.snakeCase}_command.template.dart')
       ..createSync(recursive: true);
     pluginCommandTemplateFile.writeAsStringSync(props.exampleCommand);
 
@@ -43,6 +43,10 @@ extension on PluginTemplateProperties {
 name: $pluginName
 description: Generated sidekick plugin (template shared-code)
 version: 0.0.1
+topics:
+  - sidekick
+  - cli
+  - sidekick-plugin
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
@@ -67,18 +71,19 @@ Future<void> main() async {
   pubGet(package);
   
   final cliCommandFile =
-      package.root.file('lib/src/${pluginName.snakeCase}_command.dart');
+      package.root.file('lib/src/commands/${commandName.snakeCase}_command.dart');
+  cliCommandFile.createSync(recursive: true);
 
   PluginContext
       .installerPlugin
       .root
-      .file('template/${pluginName.snakeCase}_command.template.dart')
+      .file('template/commands/${commandName.snakeCase}_command.template.dart')
       .copySync(cliCommandFile.path);
   
   registerPlugin(
     sidekickCli: package,
-    import: "import 'package:\${package.name}/src/${pluginName.snakeCase}_command.dart';",
-    command: '${pluginName.pascalCase}Command()',
+    import: "import 'package:\${package.name}/src/commands/${commandName.snakeCase}_command.dart';",
+    command: '${commandName.pascalCase}Command()',
   );
 }
 ''';
@@ -89,14 +94,14 @@ ${[
         "import 'package:$pluginName/${pluginName.snakeCase}.dart';",
       ].sorted().join('\n')}
 
-class ${pluginName.pascalCase}Command extends Command {
+class ${commandName.pascalCase}Command extends Command {
   @override
   final String description = 'Sample command';
 
   @override
-  final String name = '${pluginName.paramCase}';
+  final String name = '$commandName';
 
-  ${pluginName.pascalCase}Command() {
+  ${commandName.pascalCase}Command() {
     // add parameters here with argParser.addOption
   }
 
