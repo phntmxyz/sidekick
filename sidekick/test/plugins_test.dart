@@ -109,8 +109,10 @@ void main() {
               // plugin code should be valid
               if (analyzeGeneratedCode) {
                 run('dart pub get', workingDirectory: pluginDir.path);
-                run('dart analyze --fatal-infos',
-                    workingDirectory: pluginDir.path);
+                run(
+                  'dart analyze --fatal-infos',
+                  workingDirectory: pluginDir.path,
+                );
                 run('dart format --set-exit-if-changed ${pluginDir.path}');
               }
               expect(
