@@ -28,9 +28,11 @@ class SharedCommandTemplate extends PluginTemplateGenerator {
         .writeAsStringSync(props.library);
 
     final srcDir = libDirectory.directory('src')..createSync();
-    srcDir
-        .file('${props.commandName.snakeCase}_command.dart')
-        .writeAsStringSync(props.exampleCommand);
+    final commandFile =
+        srcDir.file('commands/${props.commandName.snakeCase}_command.dart');
+    commandFile
+      ..createSync(recursive: true)
+      ..writeAsStringSync(props.exampleCommand);
 
     super.generate(props);
   }
@@ -66,8 +68,8 @@ Future<void> main() async {
 
   registerPlugin(
     sidekickCli: package,
-    import: "import 'package:$pluginName/${pluginName.snakeCase}.dart';",
-    command: '${pluginName.pascalCase}Command()',
+    import: "import 'package:$pluginName/$pluginName.dart';",
+    command: '${commandName.pascalCase}Command()',
   );
 }
 ''';
@@ -76,7 +78,7 @@ Future<void> main() async {
 /// Sidekick plugin ${pluginName.titleCase}
 library ${pluginName.snakeCase};
 
-export 'package:${pluginName.snakeCase}/src/${commandName.snakeCase}_command.dart';
+export 'package:${pluginName.snakeCase}/src/commands/${commandName.snakeCase}_command.dart';
 ''';
 
   String get exampleCommand => '''

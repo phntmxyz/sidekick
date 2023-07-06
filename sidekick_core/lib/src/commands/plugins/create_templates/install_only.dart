@@ -49,15 +49,15 @@ import 'package:sidekick_plugin_installer/sidekick_plugin_installer.dart';
 Future<void> main() async {
   final SidekickPackage package = PluginContext.sidekickPackage;
 
-  final commandFile = package.root.file('lib/src/${pluginName.snakeCase}.dart');
-  commandFile.writeAsStringSync("""
+  final commandFile = package.root.file('lib/src/commands/${pluginName.snakeCase}.dart');
+  commandFile..createSync(recursive: true)..writeAsStringSync("""
 $exampleCommand
 """);
 
   registerPlugin(
     sidekickCli: package,
-    import: "import 'package:\${package.name}/src/${pluginName.snakeCase}.dart';",
-    command: '${pluginName.pascalCase}Command()',
+    import: "import 'package:\${package.name}/src/commands/${pluginName.snakeCase}.dart';",
+    command: '${commandName.pascalCase}Command()',
   );
 }
 ''';
@@ -65,14 +65,14 @@ $exampleCommand
   String get exampleCommand => '''
 import 'package:sidekick_core/sidekick_core.dart';
 
-class ${pluginName.pascalCase}Command extends Command {
+class ${commandName.pascalCase}Command extends Command {
   @override
   final String description = 'Sample command';
 
   @override
-  final String name = '${pluginName.paramCase}';
+  final String name = '$commandName';
 
-  ${pluginName.pascalCase}Command() {
+  ${commandName.pascalCase}Command() {
     // add parameters here with argParser.addOption
   }
 

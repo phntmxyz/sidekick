@@ -28,9 +28,12 @@ class PluginTemplateProperties {
   final String pluginName;
 
   /// The name of the command that will be generated
-  String get commandName {
-    return pluginName.replaceAll('_sidekick_plugin', '').paramCase;
-  }
+  late final String commandName = pluginName
+      .removePrefix('sidekick_')
+      .removePrefix('plugin_')
+      .removeSuffix('_plugin')
+      .removeSuffix('_sidekick')
+      .paramCase;
 
   /// Where the files should be written to. This is considered as root directory
   final Directory pluginDirectory;
@@ -38,7 +41,7 @@ class PluginTemplateProperties {
   /// The type of template to generate. Also see [CreatePluginCommand.templates]
   final String templateType;
 
-  const PluginTemplateProperties({
+  PluginTemplateProperties({
     required this.pluginName,
     required this.pluginDirectory,
     required this.templateType,
