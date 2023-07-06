@@ -84,71 +84,84 @@ void main() {
     );
   });
 
-  for (final template in CreatePluginCommand.templates.keys) {
-    test(
-      'plugin e2e $template: create valid code, install in cli, run command',
-      () async {
-        await withSidekickCli((cli) async {
-          // create plugin
-          await cli.run([
-            'sidekick',
-            'plugins',
-            'create',
-            '-t',
-            template,
-            '-n',
-            template.snakeCase,
-          ]);
+  group('create plugin, install in cli, run plugin command', () {
+    for (final pluginName in ['foo', 'sidekick_foo_bar_sidekick_plugin']) {
+      for (final template in CreatePluginCommand.templates.keys) {
+        test(
+          "template '$template', plugin name '$pluginName'",
+          () async {
+            await withSidekickCli((cli) async {
+              // create plugin
+              await cli.run([
+                'sidekick',
+                'plugins',
+                'create',
+                '-t',
+                template,
+                '-n',
+                pluginName,
+              ]);
 
-          final pluginDir = cli.root.directory(template.snakeCase);
-          overrideSidekickCoreWithLocalPath(pluginDir);
-          overrideSidekickPluginInstallerWithLocalPath(pluginDir);
+              final pluginDir = cli.root.directory(pluginName);
+              overrideSidekickCoreWithLocalPath(pluginDir);
+              overrideSidekickPluginInstallerWithLocalPath(pluginDir);
 
-          // plugin code should be valid
-          if (analyzeGeneratedCode) {
-            run('dart pub get', workingDirectory: pluginDir.path);
-            run('dart analyze --fatal-infos', workingDirectory: pluginDir.path);
-            run('dart format --set-exit-if-changed ${pluginDir.path}');
-          }
-          expect(
-            pluginDir.file('analysis_options.yaml').readAsStringSync(),
-            contains('package:lint/analysis_options.yaml'),
-          );
-          expect(
-            pluginDir.file('.gitignore').readAsStringSync(),
-            contains('\npubspec.lock'),
-          );
-          expect(
-            pluginDir.file('README.md').readAsStringSync(),
-            allOf([
-              contains('dashi sidekick plugins install'),
-              contains('${template.snakeCase} sidekick plugin'),
-            ]),
-          );
+              // plugin code should be valid
+              if (analyzeGeneratedCode) {
+                run('dart pub get', workingDirectory: pluginDir.path);
+                run('dart analyze --fatal-infos',
+                    workingDirectory: pluginDir.path);
+                run('dart format --set-exit-if-changed ${pluginDir.path}');
+              }
+              expect(
+                pluginDir.file('analysis_options.yaml').readAsStringSync(),
+                contains('package:lint/analysis_options.yaml'),
+              );
+              expect(
+                pluginDir.file('.gitignore').readAsStringSync(),
+                contains('\npubspec.lock'),
+              );
+              expect(
+                pluginDir.file('README.md').readAsStringSync(),
+                allOf([
+                  contains('dashi sidekick plugins install'),
+                  contains('$pluginName sidekick plugin'),
+                ]),
+              );
 
-          // plugin can be installed
-          await cli.run(
-            [
-              'sidekick',
-              'plugins',
-              'install',
-              '-s',
-              'path',
-              template.snakeCase,
-            ],
-          );
+              // plugin can be installed
+              await cli.run(
+                [
+                  'sidekick',
+                  'plugins',
+                  'install',
+                  '-s',
+                  'path',
+                  pluginName,
+                ],
+              );
 
-          // TODO if we add an option to execute the sidekick entrypoint without compiling it, we could speed up the tests a little bit here:
-          // after a plugin is installed, the hash values of the sidekick CLI
-          // change and thus the entrypoint has to be recompiled.
-          // however in this case, we don't gain anything time-wise from compiling
-          // because we use the entrypoint only once here.
-          // so if we ran the entrypoint without compiling it heree, these tests
-          // would be a little bit faster.
-          await cli.run([template.paramCase]);
-        });
-      },
-      timeout: const Timeout(Duration(minutes: 5)),
-    );
-  }
+              // TODO if we add an option to execute the sidekick entrypoint without compiling it, we could speed up the tests a little bit here:
+              // after a plugin is installed, the hash values of the sidekick CLI
+              // change and thus the entrypoint has to be recompiled.
+              // however in this case, we don't gain anything time-wise from compiling
+              // because we use the entrypoint only once here.
+              // so if we ran the entrypoint without compiling it heree, these tests
+              // would be a little bit faster.
+
+              // running the new command should succeed
+              final command = pluginName
+                  .removePrefix('sidekick_')
+                  .removePrefix('plugin_')
+                  .removeSuffix('_plugin')
+                  .removeSuffix('_sidekick')
+                  .paramCase;
+              await cli.run([command]);
+            });
+          },
+          timeout: const Timeout(Duration(minutes: 5)),
+        );
+      }
+    }
+  });
 }
