@@ -43,6 +43,10 @@ extension on PluginTemplateProperties {
 name: $pluginName
 description: Generated sidekick plugin (template shared-code)
 version: 0.0.1
+topics:
+  - sidekick
+  - cli
+  - sidekick-plugin
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
