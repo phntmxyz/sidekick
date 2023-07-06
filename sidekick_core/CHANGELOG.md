@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.5](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v2.0.4..sidekick_core-v2.0.5) (2023-7-6)
+
+- Fixed a bug ([#240](https://github.com/phntmxyz/sidekick/issues/240)) in the plugin templates along with some other minor improvements [#242](https://github.com/phntmxyz/sidekick/pull/242)
+
 ## [2.0.4](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v2.0.3..sidekick_core-v2.0.4) (2023-7-2)
 
 - Constrain `pubspec2` dependency in to circumvent broken dependency chain [#236](https://github.com/phntmxyz/sidekick/pull/236) https://github.com/phntmxyz/sidekick/commit/9b367347133614fb9c0f2d66f7d3cc5c1a9dcf64
