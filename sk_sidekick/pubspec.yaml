@@ -4,7 +4,7 @@ version: 0.0.1
 publish_to: none
 
 environment:
-  sdk: ">=3.0.5 <4.0.0"
+  sdk: ">=3.1.0 <4.0.0"
 
 executables:
   main:
@@ -24,4 +24,4 @@ dev_dependencies:
   test: ^1.20.0
 
 sidekick:
-  cli_version: 2.0.4
+  cli_version: 2.0.6
