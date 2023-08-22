@@ -1,5 +1,9 @@
 # Changelog
 
+## [2.0.6](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v2.0.5..sidekick_core-v2.0.6) (2023-8-22)
+
+- widen `http` constraint #243
+
 ## [2.0.5](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v2.0.4..sidekick_core-v2.0.5) (2023-7-6)
 
 - Fixed a bug ([#240](https://github.com/phntmxyz/sidekick/issues/240)) in the plugin templates along with some other minor improvements [#242](https://github.com/phntmxyz/sidekick/pull/242)
