@@ -4,7 +4,8 @@ import 'package:sidekick_core/src/global_sidekick_root.dart';
 
 class InstallGlobalCommand extends Command {
   @override
-  final String description = 'Installs this custom sidekick CLI globally';
+  final String description =
+      'Installs this custom sidekick CLI globally and enables tab completion';
 
   @override
   final String name = 'install-global';
@@ -26,7 +27,7 @@ class InstallGlobalCommand extends Command {
     if (dcli.isOnPATH(GlobalSidekickRoot.binDir.path)) {
       print(
         '\n'
-        "You can now use '${SidekickContext.cliName}' from everywhere\n"
+        "You can now use '${SidekickContext.cliName}' with tab completions from everywhere\n"
         '\n',
       );
       return;

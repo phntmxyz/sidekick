@@ -135,14 +135,16 @@ class SidekickCli {
   SidekickCli._(this.root, this.name);
 
   /// Runs the CLI's entrypoint and verifies that it exits with exit code 0
-  Future<void> run(
+  Future<TestProcess> run(
     List<String> args, {
     Directory? workingDirectory,
+    Map<String, String>? environment,
   }) async {
     final process = await TestProcess.start(
       _entrypoint.path,
       args,
       workingDirectory: workingDirectory?.path ?? root.path,
+      environment: environment,
     );
 
     if (await process.exitCode != 0) {
@@ -150,5 +152,6 @@ class SidekickCli {
       process.stderrStream().listen(print);
     }
     await process.shouldExit(0);
+    return process;
   }
 }

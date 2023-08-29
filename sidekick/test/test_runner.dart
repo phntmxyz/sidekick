@@ -38,5 +38,6 @@ void main() {
   group('init_test', init_test.main);
   group('plugins_test', plugins_test.main);
   group('recompile_test', recompile_test.main);
+  group('tab_completion_test', update_test.main);
   group('update_test', update_test.main);
 }

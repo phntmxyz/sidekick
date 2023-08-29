@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
+import 'package:cli_completion/cli_completion.dart';
 import 'package:meta/meta.dart';
 import 'package:process/process.dart';
 import 'package:sidekick/src/commands/init_command.dart';
@@ -27,7 +28,7 @@ Future<void> main(List<String> args) async {
 }
 
 @visibleForTesting
-class GlobalSidekickCommandRunner extends CommandRunner {
+class GlobalSidekickCommandRunner extends CompletionCommandRunner<void> {
   GlobalSidekickCommandRunner({
     this.processManager = const LocalProcessManager(),
   }) : super('sidekick', _desc) {
