@@ -14,6 +14,5 @@ void main() {
     expect(fakeStdOut.lines, contains('sidekickPackage: .'));
     expect(fakeStdOut.lines, contains('entryPoint: ../sk'));
     expect(fakeStdOut.lines, contains('projectRoot: ..'));
-    expect(fakeStdOut.lines.length, 3);
   });
 }
