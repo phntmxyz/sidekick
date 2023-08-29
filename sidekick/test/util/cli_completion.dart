@@ -1,9 +1,7 @@
 // Copied and adapted from package:cli_completion, file https://github.com/VeryGoodOpenSource/cli_completion/blob/a5b3571c03d964c08c6ce52b1cc907b2f93c0861/example/test/integration/utils.dart
 
 import 'dart:async';
-import 'dart:io';
 
-import 'package:sidekick_test/fake_stdio.dart';
 import 'package:test/test.dart';
 
 import 'cli_runner.dart';
@@ -23,46 +21,24 @@ extension RunCompletionCommandExtension on SidekickCli {
     String line, {
     int? cursorIndex,
   }) async {
+    final environmentOverride = {
+      'SHELL': '/foo/bar/zsh',
+      ..._prepareEnvForLineInput(line, cursorIndex: cursorIndex),
+    };
+    final process = await run(['completion'], environment: environmentOverride);
+    final completions = await process.stdoutStream().toList();
     final map = <String, String?>{};
 
-    void onWriteln([Object? object]) {
-      // Simulate the shell behavior of interpreting the output of the completion.
-      final line = object! as String;
-
+    for (final completionString in completions) {
       // A regex that finds all colons, except the ones preceded by backslash
-      final res = line.split(RegExp(r'(?<!\\):'));
+      final res = completionString.split(RegExp(r'(?<!\\):'));
 
       final description = res.length > 1 ? res[1] : null;
 
       map[res.first] = description;
     }
 
-    final stdout = FakeStdoutStream(onWriteln: onWriteln);
-
-    return await IOOverrides.runZoned(
-      stdout: () => stdout,
-      () async {
-        final environmentOverride = {
-          'SHELL': '/foo/bar/zsh',
-          ..._prepareEnvForLineInput(line, cursorIndex: cursorIndex),
-        };
-        final process =
-            await run(['completion'], environment: environmentOverride);
-        final completions = await process.stdoutStream().toList();
-        final map = <String, String?>{};
-
-        for (final completionString in completions) {
-          // A regex that finds all colons, except the ones preceded by backslash
-          final res = completionString.split(RegExp(r'(?<!\\):'));
-
-          final description = res.length > 1 ? res[1] : null;
-
-          map[res.first] = description;
-        }
-
-        return map;
-      },
-    );
+    return map;
   }
 }
 
