@@ -12,6 +12,9 @@ void main() {
     // TODO use GlobalSidekickRoot.binDir when made available through updated sidekick_core dependency
     final userHome = Platform.environment['HOME']!;
     final sidekickBinDir = Directory('$userHome/.sidekick/bin');
+    if (!sidekickBinDir.existsSync()) {
+      return;
+    }
     // beware: sidekickBinDir.file('dashi').existsSync() always returns false because it's a link, not a file
     final dashiSymLink = sidekickBinDir
         .listSync()
