@@ -46,7 +46,7 @@ dependencies:
           },
           name: 'update sdk to 3.0',
           targetVersion: Version(2, 0, 0, pre: '1'),
-        )
+        ),
       ],
       onMigrationStepStart: (context) {
         print('Starting migration step ${context.step.name}');

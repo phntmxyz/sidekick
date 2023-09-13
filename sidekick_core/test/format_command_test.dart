@@ -398,7 +398,7 @@ name: dashi
               [
                 'Following Dart files are not formatted correctly:',
                 unformattedFile.path,
-                'Run "dash format" to format the code.'
+                'Run "dash format" to format the code.',
               ],
             ),
           ),
