@@ -26,14 +26,26 @@ class InstallGlobalCommand extends Command {
 
     if (dcli.isOnPATH(GlobalSidekickRoot.binDir.path)) {
       print(
-        '\n'
-        "You can now use '${SidekickContext.cliName}' with tab completions from everywhere\n"
-        '\n',
+        "You can now use '${SidekickContext.cliName}' from everywhere\n",
       );
-      return;
+    } else {
+      _addBinDirToPathOrPrint();
     }
 
-    _addBinDirToPathOrPrint();
+    final String startScript = () {
+      try {
+        final path = Shell.current.pathToStartScript;
+        if (path != null) {
+          return path;
+        }
+      } catch (_) {
+        // ignore
+      }
+      return '~/.bashrc';
+    }();
+
+    print('Run ${cyan('source $startScript')} or restart your terminal '
+        'to activate tab completion');
   }
 
   void _addBinDirToPathOrPrint() {
