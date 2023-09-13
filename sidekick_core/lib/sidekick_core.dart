@@ -294,25 +294,35 @@ class SidekickCommandRunner<T> extends CompletionCommandRunner<T> {
       final result = await super.runCommand(parsedArgs);
       return result;
     } finally {
-      final reservedCommands = [
-        HandleCompletionRequestCommand.commandName,
-        InstallCompletionFilesCommand.commandName,
-      ];
       // don't print anything additionally when running the hidden tab completion command (runs in the background when pressing tab),
       // otherwise anything that is printed will also be used as suggestion
-      final isRunningTabCompletionCommand =
-          reservedCommands.contains(parsedArgs?.command?.name);
+      bool isRunningTabCompletionCommand() {
+        final reservedCommands = [
+          HandleCompletionRequestCommand.commandName,
+          InstallCompletionFilesCommand.commandName,
+        ];
+        return reservedCommands.contains(parsedArgs?.command?.name);
+      }
 
-      if (!enableAutoInstall && !isRunningTabCompletionCommand) {
+      // don't show the install-global suggesting when running the install-global command
+      bool isInstallGlobalCommand() =>
+          parsedArgs?.command?.name == 'sidekick' &&
+          parsedArgs!.arguments.contains('install-global');
+
+      if (!enableAutoInstall &&
+          !isRunningTabCompletionCommand() &&
+          !isInstallGlobalCommand()) {
         final command =
-            yellow('${SidekickContext.cliName} sidekick install-global');
-        print('${cyan('Run')} $command ${cyan('to enable tab completion.')}');
+            yellow('./${SidekickContext.cliName} sidekick install-global');
+        printerr(
+          '${cyan('💡Tip: Run')} $command ${cyan('to enable tab completion.')}',
+        );
       }
 
       try {
         if (_isUpdateCheckEnabled &&
             !_isSidekickCliUpdateCommand(parsedArgs) &&
-            !isRunningTabCompletionCommand) {
+            !isRunningTabCompletionCommand()) {
           // print warning if the user didn't fully update their CLI
           _checkCliVersionIntegrity();
           // print warning if CLI update is available
