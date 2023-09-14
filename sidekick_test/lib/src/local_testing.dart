@@ -12,9 +12,9 @@ import 'package:test/test.dart';
 /// True when dependencies should be linked to local sidekick dependencies
 final bool shouldUseLocalDeps = env['SIDEKICK_PUB_DEPS'] != 'true';
 
-final String _gitRoot =
-    start('git rev-parse --show-toplevel', progress: Progress.capture())
-        .firstLine!;
+final String _gitRoot = Directory.current
+    .findParent((dir) => dir.directory('.git').existsSync())!
+    .path;
 
 /// Changes the sidekick_core dependency to a local override
 void overrideSidekickCoreWithLocalPath(Directory package) {
@@ -245,3 +245,23 @@ String? _systemDartSdkPath() => _systemDartSdk()?.path;
 String? _systemDartExecutable() =>
     // /opt/homebrew/bin/dart
     start('which dart', progress: Progress.capture(), nothrow: true).firstLine;
+
+extension DirectoryExt on Directory {
+  /// Recursively goes up and tries to find a [Directory] matching [predicate]
+  ///
+  /// Returns `null` when reaching root (/) without a match
+  Directory? findParent(bool Function(Directory dir) predicate) {
+    var dir = this;
+    while (true) {
+      if (predicate(dir)) {
+        return dir;
+      }
+      final parent = dir.parent;
+      if (canonicalize(dir.path) == canonicalize(parent.path)) {
+        // not found
+        return null;
+      }
+      dir = dir.parent;
+    }
+  }
+}
