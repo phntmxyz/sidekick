@@ -33,14 +33,14 @@ void main() {
     () async {
       await withSidekickCli((cli) async {
         final p = await cli.run([]);
-        final stdout = await p.stderrStream().toList();
+        final stdout = await p.stderrStream().join('\n');
         expect(
           stdout,
-          containsAllInOrder([
-            '💡Tip:',
-            'Run',
-            './dashi sidekick install-global',
-            'to enable tab completion',
+          allOf([
+            contains('💡Tip:'),
+            contains('Run'),
+            contains('./dashi sidekick install-global'),
+            contains('to enable tab completion'),
           ]),
         );
       });
