@@ -26,6 +26,8 @@ jobs:
           apt-get update
           apt-get install unzip
       - uses: actions/checkout@v1
+      - name: Dart version
+        run: dart --version
       - name: Install dependencies
         run: cd sidekick && dart pub get --no-precompile
       - name: Run tests
@@ -51,6 +53,8 @@ jobs:
          apt-get update
          apt-get install unzip
       - uses: actions/checkout@v1
+      - name: Dart version
+        run: dart --version
       - name: Install dependencies
         run: cd sidekick && dart pub get --no-precompile
       - name: Run tests
