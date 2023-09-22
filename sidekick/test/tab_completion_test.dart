@@ -29,13 +29,70 @@ void main() {
   tearDown(uninstallGlobalCli);
 
   test(
+    'Does not print info when tab completions are installed',
+    () async {
+      await withSidekickCli((cli) async {
+        await cli.run(['sidekick', 'install-global']);
+        final p = await cli.run([]);
+        final stderr = await p.stderrStream().join('\n');
+        expect(
+          stderr,
+          isNot(
+            anyOf([
+              contains('💡Tip:'),
+              contains('Run'),
+              contains('./dashi sidekick install-global'),
+              contains('to enable tab completion'),
+            ]),
+          ),
+        );
+      });
+    },
+    timeout: const Timeout(Duration(seconds: 90)),
+  );
+
+  test(
+    'Does not print installation tip when running install-global but prints info on sourcing start script',
+    () async {
+      await withSidekickCli((cli) async {
+        final p = await cli.run(['sidekick', 'install-global']);
+        final stderr = await p.stderrStream().join('\n');
+
+        expect(
+          stderr,
+          isNot(
+            anyOf([
+              contains('💡Tip: Run'),
+              contains('./dashi sidekick install-global'),
+              contains('to enable tab completion'),
+            ]),
+          ),
+        );
+        expect(
+          stderr,
+          allOf([
+            contains('Run'),
+            contains('source'),
+            anyOf([
+              contains(Shell.current.pathToStartScript),
+              contains('~/.bashrc'),
+            ]),
+            contains('or restart your terminal to activate tab completion'),
+          ]),
+        );
+      });
+    },
+    timeout: const Timeout(Duration(seconds: 90)),
+  );
+
+  test(
     'Prints info when tab completions are not installed',
     () async {
       await withSidekickCli((cli) async {
         final p = await cli.run([]);
-        final stdout = await p.stderrStream().join('\n');
+        final stderr = await p.stderrStream().join('\n');
         expect(
-          stdout,
+          stderr,
           allOf([
             contains('💡Tip:'),
             contains('Run'),

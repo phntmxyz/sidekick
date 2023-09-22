@@ -44,7 +44,7 @@ class InstallGlobalCommand extends Command {
       return '~/.bashrc';
     }();
 
-    print('Run ${cyan('source $startScript')} or restart your terminal '
+    printerr('Run ${cyan('source $startScript')} or restart your terminal '
         'to activate tab completion');
   }
 
