@@ -22,6 +22,7 @@ jobs:
       image: dart:${{ matrix.version }}
 
     steps:
+      - run: echo "${HOME}/.sidekick/bin" >> $GITHUB_PATH
       - run: |
           apt-get update
           apt-get install unzip
@@ -49,6 +50,7 @@ jobs:
       image: dart:${{ matrix.version }}
 
     steps:
+      - run: echo "${HOME}/.sidekick/bin" >> $GITHUB_PATH
       - run: |
          apt-get update
          apt-get install unzip
