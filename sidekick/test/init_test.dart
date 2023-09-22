@@ -87,7 +87,7 @@ void main() {
             '--projectRoot',
             projectRoot.path,
             '--cliPackageDirectory',
-            tempDir.path
+            tempDir.path,
           ],
           workingDirectory: projectRoot,
         );
@@ -126,7 +126,7 @@ void main() {
             '--projectRoot',
             projectRoot.path,
             '--mainProjectPath',
-            tempDir.path
+            tempDir.path,
           ],
           workingDirectory: projectRoot,
         );
@@ -164,7 +164,7 @@ void main() {
             '--projectRoot',
             projectRoot.path,
             '--mainProjectPath',
-            tempDir.path
+            tempDir.path,
           ],
           workingDirectory: projectRoot,
         );
@@ -269,7 +269,7 @@ void main() {
         // fake flutter installation because we don't have flutter installed on CI
         final pathWithFakeFlutterSdk = [
           fakeFlutterSdk().directory('bin').path,
-          ...PATH
+          ...PATH,
         ].join(env.delimiterForPATH);
 
         final dartDashProcess = await TestProcess.start(

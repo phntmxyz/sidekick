@@ -6,6 +6,7 @@ import 'directory_extension_test.dart' as directory_extension_test;
 import 'init_test.dart' as init_test;
 import 'plugins_test.dart' as plugins_test;
 import 'recompile_test.dart' as recompile_test;
+import 'tab_completion_test.dart' as tab_completion_test;
 import 'update_test.dart' as update_test;
 import 'util/cli_runner.dart';
 
@@ -38,5 +39,6 @@ void main() {
   group('init_test', init_test.main);
   group('plugins_test', plugins_test.main);
   group('recompile_test', recompile_test.main);
+  group('tab_completion_test', tab_completion_test.main);
   group('update_test', update_test.main);
 }

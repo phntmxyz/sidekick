@@ -1,17 +1,9 @@
 /// The core library for Sidekick CLIs
 library sidekick_core;
 
-import 'dart:io';
-
-import 'package:args/args.dart';
-import 'package:args/command_runner.dart';
-import 'package:dartx/dartx_io.dart';
-import 'package:dcli/dcli.dart';
-import 'package:path/path.dart';
-import 'package:pub_semver/pub_semver.dart';
+import 'package:cli_completion/cli_completion.dart';
+import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_core/src/commands/update_command.dart';
-import 'package:sidekick_core/src/dart_package.dart';
-import 'package:sidekick_core/src/repository.dart';
 import 'package:sidekick_core/src/sidekick_context.dart';
 import 'package:sidekick_core/src/version_checker.dart';
 
@@ -230,7 +222,7 @@ SidekickCommandRunner initializeSidekick({
 }
 
 /// A CommandRunner that makes lookups in [SidekickContext] faster
-class SidekickCommandRunner<T> extends CommandRunner<T> {
+class SidekickCommandRunner<T> extends CompletionCommandRunner<T> {
   SidekickCommandRunner._({
     required String description,
     this.mainProject,
@@ -243,6 +235,12 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
       help: 'Print the sidekick version of this CLI.',
     );
   }
+
+  // tab completion only works if the CLI is installed globally (run `<cli> sidekick install-global)
+  // if the CLI is not installed globally and the autocompletion script is invoked nonetheless,
+  // it prints an error message which is used as suggestion (<cli> _<cli>_completion:4: command not found: <cli>)
+  @override
+  bool get enableAutoInstall => isProgramInstalled(SidekickContext.cliName);
 
   @Deprecated('Use SidekickContext.projectRoot or SidekickContext.repository')
   Repository get repository => findRepository();
@@ -296,8 +294,35 @@ class SidekickCommandRunner<T> extends CommandRunner<T> {
       final result = await super.runCommand(parsedArgs);
       return result;
     } finally {
+      // don't print anything additionally when running the hidden tab completion command (runs in the background when pressing tab),
+      // otherwise anything that is printed will also be used as suggestion
+      bool isRunningTabCompletionCommand() {
+        final reservedCommands = [
+          HandleCompletionRequestCommand.commandName,
+          InstallCompletionFilesCommand.commandName,
+        ];
+        return reservedCommands.contains(parsedArgs?.command?.name);
+      }
+
+      // don't show the install-global suggesting when running the install-global command
+      bool isInstallGlobalCommand() =>
+          parsedArgs?.command?.name == 'sidekick' &&
+          parsedArgs!.arguments.contains('install-global');
+
+      if (!enableAutoInstall &&
+          !isRunningTabCompletionCommand() &&
+          !isInstallGlobalCommand()) {
+        final command =
+            yellow('./${SidekickContext.cliName} sidekick install-global');
+        printerr(
+          '${cyan('💡Tip: Run')} $command ${cyan('to enable tab completion.')}',
+        );
+      }
+
       try {
-        if (_isUpdateCheckEnabled && !_isSidekickCliUpdateCommand(parsedArgs)) {
+        if (_isUpdateCheckEnabled &&
+            !_isSidekickCliUpdateCommand(parsedArgs) &&
+            !isRunningTabCompletionCommand()) {
           // print warning if the user didn't fully update their CLI
           _checkCliVersionIntegrity();
           // print warning if CLI update is available

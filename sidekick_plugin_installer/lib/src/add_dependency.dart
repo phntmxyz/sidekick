@@ -98,15 +98,15 @@ void addDependency({
       dependency,
     if (path) ...[
       '--path',
-      localPath
+      localPath,
     ] else if (hosted) ...[
       if (hostedUrl != null) ...['--hosted-url', hostedUrl],
     ] else if (git) ...[
       '--git-url',
       gitUrl!,
       if (gitRef != null) ...['--git-ref', gitRef],
-      if (gitPath != null) ...['--git-path', gitPath]
-    ]
+      if (gitPath != null) ...['--git-path', gitPath],
+    ],
   ];
 
   if (package.pubspec.readAsStringSync().contains('$dependency:')) {

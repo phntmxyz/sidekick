@@ -4,7 +4,8 @@ import 'package:sidekick_core/src/global_sidekick_root.dart';
 
 class InstallGlobalCommand extends Command {
   @override
-  final String description = 'Installs this custom sidekick CLI globally';
+  final String description =
+      'Installs this custom sidekick CLI globally and enables tab completion';
 
   @override
   final String name = 'install-global';
@@ -25,14 +26,26 @@ class InstallGlobalCommand extends Command {
 
     if (dcli.isOnPATH(GlobalSidekickRoot.binDir.path)) {
       print(
-        '\n'
-        "You can now use '${SidekickContext.cliName}' from everywhere\n"
-        '\n',
+        "You can now use '${SidekickContext.cliName}' from everywhere\n",
       );
-      return;
+    } else {
+      _addBinDirToPathOrPrint();
     }
 
-    _addBinDirToPathOrPrint();
+    final String startScript = () {
+      try {
+        final path = Shell.current.pathToStartScript;
+        if (path != null) {
+          return path;
+        }
+      } catch (_) {
+        // ignore
+      }
+      return '~/.bashrc';
+    }();
+
+    printerr('Run ${cyan('source $startScript')} or restart your terminal '
+        'to activate tab completion');
   }
 
   void _addBinDirToPathOrPrint() {

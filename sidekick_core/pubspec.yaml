@@ -12,6 +12,7 @@ environment:
 
 dependencies:
   args: ^2.1.0
+  cli_completion: ^0.3.0
   dartx: ^1.1.0
   dcli: '>=2.2.0 <=2.2.3'
   glob: ^2.0.2

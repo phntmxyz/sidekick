@@ -266,7 +266,7 @@ class InitCommand extends Command {
 
     final flutterPackages = [
       if (inputs.mainProject != null) inputs.mainProject!,
-      ...inputs.packages
+      ...inputs.packages,
     ].filter((package) => package.isFlutterPackage).toSet();
 
     if (flutterPackages.isNotEmpty) {

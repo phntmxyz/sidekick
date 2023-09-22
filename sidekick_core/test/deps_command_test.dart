@@ -210,7 +210,7 @@ environment:
               '\n\nErrors while getting dependencies:',
               startsWith(
                 'broken: Failed to get dependencies for package ${brokenPubspec.parent.path}',
-              )
+              ),
             ]),
           );
         },

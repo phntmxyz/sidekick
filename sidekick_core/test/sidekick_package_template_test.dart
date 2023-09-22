@@ -50,7 +50,7 @@ void main() {
         'tool/install.sh',
         'tool/run.sh',
         'tool/download_dart.sh',
-        'tool/sidekick_config.sh'
+        'tool/sidekick_config.sh',
       };
       final expectedExecutables = {
         cliName,

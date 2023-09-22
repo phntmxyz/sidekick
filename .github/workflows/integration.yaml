@@ -22,10 +22,13 @@ jobs:
       image: dart:${{ matrix.version }}
 
     steps:
+      - run: echo "${HOME}/.sidekick/bin" >> $GITHUB_PATH
       - run: |
           apt-get update
           apt-get install unzip
       - uses: actions/checkout@v1
+      - name: Dart version
+        run: dart --version
       - name: Install dependencies
         run: cd sidekick && dart pub get --no-precompile
       - name: Run tests
@@ -47,10 +50,13 @@ jobs:
       image: dart:${{ matrix.version }}
 
     steps:
+      - run: echo "${HOME}/.sidekick/bin" >> $GITHUB_PATH
       - run: |
          apt-get update
          apt-get install unzip
       - uses: actions/checkout@v1
+      - name: Dart version
+        run: dart --version
       - name: Install dependencies
         run: cd sidekick && dart pub get --no-precompile
       - name: Run tests

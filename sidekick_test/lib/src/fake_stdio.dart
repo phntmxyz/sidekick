@@ -33,6 +33,9 @@ class FakeStdoutStream with Fake implements Stdout {
   void writeCharCode(int charCode) {
     _writes.add(utf8.encode(String.fromCharCode(charCode)));
   }
+
+  @override
+  bool get supportsAnsiEscapes => false;
 }
 
 T overrideIoStreams<T>({
