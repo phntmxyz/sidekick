@@ -58,6 +58,14 @@ void main() {
         final p = await cli.run(['sidekick', 'install-global']);
         final stderr = await p.stderrStream().join('\n');
 
+        late final String? startScript;
+        try {
+          // crashes in DockerShell on GitHub CI
+          startScript = Shell.current.pathToStartScript;
+        } catch (_) {
+          startScript = null;
+        }
+
         expect(
           stderr,
           isNot(
@@ -74,7 +82,7 @@ void main() {
             contains('Run'),
             contains('source'),
             anyOf([
-              contains(Shell.current.pathToStartScript),
+              if (startScript != null) contains(startScript),
               contains('~/.bashrc'),
             ]),
             contains('or restart your terminal to activate tab completion'),
