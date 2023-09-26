@@ -1,6 +1,6 @@
 name: sidekick
 description: Creates a CLI for your flutter app for custom tasks and automation
-version: 2.0.2
+version: 2.1.0
 repository: https://github.com/phntmxyz/sidekick/tree/main/sidekick
 issue_tracker: https://github.com/phntmxyz/sidekick/labels/sidekick
 topics:

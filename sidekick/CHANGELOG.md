@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.1.0](https://github.com/phntmxyz/sidekick/compare/sidekick-v2.0.2..sidekick-v2.1.0) (2023-9-26)
+
+- **NEW:** Added tab completion [#245](https://github.com/phntmxyz/sidekick/pull/245) https://github.com/phntmxyz/sidekick/commit/dd7b18f07dd792ed9fd3c3a37bc73f254aa807c9
+- Updated README https://github.com/phntmxyz/sidekick/commit/48f58c0b883dab552181b9d25165bdfc05006136
+- Fixed bug in `shared-command` plugin template when plugin name ends with `_sidekick_plugin` [#242](https://github.com/phntmxyz/sidekick/pull/242) https://github.com/phntmxyz/sidekick/commit/4d681a62a7df9514e3a9e4b5e903736842b242e7
+
 ## [2.0.2](https://github.com/phntmxyz/sidekick/compare/sidekick-v2.0.1..sidekick-v2.0.2) (2023-7-2)
 
 - Use `sidekick_core` version with fix for dcli/pubspec2 dependency problem [#236](https://github.com/phntmxyz/sidekick/pull/236) https://github.com/phntmxyz/sidekick/commit/a20ce751298cea41c5ced495026e737dac0c8c93
