@@ -24,4 +24,4 @@ dev_dependencies:
   test: ^1.20.0
 
 sidekick:
-  cli_version: 2.0.6
+  cli_version: 2.1.0
