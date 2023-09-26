@@ -557,10 +557,10 @@ packages:
     dependency: "direct main"
     description:
       name: sidekick_core
-      sha256: "0ffa6ad14e14f2ead92326f20dbb59b7b696c73235dfe22d63bb291f162c74b6"
+      sha256: "323611a8527b7094ffc4691d6a288de1d187dd017e18e62db7a6165fcc36db77"
       url: "https://pub.dev"
     source: hosted
-    version: "2.0.6"
+    version: "2.1.0"
   sidekick_test:
     dependency: "direct dev"
     description:

@@ -21,7 +21,7 @@ dependencies:
   path: ^1.8.0
   process: ^4.2.4
   recase: ^4.0.0
-  sidekick_core: ^2.0.4
+  sidekick_core: ^2.1.0
 
 dev_dependencies:
   lint: ^2.0.0
