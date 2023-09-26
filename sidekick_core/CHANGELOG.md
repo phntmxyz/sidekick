@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.1.0](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v2.0.6..sidekick_core-v2.1.0) (2023-9-26)
+
+- **NEW:** Added tab completion - automatically available by upgrading sidekick_core to this version! [#245](https://github.com/phntmxyz/sidekick/pull/245) https://github.com/phntmxyz/sidekick/commit/dd7b18f07dd792ed9fd3c3a37bc73f254aa807c9
+- Updated README https://github.com/phntmxyz/sidekick/commit/48f58c0b883dab552181b9d25165bdfc05006136
+
 ## [2.0.6](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v2.0.5..sidekick_core-v2.0.6) (2023-8-22)
 
 - widen `http` constraint #243
