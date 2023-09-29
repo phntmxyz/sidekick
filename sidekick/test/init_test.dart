@@ -217,7 +217,7 @@ void main() {
         );
 
         await process.shouldExit(255);
-        final stderrText = await process.stderr.rest.toList();
+        final stderrText = (await process.stderr.rest.toList()).join('\n');
         expect(
           stderrText,
           contains(
