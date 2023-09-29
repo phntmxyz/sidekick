@@ -221,8 +221,15 @@ void main() {
         expect(
           stderrText,
           contains(
-            'The CLI name rm is already taken by an executable on your system see [/bin/rm]',
+            'The CLI name rm is already taken by an executable on your system',
           ),
+        );
+        expect(
+          stderrText,
+          anyOf([
+            contains('[/usr/bin/rm]'),
+            contains('[/bin/rm]'),
+          ]),
         );
         expect(
           process.stdout,
