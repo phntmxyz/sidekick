@@ -284,8 +284,20 @@ class SidekickCommandRunner<T> extends CompletionCommandRunner<T> {
     final unmount = mount(debugName: args.join(' '));
 
     ArgResults? parsedArgs;
+    Future<void Function()?>? updateCheck;
+
     try {
       parsedArgs = parse(args);
+
+      if (_isUpdateCheckEnabled &&
+          !_isSidekickCliUpdateCommand(parsedArgs) &&
+          !_isRunningTabCompletionCommand(parsedArgs)) {
+        // print warning if CLI update is available
+        // TODO prevent multiple update checks when a command start another command
+
+        updateCheck = _checkForUpdates();
+      }
+
       if (parsedArgs['version'] == true) {
         print('${SidekickContext.cliName} is using sidekick version $version');
         return null;
@@ -294,23 +306,13 @@ class SidekickCommandRunner<T> extends CompletionCommandRunner<T> {
       final result = await super.runCommand(parsedArgs);
       return result;
     } finally {
-      // don't print anything additionally when running the hidden tab completion command (runs in the background when pressing tab),
-      // otherwise anything that is printed will also be used as suggestion
-      bool isRunningTabCompletionCommand() {
-        final reservedCommands = [
-          HandleCompletionRequestCommand.commandName,
-          InstallCompletionFilesCommand.commandName,
-        ];
-        return reservedCommands.contains(parsedArgs?.command?.name);
-      }
-
       // don't show the install-global suggesting when running the install-global command
       bool isInstallGlobalCommand() =>
           parsedArgs?.command?.name == 'sidekick' &&
           parsedArgs!.arguments.contains('install-global');
 
       if (!enableAutoInstall &&
-          !isRunningTabCompletionCommand() &&
+          !_isRunningTabCompletionCommand(parsedArgs) &&
           !isInstallGlobalCommand()) {
         final command =
             yellow('./${SidekickContext.cliName} sidekick install-global');
@@ -320,16 +322,7 @@ class SidekickCommandRunner<T> extends CompletionCommandRunner<T> {
       }
 
       try {
-        if (_isUpdateCheckEnabled &&
-            !_isSidekickCliUpdateCommand(parsedArgs) &&
-            !isRunningTabCompletionCommand()) {
-          // print warning if the user didn't fully update their CLI
-          _checkCliVersionIntegrity();
-          // print warning if CLI update is available
-          // TODO start the update check in the background at command start
-          // TODO prevent multiple update checks when a command start another command
-          await _checkForUpdates();
-        }
+        (await updateCheck)?.call();
       } finally {
         unmount();
       }
@@ -337,7 +330,8 @@ class SidekickCommandRunner<T> extends CompletionCommandRunner<T> {
   }
 
   /// Print a warning if the CLI isn't up to date
-  Future<void> _checkForUpdates() async {
+  Future<void Function()> _checkForUpdates() async {
+    void Function()? updateCheck;
     try {
       final updateFuture = VersionChecker.isDependencyUpToDate(
         package: SidekickContext.sidekickPackage,
@@ -346,15 +340,21 @@ class SidekickCommandRunner<T> extends CompletionCommandRunner<T> {
       );
       // If it takes too long, don't wait for it
       final isUpToDate = await updateFuture.timeout(const Duration(seconds: 3));
+
       if (!isUpToDate) {
-        printerr(
-          '${yellow('Update available!')}\n'
-          'Run ${cyan('${SidekickContext.cliName} sidekick update')} to update your CLI.',
-        );
+        updateCheck = () => printerr(
+              '${yellow('Update available!')}\n'
+              'Run ${cyan('${SidekickContext.cliName} sidekick update')} to update your CLI.',
+            );
       }
     } catch (_) {
       /* ignore */
     }
+    return () {
+      // print warning if the user didn't fully update their CLI
+      _checkCliVersionIntegrity();
+      updateCheck?.call();
+    };
   }
 
   /// Print a warning if the user manually updated the sidekick_core
@@ -395,6 +395,18 @@ class SidekickCommandRunner<T> extends CompletionCommandRunner<T> {
       printerr(e.toString());
       printerr(s.toString());
     }
+  }
+
+  /// Returns true if the executed command is a tab completion command
+  ///
+  /// don't print anything additionally when running the hidden tab completion command (runs in the background when pressing tab),
+  /// otherwise anything that is printed will also be used as suggestion
+  bool _isRunningTabCompletionCommand(ArgResults? parsedArgs) {
+    final reservedCommands = [
+      HandleCompletionRequestCommand.commandName,
+      InstallCompletionFilesCommand.commandName,
+    ];
+    return reservedCommands.contains(parsedArgs?.command?.name);
   }
 
   /// Returns true if the command executed from [parsedArgs] is [UpdateCommand]
