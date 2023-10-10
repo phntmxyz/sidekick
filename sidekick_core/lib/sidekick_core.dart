@@ -1,8 +1,6 @@
 /// The core library for Sidekick CLIs
 library sidekick_core;
 
-import 'dart:isolate';
-
 import 'package:cli_completion/cli_completion.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_core/src/commands/update_command.dart';
@@ -297,7 +295,7 @@ class SidekickCommandRunner<T> extends CompletionCommandRunner<T> {
         // print warning if CLI update is available
         // TODO prevent multiple update checks when a command start another command
 
-        updateCheck = Isolate.run(_checkForUpdates);
+        updateCheck = _checkForUpdates();
       }
 
       if (parsedArgs['version'] == true) {
