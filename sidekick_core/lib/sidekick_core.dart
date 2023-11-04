@@ -322,9 +322,9 @@ class SidekickCommandRunner<T> extends CompletionCommandRunner<T> {
       }
 
       try {
-        // print warning if the user didn't fully update their CLI
-        _checkCliVersionIntegrity();
         await updateCheck?.then((result) {
+          // print warning if the user didn't fully update their CLI
+          _checkCliVersionIntegrity();
           if (result != null) printerr(result);
         });
       } finally {
