@@ -284,7 +284,7 @@ class SidekickCommandRunner<T> extends CompletionCommandRunner<T> {
     final unmount = mount(debugName: args.join(' '));
 
     ArgResults? parsedArgs;
-    Future<void Function()?>? updateCheck;
+    Future<String?>? updateCheck;
 
     try {
       parsedArgs = parse(args);
@@ -322,7 +322,11 @@ class SidekickCommandRunner<T> extends CompletionCommandRunner<T> {
       }
 
       try {
-        (await updateCheck)?.call();
+        // print warning if the user didn't fully update their CLI
+        _checkCliVersionIntegrity();
+        await updateCheck?.then((result) {
+          if (result != null) printerr(result);
+        });
       } finally {
         unmount();
       }
@@ -330,8 +334,7 @@ class SidekickCommandRunner<T> extends CompletionCommandRunner<T> {
   }
 
   /// Print a warning if the CLI isn't up to date
-  Future<void Function()> _checkForUpdates() async {
-    void Function()? updateCheck;
+  Future<String?> _checkForUpdates() async {
     try {
       final updateFuture = VersionChecker.isDependencyUpToDate(
         package: SidekickContext.sidekickPackage,
@@ -342,19 +345,13 @@ class SidekickCommandRunner<T> extends CompletionCommandRunner<T> {
       final isUpToDate = await updateFuture.timeout(const Duration(seconds: 3));
 
       if (!isUpToDate) {
-        updateCheck = () => printerr(
-              '${yellow('Update available!')}\n'
-              'Run ${cyan('${SidekickContext.cliName} sidekick update')} to update your CLI.',
-            );
+        return '${yellow('Update available!')}\n'
+            'Run ${cyan('${SidekickContext.cliName} sidekick update')} to update your CLI.';
       }
     } catch (_) {
       /* ignore */
     }
-    return () {
-      // print warning if the user didn't fully update their CLI
-      _checkCliVersionIntegrity();
-      updateCheck?.call();
-    };
+    return null;
   }
 
   /// Print a warning if the user manually updated the sidekick_core
