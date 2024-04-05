@@ -2,8 +2,6 @@
 
 ## [2.1.1](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v2.1.0..sidekick_core-v2.1.1) (2024-4-5)
 
-Full diff: https://github.com/phntmxyz/sidekick/compare/sidekick_core-v2.1.0...main
-
 - Hotfix: Constrain dart_console2 dependencies [#252](https://github.com/phntmxyz/sidekick/pull/252)
 
 ## [2.1.0](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v2.0.6..sidekick_core-v2.1.0) (2023-9-26)
