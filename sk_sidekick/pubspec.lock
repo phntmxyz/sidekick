@@ -535,7 +535,7 @@ packages:
       path: "../sidekick_core"
       relative: true
     source: path
-    version: "2.1.0"
+    version: "2.1.1"
   sidekick_test:
     dependency: "direct dev"
     description:
