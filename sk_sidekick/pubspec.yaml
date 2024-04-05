@@ -4,7 +4,7 @@ version: 0.0.1
 publish_to: none
 
 environment:
-  sdk: ">=3.1.0 <4.0.0"
+  sdk: ">=3.2.6 <4.0.0"
 
 executables:
   main:
@@ -13,8 +13,7 @@ dependencies:
   dcli: ^2.2.2
   pub_semver: ^2.1.1
   pubspec_parse: ^1.2.0
-  sidekick_core:
-    path: ../sidekick_core
+  sidekick_core: ^2.1.2
   yaml: ^3.1.1
 
 dev_dependencies:
@@ -24,4 +23,4 @@ dev_dependencies:
   test: ^1.20.0
 
 sidekick:
-  cli_version: 2.1.0
+  cli_version: 2.1.2

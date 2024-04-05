@@ -532,9 +532,10 @@ packages:
   sidekick_core:
     dependency: "direct main"
     description:
-      path: "../sidekick_core"
-      relative: true
-    source: path
+      name: sidekick_core
+      sha256: "23a62a757d8afa0f5384d2867e6b8e966fc2d9ace1a5b99c48fc0da14bb44d91"
+      url: "https://pub.dev"
+    source: hosted
     version: "2.1.2"
   sidekick_test:
     dependency: "direct dev"
@@ -736,4 +737,4 @@ packages:
     source: hosted
     version: "2.1.1"
 sdks:
-  dart: ">=3.1.0 <3.999.0"
+  dart: ">=3.2.6 <3.999.0"
