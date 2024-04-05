@@ -216,6 +216,9 @@ build/
 
 # Directory created by dartdoc
 doc/api/
+
+# Lock dependencies for deterministic builds on all systems
+!pubspec.lock
 ''';
 
 const String _analysisOptionsYaml = '''
