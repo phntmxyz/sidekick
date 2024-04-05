@@ -1,5 +1,10 @@
 # Changelog
 
+## [2.1.2](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v2.1.1..sidekick_core-v2.1.2) (2024-4-5)
+
+- Max Dart SDK 3.2.X [#254](https://github.com/phntmxyz/sidekick/pull/254)
+- Force adding pubspec.lock regardless of other repo rules [#253](https://github.com/phntmxyz/sidekick/pull/253)
+
 ## [2.1.1](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v2.1.0..sidekick_core-v2.1.1) (2024-4-5)
 
 - Hotfix: Constrain dart_console2 dependencies [#252](https://github.com/phntmxyz/sidekick/pull/252)
