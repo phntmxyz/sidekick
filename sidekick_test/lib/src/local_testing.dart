@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:cli_script/cli_script.dart';
 import 'package:dartx/dartx_io.dart';
-import 'package:dcli/dcli.dart';
-import 'package:dcli/posix.dart';
 import 'package:path/path.dart';
+import 'package:pubspec_manager/pubspec_manager.dart';
 import 'package:sidekick_test/src/download_dart.sh.template.dart';
 import 'package:sidekick_test/src/sidekick_config.sh.template.dart';
 import 'package:test/test.dart';
@@ -57,7 +57,7 @@ final bool analyzeGeneratedCode = env['SIDEKICK_ANALYZE'] == 'true';
 /// - [lockedSidekickCoreVersion] the used version in pubspec.lock
 /// - [sidekickCliVersion] sidekick: cli_version: <sidekickCliVersion> in the
 ///   pubspec. Only written to pubspec if value is not null.
-R insideFakeProjectWithSidekick<R>(
+Future<R> insideFakeProjectWithSidekick<R>(
   R Function(Directory projectRoot) callback, {
   bool overrideSidekickCoreWithLocalDependency = false,
   String? sidekickCoreVersion,
@@ -65,14 +65,14 @@ R insideFakeProjectWithSidekick<R>(
   String? sidekickCliVersion,
   String dartSdkConstraint = '>=2.14.0 <3.0.0',
   bool insideGitRepo = false,
-}) {
+}) async {
   // initialize before overriding cwd
   assert(_gitRoot.isNotEmpty);
 
   final tempDir = Directory.systemTemp.createTempSync();
   Directory projectRoot = tempDir;
   if (insideGitRepo) {
-    'git init -q ${tempDir.path}'.run;
+    await run('git init -q ${tempDir.path}');
     projectRoot = tempDir.directory('myProject')..createSync();
   }
 
@@ -133,11 +133,11 @@ packages:
   final sidekickConfig = toolDir.file('sidekick_config.sh')
     ..createSync(recursive: true)
     ..writeAsStringSync(sidekickConfigSh);
-  chmod(sidekickConfig.path, permission: '755');
+  await run('chmod 755 ${sidekickConfig.path}');
 
   env['SIDEKICK_PACKAGE_HOME'] = fakeSidekickDir.absolute.path;
   env['SIDEKICK_ENTRYPOINT_HOME'] = projectRoot.absolute.path;
-  if (!env.exists('SIDEKICK_ENABLE_UPDATE_CHECK')) {
+  if (env['SIDEKICK_ENABLE_UPDATE_CHECK'] == null) {
     env['SIDEKICK_ENABLE_UPDATE_CHECK'] = 'false';
   }
 
@@ -147,9 +147,9 @@ packages:
 
   addTearDown(() {
     projectRoot.deleteSync(recursive: true);
-    env['SIDEKICK_PACKAGE_HOME'] = null;
-    env['SIDEKICK_ENTRYPOINT_HOME'] = null;
-    env['SIDEKICK_ENABLE_UPDATE_CHECK'] = null;
+    env.remove('SIDEKICK_PACKAGE_HOME');
+    env.remove('SIDEKICK_ENTRYPOINT_HOME');
+    env.remove('SIDEKICK_ENABLE_UPDATE_CHECK');
   });
 
   Directory cwd = projectRoot;
@@ -182,10 +182,12 @@ packages:
 ///
 /// TODO doesn't work yet for functional sidekick CLI packages because
 /// their recompile will kick off and redownload its Dart runtime
-void overrideSidekickDartRuntimeWithSystemDartRuntime(Directory sidekick) {
+Future<void> overrideSidekickDartRuntimeWithSystemDartRuntime(
+  Directory sidekick,
+) async {
   env['SIDEKICK_PACKAGE_HOME'] = sidekick.absolute.path;
 
-  final systemDartSdkPath = _systemDartSdkPath();
+  final systemDartSdkPath = await _systemDartSdkPath();
   if (systemDartSdkPath == null) {
     throw "Tried overriding Dart SDK of package '${sidekick.path}', but "
         "couldn't get path of system Dart SDK.";
@@ -215,18 +217,16 @@ void _overrideDependency({
   required String path,
 }) {
   final pubspecPath = package.file('pubspec.yaml').path;
-  final pubspec = PubSpec.fromFile(pubspecPath);
-  pubspec.dependencyOverrides = {
-    ...pubspec.dependencyOverrides,
-    dependency: Dependency.fromPath(dependency, path),
-  };
-  pubspec.save(pubspecPath);
+  final pubspec = PubSpec.loadFromPath(pubspecPath);
+  final dep = DependencyBuilderPath(name: dependency, path: path);
+  pubspec.dependencyOverrides.add(dep);
+  pubspec.save();
 }
 
 /// Returns the Dart SDK of the `dart` executable on `PATH`
-Directory? _systemDartSdk() {
+Future<Directory?> _systemDartSdk() async {
   // /opt/homebrew/bin/dart
-  final path = _systemDartExecutable();
+  final path = await _systemDartExecutable();
   if (path == null) {
     // dart not on path
     return null;
@@ -240,11 +240,15 @@ Directory? _systemDartSdk() {
 }
 
 /// Returns the path to Dart SDK of the `dart` executable on `PATH`
-String? _systemDartSdkPath() => _systemDartSdk()?.path;
+Future<String?> _systemDartSdkPath() async => (await _systemDartSdk())?.path;
 
-String? _systemDartExecutable() =>
-    // /opt/homebrew/bin/dart
-    start('which dart', progress: Progress.capture(), nothrow: true).firstLine;
+Future<String?> _systemDartExecutable() async {
+  try {
+    return await output('which dart');
+  } catch (e) {
+    return null;
+  }
+}
 
 extension DirectoryExt on Directory {
   /// Recursively goes up and tries to find a [Directory] matching [predicate]
