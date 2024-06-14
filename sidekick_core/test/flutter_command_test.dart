@@ -41,11 +41,9 @@ void main() {
         runner.addCommand(FlutterCommand());
 
         bool called = false;
-        addFlutterSdkInitializer((sdkDir) {
+        addFlutterSdkInitializer((conf) {
           fakeFlutterSdk(directory: tempDir);
-          return Future.sync(() {
-            called = true;
-          });
+          called = true;
         });
         await runner.run(['flutter']);
         expect(called, isTrue);
@@ -67,9 +65,7 @@ void main() {
         addFlutterSdkInitializer((sdkDir) {
           // async
           fakeFlutterSdk(directory: tempDir);
-          return Future.sync(() {
-            called1 = true;
-          });
+          called1 = true;
         });
 
         bool called2 = false;
@@ -94,7 +90,7 @@ void main() {
         runner.addCommand(FlutterCommand());
 
         int called = 0;
-        void initializer(Directory path) {
+        void initializer(FlutterInitializerConfig config) {
           called++;
         }
 
@@ -118,7 +114,7 @@ void main() {
         runner.addCommand(FlutterCommand());
 
         int called = 0;
-        void initializer(Directory path) {
+        void initializer(FlutterInitializerConfig config) {
           called++;
         }
 

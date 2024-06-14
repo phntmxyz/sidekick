@@ -112,7 +112,8 @@ String? systemDartExecutable() =>
     // /opt/homebrew/bin/dart
     dcli
         .start('which dart', progress: Progress.capture(), nothrow: true)
-        .firstLine;
+        .lines
+        .firstOrNull;
 
 /// Returns the Dart SDK of the `dart` executable on `PATH`
 Directory? systemDartSdk() {

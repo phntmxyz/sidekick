@@ -14,6 +14,7 @@ export 'package:args/command_runner.dart';
 export 'package:dartx/dartx.dart';
 export 'package:dartx/dartx_io.dart';
 export 'package:dcli/dcli.dart' hide run, start, startFromArgs;
+export 'package:dcli_core/dcli_core.dart' show withEnvironment;
 export 'package:path/path.dart' hide absolute;
 export 'package:pub_semver/pub_semver.dart' show Version;
 export 'package:sidekick_core/src/cli_util.dart';

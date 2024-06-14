@@ -4,13 +4,13 @@ version: 0.0.1
 publish_to: none
 
 environment:
-  sdk: ">=3.2.6 <4.0.0"
+  sdk: ">=3.3.0 <4.0.0"
 
 executables:
   main:
 
 dependencies:
-  dcli: ^2.2.2
+  dcli: ^4.0.1
   pub_semver: ^2.1.1
   pubspec_parse: ^1.2.0
   sidekick_core: ^2.1.2

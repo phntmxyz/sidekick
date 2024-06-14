@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:dcli/dcli.dart' as dcli;
 import 'package:sidekick_core/sidekick_core.dart';
 
@@ -24,10 +22,8 @@ int flutter(
   }
 
   for (final initializer in _sdkInitializers) {
-    final future = initializer(sdk);
-    if (future is Future) {
-      dcli.waitForEx(future);
-    }
+    initializer(
+        FlutterInitializerConfig(sdk: sdk, packagePath: workingDirectory));
   }
 
   final process = dcli.startFromArgs(
@@ -64,7 +60,8 @@ Directory? systemFlutterSdk() {
   // /opt/homebrew/bin/flutter
   final path = dcli
           .start('which flutter', progress: Progress.capture(), nothrow: true)
-          .firstLine ??
+          .lines
+          .firstOrNull ??
       env['FLUTTER_ROOT'];
   if (path == null) {
     // flutter not on path or env.FLUTTER_ROOT
@@ -97,7 +94,18 @@ Removable addFlutterSdkInitializer(FlutterInitializer initializer) {
 typedef Removable = void Function();
 
 /// Called by [flutter] before executing the flutter executable
-typedef FlutterInitializer = FutureOr<void> Function(Directory sdkDir);
+typedef FlutterInitializer = Function(FlutterInitializerConfig config);
 
 /// Initializers that have to be executed before executing the flutter command
 List<FlutterInitializer> _sdkInitializers = [];
+
+/// Called by [flutter] before executing the flutter executable
+class FlutterInitializerConfig {
+  FlutterInitializerConfig({
+    this.sdk,
+    this.packagePath,
+  });
+
+  final Directory? sdk;
+  final Directory? packagePath;
+}

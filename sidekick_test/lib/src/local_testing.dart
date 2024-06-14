@@ -5,6 +5,7 @@ import 'package:dartx/dartx_io.dart';
 import 'package:dcli/dcli.dart';
 import 'package:dcli/posix.dart';
 import 'package:path/path.dart';
+import 'package:pubspec_manager/pubspec_manager.dart';
 import 'package:sidekick_test/src/download_dart.sh.template.dart';
 import 'package:sidekick_test/src/sidekick_config.sh.template.dart';
 import 'package:test/test.dart';
@@ -215,12 +216,9 @@ void _overrideDependency({
   required String path,
 }) {
   final pubspecPath = package.file('pubspec.yaml').path;
-  final pubspec = PubSpec.fromFile(pubspecPath);
-  pubspec.dependencyOverrides = {
-    ...pubspec.dependencyOverrides,
-    dependency: Dependency.fromPath(dependency, path),
-  };
-  pubspec.save(pubspecPath);
+  final pubspec = PubSpec.loadFromPath(pubspecPath);
+  pubspec.dependencyOverrides
+      .add(DependencyBuilderPath(name: dependency, path: path));
 }
 
 /// Returns the Dart SDK of the `dart` executable on `PATH`
