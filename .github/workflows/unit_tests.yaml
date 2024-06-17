@@ -11,20 +11,20 @@ jobs:
     runs-on: ubuntu-latest
 
     container:
-      image: dart:3.0.0
+      image: dart:3.3.0
 
     steps:
       - uses: actions/checkout@v1
       - name: Install dependencies sidekick_core
         run: cd sidekick_core && dart pub get --no-precompile
       - name: Run tests sidekick_core
-        run: cd sidekick_core && dart test
+        run: cd sidekick_core && dart test >> /test.txt
 
   vault_test:
     runs-on: ubuntu-latest
 
     container:
-      image: dart:3.0.0
+      image: dart:3.3.0
 
     steps:
       - uses: actions/checkout@v1
@@ -39,7 +39,7 @@ jobs:
     runs-on: ubuntu-latest
 
     container:
-      image: dart:3.0.0
+      image: dart:3.3.0
 
     steps:
       - uses: actions/checkout@v1
