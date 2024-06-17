@@ -49,7 +49,7 @@ void main() {
 
     Future<void> code() async {
       when(() => mockProcessManager.runSync(any()))
-          .thenAnswer((_) => FakeProcessResult());
+          .thenAnswer((_) => fakeProcessResult());
       const latest = '13.12.1989';
       fakeGetLatestDependencyVersion({'sidekick': Version.parse(latest)});
       final runner =
@@ -86,7 +86,7 @@ void main() {
 
     Future<void> code() async {
       when(() => mockProcessManager.runSync(any()))
-          .thenAnswer((_) => FakeProcessResult(exitCode: 1, stderr: 'foo'));
+          .thenAnswer((_) => fakeProcessResult(exitCode: 1, stderr: 'foo'));
 
       const latest = '13.12.1989';
       fakeGetLatestDependencyVersion({'sidekick': Version.parse(latest)});
@@ -127,17 +127,12 @@ void main() {
 
 class MockProcessManager extends Mock implements ProcessManager {}
 
-class FakeProcessResult extends Fake implements ProcessResult {
-  FakeProcessResult({
-    this.exitCode = 0,
-    this.stderr,
-  });
-
-  @override
-  final int exitCode;
-
-  @override
-  final String? stderr;
+ProcessResult fakeProcessResult({
+  int exitCode = 0,
+  String stdout = '',
+  String stderr = '',
+}) {
+  return ProcessResult(0, exitCode, stdout, stderr);
 }
 
 void fakeGetLatestDependencyVersion(Map<String, Version> latestVersions) {

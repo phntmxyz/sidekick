@@ -165,34 +165,34 @@ packages:
     dependency: "direct main"
     description:
       name: dcli
-      sha256: "12ef06b5b99d092eb37d9598dbc0a49807abac40390085afd2be11f604607705"
+      sha256: c076448cee6fe563e1964ade9d4653d855e69d204547791fff0d0fe96c7bd75a
       url: "https://pub.dev"
     source: hosted
-    version: "4.0.1"
+    version: "4.0.1-beta.4"
   dcli_common:
     dependency: transitive
     description:
       name: dcli_common
-      sha256: aa61137f0e60817a6bc67f9ca0c709da222f9cef5bbfffb598051ac7c543557d
+      sha256: c8af0ed248e67b7293cc7ca24a11cc6f3762009ce2a4d0d03c1368e6b0f15fb9
       url: "https://pub.dev"
     source: hosted
-    version: "4.0.0"
+    version: "4.0.1-beta.4"
   dcli_core:
     dependency: transitive
     description:
       name: dcli_core
-      sha256: d922658829d15a5c5726480b9848fa2916267148f4db6098597ca086e1dabe8a
+      sha256: "915b6d7aa9cc039de4be263ecbdac0d372286059f5dba02a8b171748afb4883c"
       url: "https://pub.dev"
     source: hosted
-    version: "4.0.0"
+    version: "4.0.1-beta.4"
   dcli_terminal:
     dependency: transitive
     description:
       name: dcli_terminal
-      sha256: c738b3449bf72f4fc42eb746702546a3d321ec5d03be64ca975d2407ed35e59f
+      sha256: "5449d06b49966796237c5953abc8763dfbc3c29d180ba41f8e182d76c8379840"
       url: "https://pub.dev"
     source: hosted
-    version: "4.0.0"
+    version: "4.0.1-beta.4"
   equatable:
     dependency: transitive
     description:
@@ -489,22 +489,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.1.0"
-  runtime_named_locks:
-    dependency: transitive
-    description:
-      name: runtime_named_locks
-      sha256: "5fe859c1ddeeb595f6528596157191b628d85ba3137f0da327d92153604f2f6b"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.0-beta.6"
-  runtime_native_semaphores:
-    dependency: transitive
-    description:
-      name: runtime_native_semaphores
-      sha256: bd5895d87f97543be6c9a5199b8a10483b9d6871327fe508ec89dbc2437c9220
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.0-beta.6"
   scope:
     dependency: transitive
     description:

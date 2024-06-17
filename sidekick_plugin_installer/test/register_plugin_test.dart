@@ -5,8 +5,8 @@ import 'package:test/test.dart';
 
 void main() {
   group('Register plugin', () {
-    test('A command gets added', () {
-      insideFakeProjectWithSidekick((dir) async {
+    test('A command gets added', () async {
+      await insideFakeProjectWithSidekick((dir) async {
         dir.file('packages/dash/lib/dash.dart').writeAsStringSync(
               initialCliFileContentWithoutImportAndCommand,
             );
@@ -24,8 +24,8 @@ void main() {
 
     test(
         'A command does not get double added if the command is already present',
-        () {
-      insideFakeProjectWithSidekick((dir) async {
+        () async {
+      await insideFakeProjectWithSidekick((dir) async {
         dir.file('packages/dash/lib/dash.dart').writeAsStringSync(
               initialCliFileContentWithMyCommand,
             );
@@ -41,8 +41,8 @@ void main() {
       });
     });
 
-    test('A import gets added', () {
-      insideFakeProjectWithSidekick((dir) async {
+    test('A import gets added', () async {
+      await insideFakeProjectWithSidekick((dir) async {
         dir.file('packages/dash/lib/dash.dart').writeAsStringSync(
               initialCliFileContentWithoutImportAndCommand,
             );
@@ -59,8 +59,8 @@ void main() {
       });
     });
     test('A import does not get double added if the command is already present',
-        () {
-      insideFakeProjectWithSidekick((dir) async {
+        () async {
+      await insideFakeProjectWithSidekick((dir) async {
         dir.file('packages/dash/lib/dash.dart').writeAsStringSync(
               initialCliFileContentWithMyImport,
             );

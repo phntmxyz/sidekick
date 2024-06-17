@@ -217,8 +217,16 @@ void _overrideDependency({
 }) {
   final pubspecPath = package.file('pubspec.yaml').path;
   final pubspec = PubSpec.loadFromPath(pubspecPath);
+
+  if (pubspec.dependencyOverrides.list
+          .firstOrNullWhere((dep) => dep.name == dependency) !=
+      null) {
+    pubspec.dependencyOverrides.remove(dependency);
+  }
+
   pubspec.dependencyOverrides
       .add(DependencyBuilderPath(name: dependency, path: path));
+  pubspec.save();
 }
 
 /// Returns the Dart SDK of the `dart` executable on `PATH`
