@@ -87,7 +87,9 @@ void main() {
       try {
         await runner.run(['script']);
         fail('should throw');
-      } catch (e) {
+      } catch (e, stack) {
+        printOnFailure(e.toString());
+        printOnFailure(stack.toString());
         expect(
           e,
           isA<BashCommandException>()

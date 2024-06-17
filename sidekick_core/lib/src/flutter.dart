@@ -26,17 +26,26 @@ int flutter(
         FlutterInitializerConfig(sdk: sdk, packagePath: workingDirectory));
   }
 
-  final process = dcli.startFromArgs(
-    Platform.isWindows ? 'bash' : sdk.file('bin/flutter').path,
-    [if (Platform.isWindows) sdk.file('bin/flutter.exe').path, ...args],
-    workingDirectory: workingDirectory?.absolute.path,
-    nothrow: nothrow || throwOnError != null,
-    progress: progress,
-    terminal: progress == null,
-  );
+  int exitCode = -1;
+  try {
+    final process = dcli.startFromArgs(
+      Platform.isWindows ? 'bash' : sdk.file('bin/flutter').path,
+      [if (Platform.isWindows) sdk.file('bin/flutter.exe').path, ...args],
+      workingDirectory: workingDirectory?.absolute.path,
+      nothrow: nothrow || throwOnError != null,
+      progress: progress,
+      terminal: progress == null,
+    );
 
-  final exitCode = process.exitCode ?? -1;
-
+    exitCode = process.exitCode ?? -1;
+  } catch (e) {
+    if (e is dcli.RunException) {
+      exitCode = e.exitCode ?? 1;
+    }
+    if (throwOnError == null) {
+      rethrow;
+    }
+  }
   if (exitCode != 0 && throwOnError != null) {
     throw throwOnError();
   }

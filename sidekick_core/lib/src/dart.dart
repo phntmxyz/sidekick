@@ -90,17 +90,26 @@ int systemDart(
     throw "Couldn't find dart executable on PATH.";
   }
 
-  final process = dcli.startFromArgs(
-    systemDartExecutablePath,
-    args,
-    workingDirectory: workingDirectory?.path,
-    progress: progress,
-    terminal: progress == null,
-    nothrow: nothrow || throwOnError != null,
-  );
+  int exitCode = -1;
+  try {
+    final process = dcli.startFromArgs(
+      systemDartExecutablePath,
+      args,
+      workingDirectory: workingDirectory?.path,
+      progress: progress,
+      terminal: progress == null,
+      nothrow: nothrow || throwOnError != null,
+    );
 
-  final exitCode = process.exitCode ?? -1;
-
+    exitCode = process.exitCode ?? -1;
+  } catch (e) {
+    if (e is dcli.RunException) {
+      exitCode = e.exitCode ?? 1;
+    }
+    if (throwOnError == null) {
+      rethrow;
+    }
+  }
   if (exitCode != 0 && throwOnError != null) {
     throw throwOnError();
   }
