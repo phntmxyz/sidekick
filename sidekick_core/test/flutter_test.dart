@@ -5,6 +5,8 @@ import 'package:sidekick_test/sidekick_test.dart';
 import 'package:test/test.dart';
 
 void main() {
+  final originalPATH = List<String>.unmodifiable(PATH);
+
   group('systemFlutterSdkPath', () {
     final tempDir = Directory.systemTemp.createTempSync();
     final fakeFlutter = tempDir.file('fake_flutter/bin/flutter')
@@ -15,15 +17,20 @@ void main() {
       tempDir.deleteSync(recursive: true);
     });
 
-    final originalPATH = [...PATH];
     setUp(() {
+      PATH.forEach(env.removeFromPATH);
+      originalPATH.forEach(env.appendToPATH);
       final whichPath =
           start('which which', progress: Progress.capture()).firstLine!;
       PATH.where((p) => !whichPath.startsWith(p)).forEach(env.removeFromPATH);
-      addTearDown(() {
-        PATH.forEach(env.removeFromPATH);
-        originalPATH.forEach(env.appendToPATH);
-      });
+      env['FLUTTER_ROOT'] = null;
+      env.removeFromPATH('FLUTTER_ROOT');
+    });
+    tearDown(() {
+      PATH.forEach(env.removeFromPATH);
+      originalPATH.forEach(env.appendToPATH);
+      env.removeFromPATH('FLUTTER_ROOT');
+      env['FLUTTER_ROOT'] = null;
     });
 
     test('returns null when flutter is not on path or env.FLUTTER_ROOT', () {
