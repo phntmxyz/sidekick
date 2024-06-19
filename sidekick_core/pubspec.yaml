@@ -38,4 +38,4 @@ dev_dependencies:
   test: ^1.20.0
 
 dependency_overrides:
-  dcli: 4.0.1-beta.4
+  dcli: ^4.0.1-beta.4
