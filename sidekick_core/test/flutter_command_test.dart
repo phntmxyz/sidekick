@@ -3,6 +3,7 @@ import 'package:sidekick_test/sidekick_test.dart';
 import 'package:test/test.dart';
 
 void main() {
+  tearDown(() => exitCode = 0);
   test('flutter command works when flutterSdkPath is set', () async {
     await insideFakeProjectWithSidekick((dir) async {
       final runner = initializeSidekick(

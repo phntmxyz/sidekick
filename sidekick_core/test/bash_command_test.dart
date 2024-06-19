@@ -4,6 +4,7 @@ import 'package:sidekick_test/sidekick_test.dart';
 import 'package:test/test.dart';
 
 void main() {
+  tearDown(() => exitCode = 0);
   test('bash command receives arguments', () async {
     await insideFakeProjectWithSidekick((dir) async {
       final runner = initializeSidekick(

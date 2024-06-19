@@ -3,6 +3,7 @@ import 'package:sidekick_test/sidekick_test.dart';
 import 'package:test/test.dart';
 
 void main() {
+  tearDown(() => exitCode = 0);
   test('analyze command sets exitCode 1 when command fails', () async {
     await insideFakeProjectWithSidekick((dir) async {
       dir.file('dash_sidekick.dart').writeAsStringSync('''

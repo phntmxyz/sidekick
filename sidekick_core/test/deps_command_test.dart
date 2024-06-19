@@ -5,6 +5,8 @@ import 'package:sidekick_test/sidekick_test.dart';
 import 'package:test/test.dart';
 
 void main() {
+  tearDown(() => exitCode = 0);
+
   void setUpPackages(Directory tempDir) {
     final packages = [
       'foo/a',
