@@ -22,7 +22,8 @@ export 'package:sidekick_core/src/commands/bash_command.dart';
 export 'package:sidekick_core/src/commands/dart_command.dart';
 export 'package:sidekick_core/src/commands/deps_command.dart';
 export 'package:sidekick_core/src/commands/flutter_command.dart';
-export 'package:sidekick_core/src/commands/format_command.dart' show FormatCommand;
+export 'package:sidekick_core/src/commands/format_command.dart'
+    show FormatCommand;
 export 'package:sidekick_core/src/commands/install_global_command.dart';
 export 'package:sidekick_core/src/commands/plugins/plugins_command.dart';
 export 'package:sidekick_core/src/commands/recompile_command.dart';
@@ -91,7 +92,8 @@ SidekickCommandRunner initializeSidekick({
     String? path,
   ) {
     if (path == null) return null;
-    final fromRepoRoot = repoRoot == null ? null : _resolveSdkPath(path, repoRoot);
+    final fromRepoRoot =
+        repoRoot == null ? null : _resolveSdkPath(path, repoRoot);
     final fromProjectRoot = _resolveSdkPath(path, projectRoot);
 
     if (fromRepoRoot == null && fromProjectRoot == null) {
@@ -146,14 +148,16 @@ SidekickCommandRunner initializeSidekick({
     // Not in a git repo. This is not a breaking change. Sidekick did not
     // support project without a git repo, before the migration
     if (mainProjectPath != null) {
-      mainProject = DartPackage.fromDirectory(projectRoot.directory(mainProjectPath));
+      mainProject =
+          DartPackage.fromDirectory(projectRoot.directory(mainProjectPath));
     }
     flutterSdk = _resolveSdkPath(flutterSdkPath, projectRoot);
     dartSdk = _resolveSdkPath(dartSdkPath, projectRoot);
   } else if (canonicalize(repoRoot.path) == canonicalize(projectRoot.path)) {
     // EntryPoint is in root of repository, we can safely migrate
     if (mainProjectPath != null) {
-      mainProject = DartPackage.fromDirectory(projectRoot.directory(mainProjectPath));
+      mainProject =
+          DartPackage.fromDirectory(projectRoot.directory(mainProjectPath));
     }
     flutterSdk = _resolveSdkPath(flutterSdkPath, projectRoot);
     dartSdk = _resolveSdkPath(dartSdkPath, projectRoot);
@@ -163,7 +167,8 @@ SidekickCommandRunner initializeSidekick({
     // relative to repo-root to relative to project-root
 
     try {
-      flutterSdk = resolveDirectoryBackwardsCompatible('flutterSdkPath', flutterSdkPath);
+      flutterSdk =
+          resolveDirectoryBackwardsCompatible('flutterSdkPath', flutterSdkPath);
     } catch (e, stack) {
       throw SdkNotFoundException(
         flutterSdkPath!,
@@ -183,7 +188,8 @@ SidekickCommandRunner initializeSidekick({
       );
     }
 
-    final mainProjectDir = resolveDirectoryBackwardsCompatible('mainProjectPath', mainProjectPath);
+    final mainProjectDir =
+        resolveDirectoryBackwardsCompatible('mainProjectPath', mainProjectPath);
     if (mainProjectDir != null) {
       mainProject = DartPackage.fromDirectory(mainProjectDir);
     }
@@ -206,7 +212,8 @@ SidekickCommandRunner initializeSidekick({
   }
 
   final runner = SidekickCommandRunner._(
-    description: description ?? 'A sidekick CLI to equip Dart/Flutter projects with custom tasks',
+    description: description ??
+        'A sidekick CLI to equip Dart/Flutter projects with custom tasks',
     mainProject: mainProject,
     flutterSdk: flutterSdk,
     dartSdk: dartSdk,
@@ -299,17 +306,23 @@ class SidekickCommandRunner<T> extends CompletionCommandRunner<T> {
 
       // don't show the install-global suggesting when running the install-global command
       bool isInstallGlobalCommand() =>
-          parsedArgs?.command?.name == 'sidekick' && parsedArgs!.arguments.contains('install-global');
+          parsedArgs?.command?.name == 'sidekick' &&
+          parsedArgs!.arguments.contains('install-global');
 
-      if (!enableAutoInstall && !isRunningTabCompletionCommand() && !isInstallGlobalCommand()) {
-        final command = yellow('./${SidekickContext.cliName} sidekick install-global');
+      if (!enableAutoInstall &&
+          !isRunningTabCompletionCommand() &&
+          !isInstallGlobalCommand()) {
+        final command =
+            yellow('./${SidekickContext.cliName} sidekick install-global');
         printerr(
           '${cyan('💡Tip: Run')} $command ${cyan('to enable tab completion.')}',
         );
       }
 
       try {
-        if (_isUpdateCheckEnabled && !_isSidekickCliUpdateCommand(parsedArgs) && !isRunningTabCompletionCommand()) {
+        if (_isUpdateCheckEnabled &&
+            !_isSidekickCliUpdateCommand(parsedArgs) &&
+            !isRunningTabCompletionCommand()) {
           // print warning if the user didn't fully update their CLI
           _checkCliVersionIntegrity();
           // print warning if CLI update is available
@@ -420,7 +433,8 @@ class SidekickCommandRunner<T> extends CompletionCommandRunner<T> {
 /// Enables checking for `sidekick` updates in [SidekickCommandRunner]
 ///
 /// Defaults to true, unless `export SIDEKICK_ENABLE_UPDATE_CHECK=false` is set
-bool get _isUpdateCheckEnabled => env['SIDEKICK_ENABLE_UPDATE_CHECK'] != 'false';
+bool get _isUpdateCheckEnabled =>
+    env['SIDEKICK_ENABLE_UPDATE_CHECK'] != 'false';
 
 typedef Unmount = void Function();
 
@@ -433,7 +447,8 @@ SidekickCommandRunner? _activeRunner;
 /// and the initial working directory is needed
 ///
 /// Nested calls to the cli run method may return different directories
-Directory get entryWorkingDirectory => _entryWorkingDirectory ?? Directory.current;
+Directory get entryWorkingDirectory =>
+    _entryWorkingDirectory ?? Directory.current;
 Directory? _entryWorkingDirectory;
 
 /// Name of the cli program
@@ -505,7 +520,8 @@ class SdkNotFoundException implements Exception {
   final Object? cause;
   final StackTrace? causeStackTrace;
 
-  late final String message = "Dart or Flutter SDK set to '$sdkPath', but that directory doesn't exist. "
+  late final String message =
+      "Dart or Flutter SDK set to '$sdkPath', but that directory doesn't exist. "
       "Please fix the path in `initializeSidekick` (dartSdkPath/flutterSdkPath). "
       "Note that relative sdk paths are resolved relative to the project root, "
       "which in this case is '${repoRoot.path}'.";

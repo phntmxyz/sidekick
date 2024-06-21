@@ -23,7 +23,11 @@ int flutter(
 
   for (final initializer in _sdkInitializers) {
     initializer(
-        FlutterInitializerConfig(sdk: sdk, packagePath: workingDirectory));
+      FlutterInitializerConfig(
+        sdk: sdk,
+        packagePath: workingDirectory,
+      ),
+    );
   }
 
   int exitCode = -1;

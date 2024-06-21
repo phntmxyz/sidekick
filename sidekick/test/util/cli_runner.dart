@@ -20,7 +20,8 @@ void tearDownSidekickCache() {
 ///
 /// sidekick_core dependency is linked to the local version
 Future<R> withSidekickCli<R>(
-    Future<R> Function(SidekickCli cli) callback) async {
+  Future<R> Function(SidekickCli cli) callback,
+) async {
   final copy = Directory.systemTemp.createTempSync();
   addTearDown(() => copy.deleteSync(recursive: true));
   await (await _cachedSidekickCli).root.copyRecursively(copy);
