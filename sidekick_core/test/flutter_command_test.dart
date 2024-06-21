@@ -91,7 +91,7 @@ void main() {
         runner.addCommand(FlutterCommand());
 
         int called = 0;
-        void initializer(FlutterInitializerConfig config) {
+        void initializer(FlutterInitializerContext context) {
           called++;
         }
 
@@ -115,7 +115,7 @@ void main() {
         runner.addCommand(FlutterCommand());
 
         int called = 0;
-        void initializer(FlutterInitializerConfig config) {
+        void initializer(FlutterInitializerContext context) {
           called++;
         }
 

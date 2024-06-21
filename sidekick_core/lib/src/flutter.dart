@@ -23,7 +23,7 @@ int flutter(
 
   for (final initializer in _sdkInitializers) {
     initializer(
-      FlutterInitializerConfig(
+      FlutterInitializerContext(
         sdk: sdk,
         packagePath: workingDirectory,
       ),
@@ -95,7 +95,7 @@ String? systemFlutterSdkPath() => systemFlutterSdk()?.path;
 /// Registers an initializer function that is called before executing the flutter command
 /// to prepare the SDK, such as downloading it.
 ///
-/// This is a global function,
+/// Also this function will be called multiple times, once for each usage of the [flutter] method
 Removable addFlutterSdkInitializer(FlutterInitializer initializer) {
   if (!_sdkInitializers.contains(initializer)) {
     _sdkInitializers.add(initializer);
@@ -107,18 +107,23 @@ Removable addFlutterSdkInitializer(FlutterInitializer initializer) {
 typedef Removable = void Function();
 
 /// Called by [flutter] before executing the flutter executable
-typedef FlutterInitializer = Function(FlutterInitializerConfig config);
+typedef FlutterInitializer = Function(FlutterInitializerContext context);
 
 /// Initializers that have to be executed before executing the flutter command
 List<FlutterInitializer> _sdkInitializers = [];
 
 /// Called by [flutter] before executing the flutter executable
-class FlutterInitializerConfig {
-  FlutterInitializerConfig({
+class FlutterInitializerContext {
+  FlutterInitializerContext({
     this.sdk,
     this.packagePath,
   });
 
+  /// The Flutter SDK directory, this directory is set by flutterSdkPath in [initializeSidekick]
+  /// Make sure the SDK will be initialized in this directory
+  /// You may want to use a symlink to the actual SDK directory
   final Directory? sdk;
+
+  /// The package directory where the [flutter] and [dart] command is executed
   final Directory? packagePath;
 }
