@@ -1,3 +1,4 @@
+import 'package:dcli_core/dcli_core.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_vault/sidekick_vault.dart';
 import 'package:test/test.dart';
@@ -22,8 +23,7 @@ void main() {
     final secretFile = File('test/vault/secret.txt.gpg');
     final tempDir = Directory.systemTemp.createTempSync();
 
-    final clearTextFile = tempDir.file('cleartext.txt')
-      ..writeAsStringSync('Dash is cool');
+    final clearTextFile = tempDir.file('cleartext.txt')..writeAsStringSync('Dash is cool');
     addTearDown(() {
       if (secretFile.existsSync()) {
         secretFile.deleteSync();
@@ -233,8 +233,7 @@ void main() {
 
   test('encrypt overwrites existing files', () async {
     final tempDir = Directory.systemTemp.createTempSync();
-    final clearTextFile = tempDir.file('cleartext.txt')
-      ..writeAsStringSync('Dash is cool');
+    final clearTextFile = tempDir.file('cleartext.txt')..writeAsStringSync('Dash is cool');
     addTearDown(() {
       tempDir.deleteSync(recursive: true);
     });
@@ -305,8 +304,7 @@ environment:
 ''');
   projectRoot.file('dash').createSync();
 
-  final fakeSidekickDir = projectRoot.directory('packages/dash')
-    ..createSync(recursive: true);
+  final fakeSidekickDir = projectRoot.directory('packages/dash')..createSync(recursive: true);
 
   fakeSidekickDir.file('pubspec.yaml')
     ..createSync()

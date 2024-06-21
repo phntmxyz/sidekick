@@ -16,4 +16,5 @@ dependencies:
   test: ^1.17.0
 
 dev_dependencies:
+  dcli_core: ^4.0.0
   lint: ^2.0.0
