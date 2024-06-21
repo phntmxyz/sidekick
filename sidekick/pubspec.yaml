@@ -33,6 +33,3 @@ dev_dependencies:
 
 executables:
   sidekick:
-
-dependency_overrides:
-  dcli: ^4.0.1-beta.4
