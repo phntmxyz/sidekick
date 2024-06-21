@@ -254,7 +254,7 @@ Directory _getPackageRootDirForHostedOrGitSource(ArgResults args) {
   final progress = dcli.Progress(
     dcli.devNull,
     // this parameter has a typo in dcli and actually is captureStdOut
-    captureStdin: true,
+    captureStdout: true,
     captureStderr: true,
   );
   try {

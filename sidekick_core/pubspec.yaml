@@ -1,6 +1,6 @@
 name: sidekick_core
 description: Shared sidekick commands, plugin engine, migrations, templates and utilities for sidekick CLIs
-version: 2.1.2
+version: 3.0.0-preview.0
 repository: https://github.com/phntmxyz/sidekick/tree/main/sidekick_core
 issue_tracker: https://github.com/phntmxyz/sidekick/labels/sidekick_core
 topics:
@@ -8,14 +8,14 @@ topics:
   - cli
 
 environment:
-  sdk: '>=2.19.0 <3.999.0'
+  sdk: '>=3.3.0 <3.999.0'
 
 dependencies:
   args: ^2.1.0
   cli_completion: ^0.3.0
   dart_console2: '>=3.0.0 <3.1.0'
   dartx: ^1.1.0
-  dcli: '>=2.2.0 <=2.2.3'
+  dcli: ^4.0.1-beta.4
   glob: ^2.0.2
   http: '>=0.13.5 <2.0.0'
   meta: ^1.5.0

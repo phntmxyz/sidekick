@@ -1,4 +1,5 @@
 import 'package:dcli/dcli.dart';
+import 'package:dcli_core/dcli_core.dart';
 import 'package:recase/recase.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_core/src/commands/plugins/create_plugin_command.dart';

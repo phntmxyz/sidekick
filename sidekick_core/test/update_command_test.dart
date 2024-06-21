@@ -15,7 +15,7 @@ void main() {
       initialSidekickCliVersion: Version.parse('1.1.0'),
       initialSidekickCoreVersion: Version.parse('1.1.0'),
       sidekickCoreReleases: [
-        _sidekick_core('1.2.0', sdk: '>=2.12.0 <3.0.0'),
+        _sidekick_core('2.0.0', sdk: '>=3.3.0 <4.0.0'),
       ],
     );
     await testCase.execute((command) async {
@@ -199,7 +199,7 @@ class _UpdateCommandTestCase {
     required this.sidekickCoreReleases,
     List<Version>? dartSdks,
     this.dartSdkVersion,
-  }) : dartSdks = dartSdks ?? [Version.parse('2.19.6')];
+  }) : dartSdks = dartSdks ?? [Version.parse('3.3.0')];
 
   final printLog = <String>[];
   final command = UpdateCommand();

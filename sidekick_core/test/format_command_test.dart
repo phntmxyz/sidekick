@@ -18,6 +18,8 @@ void main() {
     mainFile.writeAsStringSync(mainContent);
   }
 
+  tearDown(() => exitCode = 0);
+
   group('getLineLength', () {
     late File pubspecYamlFile;
     late DartPackage package;

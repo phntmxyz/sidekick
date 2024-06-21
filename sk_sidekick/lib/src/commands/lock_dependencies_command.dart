@@ -1,5 +1,5 @@
 import 'package:pub_semver/pub_semver.dart';
-import 'package:sidekick_core/sidekick_core.dart' hide PubSpec, version;
+import 'package:sidekick_core/sidekick_core.dart' hide version;
 
 // ignore: implementation_imports, sk_sidekick is not a published package and already depends on sidekick_core from path
 import 'package:sidekick_core/src/version_checker.dart';
