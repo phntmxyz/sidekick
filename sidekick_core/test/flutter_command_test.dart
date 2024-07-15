@@ -3,6 +3,7 @@ import 'package:sidekick_test/sidekick_test.dart';
 import 'package:test/test.dart';
 
 void main() {
+  tearDown(() => exitCode = 0);
   test('flutter command works when flutterSdkPath is set', () async {
     await insideFakeProjectWithSidekick((dir) async {
       final runner = initializeSidekick(
@@ -41,11 +42,9 @@ void main() {
         runner.addCommand(FlutterCommand());
 
         bool called = false;
-        addFlutterSdkInitializer((sdkDir) {
+        addFlutterSdkInitializer((conf) {
           fakeFlutterSdk(directory: tempDir);
-          return Future.sync(() {
-            called = true;
-          });
+          called = true;
         });
         await runner.run(['flutter']);
         expect(called, isTrue);
@@ -67,9 +66,7 @@ void main() {
         addFlutterSdkInitializer((sdkDir) {
           // async
           fakeFlutterSdk(directory: tempDir);
-          return Future.sync(() {
-            called1 = true;
-          });
+          called1 = true;
         });
 
         bool called2 = false;
@@ -94,7 +91,7 @@ void main() {
         runner.addCommand(FlutterCommand());
 
         int called = 0;
-        void initializer(Directory path) {
+        void initializer(FlutterInitializerContext context) {
           called++;
         }
 
@@ -118,7 +115,7 @@ void main() {
         runner.addCommand(FlutterCommand());
 
         int called = 0;
-        void initializer(Directory path) {
+        void initializer(FlutterInitializerContext context) {
           called++;
         }
 

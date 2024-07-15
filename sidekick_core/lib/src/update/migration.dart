@@ -192,8 +192,8 @@ Future<void> migrate({
           printerr(e.toString());
           printerr(s.toString());
         }
-        final handling =
-            onMigrationStepError?.call(context) ?? MigrationErrorHandling.skip;
+        final handling = await onMigrationStepError?.call(context) ??
+            MigrationErrorHandling.skip;
         switch (handling) {
           case MigrationErrorHandling.skip:
             continue;

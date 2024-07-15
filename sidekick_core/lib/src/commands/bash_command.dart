@@ -88,11 +88,18 @@ class BashCommand extends ForwardCommand {
         terminal: withStdIn,
       );
     } catch (e, stack) {
+      final int exitCode;
+      if (e is dcli.RunException) {
+        exitCode = e.exitCode ?? 1;
+      } else {
+        exitCode = progress.exitCode ?? 1;
+      }
+
       throw BashCommandException(
         script: bashScript,
         commandName: name,
         arguments: argResults!.arguments,
-        exitCode: progress.exitCode!,
+        exitCode: exitCode,
         cause: e,
         stack: stack,
       );

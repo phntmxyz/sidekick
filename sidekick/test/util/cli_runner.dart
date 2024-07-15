@@ -19,19 +19,21 @@ void tearDownSidekickCache() {
 /// Executes [callback] with copy of cached sidekick CLI to speed up CI tests
 ///
 /// sidekick_core dependency is linked to the local version
-R withSidekickCli<R>(R Function(SidekickCli cli) callback) {
+Future<R> withSidekickCli<R>(
+  Future<R> Function(SidekickCli cli) callback,
+) async {
   final copy = Directory.systemTemp.createTempSync();
   addTearDown(() => copy.deleteSync(recursive: true));
-  waitForEx(_cachedSidekickCli.root.copyRecursively(copy));
+  await (await _cachedSidekickCli).root.copyRecursively(copy);
 
   final cli = SidekickCli._(copy, 'dashi');
   return callback(cli);
 }
 
 /// Cached sidekick CLI. Don't use directly, use [withSidekickCli] instead.
-final _cachedSidekickCli = waitForEx(() async {
+final _cachedSidekickCli = () async {
   _cachedSidekickCliDir = Directory.systemTemp.createTempSync();
-  final process = await cachedGlobalSidekickCli.run(
+  final process = await (await cachedGlobalSidekickCli).run(
     ['init', '-n', 'dashi'],
     workingDirectory: _cachedSidekickCliDir!,
   );
@@ -51,13 +53,13 @@ final _cachedSidekickCli = waitForEx(() async {
   await cli.run([]);
 
   return cli;
-}());
+}();
 
 Directory? _cachedSidekickCliDir;
 
 /// Cached global sidekick CLI to speed up tests on CI
-final cachedGlobalSidekickCli =
-    waitForEx<GlobalSidekickCli>(_buildGlobalSidekickCli());
+final Future<GlobalSidekickCli> cachedGlobalSidekickCli =
+    _buildGlobalSidekickCli();
 
 Directory? _cachedGlobalSidekickCliDir;
 

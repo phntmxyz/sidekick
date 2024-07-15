@@ -32,7 +32,7 @@ void main() {
       final sidekickCoreVersion = versionRegExp
           .firstMatch(sidekickCoreFile.readAsStringSync())!
           .group(1)!;
-      final process = await cachedGlobalSidekickCli
+      final process = await (await cachedGlobalSidekickCli)
           .run(['--version'], workingDirectory: Directory.current);
       final output = await process.stdoutStream().join('\n');
       expect(output, 'sidekick: $version\nsidekick_core: $sidekickCoreVersion');
@@ -49,7 +49,7 @@ void main() {
 
         final projectRoot =
             setupTemplateProject('test/templates/minimal_dart_package');
-        final process = await cachedGlobalSidekickCli.run(
+        final process = await (await cachedGlobalSidekickCli).run(
           [
             'init',
             '-n',
@@ -79,7 +79,7 @@ void main() {
 
         final projectRoot =
             setupTemplateProject('test/templates/minimal_dart_package');
-        final process = await cachedGlobalSidekickCli.run(
+        final process = await (await cachedGlobalSidekickCli).run(
           [
             'init',
             '-n',
@@ -118,7 +118,7 @@ void main() {
 
         final projectRoot =
             setupTemplateProject('test/templates/minimal_dart_package');
-        final process = await cachedGlobalSidekickCli.run(
+        final process = await (await cachedGlobalSidekickCli).run(
           [
             'init',
             '-n',
@@ -156,7 +156,7 @@ void main() {
 
         final projectRoot =
             setupTemplateProject('test/templates/minimal_dart_package');
-        final process = await cachedGlobalSidekickCli.run(
+        final process = await (await cachedGlobalSidekickCli).run(
           [
             'init',
             '-n',
@@ -189,7 +189,7 @@ void main() {
     test(
       'throws error when cli name is invalid',
       () async {
-        final process = await cachedGlobalSidekickCli.run(
+        final process = await (await cachedGlobalSidekickCli).run(
           ['init', '-n', '-42invalidName'],
           workingDirectory: Directory.systemTemp.createTempSync(),
         );
@@ -211,7 +211,7 @@ void main() {
     test(
       'throws error when cli name collides with an system executable',
       () async {
-        final process = await cachedGlobalSidekickCli.run(
+        final process = await (await cachedGlobalSidekickCli).run(
           ['init', '-n', 'rm'],
           workingDirectory: Directory.systemTemp.createTempSync(),
         );
@@ -248,7 +248,7 @@ void main() {
       () async {
         final projectRoot =
             setupTemplateProject('test/templates/minimal_flutter_package');
-        final process = await cachedGlobalSidekickCli.run(
+        final process = await (await cachedGlobalSidekickCli).run(
           ['init', '-n', 'dashi'],
           workingDirectory: projectRoot,
         );
@@ -309,7 +309,7 @@ void main() {
         addTearDown(() => cliDir.deleteSync(recursive: true));
         final entrypointDir = cliDir.directory('foo/custom/projectRoot')
           ..createSync(recursive: true);
-        final process = await cachedGlobalSidekickCli.run(
+        final process = await (await cachedGlobalSidekickCli).run(
           [
             'init',
             '-n',
@@ -383,7 +383,7 @@ void main() {
       () async {
         final project =
             setupTemplateProject('test/templates/root_with_packages');
-        final process = await cachedGlobalSidekickCli.run(
+        final process = await (await cachedGlobalSidekickCli).run(
           ['init', '-n', 'dashi'],
           workingDirectory: project,
         );
@@ -445,7 +445,7 @@ void main() {
     () async {
       final projectRoot =
           setupTemplateProject('test/templates/minimal_flutter_package');
-      final process = await cachedGlobalSidekickCli.run(
+      final process = await (await cachedGlobalSidekickCli).run(
         [
           'init',
           '-n',

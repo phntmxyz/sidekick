@@ -49,7 +49,7 @@ topics:
   - sidekick-plugin
 
 environment:
-  sdk: '>=3.0.0 <4.0.0'
+  sdk: '>=3.3.0 <4.0.0'
 
 dependencies:
   sidekick_core: ^2.0.0

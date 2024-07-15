@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:dcli/dcli.dart' as dcli;
 import 'package:sidekick_core/sidekick_core.dart';
 
@@ -24,23 +22,34 @@ int flutter(
   }
 
   for (final initializer in _sdkInitializers) {
-    final future = initializer(sdk);
-    if (future is Future) {
-      dcli.waitForEx(future);
-    }
+    initializer(
+      FlutterInitializerContext(
+        sdk: sdk,
+        packagePath: workingDirectory,
+      ),
+    );
   }
 
-  final process = dcli.startFromArgs(
-    Platform.isWindows ? 'bash' : sdk.file('bin/flutter').path,
-    [if (Platform.isWindows) sdk.file('bin/flutter.exe').path, ...args],
-    workingDirectory: workingDirectory?.absolute.path,
-    nothrow: nothrow || throwOnError != null,
-    progress: progress,
-    terminal: progress == null,
-  );
+  int exitCode = -1;
+  try {
+    final process = dcli.startFromArgs(
+      Platform.isWindows ? 'bash' : sdk.file('bin/flutter').path,
+      [if (Platform.isWindows) sdk.file('bin/flutter.exe').path, ...args],
+      workingDirectory: workingDirectory?.absolute.path,
+      nothrow: nothrow || throwOnError != null,
+      progress: progress,
+      terminal: progress == null,
+    );
 
-  final exitCode = process.exitCode ?? -1;
-
+    exitCode = process.exitCode ?? -1;
+  } catch (e) {
+    if (e is dcli.RunException) {
+      exitCode = e.exitCode ?? 1;
+    }
+    if (throwOnError == null) {
+      rethrow;
+    }
+  }
   if (exitCode != 0 && throwOnError != null) {
     throw throwOnError();
   }
@@ -64,7 +73,8 @@ Directory? systemFlutterSdk() {
   // /opt/homebrew/bin/flutter
   final path = dcli
           .start('which flutter', progress: Progress.capture(), nothrow: true)
-          .firstLine ??
+          .lines
+          .firstOrNull ??
       env['FLUTTER_ROOT'];
   if (path == null) {
     // flutter not on path or env.FLUTTER_ROOT
@@ -85,7 +95,7 @@ String? systemFlutterSdkPath() => systemFlutterSdk()?.path;
 /// Registers an initializer function that is called before executing the flutter command
 /// to prepare the SDK, such as downloading it.
 ///
-/// This is a global function,
+/// Also this function will be called multiple times, once for each usage of the [flutter] method
 Removable addFlutterSdkInitializer(FlutterInitializer initializer) {
   if (!_sdkInitializers.contains(initializer)) {
     _sdkInitializers.add(initializer);
@@ -97,7 +107,23 @@ Removable addFlutterSdkInitializer(FlutterInitializer initializer) {
 typedef Removable = void Function();
 
 /// Called by [flutter] before executing the flutter executable
-typedef FlutterInitializer = FutureOr<void> Function(Directory sdkDir);
+typedef FlutterInitializer = Function(FlutterInitializerContext context);
 
 /// Initializers that have to be executed before executing the flutter command
 List<FlutterInitializer> _sdkInitializers = [];
+
+/// Called by [flutter] before executing the flutter executable
+class FlutterInitializerContext {
+  FlutterInitializerContext({
+    this.sdk,
+    this.packagePath,
+  });
+
+  /// The Flutter SDK directory, this directory is set by flutterSdkPath in [initializeSidekick]
+  /// Make sure the SDK will be initialized in this directory
+  /// You may want to use a symlink to the actual SDK directory
+  final Directory? sdk;
+
+  /// The package directory where the [flutter] and [dart] command is executed
+  final Directory? packagePath;
+}
