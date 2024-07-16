@@ -142,7 +142,8 @@ Future<void> runDash(List<String> args) async {
   );
   runner
     ..addCommand(DartCommand())
-    ..addCommand(SidekickCommand());
+    ..addCommand(SidekickCommand())
+    ..addCommand(MyCommand());
   try {
     return await runner.run(args);
   } on UsageException catch (e) {
