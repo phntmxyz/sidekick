@@ -101,6 +101,8 @@ class DepsCommand extends Command {
       printerr("\n\nErrors while getting dependencies:");
       printerr(errorText);
       exitCode = 1;
+    } else {
+      exitCode = 0;
     }
   }
 
