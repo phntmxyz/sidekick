@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.0](https://github.com/phntmxyz/sidekick/compare/sidekick_vault-v1.1.0..sidekick_vault-v1.2.0) (2024-7-16)
+
+- Update to dcli 4 https://github.com/phntmxyz/sidekick/commit/9a353e552ecf332824aa02f172b92c9f1b4ae884
+
 ## [1.1.0](https://github.com/phntmxyz/sidekick/compare/sidekick_vault-v1.0.0..sidekick_vault-v1.1.0) (2023-6-5)
 
 - Update to sidekick_core: 2.0.0 (stable)
