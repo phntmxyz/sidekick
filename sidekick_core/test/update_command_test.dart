@@ -159,6 +159,68 @@ void main() {
       expect(fullLog, contains('Dart Version: 3.0.1'));
     });
   });
+
+  test('Do not allow Dart 3.3 with sidekick 2.x', () async {
+    final testCase = _UpdateCommandTestCase(
+      initialSidekickCliVersion: Version.parse('2.2.0'),
+      initialSidekickCoreVersion: Version.parse('2.2.0'),
+      sidekickCoreReleases: [
+        _sidekick_core('2.3.0', sdk: '>=3.0.0 <3.999.0'),
+      ],
+      dartSdkVersion: Version.parse('3.1.2'),
+      dartSdks: [
+        Version.parse('3.1.2'),
+        Version.parse('3.2.6'),
+        Version.parse('3.3.0'),
+        Version.parse('3.4.0'),
+      ],
+    );
+    await testCase.execute((command) async {
+      _PrintOnlyUpdateExecutorTemplate.register();
+      await command.update();
+
+      // Dart SDK has been updated
+      expect(testCase.downloadedDartSdkVersion, Version.parse('3.2.6'));
+
+      // Correct arguments have been injected
+      expect(testCase.printLog, contains('Arguments: [dash, 2.2.0, 2.3.0]'));
+
+      final fullLog = testCase.printLog.join('\n');
+      expect(fullLog, contains('Downloading Dart SDK 3.2.6'));
+      expect(fullLog, contains('Dart Version: 3.2.6'));
+    });
+  });
+
+  test('Use Dart >=3.3 with sidekick 3.x', () async {
+    final testCase = _UpdateCommandTestCase(
+      initialSidekickCliVersion: Version.parse('2.2.0'),
+      initialSidekickCoreVersion: Version.parse('2.2.0'),
+      sidekickCoreReleases: [
+        _sidekick_core('2.3.0', sdk: '>=3.0.0 <3.999.0'),
+        _sidekick_core('3.0.0', sdk: '>=3.3.0 <3.999.0'),
+      ],
+      dartSdkVersion: Version.parse('3.2.6'),
+      dartSdks: [
+        Version.parse('3.2.6'),
+        Version.parse('3.3.4'),
+        Version.parse('3.4.4'),
+      ],
+    );
+    await testCase.execute((command) async {
+      _PrintOnlyUpdateExecutorTemplate.register();
+      await command.update();
+
+      // Dart SDK has been updated
+      expect(testCase.downloadedDartSdkVersion, Version.parse('3.4.4'));
+
+      // Correct arguments have been injected
+      expect(testCase.printLog, contains('Arguments: [dash, 2.2.0, 3.0.0]'));
+
+      final fullLog = testCase.printLog.join('\n');
+      expect(fullLog, contains('Downloading Dart SDK 3.4.4'));
+      expect(fullLog, contains('Dart Version: 3.4.4'));
+    });
+  });
 }
 
 // ignore: non_constant_identifier_names

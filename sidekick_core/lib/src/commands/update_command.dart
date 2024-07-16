@@ -43,12 +43,6 @@ class UpdateCommand extends Command {
         .toList();
 
     final futureDartSdkVersionWithLatestPatch = futureDartSdkVersions
-        // Make the maximum compatible Dart SDK 3.2.x, because dcli is not
-        // compatible with Dart SDK 3.3.0 anymore
-        // Dart 3.3.0 waitFor requires --enable_deprecated_wait_for in the VM
-        // Dart 3.4.0 waitFor was removed
-        // Waiting for dcli 4.0.0 to be released https://github.com/onepub-dev/dcli/issues/229
-        .filter((version) => version < Version(3, 3, 0))
         .groupBy((v) => Version(v.major, v.minor, 0))
         .mapEntries((versionGroup) => versionGroup.value.maxBy((v) => v.patch)!)
         .toList();
@@ -65,6 +59,15 @@ class UpdateCommand extends Command {
           dartSdkVersion: dartVersion,
           sidekickCoreVersion: sidekickCoreVersion,
         );
+        if (sidekickCoreVersion < Version(2, 999, 0) &&
+            dartVersion >= Version(3, 3, 0)) {
+          // sidekick_core: 2.X is only compatible with Dart SDK 3.2.x and earlier, because dcli:<4.x is not
+          // compatible with Dart SDK 3.3.0 anymore
+          // Dart 3.3.0 waitFor requires --enable_deprecated_wait_for in the VM
+          // Dart 3.4.0 waitFor was removed
+          // Starting with sidekick_core: 3.x (and dcli: 4.0.0) newer Dart SDKs can be used
+          continue;
+        }
         availableVersions.add(packageBundle);
       }
     }
