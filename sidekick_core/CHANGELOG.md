@@ -2,8 +2,6 @@
 
 ## [3.0.0-preview.1](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v2.1.2..sidekick_core-v3.0.0-preview.1) (2024-7-16)
 
-Full diff: <https://github.com/phntmxyz/sidekick/compare/sidekick_core-v2.1.2...main>
-
 - Breaking: `dart()` and `flutter()` are now async. Don't forget to add `await` everywhere! [#256](https://github.com/phntmxyz/sidekick/pull/256)
 - Breaking: Migrate to dcli:^4.0.4 [#255](https://github.com/phntmxyz/sidekick/pull/255) <https://github.com/phntmxyz/sidekick/commit/8969b3127281844e5ff5ed5e63f8ba77da7d808e>
 - Raise minimum Dart version to 3.3.0

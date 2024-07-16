@@ -6,8 +6,6 @@
 
 ## [1.2.0](https://github.com/phntmxyz/sidekick/compare/sidekick_plugin_installer-v1.1.0..sidekick_plugin_installer-v1.2.0) (2024-7-16)
 
-Full diff: https://github.com/phntmxyz/sidekick/compare/sidekick_plugin_installer-v1.1.0...main
-
 - Update sidekick_core: ^3.0.0-preview.1
 - Migrate to dcli:4.x [#255](https://github.com/phntmxyz/sidekick/pull/255)
 
