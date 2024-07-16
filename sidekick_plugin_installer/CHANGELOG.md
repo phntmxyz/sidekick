@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.2.1](https://github.com/phntmxyz/sidekick/compare/sidekick_plugin_installer-v1.2.0..sidekick_plugin_installer-v1.2.1) (2024-7-16)
+
+- allow analyzer 6.x.y <https://github.com/phntmxyz/sidekick/commit/7c5a0d66f1acc60cb97b2156490661e40d156105>
+
 ## [1.2.0](https://github.com/phntmxyz/sidekick/compare/sidekick_plugin_installer-v1.1.0..sidekick_plugin_installer-v1.2.0) (2024-7-16)
 
 Full diff: https://github.com/phntmxyz/sidekick/compare/sidekick_plugin_installer-v1.1.0...main

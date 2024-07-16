@@ -1,6 +1,6 @@
 name: sidekick_plugin_installer
 description: Helpers for plugin installers to easily install themselves into a sidekick cli
-version: 1.2.0
+version: 1.2.1
 repository: https://github.com/phntmxyz/sidekick/tree/main/sidekick_plugin_installer
 issue_tracker: https://github.com/phntmxyz/sidekick/labels/sidekick_plugin_installer
 topics:
