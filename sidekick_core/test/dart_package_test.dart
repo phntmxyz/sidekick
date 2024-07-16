@@ -87,5 +87,24 @@ flutter:
       expect(package!.name, 'package_name');
       expect(package.isFlutterPackage, isTrue);
     });
+
+    test('a workspace is not a DartPackage', () {
+      final tempDir = Directory.systemTemp.createTempSync();
+      addTearDown(() => tempDir.deleteSync(recursive: true));
+      tempDir.file('pubspec.yaml')
+        ..createSync()
+        ..writeAsStringSync('''
+name: _         # Can be anything, _ by convention.
+environment:
+  sdk: ^3.5.0   # Must be ^3.5.0 or later for workspace to be allowed
+workspace:
+- pkgs/app1     # The workspace-packages must be subdirectories
+- pkgs/app2
+- pkgs/shared
+''');
+
+      final package = DartPackage.fromDirectory(tempDir);
+      expect(package, isNull);
+    });
   });
 }
