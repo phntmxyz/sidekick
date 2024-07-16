@@ -101,7 +101,7 @@ class FormatCommand extends Command {
       }
       final int lineLength = getLineLength(package) ?? defaultLineLength;
       final allDartFiles = package.root.findFilesToFormat(globExcludes);
-      _format(
+      await _format(
         name: "package:${package.name}",
         lineLength: lineLength,
         files: allDartFiles,
@@ -125,7 +125,7 @@ class FormatCommand extends Command {
       for (final file in filesInPackage) {
         allFiles.remove(file);
       }
-      _format(
+      await _format(
         name: "package:${package.name}",
         lineLength: resolvedLineLength,
         files: filesInPackage,
@@ -133,7 +133,7 @@ class FormatCommand extends Command {
       );
     }
     if (allFiles.isNotEmpty) {
-      _format(
+      await _format(
         name: "Other",
         lineLength: defaultLineLength,
         files: allFiles,
@@ -154,12 +154,12 @@ class FormatCommand extends Command {
     }
   }
 
-  void _format({
+  Future<void> _format({
     required String name,
     required int lineLength,
     required Iterable<File> files,
     bool verify = false,
-  }) {
+  }) async {
     if (verify) {
       print("Verifying $name");
     } else {
@@ -171,7 +171,7 @@ class FormatCommand extends Command {
     }
     final progress =
         verify ? Progress.capture() : Progress.print(capture: true);
-    final exitCode = dart(
+    final completion = await dart(
       [
         'format',
         '-l',
@@ -186,6 +186,7 @@ class FormatCommand extends Command {
       // should only be printed when the change is actually written to the files (when verify is false)
       progress: progress,
     );
+    exitCode = completion.exitCode ?? 1;
     if (exitCode != 0) {
       foundFormatError = true;
       unformattedFiles.addAll(

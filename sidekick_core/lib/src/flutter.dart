@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dcli/dcli.dart' as dcli;
 import 'package:sidekick_core/sidekick_core.dart';
 
@@ -9,26 +11,19 @@ import 'package:sidekick_core/sidekick_core.dart';
 ///
 /// If [throwOnError] is given and the command returns a non-zero exit code,
 /// the result of [throwOnError] will be thrown regardless of [nothrow]
-int flutter(
+Future<ProcessCompletion> flutter(
   List<String> args, {
   Directory? workingDirectory,
   dcli.Progress? progress,
   bool nothrow = false,
   String Function()? throwOnError,
-}) {
+}) async {
   final sdk = flutterSdk;
   if (sdk == null) {
     throw FlutterSdkNotSetException();
   }
 
-  for (final initializer in _sdkInitializers) {
-    initializer(
-      FlutterInitializerContext(
-        sdk: sdk,
-        packagePath: workingDirectory,
-      ),
-    );
-  }
+  await initializeSdkForPackage(workingDirectory);
 
   int exitCode = -1;
   try {
@@ -54,7 +49,7 @@ int flutter(
     throw throwOnError();
   }
 
-  return exitCode;
+  return ProcessCompletion(exitCode: exitCode);
 }
 
 /// The Flutter SDK path is not set in [initializeSidekick] (param [flutterSdk])
@@ -91,39 +86,3 @@ Directory? systemFlutterSdk() {
 
 /// Returns the path to Flutter SDK of the `flutter` executable on `PATH`
 String? systemFlutterSdkPath() => systemFlutterSdk()?.path;
-
-/// Registers an initializer function that is called before executing the flutter command
-/// to prepare the SDK, such as downloading it.
-///
-/// Also this function will be called multiple times, once for each usage of the [flutter] method
-Removable addFlutterSdkInitializer(FlutterInitializer initializer) {
-  if (!_sdkInitializers.contains(initializer)) {
-    _sdkInitializers.add(initializer);
-  }
-  return () => _sdkInitializers.remove(initializer);
-}
-
-/// Can be called to remove a listener
-typedef Removable = void Function();
-
-/// Called by [flutter] before executing the flutter executable
-typedef FlutterInitializer = Function(FlutterInitializerContext context);
-
-/// Initializers that have to be executed before executing the flutter command
-List<FlutterInitializer> _sdkInitializers = [];
-
-/// Called by [flutter] before executing the flutter executable
-class FlutterInitializerContext {
-  FlutterInitializerContext({
-    this.sdk,
-    this.packagePath,
-  });
-
-  /// The Flutter SDK directory, this directory is set by flutterSdkPath in [initializeSidekick]
-  /// Make sure the SDK will be initialized in this directory
-  /// You may want to use a symlink to the actual SDK directory
-  final Directory? sdk;
-
-  /// The package directory where the [flutter] and [dart] command is executed
-  final Directory? packagePath;
-}
