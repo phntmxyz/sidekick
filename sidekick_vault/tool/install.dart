@@ -23,13 +23,13 @@ Future<void> main() async {
 
   print("- Generating package:${package.name}/src/vault.dart");
   _writeVaultFile(vaultDir, package);
-  addImport(
+  await addImport(
     package.libDir.file('${package.name}.dart'),
     "import 'package:${package.name}/src/vault.dart';",
   );
 
   print("- Adding vault command");
-  registerPlugin(
+  await registerPlugin(
     sidekickCli: package,
     import: "import 'package:sidekick_vault/sidekick_vault.dart';",
     command: 'VaultCommand(vault: vault)',

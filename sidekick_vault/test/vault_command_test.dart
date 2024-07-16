@@ -1,4 +1,3 @@
-import 'package:dcli_core/dcli_core.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_vault/sidekick_vault.dart';
 import 'package:test/test.dart';

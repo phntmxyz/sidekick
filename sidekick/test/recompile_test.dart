@@ -33,7 +33,7 @@ void main() {
         printOnFailure(stdout);
         final stderr = await updateProcess.stderrStream().join('\n');
         printOnFailure(stderr);
-        updateProcess.shouldExit(0);
+        await updateProcess.shouldExit(0);
         expect(stderr, contains('Installing dashi command line application'));
         expect(stderr, contains('Getting dependencies'));
         expect(stderr, contains('Bundling assets'));

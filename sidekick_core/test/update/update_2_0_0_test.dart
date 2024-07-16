@@ -15,7 +15,7 @@ void main() {
       tempDir.deleteSync(recursive: true);
       env['SIDEKICK_PACKAGE_HOME'] = null;
     });
-    tempDir.file('test').writeAsString('# entrypoint file');
+    tempDir.file('test').writeAsStringSync('# entrypoint file');
     final pubspecFile = sidekickDir.file('pubspec.yaml');
     final oldHttpVersion = Version(0, 13, 6);
     pubspecFile.writeAsStringSync('''

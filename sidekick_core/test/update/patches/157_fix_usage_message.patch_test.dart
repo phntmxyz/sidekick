@@ -13,7 +13,7 @@ void main() {
         tempDir.deleteSync(recursive: true);
         env['SIDEKICK_PACKAGE_HOME'] = null;
       });
-      tempDir.file('test').writeAsString('# entrypoint file');
+      tempDir.file('test').writeAsStringSync('# entrypoint file');
       sidekickDir.file('pubspec.yaml').writeAsStringSync('name: test_sidekick');
       final cliMainFile = sidekickDir.file('lib/test_sidekick.dart')
         ..createSync(recursive: true)
