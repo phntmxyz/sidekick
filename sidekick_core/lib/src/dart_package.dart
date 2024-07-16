@@ -27,6 +27,13 @@ class DartPackage {
         return null;
       }
 
+      final workspaceFile = pubspec['workspace'];
+      if (workspaceFile != null) {
+        // Workspace files are not packages
+        // flutter.dev/go/pub-workspace
+        return null;
+      }
+
       // Check for (optional) flutter dependency
       final deps = pubspec['dependencies'] as YamlMap?;
       final withFlutter = deps?.containsKey('flutter') ?? false;
