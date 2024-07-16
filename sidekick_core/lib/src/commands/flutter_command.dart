@@ -13,6 +13,7 @@ class FlutterCommand extends ForwardCommand {
   @override
   Future<void> run() async {
     final args = argResults!.arguments;
-    exitCode = flutter(args, nothrow: true);
+    final completion = await flutter(args, nothrow: true);
+    exitCode = completion.exitCode ?? 1;
   }
 }

@@ -10,7 +10,7 @@ void main() {
         dir.file('packages/dash/lib/dash.dart').writeAsStringSync(
               initialCliFileContentWithoutImportAndCommand,
             );
-        registerPlugin(
+        await registerPlugin(
           sidekickCli:
               DartPackage.fromDirectory(dir.directory('packages/dash'))!,
           command: 'MyCommand()',
@@ -29,7 +29,7 @@ void main() {
         dir.file('packages/dash/lib/dash.dart').writeAsStringSync(
               initialCliFileContentWithMyCommand,
             );
-        registerPlugin(
+        await registerPlugin(
           sidekickCli:
               DartPackage.fromDirectory(dir.directory('packages/dash'))!,
           command: 'MyCommand()',
@@ -46,7 +46,7 @@ void main() {
         dir.file('packages/dash/lib/dash.dart').writeAsStringSync(
               initialCliFileContentWithoutImportAndCommand,
             );
-        registerPlugin(
+        await registerPlugin(
           sidekickCli:
               DartPackage.fromDirectory(dir.directory('packages/dash'))!,
           import: "import 'package:my_package/src/my_command.dart';",
@@ -64,7 +64,7 @@ void main() {
         dir.file('packages/dash/lib/dash.dart').writeAsStringSync(
               initialCliFileContentWithMyImport,
             );
-        registerPlugin(
+        await registerPlugin(
           sidekickCli:
               DartPackage.fromDirectory(dir.directory('packages/dash'))!,
           import: "import 'package:my_package/src/my_command.dart';",

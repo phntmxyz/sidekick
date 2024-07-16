@@ -42,7 +42,7 @@ void main() {
         runner.addCommand(FlutterCommand());
 
         bool called = false;
-        addFlutterSdkInitializer((conf) {
+        addSdkInitializer((conf) {
           fakeFlutterSdk(directory: tempDir);
           called = true;
         });
@@ -63,14 +63,14 @@ void main() {
         runner.addCommand(FlutterCommand());
 
         bool called1 = false;
-        addFlutterSdkInitializer((sdkDir) {
+        addSdkInitializer((sdkDir) {
           // async
           fakeFlutterSdk(directory: tempDir);
           called1 = true;
         });
 
         bool called2 = false;
-        addFlutterSdkInitializer((sdkDir) {
+        addSdkInitializer((sdkDir) {
           // sync
           called2 = true;
         });
@@ -91,12 +91,12 @@ void main() {
         runner.addCommand(FlutterCommand());
 
         int called = 0;
-        void initializer(FlutterInitializerContext context) {
+        void initializer(SdkInitializerContext context) {
           called++;
         }
 
-        addFlutterSdkInitializer(initializer);
-        addFlutterSdkInitializer(initializer);
+        addSdkInitializer(initializer);
+        addSdkInitializer(initializer);
 
         await runner.run(['flutter']).onError((error, stackTrace) {
           // ignore
@@ -115,11 +115,11 @@ void main() {
         runner.addCommand(FlutterCommand());
 
         int called = 0;
-        void initializer(FlutterInitializerContext context) {
+        void initializer(SdkInitializerContext context) {
           called++;
         }
 
-        final remove = addFlutterSdkInitializer(initializer);
+        final remove = addSdkInitializer(initializer);
 
         await runner.run(['flutter']).onError((error, stackTrace) {
           // ignore

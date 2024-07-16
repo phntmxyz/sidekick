@@ -376,15 +376,15 @@ name: dashi
           ..writeAsStringSync(_dartFile140);
         final fakeStdout = FakeStdoutStream();
         final fakeStderr = FakeStdoutStream();
-        overrideIoStreams(
+        await overrideIoStreams(
           stderr: () => fakeStderr,
           stdout: () => fakeStdout,
-          body: () {
+          body: () async {
             final runner = initializeSidekick(
               dartSdkPath: systemDartSdkPath(),
             );
             runner.addCommand(FormatCommand());
-            expectLater(
+            await expectLater(
               () => runner.run(['format', '--verify']),
               throwsA(isA<DartFileFormatException>()),
             );

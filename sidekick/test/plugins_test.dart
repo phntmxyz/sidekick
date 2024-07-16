@@ -1,5 +1,4 @@
 import 'package:dcli/dcli.dart';
-import 'package:dcli_core/dcli_core.dart';
 import 'package:recase/recase.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_core/src/commands/plugins/create_plugin_command.dart';
@@ -55,7 +54,7 @@ void main() {
 
         'git init'.start(workingDirectory: pluginDir.path);
         'git add .'.start(workingDirectory: pluginDir.path);
-        withEnvironment(
+        await withEnvironment(
           () async =>
               'git commit -m "initial"'.start(workingDirectory: pluginDir.path),
           // without this, `git commit` crashes on CI

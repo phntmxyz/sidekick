@@ -12,30 +12,30 @@ import 'package:sidekick_core/sidekick_core.dart';
 ///
 /// If [throwOnError] is given and the command returns a non-zero exit code,
 /// the result of [throwOnError] will be thrown regardless of [nothrow]
-int dart(
+Future<ProcessCompletion> dart(
   List<String> args, {
   Directory? workingDirectory,
   dcli.Progress? progress,
   bool nothrow = false,
   String Function()? throwOnError,
-}) {
+}) async {
   Directory? sdk = dartSdk;
-  if (sdk == null) {
-    if (flutterSdk != null) {
-      final embeddedSdk = flutterSdk!.directory('bin/cache/dart-sdk');
-      if (!embeddedSdk.existsSync()) {
-        // Flutter SDK is not fully initialized, the Dart SDK not yet downloaded
-        // Execute flutter_tool to download the embedded dart runtime
-        flutter([], workingDirectory: workingDirectory, nothrow: true);
-      }
-      if (embeddedSdk.existsSync()) {
-        sdk = embeddedSdk;
-      }
+  if (sdk == null && flutterSdk != null) {
+    final embeddedSdk = flutterSdk!.directory('bin/cache/dart-sdk');
+    if (!embeddedSdk.existsSync()) {
+      // Flutter SDK is not fully initialized, the Dart SDK not yet downloaded
+      // Execute flutter_tool to download the embedded dart runtime
+      await flutter([], workingDirectory: workingDirectory, nothrow: true);
+    }
+    if (embeddedSdk.existsSync()) {
+      sdk = embeddedSdk;
     }
   }
   if (sdk == null) {
     throw DartSdkNotSetException();
   }
+
+  await initializeSdkForPackage(workingDirectory);
 
   final dart =
       Platform.isWindows ? sdk.file('bin/dart.exe') : sdk.file('bin/dart');
@@ -55,7 +55,7 @@ int dart(
     throw throwOnError();
   }
 
-  return exitCode;
+  return ProcessCompletion(exitCode: exitCode);
 }
 
 /// The Dart SDK path is not set in [initializeSidekick] (param [dartSdk], neither is is the [flutterSdk])

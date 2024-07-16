@@ -62,7 +62,7 @@ class DepsCommand extends Command {
       }
       _warnIfNotInProject();
       // only get deps for selected package
-      _getDependencies(package);
+      await _getDependencies(package);
       return;
     }
 
@@ -89,7 +89,7 @@ class DepsCommand extends Command {
 
     for (final package in allPackages.whereNot(excluded.contains)) {
       try {
-        _getDependencies(package);
+        await _getDependencies(package);
       } catch (e, stack) {
         print('Error while getting dependencies for ${package.name} '
             '(${package.root.path})');
@@ -101,14 +101,16 @@ class DepsCommand extends Command {
       printerr("\n\nErrors while getting dependencies:");
       printerr(errorText);
       exitCode = 1;
+    } else {
+      exitCode = 0;
     }
   }
 
-  void _getDependencies(DartPackage package) {
+  Future<void> _getDependencies(DartPackage package) async {
     print(yellow('=== package ${package.name} ==='));
     final packageDir = package.root;
     final dartOrFlutter = package.isFlutterPackage ? flutter : dart;
-    dartOrFlutter(
+    await dartOrFlutter(
       ['pub', 'get'],
       workingDirectory: packageDir,
       throwOnError: () =>

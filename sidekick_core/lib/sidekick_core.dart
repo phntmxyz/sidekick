@@ -35,7 +35,9 @@ export 'package:sidekick_core/src/directory_ext.dart';
 export 'package:sidekick_core/src/file_util.dart';
 export 'package:sidekick_core/src/flutter.dart';
 export 'package:sidekick_core/src/forward_command.dart';
+export 'package:sidekick_core/src/process.dart' show ProcessCompletion;
 export 'package:sidekick_core/src/repository.dart';
+export 'package:sidekick_core/src/sdk_initializer.dart';
 export 'package:sidekick_core/src/sidekick_context.dart' show SidekickContext;
 export 'package:sidekick_core/src/sidekick_package.dart';
 export 'package:sidekick_core/src/template/sidekick_package.template.dart';
@@ -45,7 +47,7 @@ export 'package:sidekick_core/src/template/sidekick_package.template.dart';
 /// This is used by the update command to determine if your sidekick cli
 /// requires an update
 // DO NOT MANUALLY EDIT THIS VERSION, instead run `sk bump-version sidekick_core`
-final Version version = Version.parse('3.0.0-preview.0');
+final Version version = Version.parse('2.1.2');
 
 /// Initializes sidekick, call this at the very start of your CLI program
 ///
