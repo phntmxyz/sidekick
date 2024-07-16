@@ -1,5 +1,15 @@
 # Changelog
 
+## [3.0.0-preview.1](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v2.1.2..sidekick_core-v3.0.0-preview.1) (2024-7-16)
+
+Full diff: <https://github.com/phntmxyz/sidekick/compare/sidekick_core-v2.1.2...main>
+
+- Breaking: `dart()` and `flutter()` are now async. Don't forget to add `await` everywhere! [#256](https://github.com/phntmxyz/sidekick/pull/256)
+- Breaking: Migrate to dcli:^4.0.4 [#255](https://github.com/phntmxyz/sidekick/pull/255) <https://github.com/phntmxyz/sidekick/commit/8969b3127281844e5ff5ed5e63f8ba77da7d808e>
+- Raise minimum Dart version to 3.3.0
+- Breaking: Replaced `addFlutterSdkInitializer` with `addSdkInitializer`. It now gets way more information via `SdkInitializerContext`. This method may now be called way more often, always before every `flutter`, `dart` execution. [#256](https://github.com/phntmxyz/sidekick/pull/256)
+- Pub workspaces are not detected as packages anymore <https://github.com/phntmxyz/sidekick/commit/c6e8f97cf5faccd6f2ff59dcd2ea312dddfdfc09>
+
 ## [2.1.2](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v2.1.1..sidekick_core-v2.1.2) (2024-4-5)
 
 - Max Dart SDK 3.2.X [#254](https://github.com/phntmxyz/sidekick/pull/254)
