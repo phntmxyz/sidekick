@@ -173,34 +173,34 @@ packages:
     dependency: "direct main"
     description:
       name: dcli
-      sha256: c076448cee6fe563e1964ade9d4653d855e69d204547791fff0d0fe96c7bd75a
+      sha256: fb9897c9c2171bc53a26b62e582a98b4e1df70a65bede073c1a11108950d0440
       url: "https://pub.dev"
     source: hosted
-    version: "4.0.1-beta.4"
+    version: "4.0.5"
   dcli_common:
     dependency: transitive
     description:
       name: dcli_common
-      sha256: c8af0ed248e67b7293cc7ca24a11cc6f3762009ce2a4d0d03c1368e6b0f15fb9
+      sha256: fa90efc6f5105de865db51fed4204b41e13f5113425d5704e46e56889f1cc46a
       url: "https://pub.dev"
     source: hosted
-    version: "4.0.1-beta.4"
+    version: "4.0.3"
   dcli_core:
     dependency: "direct dev"
     description:
       name: dcli_core
-      sha256: "915b6d7aa9cc039de4be263ecbdac0d372286059f5dba02a8b171748afb4883c"
+      sha256: "4adec804e93b718d2b9efd7e4305c818219f65b8140833c7c12b10b198aff8c9"
       url: "https://pub.dev"
     source: hosted
-    version: "4.0.1-beta.4"
+    version: "4.0.7"
   dcli_terminal:
     dependency: transitive
     description:
       name: dcli_terminal
-      sha256: "5449d06b49966796237c5953abc8763dfbc3c29d180ba41f8e182d76c8379840"
+      sha256: fc289acb2e03f20c0d9b97ad5f19bcfa0d9dd8323028fee182fa7249b7687891
       url: "https://pub.dev"
     source: hosted
-    version: "4.0.1-beta.4"
+    version: "4.0.3"
   equatable:
     dependency: transitive
     description:
@@ -521,6 +521,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.1.0"
+  runtime_named_locks:
+    dependency: transitive
+    description:
+      name: runtime_named_locks
+      sha256: "5fe859c1ddeeb595f6528596157191b628d85ba3137f0da327d92153604f2f6b"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.0-beta.6"
+  runtime_native_semaphores:
+    dependency: transitive
+    description:
+      name: runtime_native_semaphores
+      sha256: bd5895d87f97543be6c9a5199b8a10483b9d6871327fe508ec89dbc2437c9220
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.0-beta.6"
   scope:
     dependency: transitive
     description:
@@ -573,10 +589,10 @@ packages:
     dependency: "direct main"
     description:
       name: sidekick_core
-      sha256: "23a62a757d8afa0f5384d2867e6b8e966fc2d9ace1a5b99c48fc0da14bb44d91"
+      sha256: "9af069c1c7b53fd388a807242d766e3f6dd236ca4afdbeb5c77ec83d6adcbedf"
       url: "https://pub.dev"
     source: hosted
-    version: "2.1.2"
+    version: "3.0.0-preview.1"
   sidekick_test:
     dependency: "direct dev"
     description:
