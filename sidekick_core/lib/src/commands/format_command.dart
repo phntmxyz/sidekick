@@ -106,6 +106,7 @@ class FormatCommand extends Command {
         lineLength: lineLength,
         files: allDartFiles,
         verify: verify,
+        workingDirectory: package.root,
       );
       _verifyThrow();
       return;
@@ -159,6 +160,7 @@ class FormatCommand extends Command {
     required int lineLength,
     required Iterable<File> files,
     bool verify = false,
+    Directory? workingDirectory,
   }) async {
     if (verify) {
       print("Verifying $name");
@@ -177,7 +179,7 @@ class FormatCommand extends Command {
         '-l',
         '$lineLength',
         if (!verify) '--fix',
-        ...files.map((file) => file.path),
+        ...files.map((file) => file.absolute.path),
         if (verify) '--set-exit-if-changed',
         if (verify) '--output=none',
       ],
@@ -185,6 +187,7 @@ class FormatCommand extends Command {
       // Lines like `Changed x.dart`, `Formatted x files (y changed) in z seconds`
       // should only be printed when the change is actually written to the files (when verify is false)
       progress: progress,
+      workingDirectory: workingDirectory,
     );
     exitCode = completion.exitCode ?? 1;
     if (exitCode != 0) {
