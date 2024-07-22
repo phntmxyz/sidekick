@@ -128,6 +128,11 @@ name: moshi
         final runner = initializeSidekick(
           dartSdkPath: systemDartSdkPath(),
         );
+
+        SdkInitializerContext? sdkInitializerContext;
+        addSdkInitializer((context) {
+          sdkInitializerContext = context;
+        });
         runner.addCommand(FormatCommand());
         await runner.run(['format', '-p', 'moshi']);
 
@@ -136,6 +141,11 @@ name: moshi
           _dartFile140,
         );
         expect(dir.file('moshi/lib/main.dart').readAsStringSync(), _dartFile80);
+        expect(sdkInitializerContext!.packageDir!.name, 'moshi');
+        expect(
+          sdkInitializerContext!.workingDirectory!.path,
+          dir.directory('moshi').path,
+        );
       });
     });
 
