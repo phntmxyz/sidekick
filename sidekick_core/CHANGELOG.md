@@ -1,5 +1,10 @@
 # Changelog
 
+## [3.0.0-preview.2](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v3.0.0-preview.1..sidekick_core-v3.0.0-preview.2) (2024-7-22)
+
+- Fix SdkInitializerContext.package when calling dart format [#258](https://github.com/phntmxyz/sidekick/pull/258) https://github.com/phntmxyz/sidekick/commit/50e907cb656099bde1e80ad2da0d20525836e5c6
+- Update sidekick_plugin_installer https://github.com/phntmxyz/sidekick/commit/ea519a97d3f280251f2be76c4b2a8f5d6d6ed6c9
+
 ## [3.0.0-preview.1](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v2.1.2..sidekick_core-v3.0.0-preview.1) (2024-7-16)
 
 - Breaking: `dart()` and `flutter()` are now async. Don't forget to add `await` everywhere! [#256](https://github.com/phntmxyz/sidekick/pull/256)
