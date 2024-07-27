@@ -92,6 +92,7 @@ jobs:
           echo $dartSdkPath | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
       - name: Dart version
         run: dart --version
+      - uses: actions/checkout@v1
       - name: Install dependencies
         run: cd sidekick && dart pub get --no-precompile
       - name: Run tests
