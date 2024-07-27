@@ -20,6 +20,26 @@ jobs:
       - name: Run tests sidekick_core
         run: cd sidekick_core && dart test
 
+  core_test_windows:
+    runs-on: windows-2022
+
+    steps:
+      - name: Set up Chocolatey
+        run: Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+      - name: Install Dart SDK
+        run: choco install dart-sdk --version 3.0.0
+      - name: Set up Dart in PATH
+        shell: powershell
+        run: |
+          $dartSdkPath = (Get-Command dart).Source
+          $dartSdkDir = Split-Path -Parent $dartSdkPath
+          echo "::add-path::$dartSdkDir"
+      - uses: actions/checkout@v1
+      - name: Install dependencies sidekick_core
+        run: cd sidekick_core && dart pub get --no-precompile
+      - name: Run tests sidekick_core
+        run: cd sidekick_core && dart test
+
   vault_test:
     runs-on: ubuntu-latest
 
