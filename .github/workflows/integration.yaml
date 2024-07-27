@@ -85,12 +85,11 @@ jobs:
         run: Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
       - name: Install Dart SDK
         run: choco install dart-sdk --version 3.0
-      - name: Set up Dart in PATH
+      - name: Add Dart SDK to PATH
         shell: powershell
         run: |
-          $dartSdkPath = (Get-Command dart).Source
-          $dartSdkDir = Split-Path -Parent $dartSdkPath
-          echo "::add-path::$dartSdkDir"
+          $dartSdkPath = "C:\tools\dart-sdk\bin"
+          echo "::add-path::$dartSdkPath"
       - name: Dart version
         run: dart --version
       - name: Install dependencies
