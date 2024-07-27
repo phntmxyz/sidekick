@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - windows
   pull_request:
   schedule:
     # Every night at 03:00
@@ -77,15 +78,25 @@ jobs:
           ./dashi sidekick plugins install sidekick_vault
           ./dashi vault -h
 
-  integration_tests_windows:
+  integration_tests_windows_local:
     runs-on: windows-2022
-
-    # They don't work yet, but someone should invest time here
-    if: 'false'
     steps:
-      - uses: actions/checkout@v2
-      - uses: dart-lang/setup-dart@v1
+      - name: Set up Chocolatey
+        run: Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+      - name: Install Dart SDK
+        run: choco install dart-sdk --version 3.0
+      - name: Add Dart SDK to PATH
+        shell: powershell
+        run: |
+          $dartSdkPath = "C:\\tools\\dart-sdk\\bin"
+          echo $dartSdkPath | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+      - name: Dart version
+        run: dart --version
+      - uses: actions/checkout@v1
       - name: Install dependencies
         run: cd sidekick && dart pub get --no-precompile
       - name: Run tests
         run: cd sidekick && dart test test/test_runner.dart
+        env:
+          SIDEKICK_PUB_DEPS: "false"
+          SIDEKICK_ANALYZE: "false"
