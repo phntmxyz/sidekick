@@ -29,7 +29,9 @@ int flutter(
       dcli.waitForEx(future);
     }
   }
-  final exe = Platform.isWindows ? sdk.file('bin/flutter.bat') : sdk.file('bin/flutter');
+  final exe = Platform.isWindows
+      ? sdk.file('bin/flutter.bat')
+      : sdk.file('bin/flutter');
 
   final process = dcli.startFromArgs(
     exe.path,
