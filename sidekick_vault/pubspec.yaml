@@ -13,12 +13,19 @@ environment:
 
 dependencies:
   actions_toolkit_dart: ^0.5.0
-  dcli: ^4.0.1-beta.4
-  sidekick_core: ^3.0.0-preview.1
+  dcli: ^7.0.2
+  sidekick_core: ^3.0.0-preview.1 # todo change
 
 dev_dependencies:
-  dcli_core: ^4.0.0
+  dcli_core: ^7.0.2
   lint: '>=1.5.0 <3.0.0'
   prompts: ^2.0.0
-  sidekick_plugin_installer: ^1.2.0
+  sidekick_plugin_installer: ^1.2.0 # todo change
   test: ^1.20.0
+
+# Comment in for local development
+dependency_overrides:
+  sidekick_core:
+    path: ../sidekick_core
+  sidekick_plugin_installer:
+    path: ../sidekick_plugin_installer

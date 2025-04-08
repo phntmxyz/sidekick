@@ -13,9 +13,9 @@ environment:
 dependencies:
   args: ^2.1.0
   cli_completion: ^0.3.0
-  dart_console2: '>=3.0.0 <3.1.0'
+  dart_console2: ^3.1.1
   dartx: ^1.1.0
-  dcli: ^4.0.4
+  dcli: ^7.0.2
   glob: ^2.0.2
   http: '>=0.13.5 <2.0.0'
   meta: ^1.5.0
