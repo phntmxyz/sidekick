@@ -5,6 +5,7 @@ import 'package:sk_sidekick/src/commands/bump_version_command.dart';
 import 'package:sk_sidekick/src/commands/coverage_command.dart';
 import 'package:sk_sidekick/src/commands/lock_dependencies_command.dart';
 import 'package:sk_sidekick/src/commands/release_command.dart';
+import 'package:sk_sidekick/src/commands/test_command.dart';
 import 'package:sk_sidekick/src/commands/test_sidekick_context_command.dart';
 import 'package:sk_sidekick/src/commands/verify_publish_state_command.dart';
 import 'package:sk_sidekick/src/release/sidekick_bundled_version_bump.dart';
@@ -27,6 +28,7 @@ Future<void> runSk(List<String> args) async {
     ..addCommand(FormatCommand())
     ..addCommand(LockDependenciesCommand())
     ..addCommand(ReleaseCommand())
+    ..addCommand(TestCommand())
     ..addCommand(VerifyPublishStateCommand())
     ..addCommand(
       BumpVersionCommand()
