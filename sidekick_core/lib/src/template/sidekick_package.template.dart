@@ -202,6 +202,10 @@ dev_dependencies:
 # generated code, do not edit this manually
 sidekick:
   cli_version: $canonicalizedVersion
+
+dependency_overrides:
+  # win32 is a transitive dependency of dcli, but dcli v7.0.2 requires win32 v5.7.0
+  win32: 5.7.0
 ''';
   }
 }
