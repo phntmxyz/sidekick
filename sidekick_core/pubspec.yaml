@@ -13,7 +13,6 @@ environment:
 dependencies:
   args: ^2.1.0
   cli_completion: ^0.3.0
-  dart_console2: ^3.1.1
   dartx: ^1.1.0
   dcli: ^7.0.2
   glob: ^2.0.2
@@ -26,6 +25,8 @@ dependencies:
   pubspec2: '>=2.0.0 <2.5.0'
   pubspec_parse: ^1.2.0
   recase: ^4.1.0
+  # win32 is a transitive dependency of dcli, but dcli v7.0.2 requires win32 v5.7.0
+  win32: ^5.7.0
   yaml: ^3.1.0
   yaml_edit: ^2.0.3
 
@@ -35,7 +36,3 @@ dev_dependencies:
   sidekick_test:
     path: ../sidekick_test
   test: '>1.25.0 <2.0.0'
-
-dependency_overrides:
-  # win32 is a transitive dependency of dcli, but dcli v7.0.2 requires win32 v5.7.0
-  win32: 5.7.0

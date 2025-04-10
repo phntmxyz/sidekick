@@ -341,10 +341,10 @@ packages:
     dependency: "direct dev"
     description:
       name: lint
-      sha256: "4eb54f00827c6aee5d6cb4124f9201ac351cca59f1d4eb132e94282d6cd2962c"
+      sha256: "2a1da23938013e5ec7cba18b97376fa685968ce96ae752c27b16742489006af2"
       url: "https://pub.dev"
     source: hosted
-    version: "2.7.0"
+    version: "2.6.2"
   logging:
     dependency: transitive
     description:
@@ -493,10 +493,10 @@ packages:
     dependency: transitive
     description:
       name: pubspec_parse
-      sha256: "0560ba233314abbed0a48a2956f7f022cce7c3e1e73df540277da7544cad4082"
+      sha256: "81876843eb50dc2e1e5b151792c9a985c5ed2536914115ed04e9c8528f6647b0"
       url: "https://pub.dev"
     source: hosted
-    version: "1.5.0"
+    version: "1.4.0"
   recase:
     dependency: "direct main"
     description:
@@ -808,4 +808,4 @@ packages:
     source: hosted
     version: "2.2.2"
 sdks:
-  dart: ">=3.6.0 <3.999.0"
+  dart: ">=3.5.0 <3.999.0"
