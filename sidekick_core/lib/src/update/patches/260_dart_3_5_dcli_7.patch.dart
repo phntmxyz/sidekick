@@ -20,10 +20,6 @@ final migrateDart35dcli7_260 = MigrationStep.inline(
     pubspec.dependencies['dcli'] = HostedReference(
       VersionConstraint.parse('^7.0.2'),
     );
-    pubspec.dependencyOverrides.remove('win32');
-    pubspec.dependencyOverrides['win32'] = HostedReference(
-      VersionConstraint.parse('5.7.0'),
-    );
     await pubspec.save(pubspecFile.parent);
   },
   name: 'Update dcli to 7.0.2 and sdk constraint to 3.5.0',

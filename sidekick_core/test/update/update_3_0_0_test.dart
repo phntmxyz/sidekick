@@ -61,12 +61,5 @@ dependencies:
 
     expect(coreVersion, isNotNull);
     expect(coreVersion!.allows(Version.parse('3.0.0')), isTrue);
-
-    final Version? win32Version = VersionChecker.getMinimumVersionConstraint(
-      DartPackage.fromDirectory(sidekickDir)!,
-      ['dependency_overrides', 'win32'],
-    );
-    expect(win32Version, isNotNull);
-    expect(win32Version!.allows(Version.parse('5.7.0')), isTrue);
   });
 }

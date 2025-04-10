@@ -21,8 +21,3 @@ dev_dependencies:
   sidekick_test:
     path: ../sidekick_test
   test: '>1.25.0 <2.0.0'
-
-# Comment in for local development
-dependency_overrides:
-  # win32 is a transitive dependency of dcli, but dcli v7.0.2 requires win32 v5.7.0
-  win32: 5.7.0

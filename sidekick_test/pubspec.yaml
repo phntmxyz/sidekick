@@ -18,5 +18,3 @@ dependencies:
 dev_dependencies:
   dcli_core: ^7.0.2
   lint: ^2.0.0
-  # win32 is a transitive dependency of dcli, but dcli v7.0.2 requires win32 v5.7.0
-  win32: 5.7.0

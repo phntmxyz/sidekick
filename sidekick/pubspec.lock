@@ -153,14 +153,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.1.1"
-  dart_console2:
-    dependency: transitive
-    description:
-      name: dart_console2
-      sha256: f7636b74f19910a20e3d03262190ad78546a33dfc972dba7bb9fe1530826269e
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.1.1"
   dartx:
     dependency: "direct main"
     description:
@@ -784,7 +776,7 @@ packages:
     source: hosted
     version: "1.2.1"
   win32:
-    dependency: "direct overridden"
+    dependency: transitive
     description:
       name: win32
       sha256: "2735daae5150e8b1dfeb3eb0544b4d3af0061e9e82cef063adcd583bdae4306a"
