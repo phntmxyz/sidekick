@@ -3,7 +3,6 @@ import 'package:pubspec2/pubspec2.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_core/src/update/migration.dart';
 
-// todo and add test
 final migrateDcli4_255 = MigrationStep.inline(
   (context) async {
     final pubspecFile = SidekickContext.sidekickPackage.pubspec;
