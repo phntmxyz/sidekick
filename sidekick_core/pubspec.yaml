@@ -21,8 +21,7 @@ dependencies:
   path: ^1.8.1
   # transitive from dcli
   pub_semver: ^2.1.1
-  # `pubspec2` is a transitive dependency of `dcli`, but `pubspec2` v2.5.0 breaks `dcli` v2 (see https://github.com/onepub-dev/dcli/issues/218)
-  pubspec2: '>=2.0.0 <2.5.0'
+  pubspec_manager: ^1.0.1
   pubspec_parse: ^1.2.0
   recase: ^4.1.0
   # win32 is a transitive dependency of dcli, but dcli v7.0.2 requires win32 v5.7.0

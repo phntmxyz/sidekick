@@ -5,7 +5,7 @@ import 'package:test/test.dart';
 
 void main() {
   for (final testCase in _testCases) {
-    test('patch 253 works (${testCase.name})', () async {
+    test('patch 255 works (${testCase.name})', () async {
       final tempDir = Directory.systemTemp.createTempSync();
       final sidekickDir = tempDir.directory('dash_sidekick')..createSync();
       env['SIDEKICK_PACKAGE_HOME'] = sidekickDir.absolute.path;
@@ -67,9 +67,9 @@ dependencies:
 ''',
     fileContentAfter: '''
 name: dash_sidekick
-environment: 
+environment:
   sdk: '>=3.3.0 <3.999.0'
-dependencies: 
+dependencies:
   args: ^2.1.0
   cli_completion: ^0.3.0
   dartx: ^1.1.0
@@ -81,9 +81,9 @@ dependencies:
     name: 'no dcli before',
     fileContentBefore: '''
 name: dash_sidekick
-environment: 
+environment:
   sdk: '>=3.3.0 <3.999.0'
-dependencies: 
+dependencies:
   args: ^2.1.0
   cli_completion: ^0.3.0
   dartx: ^1.1.0
@@ -91,9 +91,9 @@ dependencies:
 ''',
     fileContentAfter: '''
 name: dash_sidekick
-environment: 
+environment:
   sdk: '>=3.3.0 <3.999.0'
-dependencies: 
+dependencies:
   args: ^2.1.0
   cli_completion: ^0.3.0
   dartx: ^1.1.0
@@ -105,7 +105,7 @@ dependencies:
     name: 'patch was already applied',
     fileContentBefore: '''
 name: dash_sidekick
-environment: 
+environment:
   sdk: '>=3.3.0 <3.999.0'
 dependencies:
   args: ^2.1.0
@@ -116,9 +116,9 @@ dependencies:
 ''',
     fileContentAfter: '''
 name: dash_sidekick
-environment: 
+environment:
   sdk: '>=3.3.0 <3.999.0'
-dependencies: 
+dependencies:
   args: ^2.1.0
   cli_completion: ^0.3.0
   dartx: ^1.1.0
