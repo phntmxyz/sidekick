@@ -1,3 +1,8 @@
 .idea/
 
 !.idea/modules.xml
+
+.vscode
+
+# User-specific pubspec overrides.
+**/pubspec_overrides.yaml
