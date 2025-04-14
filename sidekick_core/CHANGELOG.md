@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.0.0-preview.5](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v3.0.0-preview.4..sidekick_core-v3.0.0-preview.5) (2025-4-14)
+
+Full diff: https://github.com/phntmxyz/sidekick/compare/sidekick_core-v3.0.0-preview.4...main
+
+- Remove set Dart SDK Version and change migration target to preview.5 https://github.com/phntmxyz/sidekick/commit/15691e281ee6d6b0a226df50e7bcf18c36ceeda0
+
 ## [3.0.0-preview.4](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v3.0.0-preview.3..sidekick_core-v3.0.0-preview.4) (2025-4-14)
 
 Full diff: https://github.com/phntmxyz/sidekick/compare/sidekick_core-v3.0.0-preview.3...main
