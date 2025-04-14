@@ -8,7 +8,6 @@ final migrateDart35dcli7_260 = MigrationStep.inline(
 
     final pubspec = PubSpec.loadFromPath(pubspecFile.path);
 
-    pubspec.environment.set(sdk: "'>=3.5.0 <4.0.0'");
     if (pubspec.dependencies.exists('dcli')) {
       pubspec.dependencies.remove('dcli');
     }
@@ -20,7 +19,7 @@ final migrateDart35dcli7_260 = MigrationStep.inline(
     );
     pubspec.save();
   },
-  name: 'Update dcli to 7.0.2 and sdk constraint to 3.5.0',
+  name: 'Update dcli to 7.0.2',
   pullRequestLink: 'https://github.com/phntmxyz/sidekick/pull/260',
-  targetVersion: Version(3, 0, 0, pre: 'preview.4'),
+  targetVersion: Version(3, 0, 0, pre: 'preview.5'),
 );

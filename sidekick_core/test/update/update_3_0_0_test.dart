@@ -26,7 +26,6 @@ environment:
   sdk: '>=2.0.0 <4.0.0'
 
 dependencies:
-  # dcli updated to 5.3.0 with Dart 3.5 
   dcli: $oldDcliVersion
 ''');
 
