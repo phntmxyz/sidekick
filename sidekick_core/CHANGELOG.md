@@ -33,6 +33,11 @@ Full diff: https://github.com/phntmxyz/sidekick/compare/sidekick_core-v3.0.0-pre
 - Breaking: Replaced `addFlutterSdkInitializer` with `addSdkInitializer`. It now gets way more information via `SdkInitializerContext`. This method may now be called way more often, always before every `flutter`, `dart` execution. [#256](https://github.com/phntmxyz/sidekick/pull/256)
 - Pub workspaces are not detected as packages anymore <https://github.com/phntmxyz/sidekick/commit/c6e8f97cf5faccd6f2ff59dcd2ea312dddfdfc09>
 
+## [2.1.3](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v2.1.2..sidekick_core-v2.1.3) (2024-7-16)
+
+- Allow updating to sidekick_core:3.0.0-preview with Dart 3.3.0+ <https://github.com/phntmxyz/sidekick/commit/a330aa7b938e25ac10b5e8862cda7c6912e4a15c>
+- Do not detect workspaces as dart packages <https://github.com/phntmxyz/sidekick/commit/e2346ad1558d745297b394220e8d56a5fafcabbf>
+
 ## [2.1.2](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v2.1.1..sidekick_core-v2.1.2) (2024-4-5)
 
 - Max Dart SDK 3.2.X [#254](https://github.com/phntmxyz/sidekick/pull/254)

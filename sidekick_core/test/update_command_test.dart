@@ -15,7 +15,7 @@ void main() {
       initialSidekickCliVersion: Version.parse('1.1.0'),
       initialSidekickCoreVersion: Version.parse('1.1.0'),
       sidekickCoreReleases: [
-        _sidekick_core('2.0.0', sdk: '>=3.3.0 <4.0.0'),
+        _sidekick_core('3.0.0', sdk: '>=3.5.0 <4.0.0'),
       ],
       dartSdks: [
         Version.parse('3.5.0'),
@@ -163,6 +163,68 @@ void main() {
     });
   });
 
+  test('Do not allow Dart 3.3 with sidekick 2.x', () async {
+    final testCase = _UpdateCommandTestCase(
+      initialSidekickCliVersion: Version.parse('2.2.0'),
+      initialSidekickCoreVersion: Version.parse('2.2.0'),
+      sidekickCoreReleases: [
+        _sidekick_core('2.3.0', sdk: '>=3.0.0 <3.999.0'),
+      ],
+      dartSdkVersion: Version.parse('3.1.2'),
+      dartSdks: [
+        Version.parse('3.1.2'),
+        Version.parse('3.2.6'),
+        Version.parse('3.3.0'),
+        Version.parse('3.4.0'),
+      ],
+    );
+    await testCase.execute((command) async {
+      _PrintOnlyUpdateExecutorTemplate.register();
+      await command.update();
+
+      // Dart SDK has been updated
+      expect(testCase.downloadedDartSdkVersion, Version.parse('3.2.6'));
+
+      // Correct arguments have been injected
+      expect(testCase.printLog, contains('Arguments: [dash, 2.2.0, 2.3.0]'));
+
+      final fullLog = testCase.printLog.join('\n');
+      expect(fullLog, contains('Downloading Dart SDK 3.2.6'));
+      expect(fullLog, contains('Dart Version: 3.2.6'));
+    });
+  });
+
+  test('Use Dart >=3.3 with sidekick 3.x', () async {
+    final testCase = _UpdateCommandTestCase(
+      initialSidekickCliVersion: Version.parse('2.2.0'),
+      initialSidekickCoreVersion: Version.parse('2.2.0'),
+      sidekickCoreReleases: [
+        _sidekick_core('2.3.0', sdk: '>=3.0.0 <3.999.0'),
+        _sidekick_core('3.0.0', sdk: '>=3.3.0 <3.999.0'),
+      ],
+      dartSdkVersion: Version.parse('3.2.6'),
+      dartSdks: [
+        Version.parse('3.2.6'),
+        Version.parse('3.3.4'),
+        Version.parse('3.4.4'),
+      ],
+    );
+    await testCase.execute((command) async {
+      _PrintOnlyUpdateExecutorTemplate.register();
+      await command.update();
+
+      // Dart SDK has been updated
+      expect(testCase.downloadedDartSdkVersion, Version.parse('3.4.4'));
+
+      // Correct arguments have been injected
+      expect(testCase.printLog, contains('Arguments: [dash, 2.2.0, 3.0.0]'));
+
+      final fullLog = testCase.printLog.join('\n');
+      expect(fullLog, contains('Downloading Dart SDK 3.4.4'));
+      expect(fullLog, contains('Dart Version: 3.4.4'));
+    });
+  });
+
   test('Update to Dart 3.5 with sidekick 3.0', () async {
     final testCase = _UpdateCommandTestCase(
       initialSidekickCliVersion: Version.parse('1.2.0'),
@@ -276,48 +338,53 @@ class _UpdateCommandTestCase {
   Future<void> execute(
     Future<void> Function(_UpdateCommandUnderTest command) code,
   ) async {
-    await runZoned(
-      () async {
-        VersionChecker.testFakeGetLatestDependencyVersion = (
-          String dependency, {
-          Version? dartSdkVersion,
-        }) async {
-          if (dependency == 'sidekick_core') {
-            final latest = sidekickCoreReleases.where((package) {
-              if (dartSdkVersion == null) return true;
-              return package.dartSdkConstraint.allows(dartSdkVersion);
-            }).maxBy((version) => version.version);
-            return latest?.version;
-          }
-          throw 'unknown dependency $dependency';
-        };
-        addTearDown(
-          () => VersionChecker.testFakeGetLatestDependencyVersion = null,
-        );
+    try {
+      await runZoned(
+        () async {
+          VersionChecker.testFakeGetLatestDependencyVersion = (
+            String dependency, {
+            Version? dartSdkVersion,
+          }) async {
+            if (dependency == 'sidekick_core') {
+              final latest = sidekickCoreReleases.where((package) {
+                if (dartSdkVersion == null) return true;
+                return package.dartSdkConstraint.allows(dartSdkVersion);
+              }).maxBy((version) => version.version);
+              return latest?.version;
+            }
+            throw 'unknown dependency $dependency';
+          };
+          addTearDown(
+            () => VersionChecker.testFakeGetLatestDependencyVersion = null,
+          );
 
-        _LocalUpdateExecutorTemplate.register();
+          _LocalUpdateExecutorTemplate.register();
 
-        final sdk = dartSdkVersion ?? dartSdks.first;
+          final sdk = dartSdkVersion ?? dartSdks.first;
 
-        await insideFakeProjectWithSidekick(
-          (dir) async {
-            _projectDir = dir;
-            await code(_UpdateCommandUnderTest(this));
-          },
-          dartSdkConstraint: '>=$sdk <${sdk.nextBreaking}',
-          overrideSidekickCoreWithLocalDependency: true,
-          sidekickCliVersion: initialSidekickCliVersion?.toString() ?? '1.1.0',
-          sidekickCoreVersion:
-              initialSidekickCoreVersion?.toString() ?? '1.1.0',
-        );
-      },
-      zoneSpecification: ZoneSpecification(
-        print: (_, __, ___, line) {
-          printLog.add(line);
-          stdout.writeln(line);
+          await insideFakeProjectWithSidekick(
+            (dir) async {
+              _projectDir = dir;
+              await code(_UpdateCommandUnderTest(this));
+            },
+            dartSdkConstraint: '>=$sdk <${sdk.nextBreaking}',
+            overrideSidekickCoreWithLocalDependency: true,
+            sidekickCliVersion:
+                initialSidekickCliVersion?.toString() ?? '1.1.0',
+            sidekickCoreVersion:
+                initialSidekickCoreVersion?.toString() ?? '1.1.0',
+          );
         },
-      ),
-    );
+        zoneSpecification: ZoneSpecification(
+          print: (_, __, ___, line) {
+            printLog.add(line);
+            stdout.writeln(line);
+          },
+        ),
+      );
+    } finally {
+      printOnFailure(printLog.join('\n'));
+    }
   }
 }
 
