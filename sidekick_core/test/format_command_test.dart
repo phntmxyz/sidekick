@@ -22,6 +22,7 @@ void main() {
 
   group('getLineLength', () {
     late File pubspecYamlFile;
+    late File analysisOptionsFile;
     late DartPackage package;
 
     setUp(() {
@@ -29,6 +30,8 @@ void main() {
       pubspecYamlFile = temp.file('pubspec.yaml')..writeAsStringSync('''
 name: dashi
 ''');
+      analysisOptionsFile = temp.file('analysis_options.yaml')
+        ..writeAsStringSync('');
       package = DartPackage.fromDirectory(temp)!;
 
       addTearDown(() {
@@ -52,6 +55,25 @@ format:
   line_length: 123
 ''');
       expect(getLineLength(package), 123);
+    });
+    test('should return the line_length from analysis_options.yaml', () {
+      analysisOptionsFile.writeAsStringSync('''
+formatter:  
+  page_width: 120
+      ''');
+      expect(getLineLength(package), 120);
+    });
+    test('analysis_options.yaml has precedence over pubspec.yaml', () {
+      analysisOptionsFile.writeAsStringSync('''
+formatter:  
+  page_width: 120
+      ''');
+      pubspecYamlFile.writeAsStringSync('''
+name: dashi
+format:
+  line_length: 100
+''');
+      expect(getLineLength(package), 120);
     });
   });
   group('Format Command', () {
@@ -485,7 +507,7 @@ void main() {
     '1234567890',
     '1234567890',
     '1234567890',
-    '123456'
+    '123456',
   ];
   final hundredTwenty = [
     '1234567890',
@@ -494,7 +516,7 @@ void main() {
     '1234567890',
     '1234567890',
     '1234567890',
-    '123456'
+    '123456',
   ];
   final hundredForty = [
     '1234567890',
@@ -504,7 +526,7 @@ void main() {
     '1234567890',
     '1234567890',
     '1234567890',
-    '1234567890123'
+    '1234567890123',
   ];
 }
 ''';
@@ -522,7 +544,7 @@ void main() {
     '1234567890',
     '1234567890',
     '1234567890',
-    '123456'
+    '123456',
   ];
   final hundredForty = [
     '1234567890',
@@ -532,7 +554,7 @@ void main() {
     '1234567890',
     '1234567890',
     '1234567890',
-    '1234567890123'
+    '1234567890123',
   ];
 }
 ''';
@@ -552,7 +574,7 @@ void main() {
     '1234567890',
     '1234567890',
     '1234567890',
-    '1234567890123'
+    '1234567890123',
   ];
 }
 ''';
