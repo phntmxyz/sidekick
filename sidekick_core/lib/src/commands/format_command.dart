@@ -27,7 +27,7 @@ class FormatCommand extends Command {
   ///
   /// Example project layout:
   ///
-  /// ```
+  /// ```sh
   /// project-root
   /// ├── packages
   /// │   ├── package1

@@ -279,7 +279,7 @@ void main() {
 /// - [sidekickCoreVersion] the dependency of sidekick_core in the pubspec.
 ///   Only written to pubspec if value is not null.
 /// - [lockedSidekickCoreVersion] the used version in pubspec.lock
-/// - [sidekickCliVersion] sidekick: cli_version: <sidekickCliVersion> in the
+/// - [sidekickCliVersion] sidekick: cli_version: \<sidekickCliVersion\> in the
 ///   pubspec. Only written to pubspec if value is not null.
 R insideFakeProjectWithSidekick<R>(
   R Function(Directory projectRoot) callback, {

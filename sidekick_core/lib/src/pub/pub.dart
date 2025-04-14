@@ -145,7 +145,7 @@ final String defaultUrl = () {
 
 /// Copied from https://github.com/dart-lang/pub/blob/master/lib/src/source/hosted.dart#L1099
 /// This function is used to convert the (custom) pub server url to a directory name.
-/// The directory name is then used to download packages from that pub server to ~/.pub-cache/hosted/<directory-name>
+/// The directory name is then used to download packages from that pub server to ~/.pub-cache/hosted/\<directory-name\>
 ///
 /// E.g. _urlToDirectory('https://pub.flutter-io.cn') -> pub.flutter-io.cn -> packages will be downloaded to ~/.pub-cache/hosted/pub.flutter-io.cn
 /// E.g. _urlToDirectory('https://pub.dartlang.org') -> pub.dartlang.org -> packages will be downloaded to ~/.pub-cache/hosted/pub.dartlang.org

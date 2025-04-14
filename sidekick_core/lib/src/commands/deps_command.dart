@@ -19,7 +19,7 @@ class DepsCommand extends Command {
   ///
   /// Example project layout:
   ///
-  /// ```
+  /// ```sh
   /// repo-root
   /// ├── packages
   /// │   ├── package1

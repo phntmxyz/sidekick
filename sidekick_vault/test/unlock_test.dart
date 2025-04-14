@@ -3,6 +3,7 @@ import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_vault/sidekick_vault.dart';
 import 'package:test/test.dart';
 
+// ignore_for_file: unnecessary_async
 void main() {
   test('unlock with env', () async {
     await withEnvironment(
