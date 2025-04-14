@@ -22,5 +22,5 @@ final migrateDart35dcli7_260 = MigrationStep.inline(
   },
   name: 'Update dcli to 7.0.2 and sdk constraint to 3.5.0',
   pullRequestLink: 'https://github.com/phntmxyz/sidekick/pull/260',
-  targetVersion: Version(3, 0, 0),
+  targetVersion: Version(3, 0, 0, pre: 'preview.4'),
 );
