@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.3.0](https://github.com/phntmxyz/sidekick/compare/sidekick_vault-v1.2.0..sidekick_vault-v1.3.0) (2025-4-14)
+
+Full diff: https://github.com/phntmxyz/sidekick/compare/sidekick_vault-v1.2.0...main
+
+- Update plugin installer to 1.3.0 and core to 3.0.0-preview.5
+- Update min Dart Version to 3.5.0
+- Update to dcli 7.0.2
+
 ## [1.2.0](https://github.com/phntmxyz/sidekick/compare/sidekick_vault-v1.1.0..sidekick_vault-v1.2.0) (2024-7-16)
 
 - Update to dcli 4 https://github.com/phntmxyz/sidekick/commit/9a353e552ecf332824aa02f172b92c9f1b4ae884
