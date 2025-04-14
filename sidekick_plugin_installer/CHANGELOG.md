@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.3.0](https://github.com/phntmxyz/sidekick/compare/sidekick_plugin_installer-v1.2.1..sidekick_plugin_installer-v1.3.0) (2025-4-14)
+
+Full diff: https://github.com/phntmxyz/sidekick/compare/sidekick_plugin_installer-v1.2.1...main
+
+- Set sidekick core version to 3.0.0-preview.5
+- Requires Dart 3.5
+- Update to dcli 7.0.2
+
 ## [1.2.1](https://github.com/phntmxyz/sidekick/compare/sidekick_plugin_installer-v1.2.0..sidekick_plugin_installer-v1.2.1) (2024-7-16)
 
 - allow analyzer 6.x.y <https://github.com/phntmxyz/sidekick/commit/7c5a0d66f1acc60cb97b2156490661e40d156105>
