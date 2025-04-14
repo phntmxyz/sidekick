@@ -1,5 +1,11 @@
 # Changelog
 
+## [3.0.0-preview.4](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v3.0.0-preview.3..sidekick_core-v3.0.0-preview.4) (2025-4-14)
+
+Full diff: https://github.com/phntmxyz/sidekick/compare/sidekick_core-v3.0.0-preview.3...main
+
+- Change migration target version to 3.0.0-preview.4 https://github.com/phntmxyz/sidekick/commit/06e7d83ddfc8bad578c1d1cd9c62cace9284e3e5
+
 ## [3.0.0-preview.3](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v3.0.0-preview.2..sidekick_core-v3.0.0-preview.3) (2025-4-14)
 
 Full diff: https://github.com/phntmxyz/sidekick/compare/sidekick_core-v3.0.0-preview.2...main
