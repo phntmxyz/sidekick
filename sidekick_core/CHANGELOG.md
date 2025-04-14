@@ -1,5 +1,13 @@
 # Changelog
 
+## [3.0.0-preview.3](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v3.0.0-preview.2..sidekick_core-v3.0.0-preview.3) (2025-4-14)
+
+Full diff: https://github.com/phntmxyz/sidekick/compare/sidekick_core-v3.0.0-preview.2...main
+
+- Switch from pubspec2 to pubspec_manager https://github.com/phntmxyz/sidekick/commit/501b84c29637c8ebab2b3ff4119e5a812e1eabde
+- Update to dart 3.5 https://github.com/phntmxyz/sidekick/commit/e229b29343f873ffbe28d5bae22afd998943e2d3
+- Update to dcli 7.0.2 https://github.com/phntmxyz/sidekick/commit/975fcd4ee14e6e57b94efe8d1923fc424de3e56a
+
 ## [3.0.0-preview.2](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v3.0.0-preview.1..sidekick_core-v3.0.0-preview.2) (2024-7-22)
 
 - Fix SdkInitializerContext.package when calling dart format [#258](https://github.com/phntmxyz/sidekick/pull/258) https://github.com/phntmxyz/sidekick/commit/50e907cb656099bde1e80ad2da0d20525836e5c6
