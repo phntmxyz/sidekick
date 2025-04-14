@@ -133,10 +133,12 @@ class _IsWithinDirectoryValidator extends dcli.AskValidator {
   _IsWithinDirectoryValidator(this.directory);
 
   @override
-  String validate(String line) {
+  String validate(String line, {String? customErrorMessage}) {
     final dir = Directory(line);
     if (!dir.isWithin(directory)) {
-      throw AskValidatorException('Not within ${directory.path}');
+      throw AskValidatorException(
+        customErrorMessage ?? 'Not within ${directory.path}',
+      );
     }
     return line;
   }

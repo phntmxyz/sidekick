@@ -8,27 +8,27 @@ topics:
   - cli
 
 environment:
-  sdk: '>=3.3.0 <3.999.0'
+  sdk: '>=3.5.0 <3.999.0'
 
 dependencies:
   acronym: ^0.5.1
   args: ^2.3.2
   cli_completion: ^0.3.0
   dartx: ^1.0.0
-  dcli: ^4.0.4
+  dcli: ^7.0.2
   http: '>=0.13.3 <=2.0.0'
   meta: ^1.5.0
   path: ^1.8.0
   process: ^5.0.2
   recase: ^4.0.0
-  sidekick_core: ^3.0.0-preview.1
+  sidekick_core: ^3.0.0-preview.1 # todo change
 
 dev_dependencies:
-  dcli_core: ^4.0.0
+  dcli_core: ^7.0.2
   lint: ^2.0.0
   sidekick_test:
     path: ../sidekick_test
-  test: ^1.21.6
+  test: '>1.25.0 <2.0.0'
   test_process: ^2.0.3
 
 executables:

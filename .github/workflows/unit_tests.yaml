@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     container:
-      image: dart:3.3.0
+      image: dart:3.5.0
 
     steps:
       - uses: actions/checkout@v1
@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-latest
 
     container:
-      image: dart:3.3.0
+      image: dart:3.5.0
 
     steps:
       - uses: actions/checkout@v1
@@ -39,7 +39,7 @@ jobs:
     runs-on: ubuntu-latest
 
     container:
-      image: dart:3.3.0
+      image: dart:3.5.0
 
     steps:
       - uses: actions/checkout@v1

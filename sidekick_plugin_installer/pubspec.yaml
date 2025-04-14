@@ -8,16 +8,16 @@ topics:
   - cli
 
 environment:
-  sdk: '>=3.3.0 <4.0.0'
+  sdk: '>=3.5.0 <4.0.0'
 
 dependencies:
   analyzer: '>=4.0.0 <7.0.0'
-  dcli: ^4.0.1-beta.4
-  sidekick_core: ^3.0.0-preview.1
+  dcli: ^7.0.2
+  sidekick_core: ^3.0.0-preview.1 # todo change
 
 dev_dependencies:
   lint: ^2.0.0
   pubspec: ^2.3.0
   sidekick_test:
     path: ../sidekick_test
-  test: '>1.21.0 <2.0.0'
+  test: '>1.25.0 <2.0.0'
