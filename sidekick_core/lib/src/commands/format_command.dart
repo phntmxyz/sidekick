@@ -177,7 +177,6 @@ class FormatCommand extends Command {
     final completion = await dart(
       [
         'format',
-        if (!verify) '--fix',
         if (lineLength != null) ...[
           '--line-length',
           '$lineLength',
