@@ -225,34 +225,38 @@ void main() {
     });
   });
 
-  test('Update to Dart 3.5 with sidekick 3.0', () async {
+  test('Update to Dart 3.5 with sidekick 3.0.0-preview.5', () async {
     final testCase = _UpdateCommandTestCase(
       initialSidekickCliVersion: Version.parse('1.2.0'),
       initialSidekickCoreVersion: Version.parse('1.2.0'),
       sidekickCoreReleases: [
         _sidekick_core('1.2.0', sdk: '>=2.12.0 <3.0.0'),
-        _sidekick_core('2.0.0', sdk: '>=3.0.0 <3.999.0'),
-        _sidekick_core('3.0.0', sdk: '>=3.5.0 <4.0.0'),
+        _sidekick_core('2.3.0', sdk: '>=3.0.0 <3.999.0'),
+        _sidekick_core('3.0.0-preview.5', sdk: '>=3.5.0 <4.0.0'),
       ],
-      dartSdkVersion: Version.parse('3.5.0'),
+      dartSdkVersion: Version.parse('3.0.0'),
       dartSdks: [
         Version.parse('2.18.0'),
         Version.parse('2.19.6'),
         Version.parse('3.0.0'),
         Version.parse('3.0.1'),
+        Version.parse('3.4.4'),
         Version.parse('3.5.0'),
         Version.parse('4.0.0'),
       ],
     );
     await testCase.execute((command) async {
       _PrintOnlyUpdateExecutorTemplate.register();
-      await command.update();
+      await command.update(['3.0.0-preview.5']);
 
       // Dart SDK has been updated
       expect(testCase.downloadedDartSdkVersion, Version.parse('3.5.0'));
 
       // Correct arguments have been injected
-      expect(testCase.printLog, contains('Arguments: [dash, 1.2.0, 3.0.0]'));
+      expect(
+        testCase.printLog,
+        contains('Arguments: [dash, 1.2.0, 3.0.0-preview.5]'),
+      );
 
       // Update script has been executed with correct Dart SDK
       final fullLog = testCase.printLog.join('\n');
