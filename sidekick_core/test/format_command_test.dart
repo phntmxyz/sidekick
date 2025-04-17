@@ -9,7 +9,7 @@ void main() {
   setUpAll(() async {
     final version = await getTesterDartVersion();
     stdout.writeln('using Dart SDK $version');
-    if (version < Version(3, 7, 0)) {
+    if (version >= Version(3, 7, 0)) {
       stdout.writeln('which automatically adds trailing commas');
       _trailingComma = ',';
     } else {
