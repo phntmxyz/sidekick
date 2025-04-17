@@ -1,3 +1,4 @@
+import 'package:dcli/dcli.dart' hide isEmpty;
 import 'package:sidekick_core/sidekick_core.dart' hide isEmpty;
 import 'package:sidekick_core/src/commands/format_command.dart';
 import 'package:sidekick_test/fake_stdio.dart';
@@ -5,6 +6,14 @@ import 'package:sidekick_test/sidekick_test.dart';
 import 'package:test/test.dart';
 
 void main() {
+  setUp(() async {
+    final version = await getTesterDartVersion();
+    print('using Dart SDK $version');
+    if (version < Version(3, 7, 0)) {
+      trailingComma = ',';
+    }
+  });
+
   void setupProject(
     Directory tempDir, {
     String? pubspecContent,
@@ -485,6 +494,21 @@ name: dashi
   });
 }
 
+/// Returns the version of the Dart SDK used by the tester
+/// by parsing the `dart --version` output.
+Future<Version> getTesterDartVersion() async {
+  final executable = Platform.executable;
+  final progress =
+      startFromArgs(executable, ['--version'], progress: Progress.capture());
+  // Dart SDK version: 3.7.2 (stable) (Tue Mar 11 04:27:50 2025 -0700) on "macos_arm64"
+  final String versionString = progress.firstLine!;
+  final regex = RegExp(r'Dart SDK version: (\S+) ');
+  final match = regex.firstMatch(versionString);
+  return Version.parse(match!.group(1)!);
+}
+
+String trailingComma = "";
+
 const String _dartFile140 = '''
 void main() {
   final forty = ['123456', '78901234'];
@@ -496,7 +520,7 @@ void main() {
 }
 ''';
 
-const String _dartFile80 = '''
+final String _dartFile80 = '''
 void main() {
   final forty = ['123456', '78901234'];
   final sixty = ['1234567890', '1234567890', '1234567890'];
@@ -507,7 +531,7 @@ void main() {
     '1234567890',
     '1234567890',
     '1234567890',
-    '123456',
+    '123456'$trailingComma
   ];
   final hundredTwenty = [
     '1234567890',
@@ -516,7 +540,7 @@ void main() {
     '1234567890',
     '1234567890',
     '1234567890',
-    '123456',
+    '123456'$trailingComma
   ];
   final hundredForty = [
     '1234567890',
@@ -526,12 +550,12 @@ void main() {
     '1234567890',
     '1234567890',
     '1234567890',
-    '1234567890123',
+    '1234567890123'$trailingComma
   ];
 }
 ''';
 
-const String _dartFile100 = '''
+final String _dartFile100 = '''
 void main() {
   final forty = ['123456', '78901234'];
   final sixty = ['1234567890', '1234567890', '1234567890'];
@@ -544,7 +568,7 @@ void main() {
     '1234567890',
     '1234567890',
     '1234567890',
-    '123456',
+    '123456'$trailingComma
   ];
   final hundredForty = [
     '1234567890',
@@ -554,12 +578,12 @@ void main() {
     '1234567890',
     '1234567890',
     '1234567890',
-    '1234567890123',
+    '1234567890123'$trailingComma
   ];
 }
 ''';
 
-const String _dartFile120 = '''
+final String _dartFile120 = '''
 void main() {
   final forty = ['123456', '78901234'];
   final sixty = ['1234567890', '1234567890', '1234567890'];
@@ -574,7 +598,7 @@ void main() {
     '1234567890',
     '1234567890',
     '1234567890',
-    '1234567890123',
+    '1234567890123'$trailingComma
   ];
 }
 ''';
