@@ -109,7 +109,7 @@ format:
           mainContent: _dartFile140,
         );
         final runner = initializeSidekick(
-          dartSdkPath: systemDartSdkPath(),
+          dartSdkPath: testRunnerDartSdkPath(),
         );
         runner.addCommand(FormatCommand());
         await runner.run(['format']);
@@ -135,7 +135,7 @@ name: dashi
           mainContent: _dartFile140,
         );
         final runner = initializeSidekick(
-          dartSdkPath: systemDartSdkPath(),
+          dartSdkPath: testRunnerDartSdkPath(),
         );
         runner.addCommand(FormatCommand());
         await runner.run(['format']);
@@ -161,7 +161,7 @@ name: moshi
           mainContent: _dartFile140,
         );
         final runner = initializeSidekick(
-          dartSdkPath: systemDartSdkPath(),
+          dartSdkPath: testRunnerDartSdkPath(),
         );
 
         SdkInitializerContext? sdkInitializerContext;
@@ -189,7 +189,7 @@ name: moshi
         dir.file('pubspec.yaml').deleteSync();
         dir.file('some.dart').writeAsStringSync(_dartFile140);
         final runner = initializeSidekick(
-          dartSdkPath: systemDartSdkPath(),
+          dartSdkPath: testRunnerDartSdkPath(),
         );
         runner.addCommand(FormatCommand(defaultLineLength: 100));
         await runner.run(['format']);
@@ -203,7 +203,7 @@ name: moshi
         dir.file('pubspec.yaml').deleteSync();
         dir.file('some.dart').writeAsStringSync(_dartFile140);
         final runner = initializeSidekick(
-          dartSdkPath: systemDartSdkPath(),
+          dartSdkPath: testRunnerDartSdkPath(),
         );
         runner.addCommand(FormatCommand());
         await runner.run(['format']);
@@ -223,7 +223,7 @@ name: dashi
           mainContent: _dartFile140,
         );
         final runner = initializeSidekick(
-          dartSdkPath: systemDartSdkPath(),
+          dartSdkPath: testRunnerDartSdkPath(),
         );
         runner.addCommand(FormatCommand(defaultLineLength: 120));
         await runner.run(['format']);
@@ -246,7 +246,7 @@ format:
           mainContent: _dartFile140,
         );
         final runner = initializeSidekick(
-          dartSdkPath: systemDartSdkPath(),
+          dartSdkPath: testRunnerDartSdkPath(),
         );
         runner.addCommand(FormatCommand(defaultLineLength: 120));
         await runner.run(['format']);
@@ -267,7 +267,7 @@ format:
           mainContent: _dartFile140,
         );
         final runner = initializeSidekick(
-          dartSdkPath: systemDartSdkPath(),
+          dartSdkPath: testRunnerDartSdkPath(),
         );
         runner.addCommand(FormatCommand());
         await runner.run(['format']);
@@ -287,7 +287,7 @@ format:
           mainContent: _dartFile140,
         );
         final runner = initializeSidekick(
-          dartSdkPath: systemDartSdkPath(),
+          dartSdkPath: testRunnerDartSdkPath(),
         );
         runner.addCommand(FormatCommand());
         await runner.run(['format']);
@@ -306,7 +306,7 @@ name: dashi
           mainContent: _dartFile140,
         );
         final runner = initializeSidekick(
-          dartSdkPath: systemDartSdkPath(),
+          dartSdkPath: testRunnerDartSdkPath(),
         );
         runner.addCommand(
           FormatCommand(
@@ -332,7 +332,7 @@ name: dashi
           ..createSync(recursive: true);
         buildFile.writeAsStringSync(_dartFile140);
 
-        final runner = initializeSidekick(dartSdkPath: systemDartSdkPath());
+        final runner = initializeSidekick(dartSdkPath: testRunnerDartSdkPath());
         runner.addCommand(FormatCommand());
         await runner.run(['format']);
 
@@ -354,7 +354,7 @@ name: dashi
           ..createSync(recursive: true);
         hiddenFolderFile.writeAsStringSync(_dartFile140);
 
-        final runner = initializeSidekick(dartSdkPath: systemDartSdkPath());
+        final runner = initializeSidekick(dartSdkPath: testRunnerDartSdkPath());
         runner.addCommand(FormatCommand());
         await runner.run(['format']);
 
@@ -379,7 +379,7 @@ name: dashi
           ..createSync(recursive: true);
         freezedFile.writeAsStringSync(_dartFile140);
 
-        final runner = initializeSidekick(dartSdkPath: systemDartSdkPath());
+        final runner = initializeSidekick(dartSdkPath: testRunnerDartSdkPath());
         runner.addCommand(FormatCommand(formatGenerated: false));
         await runner.run(['format']);
 
@@ -405,7 +405,7 @@ name: dashi
           ..createSync(recursive: true);
         freezedFile.writeAsStringSync(_dartFile140);
 
-        final runner = initializeSidekick(dartSdkPath: systemDartSdkPath());
+        final runner = initializeSidekick(dartSdkPath: testRunnerDartSdkPath());
         runner.addCommand(FormatCommand());
         await runner.run(['format']);
 
@@ -426,7 +426,7 @@ name: dashi
           stdout: () => fakeStdout,
           body: () async {
             final runner = initializeSidekick(
-              dartSdkPath: systemDartSdkPath(),
+              dartSdkPath: testRunnerDartSdkPath(),
             );
             runner.addCommand(FormatCommand());
             await expectLater(
@@ -468,7 +468,7 @@ name: dashi
           body: () async {
             setupProject(dir, mainContent: _dartFile80);
             final runner = initializeSidekick(
-              dartSdkPath: systemDartSdkPath(),
+              dartSdkPath: testRunnerDartSdkPath(),
             );
             runner.addCommand(FormatCommand());
             await runner.run(['format']);
