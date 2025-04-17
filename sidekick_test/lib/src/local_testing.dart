@@ -6,6 +6,7 @@ import 'package:dcli/dcli.dart';
 import 'package:dcli/posix.dart';
 import 'package:path/path.dart';
 import 'package:pubspec_manager/pubspec_manager.dart';
+import 'package:sidekick_test/fake_stdio.dart';
 import 'package:sidekick_test/src/download_dart.sh.template.dart';
 import 'package:sidekick_test/src/sidekick_config.sh.template.dart';
 import 'package:test/test.dart';
@@ -159,8 +160,12 @@ packages:
   // otherwise doesn't work correctly in Dart >= 2.18
   final oldZone = Zone.current;
 
+  // Prevent menu() calls from waiting for stdin in  tests
+  final fakeStdinStream = FakeStdinStream(hasTerminal: false);
+
   return IOOverrides.runZoned<R>(
     () => callback(projectRoot),
+    stdin: () => fakeStdinStream,
     getCurrentDirectory: () => cwd,
     setCurrentDirectory: (dir) => cwd = Directory(dir),
     fseGetTypeSync: (String path, bool followLinks) {

@@ -386,6 +386,10 @@ class _UpdateCommandTestCase {
           },
         ),
       );
+      final fullLog = printLog.join('\n');
+      if (fullLog.contains('Migration failed')) {
+        throw 'One or more migrations failed, see logs for details';
+      }
     } finally {
       printOnFailure(printLog.join('\n'));
     }

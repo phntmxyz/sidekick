@@ -19,7 +19,7 @@ final migrateDcli4_255 = MigrationStep.inline(
     );
     pubspec.save();
   },
-  name: 'Do not ignore sidekick pubspec.lock file',
-  pullRequestLink: 'https://github.com/phntmxyz/sidekick/pull/253',
+  name: 'Update dcli to ^4.0.1-beta.4',
+  pullRequestLink: 'https://github.com/phntmxyz/sidekick/pull/255',
   targetVersion: Version(3, 0, 0, pre: 'preview.0'),
 );

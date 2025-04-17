@@ -4,10 +4,14 @@ import 'package:sidekick_core/src/update/migration.dart';
 final forceAddPubspecLock253 = MigrationStep.inline(
   (context) {
     final gitignore = SidekickContext.sidekickPackage.root.file('.gitignore');
-    final content = gitignore.readAsStringSync();
+    if (gitignore.existsSync()) {
+      final content = gitignore.readAsStringSync();
 
-    if (content.contains('!pubspec.lock')) {
-      return;
+      if (content.contains('!pubspec.lock')) {
+        return;
+      }
+    } else {
+      gitignore.createSync();
     }
 
     gitignore.writeAsStringSync(

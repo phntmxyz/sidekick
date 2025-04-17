@@ -9,9 +9,14 @@ on:
 jobs:
   core_test:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      matrix:
+        dart-version: ['3.5.0', '3.7.0', 'latest']
+      fail-fast: false
 
     container:
-      image: dart:3.5.0
+      image: dart:${{ matrix.dart-version }}
 
     steps:
       - uses: actions/checkout@v1

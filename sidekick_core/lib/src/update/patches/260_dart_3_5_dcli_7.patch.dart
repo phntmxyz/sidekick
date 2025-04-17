@@ -19,7 +19,7 @@ final migrateDart35dcli7_260 = MigrationStep.inline(
     );
     pubspec.save();
   },
-  name: 'Update dcli to 7.0.2',
+  name: 'Update dcli to ^7.0.2',
   pullRequestLink: 'https://github.com/phntmxyz/sidekick/pull/260',
   targetVersion: Version(3, 0, 0, pre: 'preview.5'),
 );

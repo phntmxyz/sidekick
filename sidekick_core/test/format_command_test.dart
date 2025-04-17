@@ -1,3 +1,4 @@
+import 'package:dcli/dcli.dart' hide isEmpty;
 import 'package:sidekick_core/sidekick_core.dart' hide isEmpty;
 import 'package:sidekick_core/src/commands/format_command.dart';
 import 'package:sidekick_test/fake_stdio.dart';
@@ -5,6 +6,18 @@ import 'package:sidekick_test/sidekick_test.dart';
 import 'package:test/test.dart';
 
 void main() {
+  setUpAll(() async {
+    final version = await getTesterDartVersion();
+    stdout.writeln('using Dart SDK $version');
+    if (version >= Version(3, 7, 0)) {
+      stdout.writeln('which automatically adds trailing commas');
+      _trailingComma = ',';
+    } else {
+      stdout.writeln('no trailing commas');
+      _trailingComma = '';
+    }
+  });
+
   void setupProject(
     Directory tempDir, {
     String? pubspecContent,
@@ -22,6 +35,7 @@ void main() {
 
   group('getLineLength', () {
     late File pubspecYamlFile;
+    late File analysisOptionsFile;
     late DartPackage package;
 
     setUp(() {
@@ -29,6 +43,8 @@ void main() {
       pubspecYamlFile = temp.file('pubspec.yaml')..writeAsStringSync('''
 name: dashi
 ''');
+      analysisOptionsFile = temp.file('analysis_options.yaml')
+        ..writeAsStringSync('');
       package = DartPackage.fromDirectory(temp)!;
 
       addTearDown(() {
@@ -53,6 +69,25 @@ format:
 ''');
       expect(getLineLength(package), 123);
     });
+    test('should return the line_length from analysis_options.yaml', () {
+      analysisOptionsFile.writeAsStringSync('''
+formatter:  
+  page_width: 120
+      ''');
+      expect(getLineLength(package), 120);
+    });
+    test('analysis_options.yaml has precedence over pubspec.yaml', () {
+      analysisOptionsFile.writeAsStringSync('''
+formatter:  
+  page_width: 120
+      ''');
+      pubspecYamlFile.writeAsStringSync('''
+name: dashi
+format:
+  line_length: 100
+''');
+      expect(getLineLength(package), 120);
+    });
   });
   group('Format Command', () {
     test('Should format the example folder different than /lib', () async {
@@ -74,7 +109,7 @@ format:
           mainContent: _dartFile140,
         );
         final runner = initializeSidekick(
-          dartSdkPath: systemDartSdkPath(),
+          dartSdkPath: testRunnerDartSdkPath(),
         );
         runner.addCommand(FormatCommand());
         await runner.run(['format']);
@@ -100,7 +135,7 @@ name: dashi
           mainContent: _dartFile140,
         );
         final runner = initializeSidekick(
-          dartSdkPath: systemDartSdkPath(),
+          dartSdkPath: testRunnerDartSdkPath(),
         );
         runner.addCommand(FormatCommand());
         await runner.run(['format']);
@@ -126,7 +161,7 @@ name: moshi
           mainContent: _dartFile140,
         );
         final runner = initializeSidekick(
-          dartSdkPath: systemDartSdkPath(),
+          dartSdkPath: testRunnerDartSdkPath(),
         );
 
         SdkInitializerContext? sdkInitializerContext;
@@ -154,7 +189,7 @@ name: moshi
         dir.file('pubspec.yaml').deleteSync();
         dir.file('some.dart').writeAsStringSync(_dartFile140);
         final runner = initializeSidekick(
-          dartSdkPath: systemDartSdkPath(),
+          dartSdkPath: testRunnerDartSdkPath(),
         );
         runner.addCommand(FormatCommand(defaultLineLength: 100));
         await runner.run(['format']);
@@ -168,7 +203,7 @@ name: moshi
         dir.file('pubspec.yaml').deleteSync();
         dir.file('some.dart').writeAsStringSync(_dartFile140);
         final runner = initializeSidekick(
-          dartSdkPath: systemDartSdkPath(),
+          dartSdkPath: testRunnerDartSdkPath(),
         );
         runner.addCommand(FormatCommand());
         await runner.run(['format']);
@@ -188,7 +223,7 @@ name: dashi
           mainContent: _dartFile140,
         );
         final runner = initializeSidekick(
-          dartSdkPath: systemDartSdkPath(),
+          dartSdkPath: testRunnerDartSdkPath(),
         );
         runner.addCommand(FormatCommand(defaultLineLength: 120));
         await runner.run(['format']);
@@ -211,7 +246,7 @@ format:
           mainContent: _dartFile140,
         );
         final runner = initializeSidekick(
-          dartSdkPath: systemDartSdkPath(),
+          dartSdkPath: testRunnerDartSdkPath(),
         );
         runner.addCommand(FormatCommand(defaultLineLength: 120));
         await runner.run(['format']);
@@ -232,7 +267,7 @@ format:
           mainContent: _dartFile140,
         );
         final runner = initializeSidekick(
-          dartSdkPath: systemDartSdkPath(),
+          dartSdkPath: testRunnerDartSdkPath(),
         );
         runner.addCommand(FormatCommand());
         await runner.run(['format']);
@@ -252,7 +287,7 @@ format:
           mainContent: _dartFile140,
         );
         final runner = initializeSidekick(
-          dartSdkPath: systemDartSdkPath(),
+          dartSdkPath: testRunnerDartSdkPath(),
         );
         runner.addCommand(FormatCommand());
         await runner.run(['format']);
@@ -271,7 +306,7 @@ name: dashi
           mainContent: _dartFile140,
         );
         final runner = initializeSidekick(
-          dartSdkPath: systemDartSdkPath(),
+          dartSdkPath: testRunnerDartSdkPath(),
         );
         runner.addCommand(
           FormatCommand(
@@ -297,7 +332,7 @@ name: dashi
           ..createSync(recursive: true);
         buildFile.writeAsStringSync(_dartFile140);
 
-        final runner = initializeSidekick(dartSdkPath: systemDartSdkPath());
+        final runner = initializeSidekick(dartSdkPath: testRunnerDartSdkPath());
         runner.addCommand(FormatCommand());
         await runner.run(['format']);
 
@@ -319,7 +354,7 @@ name: dashi
           ..createSync(recursive: true);
         hiddenFolderFile.writeAsStringSync(_dartFile140);
 
-        final runner = initializeSidekick(dartSdkPath: systemDartSdkPath());
+        final runner = initializeSidekick(dartSdkPath: testRunnerDartSdkPath());
         runner.addCommand(FormatCommand());
         await runner.run(['format']);
 
@@ -344,7 +379,7 @@ name: dashi
           ..createSync(recursive: true);
         freezedFile.writeAsStringSync(_dartFile140);
 
-        final runner = initializeSidekick(dartSdkPath: systemDartSdkPath());
+        final runner = initializeSidekick(dartSdkPath: testRunnerDartSdkPath());
         runner.addCommand(FormatCommand(formatGenerated: false));
         await runner.run(['format']);
 
@@ -370,7 +405,7 @@ name: dashi
           ..createSync(recursive: true);
         freezedFile.writeAsStringSync(_dartFile140);
 
-        final runner = initializeSidekick(dartSdkPath: systemDartSdkPath());
+        final runner = initializeSidekick(dartSdkPath: testRunnerDartSdkPath());
         runner.addCommand(FormatCommand());
         await runner.run(['format']);
 
@@ -391,7 +426,7 @@ name: dashi
           stdout: () => fakeStdout,
           body: () async {
             final runner = initializeSidekick(
-              dartSdkPath: systemDartSdkPath(),
+              dartSdkPath: testRunnerDartSdkPath(),
             );
             runner.addCommand(FormatCommand());
             await expectLater(
@@ -433,7 +468,7 @@ name: dashi
           body: () async {
             setupProject(dir, mainContent: _dartFile80);
             final runner = initializeSidekick(
-              dartSdkPath: systemDartSdkPath(),
+              dartSdkPath: testRunnerDartSdkPath(),
             );
             runner.addCommand(FormatCommand());
             await runner.run(['format']);
@@ -463,6 +498,22 @@ name: dashi
   });
 }
 
+/// Returns the version of the Dart SDK used by the tester
+/// by parsing the `dart --version` output.
+Future<Version> getTesterDartVersion() async {
+  final executable = Platform.executable;
+  final progress =
+      startFromArgs(executable, ['--version'], progress: Progress.capture());
+  // Dart SDK version: 3.7.2 (stable) (Tue Mar 11 04:27:50 2025 -0700) on "macos_arm64"
+  final String versionString = progress.firstLine!;
+  final regex = RegExp(r'Dart SDK version: (\S+) ');
+  final match = regex.firstMatch(versionString);
+  return Version.parse(match!.group(1)!);
+}
+
+String? _trailingComma;
+String get trailingComma => _trailingComma!;
+
 const String _dartFile140 = '''
 void main() {
   final forty = ['123456', '78901234'];
@@ -474,7 +525,7 @@ void main() {
 }
 ''';
 
-const String _dartFile80 = '''
+final String _dartFile80 = '''
 void main() {
   final forty = ['123456', '78901234'];
   final sixty = ['1234567890', '1234567890', '1234567890'];
@@ -485,7 +536,7 @@ void main() {
     '1234567890',
     '1234567890',
     '1234567890',
-    '123456'
+    '123456'$trailingComma
   ];
   final hundredTwenty = [
     '1234567890',
@@ -494,7 +545,7 @@ void main() {
     '1234567890',
     '1234567890',
     '1234567890',
-    '123456'
+    '123456'$trailingComma
   ];
   final hundredForty = [
     '1234567890',
@@ -504,12 +555,12 @@ void main() {
     '1234567890',
     '1234567890',
     '1234567890',
-    '1234567890123'
+    '1234567890123'$trailingComma
   ];
 }
 ''';
 
-const String _dartFile100 = '''
+final String _dartFile100 = '''
 void main() {
   final forty = ['123456', '78901234'];
   final sixty = ['1234567890', '1234567890', '1234567890'];
@@ -522,7 +573,7 @@ void main() {
     '1234567890',
     '1234567890',
     '1234567890',
-    '123456'
+    '123456'$trailingComma
   ];
   final hundredForty = [
     '1234567890',
@@ -532,12 +583,12 @@ void main() {
     '1234567890',
     '1234567890',
     '1234567890',
-    '1234567890123'
+    '1234567890123'$trailingComma
   ];
 }
 ''';
 
-const String _dartFile120 = '''
+final String _dartFile120 = '''
 void main() {
   final forty = ['123456', '78901234'];
   final sixty = ['1234567890', '1234567890', '1234567890'];
@@ -552,7 +603,7 @@ void main() {
     '1234567890',
     '1234567890',
     '1234567890',
-    '1234567890123'
+    '1234567890123'$trailingComma
   ];
 }
 ''';
