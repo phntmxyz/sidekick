@@ -38,6 +38,12 @@ class FakeStdoutStream with Fake implements Stdout {
   bool get supportsAnsiEscapes => false;
 }
 
+class FakeStdinStream with Fake implements Stdin {
+  FakeStdinStream({required this.hasTerminal});
+  @override
+  final bool hasTerminal;
+}
+
 T overrideIoStreams<T>({
   required T Function() body,
   Stdin Function()? stdin,
