@@ -10,29 +10,29 @@ import 'package:sidekick_test/sidekick_test.dart';
 import 'package:test/test.dart';
 
 void main() {
-  // test('Generates files in /tool folder', () async {
-  //   final testCase = _UpdateCommandTestCase(
-  //     initialSidekickCliVersion: Version.parse('1.1.0'),
-  //     initialSidekickCoreVersion: Version.parse('1.1.0'),
-  //     sidekickCoreReleases: [
-  //       _sidekick_core('3.0.0', sdk: '>=3.5.0 <4.0.0'),
-  //     ],
-  //     dartSdks: [
-  //       Version.parse('3.5.0'),
-  //     ],
-  //   );
-  //   await testCase.execute((command) async {
-  //     final sidekickDir = testCase.projectDir.directory('packages/dash')
-  //       ..verifyExistsOrThrow();
-  //     final installSh = sidekickDir.file('tool/install.sh');
-  //     final runSh = sidekickDir.file('tool/run.sh');
-  //
-  //     await command.update();
-  //
-  //     expect(installSh.existsSync(), isTrue);
-  //     expect(runSh.existsSync(), isTrue);
-  //   });
-  // });
+  test('Generates files in /tool folder', () async {
+    final testCase = _UpdateCommandTestCase(
+      initialSidekickCliVersion: Version.parse('1.1.0'),
+      initialSidekickCoreVersion: Version.parse('1.1.0'),
+      sidekickCoreReleases: [
+        _sidekick_core('3.0.0', sdk: '>=3.5.0 <4.0.0'),
+      ],
+      dartSdks: [
+        Version.parse('3.5.0'),
+      ],
+    );
+    await testCase.execute((command) async {
+      final sidekickDir = testCase.projectDir.directory('packages/dash')
+        ..verifyExistsOrThrow();
+      final installSh = sidekickDir.file('tool/install.sh');
+      final runSh = sidekickDir.file('tool/run.sh');
+
+      await command.update();
+
+      expect(installSh.existsSync(), isTrue);
+      expect(runSh.existsSync(), isTrue);
+    });
+  });
 
   test('UpdateCommand does not update when no update exists', () async {
     final testCase = _UpdateCommandTestCase(
