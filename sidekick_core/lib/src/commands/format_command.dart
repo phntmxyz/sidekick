@@ -45,9 +45,10 @@ class FormatCommand extends Command {
   ///   `third_party/circle/packageA` and `third_party/circle/packageB`.
   final List<String> excludeGlob;
 
-  /// The default line length to be used when format.line_length is not
-  /// specified in pubspec.yaml.
-  final int defaultLineLength;
+  /// The default line length to be used when
+  /// - formatter.page_width is not specified in analysis_options.yaml
+  /// - format.line_length is not specified in pubspec.yaml.
+  final int? defaultLineLength;
 
   /// Set to false to *not* format generated files (`.g.dart`, or `.freezed.dart`)
   ///
@@ -63,7 +64,7 @@ class FormatCommand extends Command {
 
   FormatCommand({
     List<String> excludeGlob = const [],
-    this.defaultLineLength = 80,
+    this.defaultLineLength,
     this.formatGenerated = true,
   }) : excludeGlob = [
           ...excludeGlob,
@@ -99,7 +100,7 @@ class FormatCommand extends Command {
         throw "Package with name $packageName not found in repository "
             "${SidekickContext.repository?.path}";
       }
-      final int lineLength = getLineLength(package) ?? defaultLineLength;
+      final int? lineLength = getLineLength(package) ?? defaultLineLength;
       final allDartFiles = package.root.findFilesToFormat(globExcludes);
       await _format(
         name: "package:${package.name}",
@@ -157,7 +158,7 @@ class FormatCommand extends Command {
 
   Future<void> _format({
     required String name,
-    required int lineLength,
+    required int? lineLength,
     required Iterable<File> files,
     bool verify = false,
     Directory? workingDirectory,
@@ -176,11 +177,13 @@ class FormatCommand extends Command {
     final completion = await dart(
       [
         'format',
-        '-l',
-        '$lineLength',
-        if (!verify) '--fix',
+        if (lineLength != null) ...[
+          '--line-length',
+          '$lineLength',
+        ],
         ...files.map((file) => file.absolute.path),
         if (verify) '--set-exit-if-changed',
+        // This command has its own output
         if (verify) '--output=none',
       ],
       nothrow: verify,
@@ -248,11 +251,45 @@ extension on Directory {
 
 @visibleForTesting
 int? getLineLength(DartPackage package) {
-  final yamlFile = package.root.file('pubspec.yaml').readAsStringSync();
-  final pubspecData = loadYaml(yamlFile) as YamlMap;
-  final mapData =
-      pubspecData.map((key, value) => MapEntry(key.toString(), value));
-  return (mapData['format'] as Map?)?['line_length'] as int?;
+  // Added in Dart 3.7: Project-wide page width configuration
+  {
+    final analysisOptionsFile = package.root.file('analysis_options.yaml');
+    if (analysisOptionsFile.existsSync()) {
+      final content = analysisOptionsFile.readAsStringSync();
+      final analysisOptionsData = loadYaml(content) as YamlMap?;
+
+      final mapData = analysisOptionsData
+          ?.map((key, value) => MapEntry(key.toString(), value));
+
+      // formatter:
+      //   page_width: 100
+      final pageWidth = (mapData?['formatter'] as Map?)?['page_width'] as int?;
+      if (pageWidth != null) {
+        return pageWidth;
+      }
+    }
+  }
+
+  // Sidekick was an early adopter of project wide lineLength configuration when
+  // Dart was still at version 2.19
+  {
+    final pubspecFile = package.root.file('pubspec.yaml');
+    if (pubspecFile.existsSync()) {
+      final content = pubspecFile.readAsStringSync();
+      final pubspecData = loadYaml(content) as YamlMap?;
+      final mapData =
+          pubspecData?.map((key, value) => MapEntry(key.toString(), value));
+
+      // format:
+      //   line_length: 100
+      final lineLength = (mapData?['format'] as Map?)?['line_length'] as int?;
+      if (lineLength != null) {
+        return lineLength;
+      }
+    }
+  }
+
+  return null;
 }
 
 class DartFileFormatException implements Exception {

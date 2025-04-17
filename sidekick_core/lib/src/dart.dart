@@ -142,3 +142,16 @@ Directory? systemDartSdk() {
 
 /// Returns the path to Dart SDK of the `dart` executable on `PATH`
 String? systemDartSdkPath() => systemDartSdk()?.path;
+
+/// Returns the Dart SDK of the `dart` command which was used to launch the test
+Directory? testRunnerDartSdk() {
+  final executable = Platform.resolvedExecutable;
+  final file = File(executable);
+  // <somewhere>/dart-sdk/bin/dart
+  final realpath = file.resolveSymbolicLinksSync();
+  final libexec = File(realpath).parent.parent;
+  return libexec;
+}
+
+/// Returns the path to Dart SDK of the `dart` which was used to launch the test
+String? testRunnerDartSdkPath() => testRunnerDartSdk()?.path;
