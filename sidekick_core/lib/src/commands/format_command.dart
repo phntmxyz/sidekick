@@ -279,6 +279,9 @@ int? getLineLength(DartPackage package) {
       final pubspecData = loadYaml(content) as YamlMap?;
       final mapData =
           pubspecData?.map((key, value) => MapEntry(key.toString(), value));
+
+      // format:
+      //   line_length: 100
       final lineLength = (mapData?['format'] as Map?)?['line_length'] as int?;
       if (lineLength != null) {
         return lineLength;

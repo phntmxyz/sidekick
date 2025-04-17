@@ -6,11 +6,15 @@ import 'package:sidekick_test/sidekick_test.dart';
 import 'package:test/test.dart';
 
 void main() {
-  setUp(() async {
+  setUpAll(() async {
     final version = await getTesterDartVersion();
-    print('using Dart SDK $version');
+    stdout.writeln('using Dart SDK $version');
     if (version < Version(3, 7, 0)) {
-      trailingComma = ',';
+      stdout.writeln('which automatically adds trailing commas');
+      _trailingComma = ',';
+    } else {
+      stdout.writeln('no trailing commas');
+      _trailingComma = '';
     }
   });
 
@@ -507,7 +511,8 @@ Future<Version> getTesterDartVersion() async {
   return Version.parse(match!.group(1)!);
 }
 
-String trailingComma = "";
+String? _trailingComma;
+String get trailingComma => _trailingComma!;
 
 const String _dartFile140 = '''
 void main() {
