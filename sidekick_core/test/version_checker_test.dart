@@ -4,41 +4,24 @@ import 'package:sidekick_test/sidekick_test.dart';
 import 'package:test/test.dart';
 
 void main() {
-  late File pubspecYamlFile;
-  late File pubspecLockFile;
-  late DartPackage package;
-
-  setUp(() {
-    final temp = Directory.systemTemp.createTempSync();
-    pubspecYamlFile = temp.file('pubspec.yaml')
-      ..writeAsStringSync('name: dashi');
-    pubspecLockFile = temp.file('pubspec.lock');
-    env['SIDEKICK_PACKAGE_HOME'] = temp.path;
-    package = DartPackage.fromDirectory(temp)!;
-
-    addTearDown(() {
-      env['SIDEKICK_PACKAGE_HOME'] = null;
-      temp.deleteSync(recursive: true);
-    });
-  });
-
   group('updateVersionConstraint', () {
     test('updates package when it already exists in pubspec', () {
-      pubspecYamlFile.writeAsStringSync('''
+      final setup = _Setup.init();
+      setup.pubspecYamlFile.writeAsStringSync('''
 name: dashi
 dependencies:
   foo: 1.2.3
 ''');
 
       VersionChecker.updateVersionConstraint(
-        package: package,
+        package: setup.package,
         pubspecKeys: ['dependencies', 'foo'],
         newMinimumVersion: Version(1, 2, 4),
         pinVersion: true,
       );
 
       expect(
-        pubspecYamlFile.readAsStringSync(),
+        setup.pubspecYamlFile.readAsStringSync(),
         '''
 name: dashi
 dependencies:
@@ -48,22 +31,23 @@ dependencies:
     });
 
     test('sets package when it does not yet exist in pubspec', () {
+      final setup = _Setup.init();
       // foo does not exist in the pubspec yet, it should be added by updateVersionConstraint
-      pubspecYamlFile.writeAsStringSync('''
+      setup.pubspecYamlFile.writeAsStringSync('''
 name: dashi
 dependencies:
   bar: 0.0.0
 ''');
 
       VersionChecker.updateVersionConstraint(
-        package: package,
+        package: setup.package,
         pubspecKeys: ['dependencies', 'foo'],
         newMinimumVersion: Version(1, 2, 4),
         pinVersion: true,
       );
 
       expect(
-        pubspecYamlFile.readAsStringSync(),
+        setup.pubspecYamlFile.readAsStringSync(),
         equalsIgnoringWhitespace('''
 name: dashi
 dependencies:
@@ -73,19 +57,20 @@ dependencies:
       );
     });
     test('sets whole block when it does not yet exist in pubspec', () {
-      pubspecYamlFile.writeAsStringSync('''
+      final setup = _Setup.init();
+      setup.pubspecYamlFile.writeAsStringSync('''
 name: dashi
 # the pubspec does not have a dependencies block, it should be added by updateVersionConstraint''');
 
       VersionChecker.updateVersionConstraint(
-        package: package,
+        package: setup.package,
         pubspecKeys: ['dependencies', 'foo'],
         newMinimumVersion: Version(1, 2, 4),
         pinVersion: true,
       );
 
       expect(
-        pubspecYamlFile.readAsStringSync(),
+        setup.pubspecYamlFile.readAsStringSync(),
         '''
 name: dashi
 dependencies:
@@ -96,7 +81,8 @@ dependencies:
     });
 
     test('replace path dependency with pub version', () {
-      pubspecYamlFile.writeAsStringSync('''
+      final setup = _Setup.init();
+      setup.pubspecYamlFile.writeAsStringSync('''
 name: dashi
 dependencies:
   sidekick_core:
@@ -104,14 +90,14 @@ dependencies:
 ''');
 
       VersionChecker.updateVersionConstraint(
-        package: package,
+        package: setup.package,
         pubspecKeys: ['dependencies', 'sidekick_core'],
         newMinimumVersion: Version(0, 14, 0),
         pinVersion: true,
       );
 
       expect(
-        pubspecYamlFile.readAsStringSync(),
+        setup.pubspecYamlFile.readAsStringSync(),
         '''
 name: dashi
 dependencies:
@@ -121,7 +107,8 @@ dependencies:
     });
 
     test('replace git dependency with pub version', () {
-      pubspecYamlFile.writeAsStringSync('''
+      final setup = _Setup.init();
+      setup.pubspecYamlFile.writeAsStringSync('''
 name: dashi
 dependencies:
   some_sidekick_plugin:
@@ -131,14 +118,14 @@ dependencies:
 ''');
 
       VersionChecker.updateVersionConstraint(
-        package: package,
+        package: setup.package,
         pubspecKeys: ['dependencies', 'some_sidekick_plugin'],
         newMinimumVersion: Version(0, 14, 0),
         pinVersion: true,
       );
 
       expect(
-        pubspecYamlFile.readAsStringSync(),
+        setup.pubspecYamlFile.readAsStringSync(),
         '''
 name: dashi
 dependencies:
@@ -151,21 +138,23 @@ dependencies:
   group('VersionChecker.getMinimumVersionConstraint', () {
     group('throws when ', () {
       test('path is empty', () {
+        final setup = _Setup.init();
         expect(
-          () => VersionChecker.getMinimumVersionConstraint(package, []),
+          () => VersionChecker.getMinimumVersionConstraint(setup.package, []),
           throwsA("Need at least one key in path parameter, but it was empty."),
         );
       });
 
       test('yaml file does not exist', () {
-        pubspecYamlFile.deleteSync();
+        final setup = _Setup.init();
+        setup.pubspecYamlFile.deleteSync();
         expect(
           () => VersionChecker.getMinimumVersionConstraint(
-            package,
+            setup.package,
             ['dependencies', 'foo'],
           ),
           throwsA(
-            "Tried reading '['dependencies', 'foo']' from yaml file '${pubspecYamlFile.path}', but that file doesn't exist.",
+            "Tried reading '['dependencies', 'foo']' from yaml file '${setup.pubspecYamlFile.path}', but that file doesn't exist.",
           ),
         );
       });
@@ -173,12 +162,13 @@ dependencies:
 
     group('returns null when', () {
       test('path does not exist at all', () {
-        pubspecYamlFile.writeAsStringSync('''
+        final setup = _Setup.init();
+        setup.pubspecYamlFile.writeAsStringSync('''
 name: dashi
 ''');
         expect(
           VersionChecker.getMinimumVersionConstraint(
-            package,
+            setup.package,
             ['dependencies', 'foo'],
           ),
           isNull,
@@ -186,13 +176,14 @@ name: dashi
       });
 
       test('path exists only partially', () {
-        pubspecYamlFile.writeAsStringSync('''
+        final setup = _Setup.init();
+        setup.pubspecYamlFile.writeAsStringSync('''
 name: dashi
 dependencies:
 ''');
         expect(
           VersionChecker.getMinimumVersionConstraint(
-            package,
+            setup.package,
             ['dependencies', 'foo'],
           ),
           isNull,
@@ -201,14 +192,15 @@ dependencies:
     });
 
     test('returns Version.none when any version is allowed explicitly', () {
-      pubspecYamlFile.writeAsStringSync('''
+      final setup = _Setup.init();
+      setup.pubspecYamlFile.writeAsStringSync('''
 name: dashi
 
 dependencies:
   foo: any
 ''');
 
-      final actual = VersionChecker.getMinimumVersionConstraint(package, [
+      final actual = VersionChecker.getMinimumVersionConstraint(setup.package, [
         'dependencies',
         'foo',
       ]);
@@ -216,7 +208,8 @@ dependencies:
     });
 
     test('returns Version.none when any version is allowed implicitly', () {
-      pubspecYamlFile.writeAsStringSync('''
+      final setup = _Setup.init();
+      setup.pubspecYamlFile.writeAsStringSync('''
 name: dashi
 
 dependencies:
@@ -224,14 +217,15 @@ dependencies:
 ''');
 
       final actual = VersionChecker.getMinimumVersionConstraint(
-        package,
+        setup.package,
         ['dependencies', 'foo'],
       );
       expect(actual, Version.none);
     });
 
     test('returns correct version from normal range', () {
-      pubspecYamlFile.writeAsStringSync('''
+      final setup = _Setup.init();
+      setup.pubspecYamlFile.writeAsStringSync('''
 name: dashi
 
 dependencies: 
@@ -239,14 +233,15 @@ dependencies:
 ''');
 
       final actual = VersionChecker.getMinimumVersionConstraint(
-        package,
+        setup.package,
         ['dependencies', 'foo'],
       );
       expect(actual, Version(0, 5, 0));
     });
 
     test('returns correct version if range order is unusual', () {
-      pubspecYamlFile.writeAsStringSync('''
+      final setup = _Setup.init();
+      setup.pubspecYamlFile.writeAsStringSync('''
 name: dashi
 
 dependencies:
@@ -254,14 +249,15 @@ dependencies:
 ''');
 
       final actual = VersionChecker.getMinimumVersionConstraint(
-        package,
+        setup.package,
         ['dependencies', 'foo'],
       );
       expect(actual, Version(0, 5, 0));
     });
 
     test('returns correct version if range is exclusive on the lower end', () {
-      pubspecYamlFile.writeAsStringSync('''
+      final setup = _Setup.init();
+      setup.pubspecYamlFile.writeAsStringSync('''
 name: dashi
 
 dependencies:
@@ -269,7 +265,7 @@ dependencies:
 ''');
 
       final actual = VersionChecker.getMinimumVersionConstraint(
-        package,
+        setup.package,
         ['dependencies', 'foo'],
       );
       expect(actual, Version(0, 5, 1));
@@ -278,7 +274,8 @@ dependencies:
 
   group('getResolvedVersion', () {
     test('returns version from pubspec.lock', () {
-      pubspecLockFile.writeAsStringSync('''
+      final setup = _Setup.init();
+      setup.pubspecLockFile.writeAsStringSync('''
 packages:
   foo:
     dependency: transitive
@@ -289,7 +286,7 @@ packages:
     version: "42.0.0"
 ''');
 
-      final actual = VersionChecker.getResolvedVersion(package, 'foo');
+      final actual = VersionChecker.getResolvedVersion(setup.package, 'foo');
       expect(actual, Version(42, 0, 0));
     });
   });
@@ -313,4 +310,36 @@ packages:
       );
     });
   });
+}
+
+class _Setup {
+  _Setup({
+    required this.pubspecYamlFile,
+    required this.pubspecLockFile,
+    required this.package,
+  });
+
+  factory _Setup.init() {
+    final temp = Directory.systemTemp.createTempSync();
+    final pubspecYamlFile = temp.file('pubspec.yaml')
+      ..writeAsStringSync('name: dashi');
+    final pubspecLockFile = temp.file('pubspec.lock');
+    env['SIDEKICK_PACKAGE_HOME'] = temp.path;
+    final package = DartPackage.fromDirectory(temp)!;
+
+    addTearDown(() {
+      env['SIDEKICK_PACKAGE_HOME'] = null;
+      temp.deleteSync(recursive: true);
+    });
+
+    return _Setup(
+      pubspecYamlFile: pubspecYamlFile,
+      pubspecLockFile: pubspecLockFile,
+      package: package,
+    );
+  }
+
+  final File pubspecYamlFile;
+  final File pubspecLockFile;
+  final DartPackage package;
 }
