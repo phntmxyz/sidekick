@@ -2,7 +2,7 @@ import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_core/src/update/migration.dart';
 
 final fixUsageMessage208 = MigrationStep.inline(
-  (context) async {
+  (context) {
     final mainFile = SidekickContext.sidekickPackage.cliMainFile;
     mainFile.replaceFirst("    name: '${SidekickContext.cliName}',\n", '');
   },

@@ -23,7 +23,7 @@ void main() {
   });
 
   group('updateVersionConstraint', () {
-    test('updates package when it already exists in pubspec', () async {
+    test('updates package when it already exists in pubspec', () {
       pubspecYamlFile.writeAsStringSync('''
 name: dashi
 dependencies:
@@ -47,7 +47,7 @@ dependencies:
       );
     });
 
-    test('sets package when it does not yet exist in pubspec', () async {
+    test('sets package when it does not yet exist in pubspec', () {
       // foo does not exist in the pubspec yet, it should be added by updateVersionConstraint
       pubspecYamlFile.writeAsStringSync('''
 name: dashi
@@ -72,7 +72,7 @@ dependencies:
 '''),
       );
     });
-    test('sets whole block when it does not yet exist in pubspec', () async {
+    test('sets whole block when it does not yet exist in pubspec', () {
       pubspecYamlFile.writeAsStringSync('''
 name: dashi
 # the pubspec does not have a dependencies block, it should be added by updateVersionConstraint''');
@@ -95,7 +95,7 @@ dependencies:
       );
     });
 
-    test('replace path dependency with pub version', () async {
+    test('replace path dependency with pub version', () {
       pubspecYamlFile.writeAsStringSync('''
 name: dashi
 dependencies:
@@ -120,7 +120,7 @@ dependencies:
       );
     });
 
-    test('replace git dependency with pub version', () async {
+    test('replace git dependency with pub version', () {
       pubspecYamlFile.writeAsStringSync('''
 name: dashi
 dependencies:

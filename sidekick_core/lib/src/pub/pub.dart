@@ -12,7 +12,7 @@
 /// Alternatives:
 /// - open a PR for pub to expose the information needed by plugin_command.dart directly (so internal code isn't needed anymore)
 /// - publish a sidekick_pub package containing the required modified pub code and depend on it
-library pub;
+library;
 
 import 'package:sidekick_core/sidekick_core.dart';
 

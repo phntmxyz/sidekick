@@ -15,7 +15,7 @@ void main() {
   });
 
   for (final cliName in const ['dashi', 'foo_bar']) {
-    test('template generates expected files with cliName $cliName', () async {
+    test('template generates expected files with cliName $cliName', () {
       final template = SidekickTemplate();
       final props = SidekickTemplateProperties(
         name: cliName,
