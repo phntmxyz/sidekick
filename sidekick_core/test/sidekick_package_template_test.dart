@@ -4,18 +4,13 @@ import 'package:sidekick_test/sidekick_test.dart';
 import 'package:test/test.dart';
 
 void main() {
-  late Directory tempDir;
-  setUp(() {
-    tempDir = Directory.systemTemp.createTempSync();
-    print(tempDir.path);
-  });
-
-  tearDown(() {
-    tempDir.deleteSync(recursive: true);
-  });
-
   for (final cliName in const ['dashi', 'foo_bar']) {
     test('template generates expected files with cliName $cliName', () {
+      final tempDir = Directory.systemTemp.createTempSync();
+      addTearDown(() {
+        tempDir.deleteSync(recursive: true);
+      });
+
       final template = SidekickTemplate();
       final props = SidekickTemplateProperties(
         name: cliName,
