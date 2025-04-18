@@ -21,7 +21,7 @@ dependencies:
   path: ^1.8.1
   # transitive from dcli
   pub_semver: ^2.1.1
-  pubspec_manager: ^1.0.1
+  pubspec_manager: ^1.0.2
   pubspec_parse: ^1.2.0
   recase: ^4.1.0
   # win32 is a transitive dependency of dcli, but dcli v7.0.2 requires win32 v5.7.0
