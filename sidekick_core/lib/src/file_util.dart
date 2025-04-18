@@ -81,7 +81,7 @@ extension DeleteDirContents on Directory {
 
 extension MakeExecutable on FileSystemEntity {
   /// Makes a file executable 'rwxr-xr-x' (755)
-  Future<void> makeExecutable() async {
+  void makeExecutable() {
     if (this is Directory) {
       throw "Can't make a Directory executable ($this)";
     }
