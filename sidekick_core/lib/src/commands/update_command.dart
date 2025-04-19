@@ -68,6 +68,10 @@ class UpdateCommand extends Command {
           // Starting with sidekick_core: 3.x (and dcli: 4.0.0) newer Dart SDKs can be used
           continue;
         }
+        if (version != null && sidekickCoreVersion < version) {
+          // Do not offer versions that are older than the requested version
+          continue;
+        }
         availableVersions.add(packageBundle);
       }
     }
@@ -96,16 +100,13 @@ class UpdateCommand extends Command {
         return;
       }
 
-      // check whether multiple dart versions are compatible with the given sidekick_core version
-      final List<Version> availableDartVersions =
-          futureDartSdkVersionWithLatestPatch;
-
-      if (availableDartVersions.length == 1) {
-        packageToInstall = DartPackageBundle(
-          dartSdkVersion: availableDartVersions.single,
-          sidekickCoreVersion: version,
-        );
+      if (availableVersions.length == 1) {
+        packageToInstall = availableVersions.first;
       } else {
+        // use already filtered availableVersions and use only the dart version
+        final availableDartVersions =
+            availableVersions.map((e) => e.dartSdkVersion).toList();
+
         // let user select which Dart version to upgrade to, default latest
         final latestDartVersion = availableDartVersions.max()!;
         print(white('Which Dart version do you want to install?'));
