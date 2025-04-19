@@ -1,3 +1,5 @@
+// ignore_for_file: unnecessary_async
+
 import 'dart:async';
 
 import 'package:sidekick_core/sidekick_core.dart';

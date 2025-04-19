@@ -1,5 +1,5 @@
 /// The core library for Sidekick CLIs
-library sidekick_core;
+library;
 
 import 'package:cli_completion/cli_completion.dart';
 import 'package:sidekick_core/sidekick_core.dart';

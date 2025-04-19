@@ -3,7 +3,7 @@ import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_core/src/update/migration.dart';
 
 final migrateDart35dcli7_260 = MigrationStep.inline(
-  (context) async {
+  (context) {
     final pubspecFile = SidekickContext.sidekickPackage.pubspec;
 
     final pubspec = PubSpec.loadFromPath(pubspecFile.path);

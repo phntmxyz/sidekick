@@ -2,7 +2,7 @@ import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_core/src/update/migration.dart';
 
 final addFormatCommand192 = MigrationStep.inline(
-  (context) async {
+  (context) {
     final mainFile = SidekickContext.sidekickPackage.cliMainFile;
     if (mainFile.readAsStringSync().contains('..addCommand(FormatCommand(')) {
       throw 'Format command already exists in ${mainFile.path}';
