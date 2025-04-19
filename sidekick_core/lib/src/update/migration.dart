@@ -60,6 +60,7 @@ class _InlineMigrationStep extends MigrationStep {
   final String? pullRequestLink;
 
   /// The code to execute for this migration step
+  // ignore: avoid_futureor_void
   final FutureOr<void> Function(MigrationContext) block;
 
   @override

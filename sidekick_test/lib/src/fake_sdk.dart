@@ -58,7 +58,10 @@ Directory fakeDartSdk() {
 
   final exe = temp.file('bin/dart')
     ..createSync(recursive: true)
-    ..writeAsStringSync('#!/bin/bash\necho "fake Dart executable"');
+    ..writeAsStringSync(
+      '#!/bin/bash\necho "fake Dart executable"',
+      flush: true,
+    );
   dcli.run('chmod 755 ${exe.path}');
 
   return temp;
@@ -71,10 +74,13 @@ Directory fakeFailingDartSdk() {
 
   final exe = temp.file('bin/dart')
     ..createSync(recursive: true)
-    ..writeAsStringSync('''
+    ..writeAsStringSync(
+      '''
 #!/bin/bash
 echo "fake throwing Dart executable"
-exit 1''');
+exit 1''',
+      flush: true,
+    );
   dcli.run('chmod 755 ${exe.path}');
 
   return temp;
@@ -88,10 +94,13 @@ Directory fakePrintingDartSdk(String text) {
   final textFile = temp.file('text')..writeAsStringSync(text);
   final exe = temp.file('bin/dart')
     ..createSync(recursive: true)
-    ..writeAsStringSync('''
+    ..writeAsStringSync(
+      '''
 #!/bin/bash
 cat ${textFile.path}
-''');
+''',
+      flush: true,
+    );
   dcli.run('chmod 755 ${exe.path}');
 
   return temp;
