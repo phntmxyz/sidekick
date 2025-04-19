@@ -19,23 +19,23 @@ class SidekickTemplate {
       from: props.entrypointLocation.parent.path,
     );
     final entrypoint = entrypointTemplate(packagePath: path);
-    props.entrypointLocation.writeAsStringSync(entrypoint);
+    props.entrypointLocation.writeAsStringSync(entrypoint, flush: true);
     props.entrypointLocation.makeExecutable();
   }
 
   void generateTools(SidekickTemplateProperties props) {
     props.packageLocation.file('tool/download_dart.sh')
       ..createSync(recursive: true)
-      ..writeAsStringSync(downloadDartSh)
+      ..writeAsStringSync(downloadDartSh, flush: true)
       ..makeExecutable();
     props.packageLocation.file('tool/install.sh')
-      ..writeAsStringSync(installSh(cliName: props.name))
+      ..writeAsStringSync(installSh(cliName: props.name), flush: true)
       ..makeExecutable();
     props.packageLocation.file('tool/run.sh')
-      ..writeAsStringSync(runSh)
+      ..writeAsStringSync(runSh, flush: true)
       ..makeExecutable();
     props.packageLocation.file('tool/sidekick_config.sh')
-      ..writeAsStringSync(sidekickConfigSh)
+      ..writeAsStringSync(sidekickConfigSh, flush: true)
       ..makeExecutable();
   }
 
