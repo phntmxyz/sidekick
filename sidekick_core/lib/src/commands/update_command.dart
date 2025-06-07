@@ -20,8 +20,23 @@ class UpdateCommand extends Command {
 
   DartArchive _dartArchive = DartArchive();
 
+  final _gatheredInformation = <String, String>{};
+
   @override
   Future<void> run() async {
+    try {
+      await _runInternal();
+    } catch (e, s) {
+      printerr(red('Error while updating sidekick CLI: $e\n'
+          'Stack trace: $s\n\n'
+          'This is all information gathered during the update process\n'
+          '${_gatheredInformation.entries.map((e) => '${e.key.padLeft(32)}: ${e.value}').join('\n')}'));
+      _gatheredInformation.clear();
+      rethrow;
+    }
+  }
+
+  Future<void> _runInternal() async {
     final args = argResults!;
 
     final Version? version = args.versionFromRest(
@@ -29,6 +44,9 @@ class UpdateCommand extends Command {
         usageException("'$rest' is not a valid semver version.");
       },
     );
+    if (version != null) {
+      _gatheredInformation['version argument'] = version.toString();
+    }
 
     // Start from current sdk version, we don't want to downgrade
     final currentDartMinVersion = VersionChecker.getMinimumVersionConstraint(
@@ -36,23 +54,36 @@ class UpdateCommand extends Command {
           ['environment', 'sdk'],
         ) ??
         Version(2, 19, 0);
+    _gatheredInformation['current Dart SDK version'] =
+        currentDartMinVersion.toString();
 
     final futureDartSdkVersions = await _dartArchive
         .getLatestDartVersions()
         .where((version) => version >= currentDartMinVersion)
         .toList();
+    _gatheredInformation['future Dart SDK versions'] =
+        futureDartSdkVersions.map((e) => e.toString()).join(', ');
 
     final futureDartSdkVersionWithLatestPatch = futureDartSdkVersions
         .groupBy((v) => Version(v.major, v.minor, 0))
         .mapEntries((versionGroup) => versionGroup.value.maxBy((v) => v.patch)!)
         .toList();
+    _gatheredInformation['future Dart SDK versions with latest patch'] =
+        futureDartSdkVersionWithLatestPatch.map((e) => e.toString()).join(', ');
 
-    final availableVersions = <DartPackageBundle>[];
+    final availableVersions = <DartPackageBundle>[
+      if (version != null)
+        DartPackageBundle(
+          dartSdkVersion: currentDartMinVersion,
+          sidekickCoreVersion: version,
+        ),
+    ];
     for (final dartVersion in futureDartSdkVersionWithLatestPatch) {
       final sidekickCoreVersion =
           await VersionChecker.getLatestDependencyVersion(
         'sidekick_core',
         dartSdkVersion: dartVersion,
+        preRelease: version?.isPreRelease ?? false,
       );
       if (sidekickCoreVersion != null) {
         final packageBundle = DartPackageBundle(
@@ -75,6 +106,8 @@ class UpdateCommand extends Command {
         availableVersions.add(packageBundle);
       }
     }
+    _gatheredInformation['available sidekick_core versions'] =
+        availableVersions.map((e) => e.toString()).join(', ');
 
     // to remember which sidekick_core version the sidekick CLI was generated
     // with, that sidekick_core version is written into the CLI's pubspec.yaml
@@ -85,6 +118,8 @@ class UpdateCommand extends Command {
               ['sidekick', 'cli_version'],
             ) ??
             Version.none;
+    _gatheredInformation['current sidekick_core version'] =
+        currentSidekickCliVersion.toString();
 
     final DartPackageBundle packageToInstall;
     if (version != null) {
@@ -175,6 +210,10 @@ class UpdateCommand extends Command {
     }
     final coreVersionToInstall = packageToInstall.sidekickCoreVersion;
     final dartVersionToInstall = packageToInstall.dartSdkVersion;
+    _gatheredInformation['dart version to install'] =
+        dartVersionToInstall.toString();
+    _gatheredInformation['sidekick_core version to install'] =
+        coreVersionToInstall.toString();
 
     if (coreVersionToInstall <= currentSidekickCliVersion &&
         currentDartMinVersion == dartVersionToInstall) {
