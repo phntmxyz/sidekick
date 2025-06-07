@@ -1,6 +1,6 @@
 name: sidekick_core
 description: Shared sidekick commands, plugin engine, migrations, templates and utilities for sidekick CLIs
-version: 3.0.0-preview.5
+version: 3.0.0-preview.6
 repository: https://github.com/phntmxyz/sidekick/tree/main/sidekick_core
 issue_tracker: https://github.com/phntmxyz/sidekick/labels/sidekick_core
 topics:

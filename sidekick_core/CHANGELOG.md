@@ -1,5 +1,14 @@
 # Changelog
 
+## [3.0.0-preview.6](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v3.0.0-preview.5..sidekick_core-v3.0.0-preview.6) (2025-6-7)
+
+Full diff: <https://github.com/phntmxyz/sidekick/compare/sidekick_core-v3.0.0-preview.5...main>
+
+- Do not offer older versions then the specific requested one also for preview [#262](https://github.com/phntmxyz/sidekick/pull/262)
+- Update pubspec_manager to 1.0.2 [#264](https://github.com/phntmxyz/sidekick/pull/264)
+- Add support for analysis_options formatter.page_width and remove --fix [#261](https://github.com/phntmxyz/sidekick/pull/261)
+- Fix migrations [#263](https://github.com/phntmxyz/sidekick/pull/263)
+
 ## [3.0.0-preview.5](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v3.0.0-preview.4..sidekick_core-v3.0.0-preview.5) (2025-4-14)
 
 Full diff: https://github.com/phntmxyz/sidekick/compare/sidekick_core-v3.0.0-preview.4...main
