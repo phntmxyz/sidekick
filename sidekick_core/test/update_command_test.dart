@@ -264,6 +264,107 @@ void main() {
       expect(fullLog, contains('Dart Version: 3.5.0'));
     });
   });
+
+  test('Update with preview version when no compatible Dart SDKs are found',
+      () async {
+    final testCase = _UpdateCommandTestCase(
+      initialSidekickCliVersion: Version.parse('1.2.0'),
+      initialSidekickCoreVersion: Version.parse('1.2.0'),
+      sidekickCoreReleases: [
+        _sidekick_core('1.2.0', sdk: '>=2.12.0 <3.0.0'),
+        _sidekick_core('3.0.0-preview.10', sdk: '>=3.6.0 <4.0.0'),
+      ],
+      dartSdkVersion: Version.parse('3.5.0'),
+      dartSdks: [
+        // No Dart SDKs that would be compatible with the preview version
+        Version.parse('3.5.0'), // Current version - below 3.6.0 requirement
+      ],
+    );
+    await testCase.execute((command) async {
+      _PrintOnlyUpdateExecutorTemplate.register();
+      await command.update(['3.0.0-preview.10']);
+
+      // Should not crash and should handle the scenario gracefully
+      // The update should use the current Dart SDK version with the preview version
+      expect(testCase.downloadedDartSdkVersion, Version.parse('3.5.0'));
+
+      // Should use the current Dart SDK version with the specified preview version
+      expect(
+        testCase.printLog,
+        contains('Arguments: [dash, 1.2.0, 3.0.0-preview.10]'),
+      );
+    });
+  });
+
+  test(
+      'Update with preview version prevents crash when availableDartVersions is empty',
+      () async {
+    final testCase = _UpdateCommandTestCase(
+      initialSidekickCliVersion: Version.parse('1.2.0'),
+      initialSidekickCoreVersion: Version.parse('1.2.0'),
+      sidekickCoreReleases: [
+        _sidekick_core('1.2.0', sdk: '>=2.12.0 <3.0.0'),
+        // Preview version available but no compatible releases for future Dart SDKs
+        _sidekick_core('3.0.0-preview.15', sdk: '>=3.7.0 <4.0.0'),
+      ],
+      dartSdkVersion: Version.parse('3.5.0'),
+      dartSdks: [
+        Version.parse('3.5.0'), // Current version
+        Version.parse(
+            '3.6.0'), // Available but not compatible with preview's >=3.7.0 requirement
+      ],
+    );
+    await testCase.execute((command) async {
+      _PrintOnlyUpdateExecutorTemplate.register();
+      await command.update(['3.0.0-preview.15']);
+
+      // The test verifies that the update doesn't crash even when:
+      // 1. A preview version is requested
+      // 2. No future Dart SDKs are compatible with the preview version requirements
+      // 3. availableDartVersions would be empty without the fix
+
+      // Should use the current Dart SDK version with the specified preview version
+      expect(testCase.downloadedDartSdkVersion, Version.parse('3.5.0'));
+      expect(
+        testCase.printLog,
+        contains('Arguments: [dash, 1.2.0, 3.0.0-preview.15]'),
+      );
+    });
+  });
+
+  test('Update from one preview version to another preview version', () async {
+    final testCase = _UpdateCommandTestCase(
+      initialSidekickCliVersion: Version.parse('3.0.0-preview.5'),
+      initialSidekickCoreVersion: Version.parse('3.0.0-preview.5'),
+      sidekickCoreReleases: [
+        _sidekick_core('3.0.0-preview.5', sdk: '>=3.5.0 <4.0.0'),
+        _sidekick_core('3.0.0-preview.6', sdk: '>=3.5.0 <4.0.0'),
+      ],
+      dartSdkVersion: Version.parse('3.5.0'),
+      dartSdks: [
+        Version.parse(
+            '3.5.0'), // Current version, compatible with both preview versions
+        Version.parse('3.5.1'), // Newer version, also compatible
+      ],
+    );
+    await testCase.execute((command) async {
+      _PrintOnlyUpdateExecutorTemplate.register();
+      await command.update(['3.0.0-preview.6']);
+
+      // Should successfully update from preview.5 to preview.6
+      // When multiple compatible Dart versions are available, it chooses the latest (3.5.1)
+      expect(testCase.downloadedDartSdkVersion, Version.parse('3.5.1'));
+      expect(
+        testCase.printLog,
+        contains('Arguments: [dash, 3.0.0-preview.5, 3.0.0-preview.6]'),
+      );
+
+      // Should indicate the update is happening
+      final fullLog = testCase.printLog.join('\n');
+      expect(fullLog, contains('Updating sidekick from 3.0.0-preview.5'));
+      expect(fullLog, contains('to 3.0.0-preview.6'));
+    });
+  });
 }
 
 // ignore: non_constant_identifier_names
