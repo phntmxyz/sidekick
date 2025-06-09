@@ -83,6 +83,13 @@ if [ ! -f "$EXE" ] || [ "$HASH" != "$EXISTING_HASH" ]; then
   echo "$NEW_HASH" > "$STAMP_FILE"
 fi
 
+# Handle sidekick dart-internal command
+if [ "$1" = "sidekick" ] && [ "$2" = "dart-internal" ]; then
+  shift 2
+  "${DART_SDK}/bin/dart" "$@"
+  exit $?
+fi
+
 "${EXE}" "$@"
 
 ''';
