@@ -94,10 +94,10 @@ class CreatePluginCommand extends Command {
 
     if (usingGlobalSidekickCli) {
       // command is run from global sidekick CLI
-      systemDart(formatArgs);
+      await systemDart(formatArgs);
     } else {
       // command is run from generated sidekick CLI which has its own Dart SDK
-      sidekickDartRuntime.dart(formatArgs);
+      await sidekickDartRuntime.dart(formatArgs);
     }
   }
 }

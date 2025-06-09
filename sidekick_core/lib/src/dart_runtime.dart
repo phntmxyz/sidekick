@@ -46,12 +46,12 @@ class SidekickDartRuntime {
   }
 
   /// Runs custom dart executable of this runtime
-  void dart(
+  Future<void> dart(
     List<String> args, {
     Directory? workingDirectory,
     dcli.Progress? progress,
     bool nothrow = false,
-  }) {
+  }) async {
     dcli.startFromArgs(
       _dartExecutable.path,
       args,
