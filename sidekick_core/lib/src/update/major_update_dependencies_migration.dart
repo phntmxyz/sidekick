@@ -8,7 +8,7 @@ class MajorUpdateDependenciesMigration extends MigrationStep {
 
   @override
   Future<void> migrate(MigrationContext context) async {
-    sidekickDartRuntime.dart(
+    await sidekickDartRuntime.dart(
       ['pub', 'upgrade', '--major-versions'],
       workingDirectory: SidekickContext.sidekickPackage.root,
     );

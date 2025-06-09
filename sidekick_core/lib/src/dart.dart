@@ -78,13 +78,13 @@ class DartSdkNotSetException implements Exception {
 ///
 /// If [throwOnError] is given and the command returns a non-zero exit code,
 /// the result of [throwOnError] will be thrown regardless of [nothrow]
-int systemDart(
+Future<int> systemDart(
   List<String> args, {
   Directory? workingDirectory,
   dcli.Progress? progress,
   bool nothrow = false,
   String Function()? throwOnError,
-}) {
+}) async {
   final systemDartExecutablePath = systemDartExecutable();
   if (systemDartExecutablePath == null) {
     throw "Couldn't find dart executable on PATH.";

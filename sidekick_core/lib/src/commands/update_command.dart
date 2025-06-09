@@ -262,8 +262,8 @@ class UpdateCommand extends Command {
         executor.generateUpdatePackage();
 
         // Execute the update script of the new sidekick_core version with the new Dart SDK version
-        executor.pubGet();
-        executor.executeSidekickUpdate();
+        await executor.pubGet();
+        await executor.executeSidekickUpdate();
       } finally {
         // cleanup
         updateScriptDir.deleteSync(recursive: true);
@@ -274,7 +274,7 @@ class UpdateCommand extends Command {
 
     // Run pub get on cli package to download the new sidekick_core version
     // (sidekick_core was updated by the update script)
-    _dartCommand(
+    await _dartCommand(
       ['pub', 'get'],
       workingDirectory: SidekickContext.sidekickPackage.root,
       progress: Progress.devNull(),
@@ -313,13 +313,17 @@ extension on ArgResults {
 /// This workaround is only required within this command. If any other command
 /// fails because it is missing the embedded Dart SDK, the user should update
 /// their cli.
-void Function(
+Future<void> Function(
   List<String> args, {
   Progress? progress,
   Directory? workingDirectory,
   bool nothrow,
 }) get _dartCommand {
-  return sidekickDartRuntime.isDownloaded() ? sidekickDartRuntime.dart : dart;
+  if (sidekickDartRuntime.isDownloaded()) {
+    return sidekickDartRuntime.dart;
+  } else {
+    return dart;
+  }
 }
 
 extension UpdateCommandTestInjector on UpdateCommand {
@@ -355,8 +359,8 @@ class UpdateExecutor {
   }
 
   /// Load the sidekick_core dependency from pub.dev
-  void pubGet() {
-    sidekickDartRuntime.dart(
+  Future<void> pubGet() async {
+    await sidekickDartRuntime.dart(
       ['pub', 'get'],
       workingDirectory: location,
       progress: Progress.printStdErr(),
@@ -364,7 +368,7 @@ class UpdateExecutor {
   }
 
   /// Execute the update script from the new sidekick_core version
-  void executeSidekickUpdate() {
+  Future<void> executeSidekickUpdate() async {
     final script = location.file('bin/update.dart');
     script.verifyExistsOrThrow();
 
@@ -372,7 +376,7 @@ class UpdateExecutor {
     // script will be called from another sidekick_core version. Changes will break
     // the update process.
     // Only add parameters, never remove any.
-    sidekickDartRuntime.dart(
+    await sidekickDartRuntime.dart(
       [
         script.path,
         SidekickContext.cliName,

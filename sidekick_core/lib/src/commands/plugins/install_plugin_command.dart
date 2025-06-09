@@ -74,7 +74,7 @@ class InstallPluginCommand extends Command {
     );
     env['SIDEKICK_PLUGIN_VERSION_CONSTRAINT'] = versionConstraint;
 
-    final Directory pluginInstallerDir = () {
+    final Directory pluginInstallerDir = await () async {
       switch (source) {
         case 'path':
           final dir = Directory(packageNameOrGitUrlOrLocalPath);
@@ -94,13 +94,13 @@ class InstallPluginCommand extends Command {
         case 'hosted':
           env['SIDEKICK_PLUGIN_HOSTED_URL'] = args['hosted-url'] as String?;
           print('Downloading from pub $packageNameOrGitUrlOrLocalPath...');
-          return _getPackageRootDirForHostedOrGitSource(args);
+          return await _getPackageRootDirForHostedOrGitSource(args);
         case 'git':
           env['SIDEKICK_PLUGIN_GIT_URL'] = packageNameOrGitUrlOrLocalPath;
           env['SIDEKICK_PLUGIN_GIT_REF'] = gitRef;
           env['SIDEKICK_PLUGIN_GIT_PATH'] = gitPath;
           print('Downloading from git $packageNameOrGitUrlOrLocalPath...');
-          return _getPackageRootDirForHostedOrGitSource(args);
+          return await _getPackageRootDirForHostedOrGitSource(args);
         default:
           throw StateError('unreachable');
       }
@@ -142,7 +142,7 @@ class InstallPluginCommand extends Command {
     // get installer dependencies
     final capture = Progress.capture();
     try {
-      sidekickDartRuntime.dart(
+      await sidekickDartRuntime.dart(
         ['pub', 'get'],
         workingDirectory: workingDir,
         progress: capture,
@@ -207,7 +207,7 @@ class InstallPluginCommand extends Command {
     if (!installScript.existsSync()) {
       throw 'No ${installScript.path} script found in package at $pluginInstallerDir';
     }
-    sidekickDartRuntime.dart(
+    await sidekickDartRuntime.dart(
       [installScript.path],
       workingDirectory: target.root,
     );
@@ -224,7 +224,8 @@ class InstallPluginCommand extends Command {
 }
 
 // Welcome to the world of magic
-Directory _getPackageRootDirForHostedOrGitSource(ArgResults args) {
+Future<Directory> _getPackageRootDirForHostedOrGitSource(
+    ArgResults args) async {
   // TODO Maybe we should do a `dart pub global list` first to check if
   // the package is already activated. If it is already activated,
   // we should at least print a warning because we are altering the
@@ -258,7 +259,7 @@ Directory _getPackageRootDirForHostedOrGitSource(ArgResults args) {
     captureStderr: true,
   );
   try {
-    sidekickDartRuntime.dart(pubGlobalActivateArgs, progress: progress);
+    await sidekickDartRuntime.dart(pubGlobalActivateArgs, progress: progress);
   } catch (e) {
     // TODO for git-ref and git-path args we could add a check way earlier:
     // when the sidekick Dart version is too low either throw if the arg is given or hide the arg
@@ -329,7 +330,7 @@ Directory _getPackageRootDirForHostedOrGitSource(ArgResults args) {
 
   // TODO Don't deactivate when the package was already activated
   // The package was only activated to cache it and can be deactivated now
-  sidekickDartRuntime.dart(
+  await sidekickDartRuntime.dart(
     [
       'pub',
       'global',
