@@ -4,7 +4,7 @@ String entrypointTemplate({required String packagePath}) {
 
 // language=Bash
 const String _code = r'''
-#!/usr/bin/env bash
+#!/bin/sh
 set -e
 
 # Attempt to set ENTRYPOINT_HOME
