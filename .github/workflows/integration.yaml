@@ -13,6 +13,7 @@ on:
 jobs:
   integration_tests_linux_local:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
@@ -40,6 +41,7 @@ jobs:
 
   integration_tests_linux_pub:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     if: ${{ !github.event.pull_request }}
     strategy:
       fail-fast: false
@@ -80,6 +82,7 @@ jobs:
 
   integration_tests_windows:
     runs-on: windows-2022
+    timeout-minutes: 30
 
     # They don't work yet, but someone should invest time here
     if: 'false'

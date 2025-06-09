@@ -27,6 +27,7 @@ jobs:
 
   vault_test:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     container:
       image: dart:3.5.0
@@ -42,6 +43,7 @@ jobs:
 
   plugin_installer:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     container:
       image: dart:3.5.0
@@ -55,6 +57,7 @@ jobs:
 
   sk_sidekick:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - uses: actions/checkout@v1

@@ -9,6 +9,7 @@ on:
 jobs:
   format:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     container:
       image: dart:3.5.0
