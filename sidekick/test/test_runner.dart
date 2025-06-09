@@ -1,6 +1,7 @@
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:test/test.dart';
 
+import 'dart_internal_test.dart' as dart_internal_test;
 import 'dcli_ask_validators_test.dart' as dcli_ask_validators_test;
 import 'directory_extension_test.dart' as directory_extension_test;
 import 'init_test.dart' as init_test;
@@ -34,6 +35,7 @@ void main() {
     expect(testsInTestRunner, actualTestFiles);
   });
 
+  group('dart_internal_test', dart_internal_test.main);
   group('dcli_ask_validators_test', dcli_ask_validators_test.main);
   group('directory_extension_test', directory_extension_test.main);
   group('init_test', init_test.main);
