@@ -23,10 +23,6 @@ class VerifyPublishStateCommand extends Command {
       }
     }();
 
-    if (!isProgramInstalled('dartdoc')) {
-      dart(['pub', 'global', 'activate', 'dartdoc', '6.1.5']);
-    }
-
     if (package == null) {
       final allPackages = findAllPackages(SidekickContext.projectRoot)
           .where((it) => !it.root.path.contains('/templates/'))
@@ -39,28 +35,67 @@ class VerifyPublishStateCommand extends Command {
       );
       for (final package in allPackages) {
         print(yellow('=== package ${package.name} ==='));
-        verifyPackage(package);
+        await verifyPackage(package);
         print("\n");
       }
     } else {
-      verifyPackage(package);
+      await verifyPackage(package);
     }
   }
 
-  void verifyPackage(DartPackage package) {
+  Future<void> verifyPackage(DartPackage package) async {
     // Verify dart doc works without error
-    final home = Platform.environment['HOME']!;
-    '$home/.pub-cache/bin/dartdoc'.start(
-      workingDirectory: package.root.path,
+    dart(
+      ['doc', '--dry-run'],
+      throwOnError: () => 'Generating dart doc failed',
+      workingDirectory: package.root,
     );
 
-    // dry-run publish should work without error
+    await dryRunPubPublish(package);
+  }
+
+  /// Runs `dart pub publish --dry-run` and checks for warnings,
+  /// manually ignoring some due to https://github.com/dart-lang/pub/issues/3807
+  Future<void> dryRunPubPublish(DartPackage package) async {
+    final progress = Progress.print(capture: true);
     dart(
       ['pub', 'publish', '--dry-run'],
       workingDirectory: package.root,
+      progress: progress,
       nothrow: true,
-      throwOnError: () => 'Publish dry-run failed',
     );
+
+    final output = progress.lines.join('\n');
+
+    // Parse "Package has X warning(s)." or "Package has X warnings." from entire output
+    final warningMatch =
+        RegExp(r'Package has (\d+) warning').firstMatch(output);
+    if (warningMatch == null) {
+      // No warning summary found - check if output contains error indicators
+      if (output.toLowerCase().contains('error') ||
+          output.toLowerCase().contains('failed')) {
+        throw 'Publish dry-run failed:\n'
+            '$output';
+      }
+      // If no errors and no warning summary, assume success
+      return;
+    }
+
+    int warningCount = int.parse(warningMatch.group(1)!);
+
+    // Check for known acceptable warnings and decrement count
+    const preReleaseVersionWarning =
+        'Packages dependent on a pre-release of another package should themselves';
+    if (output.contains(preReleaseVersionWarning)) {
+      print(
+        '🫣 Ignoring warning publishing-prereleases: $preReleaseVersionWarning...',
+      );
+      warningCount--;
+    }
+
+    if (warningCount > 0) {
+      throw 'Publish dry-run failed with $warningCount unacceptable warning(s)';
+    }
   }
 }
 

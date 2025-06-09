@@ -20,6 +20,5 @@ jobs:
         run: ./sk deps
       - name: lint
         run: ./sk analyze --fatal-infos
-      # enable again after sidekick_core:2.0.0-preview.1 is published
-      #- name: publishable
-      #  run: ./sk verify-publish-state
+      - name: publishable
+        run: ./sk verify-publish-state
