@@ -1,6 +1,6 @@
 // language=Bash
 const String downloadDartSh = r'''
-#!/usr/bin/env bash
+#!/bin/sh
 
 # Downloads the dart sdk into the sidekick build folder.
 # Handles caching to minimize network traffic
