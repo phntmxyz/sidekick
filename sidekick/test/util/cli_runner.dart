@@ -137,14 +137,18 @@ class SidekickCli {
   SidekickCli._(this.root, this.name);
 
   /// Runs the CLI's entrypoint and verifies that it exits with exit code 0
+  /// Uses POSIX shell for sh compatibility testing
   Future<TestProcess> run(
     List<String> args, {
     Directory? workingDirectory,
     Map<String, String>? environment,
   }) async {
+    // Use system POSIX shell for sh compatibility testing
+    final shell = Platform.isWindows ? 'sh' : '/bin/sh';
+
     final process = await TestProcess.start(
-      _entrypoint.path,
-      args,
+      shell,
+      [_entrypoint.path, ...args],
       workingDirectory: workingDirectory?.path ?? root.path,
       environment: environment,
     );
