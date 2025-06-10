@@ -214,6 +214,56 @@ abstract class VersionChecker {
     return null;
   }
 
+  /// Checks if a specific [packageVersion] of [dependency] is compatible with [dartSdkVersion]
+  ///
+  /// Returns true if the package version supports the given Dart SDK version
+  static Future<bool> isPackageVersionCompatibleWithDartSdk({
+    required String dependency,
+    required Version packageVersion,
+    required Version dartSdkVersion,
+  }) async {
+    if (testFakeIsPackageVersionCompatibleWithDartSdk != null) {
+      return testFakeIsPackageVersionCompatibleWithDartSdk!(
+        dependency: dependency,
+        packageVersion: packageVersion,
+        dartSdkVersion: dartSdkVersion,
+      );
+    }
+
+    final response =
+        await get(Uri.parse('https://pub.dev/api/packages/$dependency'));
+
+    if (response.statusCode != HttpStatus.ok) {
+      throw "Package '$dependency' not found on pub.dev";
+    }
+
+    final json = jsonDecode(response.body) as Map<String, dynamic>;
+    final versions = json['versions'] as List<dynamic>;
+
+    // Find the specific version
+    for (final release in versions) {
+      release as Map<String, dynamic>;
+      final versionRaw = release['version'] as String;
+      final version = Version.parse(versionRaw);
+
+      if (version == packageVersion) {
+        final pubspec = release['pubspec'] as Map<String, dynamic>;
+        final environment = pubspec['environment'] as Map<String, dynamic>?;
+        final sdk = environment?['sdk'] as String?;
+
+        if (sdk == null) {
+          // No SDK constraint specified, assume compatible
+          return true;
+        }
+
+        return VersionConstraint.parse(sdk).allows(dartSdkVersion);
+      }
+    }
+
+    // Package version not found
+    return false;
+  }
+
   /// Returns the channel and version of the Dart SDK at the given path
   static SdkVersion getDartVersion(String dartExecutablePath) {
     // e.g. Dart SDK version: 2.18.4 (stable) (Tue Nov 1 15:15:07 2022 +0000) on "macos_arm64"
@@ -268,6 +318,14 @@ abstract class VersionChecker {
     String dependency, {
     Version? dartSdkVersion,
   })? testFakeGetLatestDependencyVersion;
+
+  /// Set to override behavior of [isPackageVersionCompatibleWithDartSdk] in tests
+  @visibleForTesting
+  static Future<bool> Function({
+    required String dependency,
+    required Version packageVersion,
+    required Version dartSdkVersion,
+  })? testFakeIsPackageVersionCompatibleWithDartSdk;
 }
 
 /// Returns the string specified by [path] in [yamlFile]
