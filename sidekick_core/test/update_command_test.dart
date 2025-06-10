@@ -365,6 +365,46 @@ void main() {
       expect(fullLog, contains('to 3.0.0-preview.6'));
     });
   });
+
+  test(
+      'should not suggest incompatible Dart versions when upgrading from 2.1.2 to 3.0.0-preview.6',
+      () async {
+    final testCase = _UpdateCommandTestCase(
+      initialSidekickCliVersion: Version.parse('2.1.2'),
+      initialSidekickCoreVersion: Version.parse('2.1.2'),
+      sidekickCoreReleases: [
+        _sidekick_core('2.1.2', sdk: '>=3.0.0 <3.3.0'),
+        _sidekick_core('3.0.0-preview.6', sdk: '>=3.5.0 <4.0.0'),
+      ],
+      dartSdks: [
+        Version.parse('3.2.6'), // Current Dart version - compatible with 2.1.2
+        Version.parse(
+            '3.3.0'), // Incompatible with 3.0.0-preview.6, compatible with 2.1.2
+        Version.parse('3.4.0'), // Incompatible with any version
+        Version.parse('3.5.0'), // Compatible with 3.0.0-preview.6 but not 2.1.2
+        Version.parse('3.6.0'), // Compatible with 3.0.0-preview.6 but not 2.1.2
+      ],
+      dartSdkVersion: Version.parse('3.2.6'), // Starting with Dart 3.2.6
+    );
+
+    await testCase.execute((command) async {
+      _PrintOnlyUpdateExecutorTemplate.register();
+      await command.update(['3.0.0-preview.6']);
+
+      // Should only offer compatible Dart SDKs for 3.0.0-preview.6 (3.5.0 and 3.6.0)
+      // Should not offer Dart 3.3.X or 3.4.X since they would make the upgrade path incompatible
+      // Should choose the latest compatible version (3.6.0)
+      expect(testCase.downloadedDartSdkVersion, Version.parse('3.6.0'));
+
+      final fullLog = testCase.printLog.join('\n');
+      expect(fullLog, contains('Updating sidekick from 2.1.2'));
+      expect(fullLog, contains('to 3.0.0-preview.6'));
+      expect(fullLog, contains('Dart 3.6.0'));
+
+      expect(fullLog, isNot(contains('to 3.0.0-preview.6 (Dart 3.3.0)')));
+      expect(fullLog, isNot(contains('to 3.0.0-preview.6 (Dart 3.4.0)')));
+    });
+  });
 }
 
 // ignore: non_constant_identifier_names
@@ -461,6 +501,27 @@ class _UpdateCommandTestCase {
           };
           addTearDown(
             () => VersionChecker.testFakeGetLatestDependencyVersion = null,
+          );
+
+          // Set up mock for the new compatibility check method
+          VersionChecker.testFakeIsPackageVersionCompatibleWithDartSdk = ({
+            required String dependency,
+            required Version packageVersion,
+            required Version dartSdkVersion,
+          }) async {
+            if (dependency == 'sidekick_core') {
+              final package = sidekickCoreReleases
+                  .where((package) => package.version == packageVersion)
+                  .firstOrNull;
+              if (package != null) {
+                return package.dartSdkConstraint.allows(dartSdkVersion);
+              }
+            }
+            return false;
+          };
+          addTearDown(
+            () => VersionChecker.testFakeIsPackageVersionCompatibleWithDartSdk =
+                null,
           );
 
           _LocalUpdateExecutorTemplate.register();
