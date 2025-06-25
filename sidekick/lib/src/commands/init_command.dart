@@ -243,7 +243,7 @@ class InitCommand extends Command {
     // make sure sidekick_core is up-to-date
     final errorCapture = Progress.capture();
     try {
-      bundledDart(
+      await bundledDart(
         ['pub', 'upgrade', 'sidekick_core'],
         workingDirectory: cliPackage,
         progress: errorCapture,
@@ -254,7 +254,7 @@ class InitCommand extends Command {
       rethrow;
     }
 
-    bundledDart(
+    await bundledDart(
       ['format', cliPackage.path],
       progress: dcli.Progress.printStdErr(),
     );

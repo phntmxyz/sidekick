@@ -469,10 +469,10 @@ packages:
     dependency: transitive
     description:
       name: pubspec_manager
-      sha256: "7d3e74f0f673fdc441002d45a66dcb37d26dcea99ae730c4fd6671c42423149c"
+      sha256: "4000db36057ddc9c95f1c56fd209ce54b1e7c621280f52e159a83342b1e33d62"
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.1"
+    version: "1.0.2"
   pubspec_parse:
     dependency: transitive
     description:
@@ -541,10 +541,10 @@ packages:
     dependency: "direct main"
     description:
       name: sidekick_core
-      sha256: "482c162a9df09353e2054308aec337edefa4b68be7c070b7fc468717b283d1a3"
+      sha256: a30b80834abb2e858cafe86b5911371d35dfb910b456d70ab3e0733c8587f3e8
       url: "https://pub.dev"
     source: hosted
-    version: "3.0.0-preview.5"
+    version: "3.0.0"
   sidekick_test:
     dependency: "direct dev"
     description:
