@@ -14,11 +14,11 @@ environment:
 dependencies:
   actions_toolkit_dart: ^0.5.0
   dcli: ^7.0.2
-  sidekick_core: ^3.0.0-preview.5
+  sidekick_core: ^3.0.0
 
 dev_dependencies:
   dcli_core: ^7.0.2
   lint: '>=1.5.0 <3.0.0'
   prompts: ^2.0.0
-  sidekick_plugin_installer: ^1.3.0
+  sidekick_plugin_installer: ^2.0.0
   test: '>1.25.0 <2.0.0'

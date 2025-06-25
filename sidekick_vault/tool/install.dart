@@ -18,8 +18,8 @@ Future<void> main() async {
   final vaultDir = projectRoot.directory(vaultPath);
 
   print("- Adding sidekick_vault as dependency");
-  addSelfAsDependency();
-  pubGet(package);
+  await addSelfAsDependency();
+  await pubGet(package);
 
   print("- Generating package:${package.name}/src/vault.dart");
   _writeVaultFile(vaultDir, package);
