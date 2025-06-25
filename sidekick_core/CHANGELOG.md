@@ -1,5 +1,11 @@
 # Changelog
 
+## [2.1.4](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v2.1.3..sidekick_core-v2.1.4) (2025-6-25)
+
+Full diff: <https://github.com/phntmxyz/sidekick/compare/sidekick_core-v2.1.3...main>
+
+- Hide incompatible Dart versions (e.g. Dart 3.4.0) [#271](https://github.com/phntmxyz/sidekick/pull/271)
+
 ## [2.1.3](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v2.1.2..sidekick_core-v2.1.3) (2024-7-16)
 
 - Allow updating to sidekick_core:3.0.0-preview with Dart 3.3.0+ <https://github.com/phntmxyz/sidekick/commit/a330aa7b938e25ac10b5e8862cda7c6912e4a15c>
