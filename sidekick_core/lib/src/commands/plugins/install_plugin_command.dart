@@ -166,7 +166,7 @@ class InstallPluginCommand extends Command {
       // update when sidekick_core removes support for old sidekick_plugin_installer protocol
       min: Version.none,
       // update when sidekick_core supports new sidekick_plugin_installer protocol
-      max: Version(2, 0, 0),
+      max: Version(3, 0, 0),
     );
 
     // old CLIs shouldn't install new plugins

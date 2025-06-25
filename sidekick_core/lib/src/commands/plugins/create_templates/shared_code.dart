@@ -52,11 +52,11 @@ environment:
   sdk: '>=3.3.0 <4.0.0'
 
 dependencies:
-  sidekick_core: ^2.0.0
+  sidekick_core: ^3.0.0
 
 dev_dependencies:
   lint: ^2.0.0
-  sidekick_plugin_installer: ^1.2.0
+  sidekick_plugin_installer: ^2.0.0
 ''';
 
   String get installTemplate => '''
@@ -67,8 +67,8 @@ import 'package:sidekick_plugin_installer/sidekick_plugin_installer.dart';
 Future<void> main() async {
   final SidekickPackage package = PluginContext.sidekickPackage;
 
-  addSelfAsDependency();
-  pubGet(package);
+  await addSelfAsDependency();
+  await pubGet(package);
   
   final cliCommandFile =
       package.root.file('lib/src/commands/${commandName.snakeCase}_command.dart');
@@ -80,7 +80,7 @@ Future<void> main() async {
       .file('template/commands/${commandName.snakeCase}_command.template.dart')
       .copySync(cliCommandFile.path);
   
-  registerPlugin(
+  await registerPlugin(
     sidekickCli: package,
     import: "import 'package:\${package.name}/src/commands/${commandName.snakeCase}_command.dart';",
     command: '${commandName.pascalCase}Command()',
