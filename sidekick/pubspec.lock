@@ -457,14 +457,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.2.0"
-  pubspec2:
-    dependency: transitive
-    description:
-      name: pubspec2
-      sha256: "7b1fd81927f1da6d88457c83b51134e1bc8cb07638bd8d9e205b2ce1cd9ec091"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.4.2"
   pubspec_lock:
     dependency: transitive
     description:
@@ -548,10 +540,11 @@ packages:
   sidekick_core:
     dependency: "direct main"
     description:
-      path: "../sidekick_core"
-      relative: true
-    source: path
-    version: "3.0.0-preview.2"
+      name: sidekick_core
+      sha256: "482c162a9df09353e2054308aec337edefa4b68be7c070b7fc468717b283d1a3"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.0-preview.5"
   sidekick_test:
     dependency: "direct dev"
     description:
