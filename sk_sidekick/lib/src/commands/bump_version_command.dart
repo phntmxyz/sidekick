@@ -10,9 +10,9 @@ class BumpVersionCommand extends Command {
 
   @override
   String get invocation => super.invocation.replaceFirst(
-        '[arguments]',
-        '[package-path] [--minor|patch|major] --[no-]commit',
-      );
+    '[arguments]',
+    '[package-path] [--minor|patch|major] --[no-]commit',
+  );
 
   BumpVersionCommand() {
     argParser.addFlag(
@@ -74,8 +74,10 @@ class BumpVersionCommand extends Command {
     final newVersion = () {
       if (exactVersion != null) {
         if (exactVersion < version) {
-          error('Exact version $exactVersion must be greater '
-              'than current version $version');
+          error(
+            'Exact version $exactVersion must be greater '
+            'than current version $version',
+          );
         }
         return exactVersion;
       }
@@ -98,8 +100,10 @@ class BumpVersionCommand extends Command {
 
     bool bumped = false;
     if (commit) {
-      final detachedHEAD = 'git symbolic-ref -q HEAD'
-          .start(progress: Progress.printStdErr(), nothrow: true);
+      final detachedHEAD = 'git symbolic-ref -q HEAD'.start(
+        progress: Progress.printStdErr(),
+        nothrow: true,
+      );
       if (detachedHEAD.exitCode != 0) {
         printerr(
           'You are in "detached HEAD" state. '
@@ -134,11 +138,8 @@ class BumpVersionCommand extends Command {
   }
 }
 
-typedef FileModification = void Function(
-  DartPackage package,
-  Version oldVersion,
-  Version newVersion,
-);
+typedef FileModification =
+    void Function(DartPackage package, Version oldVersion, Version newVersion);
 
 /// Commits only the file changes that have been done in [block]
 void commitFileModifications(
@@ -148,8 +149,9 @@ void commitFileModifications(
   final stashName = 'pre-bump-${DateTime.now().toIso8601String()}';
 
   // stash changes
-  'git stash save --include-untracked "$stashName"'
-      .start(progress: Progress.printStdErr());
+  'git stash save --include-untracked "$stashName"'.start(
+    progress: Progress.printStdErr(),
+  );
 
   try {
     // apply modifications
@@ -157,8 +159,9 @@ void commitFileModifications(
 
     // commit
     'git add -A'.start(progress: Progress.printStdErr());
-    'git commit -m "$commitMessage" --no-verify'
-        .start(progress: Progress.printStdErr());
+    'git commit -m "$commitMessage" --no-verify'.start(
+      progress: Progress.printStdErr(),
+    );
     'git --no-pager log -n1 --oneline'.run;
   } catch (e) {
     printerr('Detected error, discarding modifications');

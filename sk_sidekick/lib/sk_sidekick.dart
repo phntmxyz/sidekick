@@ -15,9 +15,7 @@ import 'package:sk_sidekick/src/sk_project.dart';
 late SkProject skProject;
 
 Future<void> runSk(List<String> args) async {
-  final runner = initializeSidekick(
-    dartSdkPath: systemDartSdkPath(),
-  );
+  final runner = initializeSidekick(dartSdkPath: systemDartSdkPath());
 
   skProject = SkProject(SidekickContext.projectRoot);
   runner

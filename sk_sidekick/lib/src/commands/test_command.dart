@@ -11,10 +11,7 @@ class TestCommand extends Command {
   TestCommand() {
     argParser
       ..addFlag('all', hide: true, help: 'deprecated')
-      ..addOption(
-        'package',
-        abbr: 'p',
-      );
+      ..addOption('package', abbr: 'p');
   }
 
   @override
@@ -100,8 +97,4 @@ class _TestResultCollector {
   }
 }
 
-enum _TestResult {
-  success,
-  failed,
-  noTests,
-}
+enum _TestResult { success, failed, noTests }

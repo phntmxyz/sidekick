@@ -12,8 +12,9 @@ void sidekickCoreBundledVersionBump(
   }
 
   // Update version for sidekick_core package
-  final coreFile =
-      skProject.sidekickCorePackage.root.file('lib/sidekick_core.dart');
+  final coreFile = skProject.sidekickCorePackage.root.file(
+    'lib/sidekick_core.dart',
+  );
   coreFile.replaceSectionWith(
     startTag: 'final Version version = Version.parse(',
     endTag: ');',

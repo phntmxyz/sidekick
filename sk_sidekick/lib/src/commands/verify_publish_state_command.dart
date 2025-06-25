@@ -8,10 +8,8 @@ class VerifyPublishStateCommand extends Command {
   final String name = 'verify-publish-state';
 
   @override
-  String get invocation => super.invocation.replaceFirst(
-        '[arguments]',
-        '[package-path]',
-      );
+  String get invocation =>
+      super.invocation.replaceFirst('[arguments]', '[package-path]');
 
   @override
   Future<void> run() async {
@@ -68,8 +66,9 @@ class VerifyPublishStateCommand extends Command {
     final output = progress.lines.join('\n');
 
     // Parse "Package has X warning(s)." or "Package has X warnings." from entire output
-    final warningMatch =
-        RegExp(r'Package has (\d+) warning').firstMatch(output);
+    final warningMatch = RegExp(
+      r'Package has (\d+) warning',
+    ).firstMatch(output);
     if (warningMatch == null) {
       // No warning summary found - check if output contains error indicators
       if (output.toLowerCase().contains('error') ||

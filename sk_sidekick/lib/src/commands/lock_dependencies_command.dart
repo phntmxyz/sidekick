@@ -1,6 +1,5 @@
 import 'package:pub_semver/pub_semver.dart';
 import 'package:sidekick_core/sidekick_core.dart' hide version;
-
 // ignore: implementation_imports, sk_sidekick is not a published package and already depends on sidekick_core from path
 import 'package:sidekick_core/src/version_checker.dart';
 import 'package:yaml/yaml.dart';
@@ -14,15 +13,16 @@ class LockDependenciesCommand extends Command {
 
   @override
   String get invocation => super.invocation.replaceFirst(
-        '[arguments]',
-        '[package-path] [--[no]-check-dart-version]',
-      );
+    '[arguments]',
+    '[package-path] [--[no]-check-dart-version]',
+  );
 
   LockDependenciesCommand() {
     argParser.addFlag(
       'check-dart-version',
       defaultsTo: true,
-      help: 'Whether to check that Dart is at the latest stable version. '
+      help:
+          'Whether to check that Dart is at the latest stable version. '
           'Depending on the Dart version, different upper bounds are resolved.',
     );
   }
@@ -55,8 +55,10 @@ class LockDependenciesCommand extends Command {
       throw "Lockfile doesn't exist in ${package.root}";
     }
 
-    final constrainedVersions = (loadYaml(package.pubspec.readAsStringSync())
-        as YamlMap)['dependencies'] as YamlMap;
+    final constrainedVersions =
+        (loadYaml(package.pubspec.readAsStringSync())
+                as YamlMap)['dependencies']
+            as YamlMap;
     final lockedVersions =
         // ignore: avoid_dynamic_calls
         loadYaml(lockfile.readAsStringSync())['packages'] as YamlMap;
@@ -134,10 +136,10 @@ class LockDependenciesCommand extends Command {
       ...pinnedTransitiveDependencies,
     ].join('\n');
 
-    final currentDependenciesBlock =
-        RegExp(r'^dependencies:.*((\n\s*#.*)|(\n {2}.*))*', multiLine: true)
-            .firstMatch(package.pubspec.readAsStringSync())
-            ?.group(0);
+    final currentDependenciesBlock = RegExp(
+      r'^dependencies:.*((\n\s*#.*)|(\n {2}.*))*',
+      multiLine: true,
+    ).firstMatch(package.pubspec.readAsStringSync())?.group(0);
     if (currentDependenciesBlock == null) {
       throw "Couldn't parse current dependencies block in ${package.pubspec.path}: ${package.pubspec.readAsStringSync()}";
     }

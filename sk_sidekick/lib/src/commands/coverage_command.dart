@@ -35,8 +35,9 @@ class CoverageCommand extends Command {
       if (!file.existsSync()) {
         throw 'Test file does not exist: ${file.path}';
       }
-      final packageDir = file.parent
-          .findParent((dir) => DartPackage.fromDirectory(dir) != null);
+      final packageDir = file.parent.findParent(
+        (dir) => DartPackage.fromDirectory(dir) != null,
+      );
       if (packageDir == null) {
         throw '${file.path} is not within a dart package (could not find pubspec.yaml)';
       }
@@ -53,19 +54,17 @@ void _runCoverage(DartPackage package, {File? file}) {
     coverageDir.deleteSync(recursive: true);
   }
 
-  dart(
-    [
-      'pub',
-      'global',
-      'run',
-      'coverage:test_with_coverage',
-      if (file != null) file.absolute.path,
-    ],
-    workingDirectory: package.root,
-  );
+  dart([
+    'pub',
+    'global',
+    'run',
+    'coverage:test_with_coverage',
+    if (file != null) file.absolute.path,
+  ], workingDirectory: package.root);
 
-  'genhtml coverage/lcov.info -o coverage'
-      .start(workingDirectory: package.root.path);
+  'genhtml coverage/lcov.info -o coverage'.start(
+    workingDirectory: package.root.path,
+  );
   'open coverage/index.html'.start(workingDirectory: package.root.path);
 }
 
