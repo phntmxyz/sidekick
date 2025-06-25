@@ -64,4 +64,5 @@ jobs:
       - name: Install dependencies sk_sidekick
         run: ./sk
       - name: Run tests sk_sidekick
-        run: cd sk_sidekick && ./build/cache/dart-sdk/bin/dart test
+        run: cd sk_sidekick && ./../sk sidekick dart-internal test
+
