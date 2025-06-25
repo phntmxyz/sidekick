@@ -493,7 +493,7 @@ String? _getGitUserName() =>
 void _warnIfNotOnDefaultBranch(Directory directory) {
   final currentBranch = _getCurrentBranch(directory);
 
-  const defaultBranches = ['main', 'main-1.X'];
+  const defaultBranches = ['main', 'main-1.X', 'main-2.X', 'main-3.X'];
 
   if (!defaultBranches.contains(currentBranch)) {
     final proceed = confirm(
