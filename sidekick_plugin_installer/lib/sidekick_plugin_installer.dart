@@ -1,5 +1,5 @@
 /// Support library for sidekick plugins
-library sidekick_plugin_installer;
+library;
 
 export 'package:sidekick_plugin_installer/src/add_dependency.dart';
 export 'package:sidekick_plugin_installer/src/add_import.dart';
