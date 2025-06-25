@@ -4,16 +4,16 @@ version: 0.0.1
 publish_to: none
 
 environment:
-  sdk: ">=3.2.6 <4.0.0"
+  sdk: ">=3.8.1 <4.0.0"
 
 executables:
   main:
 
 dependencies:
-  dcli: ^2.2.2
+  dcli: ^7.0.2
   pub_semver: ^2.1.1
   pubspec_parse: ^1.2.0
-  sidekick_core: ^2.1.2
+  sidekick_core: ^3.0.0
   yaml: ^3.1.1
 
 dev_dependencies:
@@ -21,9 +21,9 @@ dev_dependencies:
   sidekick_test:
     git:
       url: https://github.com/phntmxyz/sidekick.git
-      ref: sidekick_core-v2.1.2
+      ref: sidekick_core-v3.0.0
       path: sidekick_test
   test: ^1.20.0
 
 sidekick:
-  cli_version: 2.1.2
+  cli_version: 3.0.0

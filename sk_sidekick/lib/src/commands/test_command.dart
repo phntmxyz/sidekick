@@ -67,14 +67,14 @@ class TestCommand extends Command {
       }
     }
 
-    final exitCode = () {
+    final processCompletion = await () {
       if (package.isFlutterPackage) {
         return flutter(['test'], workingDirectory: package.root);
       } else {
         return dart(['test'], workingDirectory: package.root);
       }
     }();
-    if (exitCode == 0) {
+    if (processCompletion.exitCode == 0) {
       return _TestResult.success;
     }
     return _TestResult.failed;
