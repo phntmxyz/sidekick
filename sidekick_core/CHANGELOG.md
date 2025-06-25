@@ -4,6 +4,16 @@
 
 Full diff: https://github.com/phntmxyz/sidekick/compare/sidekick_core-v3.0.0-preview.6...main
 
+Big release, you most likely have to update your code:
+
+- Breaking: `dart()` and `flutter()` are now async. Don't forget to add `await` everywhere! [#256](https://github.com/phntmxyz/sidekick/pull/256)
+- Breaking: Replaced `addFlutterSdkInitializer` with `addSdkInitializer`. It now gets way more information via `SdkInitializerContext`. This method may now be called way more often, always before every `flutter`, `dart` execution. [#256](https://github.com/phntmxyz/sidekick/pull/256)
+- Breaking: Removed `PubSpec` class. Please manually add [pubspec_manager](https://pub.dev/packages/pubspec_manager) and replace [`pubspec2`](https://pub.dev/packages/pubspec2))
+- Update to dcli 7.0.2
+- Update to Dart 3.5
+
+Minor changes since `3.0.0-preview.6`
+
 - Hide incompatible Dart versions (e.g. 3.4.0) [#270](https://github.com/phntmxyz/sidekick/pull/270)
 - Add dart-internal command for direct access to embedded Dart SDK [#269](https://github.com/phntmxyz/sidekick/pull/269)
 - Convert all bash to sh files for wider compatability [#268](https://github.com/phntmxyz/sidekick/pull/268)
