@@ -1,5 +1,15 @@
 # Changelog
 
+## [3.0.0](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v3.0.0-preview.6..sidekick_core-v3.0.0) (2025-6-25)
+
+Full diff: https://github.com/phntmxyz/sidekick/compare/sidekick_core-v3.0.0-preview.6...main
+
+- Hide incompatible Dart versions (e.g. 3.4.0) [#270](https://github.com/phntmxyz/sidekick/pull/270)
+- Add dart-internal command for direct access to embedded Dart SDK [#269](https://github.com/phntmxyz/sidekick/pull/269)
+- Convert all bash to sh files for wider compatability [#268](https://github.com/phntmxyz/sidekick/pull/268)
+- Make all dart functions futures [#267](https://github.com/phntmxyz/sidekick/pull/267)
+- Fix updating from one to another preview (by setting the version manually) [#266](https://github.com/phntmxyz/sidekick/pull/266)
+
 ## [3.0.0-preview.6](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v3.0.0-preview.5..sidekick_core-v3.0.0-preview.6) (2025-6-7)
 
 Full diff: <https://github.com/phntmxyz/sidekick/compare/sidekick_core-v3.0.0-preview.5...main>
