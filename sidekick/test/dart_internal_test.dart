@@ -16,8 +16,11 @@ void main() {
           dartPackage,
           ['environment', 'sdk'],
         );
-        expect(expectedDartVersion, isNotNull,
-            reason: 'Could not read Dart SDK version from pubspec.yaml');
+        expect(
+          expectedDartVersion,
+          isNotNull,
+          reason: 'Could not read Dart SDK version from pubspec.yaml',
+        );
 
         // Test dart-internal --version using cli.run
         final process =

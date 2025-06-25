@@ -105,7 +105,7 @@ Future<GlobalSidekickCli> _buildGlobalSidekickCli() async {
 
 /// Copy of package:sidekick in temp directory.
 ///
-/// Might contain changes compared to code in \<repo\>/sidekick for testing like
+/// Might contain changes compared to code in `<repo>`/sidekick for testing like
 /// local path dependencies
 class GlobalSidekickCli {
   final Directory root;

@@ -311,7 +311,8 @@ void main() {
       dartSdks: [
         Version.parse('3.5.0'), // Current version
         Version.parse(
-            '3.6.0'), // Available but not compatible with preview's >=3.7.0 requirement
+          '3.6.0',
+        ), // Available but not compatible with preview's >=3.7.0 requirement
       ],
     );
     await testCase.execute((command) async {
@@ -343,7 +344,8 @@ void main() {
       dartSdkVersion: Version.parse('3.5.0'),
       dartSdks: [
         Version.parse(
-            '3.5.0'), // Current version, compatible with both preview versions
+          '3.5.0',
+        ), // Current version, compatible with both preview versions
         Version.parse('3.5.1'), // Newer version, also compatible
       ],
     );
@@ -379,7 +381,8 @@ void main() {
       dartSdks: [
         Version.parse('3.2.6'), // Current Dart version - compatible with 2.1.2
         Version.parse(
-            '3.3.0'), // Incompatible with 3.0.0-preview.6, compatible with 2.1.2
+          '3.3.0',
+        ), // Incompatible with 3.0.0-preview.6, compatible with 2.1.2
         Version.parse('3.4.0'), // Incompatible with any version
         Version.parse('3.5.0'), // Compatible with 3.0.0-preview.6 but not 2.1.2
         Version.parse('3.6.0'), // Compatible with 3.0.0-preview.6 but not 2.1.2

@@ -225,7 +225,8 @@ class InstallPluginCommand extends Command {
 
 // Welcome to the world of magic
 Future<Directory> _getPackageRootDirForHostedOrGitSource(
-    ArgResults args) async {
+  ArgResults args,
+) async {
   // TODO Maybe we should do a `dart pub global list` first to check if
   // the package is already activated. If it is already activated,
   // we should at least print a warning because we are altering the
