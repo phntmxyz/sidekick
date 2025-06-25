@@ -1,5 +1,15 @@
 # Changelog
 
+## [2.0.0](https://github.com/phntmxyz/sidekick/compare/sidekick_plugin_installer-v1.3.0..sidekick_plugin_installer-v2.0.0) (2025-6-25)
+
+Full diff: <https://github.com/phntmxyz/sidekick/compare/sidekick_plugin_installer-v1.3.0...main>
+
+- Remove deprecated `pubAddDependency()` (use addDependency instead)
+- Remove deprecated `pubAddLocalDependency()` (use addDependency instead)
+- Make `addDependency()` and `addSelfAsDependency()` async
+- Make `pubGet()` async
+- Update to sidekick_core 3.0.0
+
 ## [1.3.0](https://github.com/phntmxyz/sidekick/compare/sidekick_plugin_installer-v1.2.1..sidekick_plugin_installer-v1.3.0) (2025-4-14)
 
 Full diff: https://github.com/phntmxyz/sidekick/compare/sidekick_plugin_installer-v1.2.1...main
