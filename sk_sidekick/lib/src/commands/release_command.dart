@@ -463,12 +463,31 @@ Iterable<String> _getChanges({
   required String from,
   String? to = 'HEAD',
   Iterable<String> paths = const [],
-}) =>
-    // %s = subject, %H = full commit hash,
-    'git log --format="- %s https://github.com/phntmxyz/sidekick/commit/%H" $from..$to -- ${paths.join(' ')}'
-        .start(progress: Progress.capture())
-        .lines
-        .map(_prLinkToMarkdownLink);
+}) {
+  String resolveToHash(String ref) {
+    if (ref == 'HEAD') return ref;
+    final result = 'git rev-parse $ref'.start(progress: Progress.capture());
+    final hash = result.firstLine;
+    if (hash == null || hash.isEmpty) {
+      throw 'Could not resolve git ref: $ref';
+    }
+    return hash;
+  }
+
+  final fromHash = resolveToHash(from);
+  final toHash = to == null ? 'HEAD' : resolveToHash(to);
+  final logCmd = [
+    'git log',
+    '--format="- %s https://github.com/phntmxyz/sidekick/commit/%H"',
+    '$fromHash..$toHash',
+    if (paths.isNotEmpty) '-- ${paths.join(' ')}',
+  ].join(' ');
+  return logCmd
+      .start(progress: Progress.capture())
+      .lines
+      .map((l) => l.replaceAll('"', ''))
+      .map(_prLinkToMarkdownLink);
+}
 
 /// Converts the last PR Link in [original] to a markdown link
 ///
