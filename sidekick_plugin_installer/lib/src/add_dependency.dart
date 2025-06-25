@@ -6,7 +6,7 @@ import 'package:sidekick_plugin_installer/sidekick_plugin_installer.dart';
 /// Uses [PluginContext] to get the necessary information
 ///
 /// Should be called from tool/install.dart
-void addSelfAsDependency() {
+Future<void> addSelfAsDependency() async {
   final isPluginProtocolV2 = PluginContext.name != null;
   if (isPluginProtocolV2) {
     // Starting with sidekick_core: >=0.13.0
@@ -26,7 +26,7 @@ void addSelfAsDependency() {
     // Available when installed from hosted
     // - PluginContext.hostedUrl (optional)
     // - PluginContext.versionConstraint (optional)
-    addDependency(
+    await addDependency(
       package: PluginContext.sidekickPackage,
       dependency: PluginContext.name!,
       versionConstraint: PluginContext.versionConstraint,
@@ -46,13 +46,13 @@ void addSelfAsDependency() {
   final pluginName = PluginContext.installerPlugin.name;
   if (PluginContext.localPlugin == null) {
     // install from hosted source which is the default when given nothing else
-    addDependency(
+    await addDependency(
       package: PluginContext.sidekickPackage,
       dependency: pluginName,
     );
   } else {
     // install from local source
-    addDependency(
+    await addDependency(
       package: PluginContext.sidekickPackage,
       dependency: pluginName,
       localPath: PluginContext.localPlugin!.root.path,
@@ -64,7 +64,7 @@ void addSelfAsDependency() {
 ///
 /// If no additional parameters are specified, a dependency is added as
 /// hosted dependency by default.
-void addDependency({
+Future<void> addDependency({
   required DartPackage package,
   required String dependency,
   String? versionConstraint,
@@ -76,7 +76,7 @@ void addDependency({
   String? gitUrl,
   String? gitRef,
   String? gitPath,
-}) {
+}) async {
   final path = localPath != null;
   final git = [gitUrl, gitRef, gitPath].any((e) => e != null);
   // hosted is the default if none of the other arguments are given
@@ -110,13 +110,13 @@ void addDependency({
   ];
 
   if (package.pubspec.readAsStringSync().contains('$dependency:')) {
-    sidekickDartRuntime.dart(
+    await sidekickDartRuntime.dart(
       ['pub', 'remove', dependency],
       workingDirectory: package.root,
       progress: Progress.devNull(),
     );
   }
-  sidekickDartRuntime.dart(
+  await sidekickDartRuntime.dart(
     pubAddArgs,
     workingDirectory: package.root,
     progress: Progress.printStdErr(),

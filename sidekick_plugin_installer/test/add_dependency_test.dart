@@ -35,7 +35,7 @@ environment:
   });
 
   group('pubspec is correctly modified when', () {
-    test('adding a local dependency', () {
+    test('adding a local dependency', () async {
       final barDir = Directory.systemTemp.createTempSync();
       addTearDown(() => barDir.deleteSync(recursive: true));
       barDir.file('pubspec.yaml').writeAsStringSync('''
@@ -45,7 +45,7 @@ environment:
   sdk: '>=2.19.0 <4.0.0'
 ''');
 
-      addDependency(
+      await addDependency(
         package: package,
         dependency: 'bar',
         localPath: barDir.path,
@@ -65,8 +65,8 @@ dependencies:
       );
     });
 
-    test('adding a hosted dependency', () {
-      addDependency(
+    test('adding a hosted dependency', () async {
+      await addDependency(
         package: package,
         dependency: 'sidekick_core',
         versionConstraint: '^0.10.0',
@@ -85,8 +85,8 @@ dependencies:
       );
     });
 
-    test('adding a git dependency', () {
-      addDependency(
+    test('adding a git dependency', () async {
+      await addDependency(
         package: package,
         dependency: 'sidekick_core',
         gitUrl: 'https://github.com/phntmxyz/sidekick',
