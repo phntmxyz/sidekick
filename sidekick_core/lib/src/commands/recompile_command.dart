@@ -16,7 +16,19 @@ class RecompileCommand extends Command {
   Future<void> run() async {
     final installScript =
         SidekickContext.sidekickPackage.root.file('tool/install.sh');
-    final process = start(installScript.path, nothrow: true, terminal: true);
-    exitCode = process.exitCode ?? -1;
+    final bash = which('bash');
+    final String bashExe;
+    if (bash.found) {
+      bashExe = bash.path!;
+    } else {
+      bashExe = '/usr/bin/bash';
+    }
+    final progress = startFromArgs(
+      bashExe,
+      [installScript.path],
+      nothrow: true,
+      terminal: true,
+    );
+    exitCode = progress.exitCode ?? -1;
   }
 }
