@@ -10,9 +10,9 @@ class BumpVersionCommand extends Command {
 
   @override
   String get invocation => super.invocation.replaceFirst(
-    '[arguments]',
-    '[package-path] [--minor|patch|major] --[no-]commit',
-  );
+        '[arguments]',
+        '[package-path] [--minor|patch|major] --[no-]commit',
+      );
 
   BumpVersionCommand() {
     argParser.addFlag(
@@ -138,8 +138,8 @@ class BumpVersionCommand extends Command {
   }
 }
 
-typedef FileModification =
-    void Function(DartPackage package, Version oldVersion, Version newVersion);
+typedef FileModification = void Function(
+    DartPackage package, Version oldVersion, Version newVersion);
 
 /// Commits only the file changes that have been done in [block]
 void commitFileModifications(

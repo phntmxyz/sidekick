@@ -13,16 +13,15 @@ class LockDependenciesCommand extends Command {
 
   @override
   String get invocation => super.invocation.replaceFirst(
-    '[arguments]',
-    '[package-path] [--[no]-check-dart-version]',
-  );
+        '[arguments]',
+        '[package-path] [--[no]-check-dart-version]',
+      );
 
   LockDependenciesCommand() {
     argParser.addFlag(
       'check-dart-version',
       defaultsTo: true,
-      help:
-          'Whether to check that Dart is at the latest stable version. '
+      help: 'Whether to check that Dart is at the latest stable version. '
           'Depending on the Dart version, different upper bounds are resolved.',
     );
   }
@@ -55,10 +54,8 @@ class LockDependenciesCommand extends Command {
       throw "Lockfile doesn't exist in ${package.root}";
     }
 
-    final constrainedVersions =
-        (loadYaml(package.pubspec.readAsStringSync())
-                as YamlMap)['dependencies']
-            as YamlMap;
+    final constrainedVersions = (loadYaml(package.pubspec.readAsStringSync())
+        as YamlMap)['dependencies'] as YamlMap;
     final lockedVersions =
         // ignore: avoid_dynamic_calls
         loadYaml(lockfile.readAsStringSync())['packages'] as YamlMap;
