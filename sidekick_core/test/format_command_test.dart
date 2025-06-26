@@ -604,9 +604,11 @@ void main() {
             final runner = initializeSidekick(
               dartSdkPath: testRunnerDartSdkPath(),
             );
-            runner.addCommand(FormatCommand(
-              excludeGlob: ['ignored_package/**'],
-            ));
+            runner.addCommand(
+              FormatCommand(
+                excludeGlob: ['ignored_package/**'],
+              ),
+            );
             await runner.run(['format']);
           },
         );
@@ -655,9 +657,11 @@ name: ignored_package
             final runner = initializeSidekick(
               dartSdkPath: testRunnerDartSdkPath(),
             );
-            runner.addCommand(FormatCommand(
-              excludeGlob: ['ignored_package/**'],
-            ));
+            runner.addCommand(
+              FormatCommand(
+                excludeGlob: ['ignored_package/**'],
+              ),
+            );
             // Run in single package mode
             await runner.run(['format', '-p', 'ignored_package']);
           },
@@ -688,9 +692,11 @@ name: ignored_package
             final runner = initializeSidekick(
               dartSdkPath: testRunnerDartSdkPath(),
             );
-            runner.addCommand(FormatCommand(
-              excludeGlob: ['packages/dash/**'],
-            ));
+            runner.addCommand(
+              FormatCommand(
+                excludeGlob: ['packages/dash/**'],
+              ),
+            );
             // Run in multi-package mode (no -p flag)
             await runner.run(['format']);
           },
@@ -773,9 +779,11 @@ name: package2
             final runner = initializeSidekick(
               dartSdkPath: testRunnerDartSdkPath(),
             );
-            runner.addCommand(FormatCommand(
-              excludeGlob: ['**/*.dart'], // Exclude all Dart files
-            ));
+            runner.addCommand(
+              FormatCommand(
+                excludeGlob: ['**/*.dart'], // Exclude all Dart files
+              ),
+            );
             await runner.run(['format']);
           },
         );
@@ -784,8 +792,11 @@ name: package2
         // Check for the warning message, accounting for ANSI color codes
         expect(
           fakeStdout.lines,
-          anyElement(contains(
-              'Warning: All Dart files in the project are excluded by glob patterns.')),
+          anyElement(
+            contains(
+              'Warning: All Dart files in the project are excluded by glob patterns.',
+            ),
+          ),
         );
       });
     });
@@ -865,9 +876,11 @@ name: package2
             final runner = initializeSidekick(
               dartSdkPath: testRunnerDartSdkPath(),
             );
-            runner.addCommand(FormatCommand(
-              excludeGlob: ['**/*.dart'],
-            ));
+            runner.addCommand(
+              FormatCommand(
+                excludeGlob: ['**/*.dart'],
+              ),
+            );
             await runner.run(['format']);
           },
         );
