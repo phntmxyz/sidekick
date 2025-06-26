@@ -684,20 +684,12 @@ name: ignored_package
           stderr: () => fakeStderr,
           stdout: () => fakeStdout,
           body: () async {
-            // Create only one package that would normally be ignored
-            setupProject(
-              dir.directory('only_package')..createSync(),
-              pubspecContent: '''
-name: only_package
-''',
-              mainContent: _dartFile140,
-            );
-
+            dir.file('pubspec.yaml').deleteSync(); // delete main_project
             final runner = initializeSidekick(
               dartSdkPath: testRunnerDartSdkPath(),
             );
             runner.addCommand(FormatCommand(
-              excludeGlob: ['only_package/**'],
+              excludeGlob: ['packages/dash/**'],
             ));
             // Run in multi-package mode (no -p flag)
             await runner.run(['format']);
@@ -710,7 +702,7 @@ name: only_package
           fakeStdout.lines,
           containsAll(
             [
-              'Formatting package:only_package',
+              'Formatting package:dash',
               'No files to format',
             ],
           ),
@@ -842,6 +834,48 @@ name: package1
         expect(
           fakeStdout.lines,
           anyElement(contains('Warning: No Dart files found in the project.')),
+        );
+      });
+    });
+
+    test('excludes all Dart files and prints no package', () async {
+      await insideFakeProjectWithSidekick((dir) async {
+        final fakeStdout = FakeStdoutStream();
+        final fakeStderr = FakeStdoutStream();
+        await overrideIoStreams(
+          stderr: () => fakeStderr,
+          stdout: () => fakeStdout,
+          body: () async {
+            // Create two packages with Dart files
+            setupProject(
+              dir.directory('package1')..createSync(),
+              pubspecContent: '''
+name: package1
+''',
+              mainContent: _dartFile140,
+            );
+            setupProject(
+              dir.directory('package2')..createSync(),
+              pubspecContent: '''
+name: package2
+''',
+              mainContent: _dartFile140,
+            );
+
+            final runner = initializeSidekick(
+              dartSdkPath: testRunnerDartSdkPath(),
+            );
+            runner.addCommand(FormatCommand(
+              excludeGlob: ['**/*.dart'],
+            ));
+            await runner.run(['format']);
+          },
+        );
+
+        // Should not print any package
+        expect(
+          fakeStdout.lines.where((l) => l.startsWith('Formatting package:')),
+          isEmpty,
         );
       });
     });

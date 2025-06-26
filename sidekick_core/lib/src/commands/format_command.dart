@@ -139,6 +139,14 @@ class FormatCommand extends Command {
         continue;
       }
 
+      // Only skip packages with Dart files but all excluded in multi-package mode
+      if (sortedPackages.length > 1) {
+        final hasDartFiles = package.root.findDartFiles().isNotEmpty;
+        if (hasDartFiles && filesInPackage.isEmpty) {
+          continue;
+        }
+      }
+
       // Always print valid Dart packages, even if they have no Dart files
       await _format(
         name: "package:${package.name}",
@@ -345,7 +353,6 @@ class DartFileFormatException implements Exception {
 }
 
 /// Returns true if the package directory matches any excludeGlob pattern.
-/// Used to determine if a package should be hidden in multi-package mode.
 bool _isPackageExcluded(DartPackage package, List<String> excludeGlob) {
   final packagePath = package.root.path;
   final projectRoot = SidekickContext.projectRoot.path;
@@ -353,6 +360,10 @@ bool _isPackageExcluded(DartPackage package, List<String> excludeGlob) {
   // Use path package for cross-platform relative path
   final relativePath = p.relative(packagePath, from: projectRoot);
 
-  // Check if the package directory matches any exclude pattern
-  return excludeGlob.any((pattern) => Glob(pattern).matches(relativePath));
+  // First check if the package directory itself matches any exclude pattern
+  if (excludeGlob.any((pattern) => Glob(pattern).matches(relativePath))) {
+    return true;
+  }
+
+  return false;
 }
