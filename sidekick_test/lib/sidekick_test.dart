@@ -1,5 +1,5 @@
 /// Shared test utility functions for testing sidekick packages
-library sidekick_test;
+library;
 
 export 'package:mocktail/mocktail.dart';
 

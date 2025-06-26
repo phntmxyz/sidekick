@@ -206,7 +206,7 @@ class UpdateCommand extends Command {
   }) async {
     // Handle preselected version
     if (preselectedSidekickVersion != null) {
-      return _selectWithPreselectedVersion(
+      return await _selectWithPreselectedVersion(
         availableVersionBundles: availableVersionBundles,
         preselectedVersion: preselectedSidekickVersion,
         currentDartMinVersion: currentDartMinVersion,
@@ -214,7 +214,7 @@ class UpdateCommand extends Command {
     }
 
     // Handle auto-selection (no version specified)
-    return _selectLatestVersion(
+    return await _selectLatestVersion(
       availableVersionBundles: availableVersionBundles,
       currentSidekickCliVersion: currentSidekickCliVersion,
       currentDartMinVersion: currentDartMinVersion,
