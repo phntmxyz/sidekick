@@ -23,7 +23,7 @@ Future<void> runSk(List<String> args) async {
     ..addCommand(DartCommand())
     ..addCommand(DepsCommand(excludeGlob: ['**/templates/**']))
     ..addCommand(DartAnalyzeCommand())
-    ..addCommand(FormatCommand())
+    ..addCommand(FormatCommand(excludeGlob: ['**/test/templates/**']))
     ..addCommand(LockDependenciesCommand())
     ..addCommand(ReleaseCommand())
     ..addCommand(TestCommand())
