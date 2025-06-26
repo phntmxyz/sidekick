@@ -17,6 +17,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v1
+      - name: Install dependencies
+        run: ./sk deps
       - name: check formatting
         run: ./sk format --verify
           
