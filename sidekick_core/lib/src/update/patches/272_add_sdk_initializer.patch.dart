@@ -35,5 +35,5 @@ final migrateAddSdkInitializer_272 = MigrationStep.inline(
   },
   name: 'Replace addFlutterSdkInitializer with addSdkInitializer',
   pullRequestLink: 'https://github.com/phntmxyz/sidekick/pull/272',
-  targetVersion: Version(3, 0, 0),
+  targetVersion: Version(3, 0, 1),
 );
