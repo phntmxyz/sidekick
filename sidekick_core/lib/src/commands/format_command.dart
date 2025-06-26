@@ -1,5 +1,6 @@
 import 'package:glob/glob.dart';
 import 'package:meta/meta.dart';
+import 'package:path/path.dart' as p;
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:yaml/yaml.dart';
 
@@ -101,7 +102,9 @@ class FormatCommand extends Command {
             "${SidekickContext.repository?.path}";
       }
       final int? lineLength = getLineLength(package) ?? defaultLineLength;
-      final allDartFiles = package.root.findFilesToFormat(globExcludes);
+      final allDartFiles =
+          package.root.findDartFiles().skipGlobMatches(globExcludes);
+      // Always print the package, regardless of whether it is ignored or has Dart files
       await _format(
         name: "package:${package.name}",
         lineLength: lineLength,
@@ -113,8 +116,10 @@ class FormatCommand extends Command {
       return;
     }
 
-    final allFiles =
-        SidekickContext.projectRoot.findFilesToFormat(globExcludes).toList();
+    final allFiles = SidekickContext.projectRoot
+        .findDartFiles()
+        .skipGlobMatches(globExcludes)
+        .toList();
 
     final sortedPackages =
         allPackages.sortedByDescending((element) => element.root.path.length);
@@ -127,6 +132,14 @@ class FormatCommand extends Command {
       for (final file in filesInPackage) {
         allFiles.remove(file);
       }
+
+      // Skip excluded packages only in multi-package mode to avoid hiding the only package
+      if (sortedPackages.length > 1 &&
+          _isPackageExcluded(package, excludeGlob)) {
+        continue;
+      }
+
+      // Always print valid Dart packages, even if they have no Dart files
       await _format(
         name: "package:${package.name}",
         lineLength: resolvedLineLength,
@@ -142,6 +155,31 @@ class FormatCommand extends Command {
         verify: verify,
       );
     }
+
+    // Check if we need to print warnings
+    final allDartFilesInProject =
+        SidekickContext.projectRoot.findDartFiles().toList();
+
+    // Apply filtering in memory instead of traversing the file tree again
+    final allFormattableFiles =
+        allDartFilesInProject.skipGlobMatches(globExcludes).toList();
+
+    if (allDartFilesInProject.isNotEmpty && allFormattableFiles.isEmpty) {
+      // All Dart files were ignored
+      print(
+        yellow(
+          'Warning: All Dart files in the project are excluded by glob patterns.',
+        ),
+      );
+    } else if (allDartFilesInProject.isEmpty) {
+      // No Dart files found at all
+      print(
+        yellow(
+          'Warning: No Dart files found in the project.',
+        ),
+      );
+    }
+
     _verifyThrow();
   }
 
@@ -205,7 +243,9 @@ class FormatCommand extends Command {
 }
 
 extension on Directory {
-  Iterable<File> findFilesToFormat(Iterable<Glob> globExcludes) {
+  /// Returns all Dart files in this directory and subdirectories,
+  /// filtering out build directories and hidden directories.
+  Iterable<File> findDartFiles() {
     /// Returns `true` if [dir] is not a package build directory.
     bool isBuildDirectory(Directory dir) {
       if (dir.name == 'build') {
@@ -236,16 +276,19 @@ extension on Directory {
       return true;
     });
 
-    /// Returns `true` if [file] is excluded by [globExcludes]
-    bool isExcluded(File file) {
-      return globExcludes.any((glob) => glob.matches(file.path));
-    }
-
     return directories
         .flatMap((dir) => dir.listSync())
         .whereType<File>()
-        .filter((file) => file.extension == '.dart')
-        .whereNot(isExcluded);
+        .filter((file) => file.extension == '.dart');
+  }
+}
+
+extension on Iterable<File> {
+  /// Filters out files that match any of the provided glob patterns.
+  Iterable<File> skipGlobMatches(Iterable<Glob> globPatterns) {
+    return where((file) {
+      return !globPatterns.any((glob) => glob.matches(file.path));
+    });
   }
 }
 
@@ -299,4 +342,17 @@ class DartFileFormatException implements Exception {
 
   @override
   String toString() => 'DartFileFormatException{message: $message}';
+}
+
+/// Returns true if the package directory matches any excludeGlob pattern.
+/// Used to determine if a package should be hidden in multi-package mode.
+bool _isPackageExcluded(DartPackage package, List<String> excludeGlob) {
+  final packagePath = package.root.path;
+  final projectRoot = SidekickContext.projectRoot.path;
+
+  // Use path package for cross-platform relative path
+  final relativePath = p.relative(packagePath, from: projectRoot);
+
+  // Check if the package directory matches any exclude pattern
+  return excludeGlob.any((pattern) => Glob(pattern).matches(relativePath));
 }

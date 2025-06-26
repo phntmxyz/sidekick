@@ -495,6 +495,356 @@ name: dashi
         );
       });
     });
+
+    test('hides packages with no Dart files', () async {
+      await insideFakeProjectWithSidekick((dir) async {
+        final fakeStdout = FakeStdoutStream();
+        final fakeStderr = FakeStdoutStream();
+        await overrideIoStreams(
+          stderr: () => fakeStderr,
+          stdout: () => fakeStdout,
+          body: () async {
+            // Create a package with Dart files
+            setupProject(
+              dir.directory('package_with_dart')..createSync(),
+              pubspecContent: '''
+name: package_with_dart
+''',
+              mainContent: _dartFile140,
+            );
+
+            // Create a package with no Dart files (only pubspec.yaml)
+            setupProject(
+              dir.directory('package_without_dart')..createSync(),
+              pubspecContent: '''
+name: package_without_dart
+''',
+              mainContent: _dartFile140,
+            );
+            // Delete the Dart file to simulate a package with no Dart files
+            dir
+                .directory('package_without_dart')
+                .file('lib/main.dart')
+                .deleteSync();
+
+            final runner = initializeSidekick(
+              dartSdkPath: testRunnerDartSdkPath(),
+            );
+            runner.addCommand(FormatCommand());
+            await runner.run(['format']);
+          },
+        );
+
+        expect(fakeStderr.lines, isEmpty);
+        expect(
+          fakeStdout.lines,
+          containsAll(
+            [
+              'Formatting package:package_with_dart',
+              stringContainsInOrder(
+                ['Formatted', 'package_with_dart/lib/main.dart'],
+              ),
+              stringContainsInOrder(
+                ['Formatted 1 file (1 changed) in', 'seconds'],
+              ),
+              'Formatting package:package_without_dart',
+              'No files to format',
+            ],
+          ),
+        );
+
+        // Should not contain any output for packages without Dart files
+        expect(
+          fakeStdout.lines,
+          isNot(contains('package:empty_package')),
+        );
+
+        // Verify that package_without_dart appears in the output
+        expect(
+          fakeStdout.lines,
+          contains('Formatting package:package_without_dart'),
+        );
+        expect(
+          fakeStdout.lines,
+          contains('No files to format'),
+        );
+      });
+    });
+
+    test('hides packages completely ignored by excludeGlob', () async {
+      await insideFakeProjectWithSidekick((dir) async {
+        final fakeStdout = FakeStdoutStream();
+        final fakeStderr = FakeStdoutStream();
+        await overrideIoStreams(
+          stderr: () => fakeStderr,
+          stdout: () => fakeStdout,
+          body: () async {
+            // Create a package with Dart files that should be formatted
+            setupProject(
+              dir.directory('package_to_format')..createSync(),
+              pubspecContent: '''
+name: package_to_format
+''',
+              mainContent: _dartFile140,
+            );
+
+            // Create a package with Dart files that should be completely ignored
+            final ignoredPackage = dir.directory('ignored_package')
+              ..createSync();
+            ignoredPackage.file('pubspec.yaml').writeAsStringSync('''
+name: ignored_package
+''');
+            ignoredPackage.file('lib/main.dart').createSync(recursive: true);
+            ignoredPackage.file('lib/main.dart').writeAsStringSync('''
+void main() {
+  print("This package should be completely ignored");
+}
+''');
+
+            final runner = initializeSidekick(
+              dartSdkPath: testRunnerDartSdkPath(),
+            );
+            runner.addCommand(FormatCommand(
+              excludeGlob: ['ignored_package/**'],
+            ));
+            await runner.run(['format']);
+          },
+        );
+
+        expect(fakeStderr.lines, isEmpty);
+        expect(
+          fakeStdout.lines,
+          containsAll(
+            [
+              'Formatting package:package_to_format',
+              stringContainsInOrder(
+                ['Formatted', 'package_to_format/lib/main.dart'],
+              ),
+              stringContainsInOrder(
+                ['Formatted 1 file (1 changed) in', 'seconds'],
+              ),
+            ],
+          ),
+        );
+
+        // Should not contain any output for the completely ignored package
+        expect(
+          fakeStdout.lines,
+          isNot(contains('package:ignored_package')),
+        );
+      });
+    });
+
+    test('single package mode always prints even if ignored', () async {
+      await insideFakeProjectWithSidekick((dir) async {
+        final fakeStdout = FakeStdoutStream();
+        final fakeStderr = FakeStdoutStream();
+        await overrideIoStreams(
+          stderr: () => fakeStderr,
+          stdout: () => fakeStdout,
+          body: () async {
+            // Create a package that will be ignored by excludeGlob
+            setupProject(
+              dir.directory('ignored_package')..createSync(),
+              pubspecContent: '''
+name: ignored_package
+''',
+              mainContent: _dartFile140,
+            );
+
+            final runner = initializeSidekick(
+              dartSdkPath: testRunnerDartSdkPath(),
+            );
+            runner.addCommand(FormatCommand(
+              excludeGlob: ['ignored_package/**'],
+            ));
+            // Run in single package mode
+            await runner.run(['format', '-p', 'ignored_package']);
+          },
+        );
+
+        expect(fakeStderr.lines, isEmpty);
+        expect(
+          fakeStdout.lines,
+          containsAll(
+            [
+              'Formatting package:ignored_package',
+              'No files to format',
+            ],
+          ),
+        );
+      });
+    });
+
+    test('multi-package mode with only one package always prints', () async {
+      await insideFakeProjectWithSidekick((dir) async {
+        final fakeStdout = FakeStdoutStream();
+        final fakeStderr = FakeStdoutStream();
+        await overrideIoStreams(
+          stderr: () => fakeStderr,
+          stdout: () => fakeStdout,
+          body: () async {
+            // Create only one package that would normally be ignored
+            setupProject(
+              dir.directory('only_package')..createSync(),
+              pubspecContent: '''
+name: only_package
+''',
+              mainContent: _dartFile140,
+            );
+
+            final runner = initializeSidekick(
+              dartSdkPath: testRunnerDartSdkPath(),
+            );
+            runner.addCommand(FormatCommand(
+              excludeGlob: ['only_package/**'],
+            ));
+            // Run in multi-package mode (no -p flag)
+            await runner.run(['format']);
+          },
+        );
+
+        expect(fakeStderr.lines, isEmpty);
+        // Should print the package even though it's ignored, because it's the only one
+        expect(
+          fakeStdout.lines,
+          containsAll(
+            [
+              'Formatting package:only_package',
+              'No files to format',
+            ],
+          ),
+        );
+      });
+    });
+
+    test('single package mode with no dart files always prints', () async {
+      await insideFakeProjectWithSidekick((dir) async {
+        final fakeStdout = FakeStdoutStream();
+        final fakeStderr = FakeStdoutStream();
+        await overrideIoStreams(
+          stderr: () => fakeStderr,
+          stdout: () => fakeStdout,
+          body: () async {
+            // Create a package with no Dart files
+            final packageDir = dir.directory('package_no_dart')..createSync();
+            packageDir.file('pubspec.yaml').writeAsStringSync('''
+name: package_no_dart
+''');
+
+            final runner = initializeSidekick(
+              dartSdkPath: testRunnerDartSdkPath(),
+            );
+            runner.addCommand(FormatCommand());
+            // Run in single package mode
+            await runner.run(['format', '-p', 'package_no_dart']);
+          },
+        );
+
+        expect(fakeStderr.lines, isEmpty);
+        expect(
+          fakeStdout.lines,
+          containsAll(
+            [
+              'Formatting package:package_no_dart',
+              'No files to format',
+            ],
+          ),
+        );
+      });
+    });
+
+    test('warns when all dart files are ignored', () async {
+      await insideFakeProjectWithSidekick((dir) async {
+        final fakeStdout = FakeStdoutStream();
+        final fakeStderr = FakeStdoutStream();
+        await overrideIoStreams(
+          stderr: () => fakeStderr,
+          stdout: () => fakeStdout,
+          body: () async {
+            // Create packages with Dart files
+            setupProject(
+              dir.directory('package1')..createSync(),
+              pubspecContent: '''
+name: package1
+''',
+              mainContent: _dartFile140,
+            );
+            setupProject(
+              dir.directory('package2')..createSync(),
+              pubspecContent: '''
+name: package2
+''',
+              mainContent: _dartFile140,
+            );
+
+            final runner = initializeSidekick(
+              dartSdkPath: testRunnerDartSdkPath(),
+            );
+            runner.addCommand(FormatCommand(
+              excludeGlob: ['**/*.dart'], // Exclude all Dart files
+            ));
+            await runner.run(['format']);
+          },
+        );
+
+        expect(fakeStderr.lines, isEmpty);
+        // Check for the warning message, accounting for ANSI color codes
+        expect(
+          fakeStdout.lines,
+          anyElement(contains(
+              'Warning: All Dart files in the project are excluded by glob patterns.')),
+        );
+      });
+    });
+
+    test('warns when no dart files exist', () async {
+      await insideFakeProjectWithSidekick((dir) async {
+        final fakeStdout = FakeStdoutStream();
+        final fakeStderr = FakeStdoutStream();
+        await overrideIoStreams(
+          stderr: () => fakeStderr,
+          stdout: () => fakeStdout,
+          body: () async {
+            // Delete the default lib directory to remove Dart files
+            final libDir = dir.directory('lib');
+            if (libDir.existsSync()) {
+              libDir.deleteSync(recursive: true);
+            }
+            // Delete Dart files from the packages directory
+            final packagesDir = dir.directory('packages');
+            if (packagesDir.existsSync()) {
+              for (final package
+                  in packagesDir.listSync().whereType<Directory>()) {
+                final packageLibDir = package.directory('lib');
+                if (packageLibDir.existsSync()) {
+                  packageLibDir.deleteSync(recursive: true);
+                }
+              }
+            }
+
+            // Create packages with no Dart files
+            final package1 = dir.directory('package1')..createSync();
+            package1.file('pubspec.yaml').writeAsStringSync('''
+name: package1
+''');
+
+            final runner = initializeSidekick(
+              dartSdkPath: testRunnerDartSdkPath(),
+            );
+            runner.addCommand(FormatCommand());
+            await runner.run(['format']);
+          },
+        );
+
+        expect(fakeStderr.lines, isEmpty);
+        // Check for the warning message, accounting for ANSI color codes
+        expect(
+          fakeStdout.lines,
+          anyElement(contains('Warning: No Dart files found in the project.')),
+        );
+      });
+    });
   });
 }
 
