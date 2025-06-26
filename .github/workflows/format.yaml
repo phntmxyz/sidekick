@@ -12,7 +12,8 @@ jobs:
     timeout-minutes: 15
 
     container:
-      image: dart:3.5.0
+      # See CONTRIBUTING.md > About Dart SDK versions
+      image: dart:3.8
 
     steps:
       - uses: actions/checkout@v1

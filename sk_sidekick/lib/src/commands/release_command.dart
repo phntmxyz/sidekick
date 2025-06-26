@@ -437,7 +437,8 @@ You can continue once you completed all steps.
           paths: ['sidekick_core'],
         );
 
-        final message = '\n<!--\nAlso package:sidekick_core updated '
+        final message =
+            '\n<!--\nAlso package:sidekick_core updated '
             '($oldSidekickCoreVersionTag -> $currentSidekickCoreVersionTag), '
             'please consider those changes as well.\n-->\n';
         final diffLink =
