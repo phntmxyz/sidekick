@@ -2,6 +2,10 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/sidekick/test/templates/minimal_dart_package/minimal_dart_package.iml" filepath="$PROJECT_DIR$/sidekick/test/templates/minimal_dart_package/minimal_dart_package.iml" />
+      <module fileurl="file://$PROJECT_DIR$/sidekick/test/templates/minimal_flutter_package/minimal_flutter_package.iml" filepath="$PROJECT_DIR$/sidekick/test/templates/minimal_flutter_package/minimal_flutter_package.iml" />
+      <module fileurl="file://$PROJECT_DIR$/sidekick/test/templates/minimal_sidekick_plugin/minimal_sidekick_plugin.iml" filepath="$PROJECT_DIR$/sidekick/test/templates/minimal_sidekick_plugin/minimal_sidekick_plugin.iml" />
+      <module fileurl="file://$PROJECT_DIR$/sidekick/test/templates/root_with_packages/root_with_packages.iml" filepath="$PROJECT_DIR$/sidekick/test/templates/root_with_packages/root_with_packages.iml" />
       <module fileurl="file://$PROJECT_DIR$/sidekick.iml" filepath="$PROJECT_DIR$/sidekick.iml" />
       <module fileurl="file://$PROJECT_DIR$/sidekick/sidekick-cli.iml" filepath="$PROJECT_DIR$/sidekick/sidekick-cli.iml" />
       <module fileurl="file://$PROJECT_DIR$/sidekick_core/sidekick_core.iml" filepath="$PROJECT_DIR$/sidekick_core/sidekick_core.iml" />

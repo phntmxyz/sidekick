@@ -15,6 +15,7 @@ class DelegatedCommand extends Command {
   @override
   final String name;
 
+  // ignore: avoid_futureor_void
   final FutureOr<void> Function() block;
 
   @override

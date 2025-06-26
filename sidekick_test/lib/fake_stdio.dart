@@ -1,4 +1,4 @@
 /// Helper library for testing sidekick CLIs
-library sidekick_test;
+library;
 
 export 'src/fake_stdio.dart';
