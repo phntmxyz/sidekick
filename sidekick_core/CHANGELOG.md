@@ -1,5 +1,14 @@
 # Changelog
 
+## [3.0.1](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v3.0.0..sidekick_core-v3.0.1) (2025-6-30)
+
+Full diff: <https://github.com/phntmxyz/sidekick/compare/sidekick_core-v3.0.0...main>
+
+- Add migration for `addFlutterSdkInitializer` [#272](https://github.com/phntmxyz/sidekick/pull/272)
+- Update cli_completion to `0.5.0` <https://github.com/phntmxyz/sidekick/commit/f4dc024a8af7701b5d1c7df92daf0efed3f6cab1>
+- [format] Hide excludeGlob excluded packages entirely from output [#273](https://github.com/phntmxyz/sidekick/pull/273)
+- Await plugin installer calls <https://github.com/phntmxyz/sidekick/commit/33d5b736b8351f8188b4a64f8db7eb019c12a67d>
+
 ## [3.0.0](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v3.0.0-preview.6..sidekick_core-v3.0.0) (2025-6-25)
 
 Full diff: https://github.com/phntmxyz/sidekick/compare/sidekick_core-v3.0.0-preview.6...main
