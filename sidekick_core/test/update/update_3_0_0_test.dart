@@ -30,19 +30,6 @@ dependencies:
 ''');
 
     overrideSidekickDartRuntimeWithSystemDartRuntime(sidekickDir);
-
-    // update the dart sdk. This is usually done beforehand by the [UpdateCommand]
-    await migrate(
-      from: Version(2, 1, 2),
-      to: Version(3, 0, 0),
-      migrations: [
-        migrateDart35dcli7_260,
-      ],
-      onMigrationStepStart: (context) {
-        print('Starting migration step ${context.step.name}');
-      },
-    );
-    print(pubspecFile.readAsStringSync());
     await update_entrypoint.main(['test_sidekick', '2.1.2', '3.0.0']);
 
     final Version? dcliVersion = VersionChecker.getMinimumVersionConstraint(
@@ -51,7 +38,12 @@ dependencies:
     );
 
     expect(dcliVersion, isNotNull);
-    expect(dcliVersion!.allows(Version.parse('7.0.2')), isTrue);
+    expect(
+      dcliVersion!.allows(Version.parse('7.0.2')),
+      isTrue,
+      reason:
+          'Expected dcli version to be at least 7.0.2, but got $dcliVersion',
+    );
 
     final Version? coreVersion = VersionChecker.getMinimumVersionConstraint(
       DartPackage.fromDirectory(sidekickDir)!,
