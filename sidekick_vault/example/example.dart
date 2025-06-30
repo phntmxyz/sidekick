@@ -8,9 +8,9 @@ void main() {
     environmentVariableName: 'FLT_VAULT_PASSPHRASE',
   );
 
-// define encrypted files in vault
+  // define encrypted files in vault
   final EncryptedVaultString encrypted = vault.encryptedString('secret.txt');
-// access the text prompts the passsword
+  // access the text prompts the password
   print(encrypted.text);
 
   // directly decrypt (prompts password immediately)
