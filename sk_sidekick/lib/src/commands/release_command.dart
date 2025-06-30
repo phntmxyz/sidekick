@@ -356,7 +356,7 @@ Please edit this auto-generated changelog for the next release of package:${pack
 - [ ] Delete this header
 -->
 
-Full diff: https://github.com/phntmxyz/sidekick/compare/$currentPackageVersionTag...main
+Full diff: <https://github.com/phntmxyz/sidekick/compare/$currentPackageVersionTag...main>
 
 $initialChangelog
 ''');
@@ -494,7 +494,7 @@ Iterable<String> _getChanges({
   final toHash = to == null ? 'HEAD' : resolveToHash(to);
   final logCmd = [
     'git log',
-    '--format="- %s https://github.com/phntmxyz/sidekick/commit/%H"',
+    '--format="- %s <https://github.com/phntmxyz/sidekick/commit/%H>"',
     '$fromHash..$toHash',
     if (paths.isNotEmpty) '-- ${paths.join(' ')}',
   ].join(' ');
