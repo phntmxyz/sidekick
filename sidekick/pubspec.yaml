@@ -31,10 +31,5 @@ dev_dependencies:
   test: '>1.25.0 <2.0.0'
   test_process: ^2.0.3
 
-dependency_overrides:
-  # until published as 3.0.1+
-  sidekick_core:
-    path: ../sidekick_core
-
 executables:
   sidekick:
