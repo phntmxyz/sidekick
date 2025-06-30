@@ -13,7 +13,7 @@ environment:
 dependencies:
   acronym: ^0.5.1
   args: ^2.3.2
-  cli_completion: ^0.3.0
+  cli_completion: ^0.5.0
   dartx: ^1.0.0
   dcli: ^7.0.2
   http: '>=0.13.3 <=2.0.0'
@@ -30,6 +30,11 @@ dev_dependencies:
     path: ../sidekick_test
   test: '>1.25.0 <2.0.0'
   test_process: ^2.0.3
+
+dependency_overrides:
+  # until published as 3.0.1+
+  sidekick_core:
+    path: ../sidekick_core
 
 executables:
   sidekick:

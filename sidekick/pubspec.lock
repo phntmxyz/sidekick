@@ -93,10 +93,10 @@ packages:
     dependency: "direct main"
     description:
       name: cli_completion
-      sha256: "595b192451285749369e99b3c2fd9a9aea7d74ed1aba61cddeb9ad8c84a44812"
+      sha256: "72e8ccc4545f24efa7bbdf3bff7257dc9d62b072dee77513cc54295575bc9220"
       url: "https://pub.dev"
     source: hosted
-    version: "0.3.0"
+    version: "0.5.1"
   cli_config:
     dependency: transitive
     description:
@@ -357,10 +357,10 @@ packages:
     dependency: transitive
     description:
       name: mason_logger
-      sha256: "1fdf5c76870eb6fc3611ed6fbae1973a3794abe581ea5e22e68af2f73c688b93"
+      sha256: "28afd064c416f454aaabb870ecac813f25aec4a0c01fd13078624a5c26797a46"
       url: "https://pub.dev"
     source: hosted
-    version: "0.2.16"
+    version: "0.3.2"
   matcher:
     dependency: transitive
     description:
@@ -548,10 +548,9 @@ packages:
   sidekick_core:
     dependency: "direct main"
     description:
-      name: sidekick_core
-      sha256: a30b80834abb2e858cafe86b5911371d35dfb910b456d70ab3e0733c8587f3e8
-      url: "https://pub.dev"
-    source: hosted
+      path: "../sidekick_core"
+      relative: true
+    source: path
     version: "3.0.0"
   sidekick_test:
     dependency: "direct dev"
