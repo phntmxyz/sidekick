@@ -173,7 +173,7 @@ ${changelog.readAsStringSync().replaceFirst('# Changelog', '').trimLeft()}''');
       print(' - Locking dependencies...');
       await runSk([
         'lock-dependencies',
-        '--check-dart-version',
+        '--no-check-dart-version',
         package.root.path,
       ]);
     }
