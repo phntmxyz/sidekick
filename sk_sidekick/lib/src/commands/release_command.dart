@@ -248,13 +248,22 @@ ${changelog.readAsStringSync().replaceFirst('# Changelog', '').trimLeft()}''');
       );
     }
 
+    // Write changelog to temporary file to avoid glob pattern parsing issues
+    final notesFile = Directory.systemTemp.createTempSync().file(
+      'release_notes.md',
+    );
+    notesFile.writeAsStringSync(nextReleaseChangelog);
+
     dcli.startFromArgs(
       'gh',
-      ['release', 'create', tag, '--notes', '"$nextReleaseChangelog"'],
+      ['release', 'create', tag, '--notes-file', notesFile.absolute.path],
       terminal: true,
       workingDirectory: package.root.path,
       nothrow: true,
     );
+
+    // Clean up temporary file
+    notesFile.deleteSync();
   }
 
   String _askForBumpType(DartPackage package, Version current) {
