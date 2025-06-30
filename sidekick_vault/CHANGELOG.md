@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.4.0](https://github.com/phntmxyz/sidekick/compare/sidekick_vault-v1.3.0..sidekick_vault-v1.4.0) (2025-6-30)
+
+Full diff: <https://github.com/phntmxyz/sidekick/compare/sidekick_vault-v1.3.0...main>
+
+- Fully migrate to sidekick_core: 3.0.0 and sidekick_plugin_installer: 2.0.0 <https://github.com/phntmxyz/sidekick/commit/53784ccad1dcfe7776aaeb97c58081e02515a9db>
+- Migrate comments <https://github.com/phntmxyz/sidekick/commit/0c0e5ed9a940331889f92c43affa0d19bfef4192>
+- Update package description <https://github.com/phntmxyz/sidekick/commit/f61d12a6e71870ad48b51a57edf76f20a06ad0fe>
+
 ## [1.3.0](https://github.com/phntmxyz/sidekick/compare/sidekick_vault-v1.2.0..sidekick_vault-v1.3.0) (2025-4-14)
 
 Full diff: https://github.com/phntmxyz/sidekick/compare/sidekick_vault-v1.2.0...main
