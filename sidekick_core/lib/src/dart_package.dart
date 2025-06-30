@@ -46,7 +46,7 @@ class DartPackage {
     }
   }
 
-  /// Returns [DartPackage] from first argument in [argResults.rest] or if [argResults.rest] is empty from [entryWorkingDirectory]
+  /// Returns [DartPackage] from first argument in [ArgResults.rest] or if [ArgResults.rest] is empty from [entryWorkingDirectory]
   static DartPackage fromArgResults(ArgResults argResults) {
     {
       final packagePath = argResults.rest.firstOrNull ?? Directory.current.path;
@@ -116,7 +116,7 @@ class DartPackage {
 ///
 /// The name should be all lowercase, with underscores to separate words,
 /// just_like_this.
-/// Use only basic Latin letters and Arabic digits: [a-z0-9_].
+/// Use only basic Latin letters and Arabic digits: `[a-z0-9_]`.
 /// Also, make sure the name is a valid Dart identifier—that it doesn’t
 /// start with digits and isn’t a reserved word (keyword).
 bool isValidPubPackageName(String name) {
@@ -124,7 +124,7 @@ bool isValidPubPackageName(String name) {
 }
 
 /// Converts any string to a valid pub package name to only use basic Latin
-/// letters and Arabic digits: [a-z0-9_].
+/// letters and Arabic digits: `[a-z0-9_]`.
 String makeValidPubPackageName(String name) {
   final onlyValidLetters =
       name.replaceAll(RegExp(r'\W'), '_').replaceAll('__', '_');
