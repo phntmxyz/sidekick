@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.0.0](https://github.com/phntmxyz/sidekick/compare/sidekick-v2.1.0..sidekick-v3.0.0) (2025-6-30)
+
+- Support for Dart 3.5
+
 ## [2.1.0](https://github.com/phntmxyz/sidekick/compare/sidekick-v2.0.2..sidekick-v2.1.0) (2023-9-26)
 
 - **NEW:** Added tab completion [#245](https://github.com/phntmxyz/sidekick/pull/245) https://github.com/phntmxyz/sidekick/commit/dd7b18f07dd792ed9fd3c3a37bc73f254aa807c9
