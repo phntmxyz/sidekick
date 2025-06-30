@@ -1,6 +1,4 @@
 import 'package:sidekick_core/sidekick_core.dart';
-import 'package:sidekick_core/src/update/migration.dart';
-import 'package:sidekick_core/src/update/patches/260_dart_3_5_dcli_7.patch.dart';
 import 'package:sidekick_core/src/update_sidekick_cli.dart'
     as update_entrypoint;
 import 'package:sidekick_core/src/version_checker.dart';
