@@ -35,14 +35,14 @@ topics:
   - sidekick-plugin
 
 environment:
-  sdk: '>=3.3.0 <4.0.0'
+  sdk: '>=3.5.0 <4.0.0'
 
 dependencies:
-  sidekick_core: ^2.0.0
+  sidekick_core: ^3.0.0
 
 dev_dependencies:
   lint: ^2.0.0
-  sidekick_plugin_installer: ^1.2.0
+  sidekick_plugin_installer: ^2.0.0
 ''';
 
   String get installTemplate => '''
@@ -58,7 +58,7 @@ Future<void> main() async {
 $exampleCommand
 """);
 
-  registerPlugin(
+  await registerPlugin(
     sidekickCli: package,
     import: "import 'package:\${package.name}/src/commands/${pluginName.snakeCase}.dart';",
     command: '${commandName.pascalCase}Command()',
