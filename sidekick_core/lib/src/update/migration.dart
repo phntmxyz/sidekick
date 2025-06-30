@@ -43,7 +43,7 @@ abstract class MigrationStep {
 
   @override
   String toString() {
-    return 'MigrationStep{$name to $targetVersion}';
+    return 'MigrationStep{"$name", target: $targetVersion}';
   }
 }
 
