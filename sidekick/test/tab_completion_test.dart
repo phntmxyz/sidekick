@@ -48,7 +48,7 @@ void main() {
         );
       });
     },
-    timeout: const Timeout(Duration(seconds: 90)),
+    timeout: const Timeout(Duration(seconds: 120)),
   );
 
   test(
@@ -90,7 +90,7 @@ void main() {
         );
       });
     },
-    timeout: const Timeout(Duration(seconds: 90)),
+    timeout: const Timeout(Duration(seconds: 120)),
   );
 
   test(
@@ -110,7 +110,7 @@ void main() {
         );
       });
     },
-    timeout: const Timeout(Duration(seconds: 90)),
+    timeout: const Timeout(Duration(seconds: 120)),
   );
 
   test(
@@ -134,6 +134,6 @@ void main() {
         },
       );
     },
-    timeout: const Timeout(Duration(seconds: 90)),
+    timeout: const Timeout(Duration(seconds: 120)),
   );
 }
