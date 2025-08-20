@@ -36,6 +36,7 @@ jobs:
       - name: Run tests
         run: cd sidekick && dart test test/test_runner.dart
         env:
+          # Enable debug when run job with enabled debug on GitHub Actions
           SIDEKICK_DEBUG: "${{ secrets.ACTIONS_STEP_DEBUG }}"
           SIDEKICK_PUB_DEPS: "false"
           SIDEKICK_ANALYZE: "${{ matrix.version == '3.8' }}"
@@ -66,6 +67,7 @@ jobs:
       - name: Run tests
         run: cd sidekick && dart test test/test_runner.dart
         env:
+          # Enable debug when run job with enabled debug on GitHub Actions
           SIDEKICK_DEBUG: "${{ secrets.ACTIONS_STEP_DEBUG }}"
           SIDEKICK_PUB_DEPS: "true"
           SIDEKICK_ANALYZE: "${{ matrix.version == '3.8' }}"
