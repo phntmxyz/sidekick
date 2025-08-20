@@ -35,12 +35,12 @@ void main() {
     expect(testsInTestRunner, actualTestFiles);
   });
 
-  // group('dart_internal_test', dart_internal_test.main);
-  // group('dcli_ask_validators_test', dcli_ask_validators_test.main);
-  // group('directory_extension_test', directory_extension_test.main);
-  // group('init_test', init_test.main);
-  // group('plugins_test', plugins_test.main);
-  // group('recompile_test', recompile_test.main);
+  group('dart_internal_test', dart_internal_test.main);
+  group('dcli_ask_validators_test', dcli_ask_validators_test.main);
+  group('directory_extension_test', directory_extension_test.main);
+  group('init_test', init_test.main);
+  group('plugins_test', plugins_test.main);
+  group('recompile_test', recompile_test.main);
   group('tab_completion_test', tab_completion_test.main);
-  // group('update_test', update_test.main);
+  group('update_test', update_test.main);
 }
