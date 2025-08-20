@@ -27,7 +27,7 @@ jobs:
       - run: echo "${HOME}/.sidekick/bin" >> $GITHUB_PATH
       - run: |
           apt-get update
-          apt-get install unzip
+          apt-get install -y unzip procps
       - uses: actions/checkout@v1
       - name: Dart version
         run: dart --version
@@ -36,7 +36,7 @@ jobs:
       - name: Run tests
         run: cd sidekick && dart test test/test_runner.dart
         env:
-          SIDEKICK_DEBUG: "${{ env.ACTIONS_RUNNER_DEBUG }}"
+          SIDEKICK_DEBUG: "${{ secrets.ACTIONS_STEP_DEBUG }}"
           SIDEKICK_PUB_DEPS: "false"
           SIDEKICK_ANALYZE: "${{ matrix.version == '3.8' }}"
 
@@ -57,7 +57,7 @@ jobs:
       - run: echo "${HOME}/.sidekick/bin" >> $GITHUB_PATH
       - run: |
          apt-get update
-         apt-get install unzip
+         apt-get install -y unzip procps
       - uses: actions/checkout@v1
       - name: Dart version
         run: dart --version
@@ -66,7 +66,7 @@ jobs:
       - name: Run tests
         run: cd sidekick && dart test test/test_runner.dart
         env:
-          SIDEKICK_DEBUG: ${{ env.ACTIONS_RUNNER_DEBUG }}
+          SIDEKICK_DEBUG: "${{ secrets.ACTIONS_STEP_DEBUG }}"
           SIDEKICK_PUB_DEPS: "true"
           SIDEKICK_ANALYZE: "${{ matrix.version == '3.8' }}"
       - name: Run latest sidekick from pub
