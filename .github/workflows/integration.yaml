@@ -36,7 +36,7 @@ jobs:
       - name: Run tests
         run: cd sidekick && dart test test/test_runner.dart
         env:
-          SIDEKICK_DEBUG: ${{ env.ACTIONS_RUNNER_DEBUG }}
+          SIDEKICK_DEBUG: "${{ env.ACTIONS_RUNNER_DEBUG }}"
           SIDEKICK_PUB_DEPS: "false"
           SIDEKICK_ANALYZE: "${{ matrix.version == '3.8' }}"
 
