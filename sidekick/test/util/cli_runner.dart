@@ -155,7 +155,7 @@ class SidekickCli {
     Map<String, String>? environment,
   }) async {
     // Use system POSIX shell for sh compatibility testing
-    final shell = Platform.isWindows ? 'sh' : '/bin/bash';
+    final shell = Platform.isWindows ? 'sh' : '/bin/sh';
 
     final process = await TestProcess.start(
       shell,
