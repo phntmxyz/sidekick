@@ -48,7 +48,7 @@ void main() {
         );
       });
     },
-    timeout: const Timeout(Duration(seconds: 120)),
+    timeout: const Timeout(Duration(seconds: 30)),
   );
 
   // test(

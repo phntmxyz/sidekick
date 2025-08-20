@@ -55,11 +55,22 @@ class InstallGlobalCommand extends Command {
       // E.g. dcli-1.30.3 zsh_shell.dart: UnsupportedError('Not supported in zsh')
       final added = Shell.current.appendToPATH(binDirPath);
       if (added) {
-        printerr('Added $binDirPath to PATH');
+        print('Added $binDirPath to PATH');
         return;
+      } else {
+        printerr(
+          dcli.red('Could not add $binDirPath to PATH automatically in shell '
+              '${Shell.current.name}.'),
+        );
       }
-    } catch (_) {
-      // ignore
+    } catch (e, stackTrace) {
+      // If the shell does not support appending to PATH, we catch the error and
+      printerr(
+        dcli.red('Could not add $binDirPath to PATH automatically in shell '
+            '${Shell.current.name}.'),
+      );
+      printerr(dcli.red('Error: $e'));
+      printerr(dcli.red('Stack trace: $stackTrace'));
     }
 
     print(
