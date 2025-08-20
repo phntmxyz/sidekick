@@ -134,7 +134,6 @@ class GlobalSidekickCli {
       args,
       workingDirectory: workingDirectory.path,
       environment: environment,
-      forwardStdio: true,
     );
   }
 }
@@ -155,12 +154,14 @@ class SidekickCli {
     Directory? workingDirectory,
     Map<String, String>? environment,
   }) async {
+    // Use system POSIX shell for sh compatibility testing
+    final shell = Platform.isWindows ? 'sh' : '/bin/bash';
+
     final process = await TestProcess.start(
-      _entrypoint.path,
-      args,
+      shell,
+      [_entrypoint.path, ...args],
       workingDirectory: workingDirectory?.path ?? root.path,
       environment: environment,
-      forwardStdio: true,
     );
 
     final debug = envs['SIDEKICK_DEBUG'] == "true";
