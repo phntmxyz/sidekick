@@ -38,8 +38,8 @@ class InstallGlobalCommand extends Command {
         if (path != null) {
           return path;
         }
-      } catch (_) {
-        // ignore
+      } catch (e, stackTrace) {
+        printerr(red('Failed to get path to start script: $e\n$stackTrace'));
       }
       return '~/.bashrc';
     }();
@@ -64,13 +64,7 @@ class InstallGlobalCommand extends Command {
         );
       }
     } catch (e, stackTrace) {
-      // If the shell does not support appending to PATH, we catch the error and
-      printerr(
-        dcli.red('Could not add $binDirPath to PATH automatically in shell '
-            '${Shell.current.name}.'),
-      );
-      printerr(dcli.red('Error: $e'));
-      printerr(dcli.red('Stack trace: $stackTrace'));
+      printerr(red('Failed to add $binDirPath to PATH: $e\n$stackTrace'));
     }
 
     print(
