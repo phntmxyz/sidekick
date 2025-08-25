@@ -22,7 +22,7 @@ void tearDownSidekickCache() {
 Future<R> withSidekickCli<R>(
   Future<R> Function(SidekickCli cli) callback,
 ) async {
-  final copy = Directory.systemTemp.createTempSync();
+  final copy = Directory.systemTemp.createTempSync('sidekick_cli_');
   addTearDown(() => copy.deleteSync(recursive: true));
   await (await _cachedSidekickCli).root.copyRecursively(copy);
 
@@ -32,14 +32,25 @@ Future<R> withSidekickCli<R>(
 
 /// Cached sidekick CLI. Don't use directly, use [withSidekickCli] instead.
 final _cachedSidekickCli = () async {
-  _cachedSidekickCliDir = Directory.systemTemp.createTempSync();
+  _cachedSidekickCliDir =
+      Directory.systemTemp.createTempSync('cached_sidekick_cli_');
+
   final process = await (await cachedGlobalSidekickCli).run(
     ['init', '-n', 'dashi'],
     workingDirectory: _cachedSidekickCliDir!,
   );
-  if (await process.exitCode != 0) {
+
+  final debug = envs['SIDEKICK_DEBUG'] == "true";
+  print('Running sidekick CLI in debug mode: $debug');
+  if (debug) {
     process.stdoutStream().listen(print);
     process.stderrStream().listen(print);
+  }
+  if (await process.exitCode != 0) {
+    if (!debug) {
+      process.stdoutStream().listen(print);
+      process.stderrStream().listen(print);
+    }
   }
   await process.shouldExit(0);
 
@@ -67,7 +78,7 @@ Directory? _cachedGlobalSidekickCliDir;
 /// dependencies to the local sidekick_core
 Future<GlobalSidekickCli> _buildGlobalSidekickCli() async {
   final original = Directory('.');
-  final copy = Directory.systemTemp.createTempSync();
+  final copy = Directory.systemTemp.createTempSync('global_sidekick_cli_');
   _cachedGlobalSidekickCliDir = copy;
   await original.copyRecursively(copy);
 
@@ -153,9 +164,17 @@ class SidekickCli {
       environment: environment,
     );
 
-    if (await process.exitCode != 0) {
+    final debug = envs['SIDEKICK_DEBUG'] == "true";
+    print('Running sidekick CLI in debug mode: $debug');
+    if (debug) {
       process.stdoutStream().listen(print);
       process.stderrStream().listen(print);
+    }
+    if (await process.exitCode != 0) {
+      if (!debug) {
+        process.stdoutStream().listen(print);
+        process.stderrStream().listen(print);
+      }
     }
     await process.shouldExit(0);
     return process;

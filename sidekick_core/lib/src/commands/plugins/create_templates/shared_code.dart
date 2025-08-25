@@ -119,7 +119,7 @@ class ${commandName.pascalCase}Command extends Command {
 
   String get helpers => '''
 /// Sidekick plugin ${pluginName.titleCase}
-library ${pluginName.snakeCase};
+library;
 
 List<String> getGreetings() => [
       'Moin',

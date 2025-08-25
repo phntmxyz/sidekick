@@ -1,1 +1,1 @@
-library minimal;
+library;

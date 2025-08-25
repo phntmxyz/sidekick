@@ -38,8 +38,8 @@ class InstallGlobalCommand extends Command {
         if (path != null) {
           return path;
         }
-      } catch (_) {
-        // ignore
+      } catch (e, stackTrace) {
+        printerr(red('Failed to get path to start script: $e\n$stackTrace'));
       }
       return '~/.bashrc';
     }();
@@ -55,11 +55,16 @@ class InstallGlobalCommand extends Command {
       // E.g. dcli-1.30.3 zsh_shell.dart: UnsupportedError('Not supported in zsh')
       final added = Shell.current.appendToPATH(binDirPath);
       if (added) {
-        printerr('Added $binDirPath to PATH');
+        print('Added $binDirPath to PATH');
         return;
+      } else {
+        printerr(
+          dcli.red('Could not add $binDirPath to PATH automatically in shell '
+              '${Shell.current.name}.'),
+        );
       }
-    } catch (_) {
-      // ignore
+    } catch (e, stackTrace) {
+      printerr(red('Failed to add $binDirPath to PATH: $e\n$stackTrace'));
     }
 
     print(
