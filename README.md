@@ -65,6 +65,7 @@ Run "flg help <command>" for more information about a command.
 | [sidekick_vault](https://pub.dev/packages/sidekick_vault)                       | Store project secrets encrypted in your repository                |
 | [dockerize_sidekick_plugin](https://pub.dev/packages/dockerize_sidekick_plugin) | Wrap your Flutter Web App in a docker container                   |
 | [flutterw_sidekick_plugin](https://pub.dev/packages/flutterw_sidekick_plugin)   | Pin a Flutter version to your project and share it with your team |
+| [puro_sidekick_plugin](https://pub.dev/packages/puro_sidekick_plugin)           | Automacitly uses the minimum or pinned Dart/Flutter version specified in the pubspec.yaml |
 
 See the [full list of available plugins](https://pub.dev/packages?q=dependency%3Asidekick_plugin_installer)
 
