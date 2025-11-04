@@ -299,10 +299,8 @@ void main() {
   test('decryptAll skips files with different password', () async {
     // Create two files with different passwords
     final tempDir = Directory.systemTemp.createTempSync();
-    final file1 = tempDir.file('file1.txt')
-      ..writeAsStringSync('Content 1');
-    final file2 = tempDir.file('file2.txt')
-      ..writeAsStringSync('Content 2');
+    final file1 = tempDir.file('file1.txt')..writeAsStringSync('Content 1');
+    final file2 = tempDir.file('file2.txt')..writeAsStringSync('Content 2');
 
     addTearDown(() {
       tempDir.deleteSync(recursive: true);

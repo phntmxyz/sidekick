@@ -176,14 +176,16 @@ class _DecryptAllCommand extends Command {
 
       try {
         final decrypted = vault.loadFile(vaultLocation, to: outFile);
-        print(green('✓ Decrypted $vaultLocation to ${relative(decrypted.path, from: vault.location.path)}'));
+        print(green(
+            '✓ Decrypted $vaultLocation to ${relative(decrypted.path, from: vault.location.path)}'));
         successCount++;
       } catch (e) {
         print(red('✗ Failed to decrypt $vaultLocation: $e'));
       }
     }
 
-    print(green('\nSuccessfully decrypted $successCount of ${vaultFiles.length} file(s)'));
+    print(green(
+        '\nSuccessfully decrypted $successCount of ${vaultFiles.length} file(s)'));
   }
 }
 
