@@ -269,6 +269,32 @@ void main() {
       },
     );
   });
+
+  test('decryptAll decrypts all files in vault', () async {
+    await withEnvironment(
+      () async {
+        await runner.run([
+          'vault',
+          'decryptAll',
+          '--passphrase',
+          'asdfasdf',
+        ]);
+      },
+      environment: {
+        'DASH_VAULT_PASSPHRASE': 'asdfasdf',
+        'SIDEKICK_ENABLE_UPDATE_CHECK': 'false',
+      },
+    );
+
+    // Check that decrypted files were created adjacent to encrypted files
+    final decryptedFile = vault.location.file('encrypted.txt');
+    expect(decryptedFile.existsSync(), isTrue);
+    expect(decryptedFile.readAsStringSync(), '42');
+
+    // Check that encrypted file still exists
+    final encryptedFile = vault.location.file('encrypted.txt.gpg');
+    expect(encryptedFile.existsSync(), isTrue);
+  });
 }
 
 /// Fakes a sidekick package by writing required files and environment variables
