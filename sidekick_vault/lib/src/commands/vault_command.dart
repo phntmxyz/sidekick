@@ -5,6 +5,7 @@ class VaultCommand extends Command {
   VaultCommand({required SidekickVault vault}) {
     addSubcommand(_EncryptCommand(vault));
     addSubcommand(_DecryptCommand(vault));
+    addSubcommand(_DecryptAllCommand(vault));
     addSubcommand(_ListCommand(vault));
     addSubcommand(_ChangePasswordCommand(vault));
   }
@@ -126,6 +127,63 @@ class _DecryptCommand extends Command {
         'to ${decrypted.path}',
       ),
     );
+  }
+}
+
+class _DecryptAllCommand extends Command {
+  @override
+  String get description =>
+      'Decrypts all files in the vault and places them adjacent to their encrypted counterparts';
+
+  @override
+  String get name => 'decryptAll';
+
+  @override
+  String? get usageFooter => '\n${green('Example usage:')}\n'
+      '> ${SidekickContext.cliName} vault decryptAll\n'
+      '> ${SidekickContext.cliName} vault decryptAll --passphrase="****"';
+
+  final SidekickVault vault;
+
+  _DecryptAllCommand(this.vault) {
+    argParser.addOption(
+      'passphrase',
+      abbr: 'p',
+      help: 'the password for decryption. '
+          'If not provided it will be asked via stdin',
+    );
+  }
+
+  @override
+  Future<void> run() async {
+    final password = _parsePassphraseOption();
+    vault.unlock(password);
+
+    final vaultFiles = vault.listEntries();
+
+    if (vaultFiles.isEmpty) {
+      print(yellow('No encrypted files found in vault'));
+      return;
+    }
+
+    print('Decrypting ${vaultFiles.length} file(s)...');
+
+    int successCount = 0;
+    for (final vaultFile in vaultFiles) {
+      final vaultLocation = relative(vaultFile.path, from: vault.location.path);
+      final outFilePath = vaultLocation.replaceFirst('.gpg', '');
+      final outFile = vault.location.file(outFilePath);
+
+      try {
+        final decrypted = vault.loadFile(vaultLocation, to: outFile);
+        print(green('✓ Decrypted $vaultLocation to ${relative(decrypted.path, from: vault.location.path)}'));
+        successCount++;
+      } catch (e) {
+        print(red('✗ Failed to decrypt $vaultLocation: $e'));
+      }
+    }
+
+    print(green('\nSuccessfully decrypted $successCount of ${vaultFiles.length} file(s)'));
   }
 }
 
