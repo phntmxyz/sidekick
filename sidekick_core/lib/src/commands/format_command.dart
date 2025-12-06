@@ -153,6 +153,7 @@ class FormatCommand extends Command {
         lineLength: resolvedLineLength,
         files: filesInPackage,
         verify: verify,
+        workingDirectory: package.root,
       );
     }
     if (allFiles.isNotEmpty) {
