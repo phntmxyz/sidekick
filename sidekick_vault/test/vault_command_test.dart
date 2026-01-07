@@ -269,6 +269,96 @@ void main() {
       },
     );
   });
+
+  test('decryptAll decrypts all files in vault', () async {
+    await withEnvironment(
+      () async {
+        await runner.run([
+          'vault',
+          'decryptAll',
+          '--passphrase',
+          'asdfasdf',
+        ]);
+      },
+      environment: {
+        'DASH_VAULT_PASSPHRASE': 'asdfasdf',
+        'SIDEKICK_ENABLE_UPDATE_CHECK': 'false',
+      },
+    );
+
+    // Check that decrypted files were created adjacent to encrypted files
+    final decryptedFile = vault.location.file('encrypted.txt');
+    expect(decryptedFile.existsSync(), isTrue);
+    expect(decryptedFile.readAsStringSync(), '42');
+
+    // Check that encrypted file still exists
+    final encryptedFile = vault.location.file('encrypted.txt.gpg');
+    expect(encryptedFile.existsSync(), isTrue);
+  });
+
+  test('decryptAll skips files with different password', () async {
+    // Create two files with different passwords
+    final tempDir = Directory.systemTemp.createTempSync();
+    final file1 = tempDir.file('file1.txt')..writeAsStringSync('Content 1');
+    final file2 = tempDir.file('file2.txt')..writeAsStringSync('Content 2');
+
+    addTearDown(() {
+      tempDir.deleteSync(recursive: true);
+    });
+
+    await withEnvironment(
+      () async {
+        // Encrypt file1 with password 'password1'
+        await runner.run([
+          'vault',
+          'encrypt',
+          '--passphrase',
+          'password1',
+          '--vault-location',
+          'file1.txt.gpg',
+          file1.absolute.path,
+        ]);
+
+        // Encrypt file2 with password 'password2'
+        await runner.run([
+          'vault',
+          'encrypt',
+          '--passphrase',
+          'password2',
+          '--vault-location',
+          'file2.txt.gpg',
+          file2.absolute.path,
+        ]);
+
+        // Try to decrypt all files with password1
+        await runner.run([
+          'vault',
+          'decryptAll',
+          '--passphrase',
+          'password1',
+        ]);
+      },
+      environment: {
+        'DASH_VAULT_PASSPHRASE': 'asdfasdf',
+        'SIDEKICK_ENABLE_UPDATE_CHECK': 'false',
+      },
+    );
+
+    // Check that file1 was decrypted successfully
+    final decryptedFile1 = vault.location.file('file1.txt');
+    expect(decryptedFile1.existsSync(), isTrue);
+    expect(decryptedFile1.readAsStringSync(), 'Content 1');
+
+    // Check that file2 was NOT decrypted (wrong password)
+    final decryptedFile2 = vault.location.file('file2.txt');
+    expect(decryptedFile2.existsSync(), isFalse);
+
+    // Check that both encrypted files still exist
+    final encryptedFile1 = vault.location.file('file1.txt.gpg');
+    expect(encryptedFile1.existsSync(), isTrue);
+    final encryptedFile2 = vault.location.file('file2.txt.gpg');
+    expect(encryptedFile2.existsSync(), isTrue);
+  });
 }
 
 /// Fakes a sidekick package by writing required files and environment variables
