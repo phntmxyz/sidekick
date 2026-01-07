@@ -304,7 +304,8 @@ void main() {
       );
 
       // Check that file1 can be decrypted with new password
-      final decryptedFile1 = Directory.systemTemp.createTempSync().file('decrypted1.txt');
+      final decryptedFile1 =
+          Directory.systemTemp.createTempSync().file('decrypted1.txt');
       addTearDown(() {
         decryptedFile1.parent.deleteSync(recursive: true);
       });
@@ -320,7 +321,8 @@ void main() {
       expect(decryptedFile1.readAsStringSync(), 'Content 1');
 
       // Check that file2 still has old password (password2)
-      final decryptedFile2 = Directory.systemTemp.createTempSync().file('decrypted2.txt');
+      final decryptedFile2 =
+          Directory.systemTemp.createTempSync().file('decrypted2.txt');
       addTearDown(() {
         decryptedFile2.parent.deleteSync(recursive: true);
       });
