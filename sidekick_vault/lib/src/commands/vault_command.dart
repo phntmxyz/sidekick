@@ -191,21 +191,29 @@ class _DecryptAllCommand extends Command {
 
 class _ChangePasswordCommand extends Command {
   @override
-  String get description => 'Changes the password of the vault';
+  String get description =>
+      'Changes the password for all files in the vault';
 
   @override
   String get name => 'change-password';
+
+  @override
+  String? get usageFooter => '\n${green('Example usage:')}\n'
+      '> ${SidekickContext.cliName} vault change-password\n'
+      '> ${SidekickContext.cliName} vault change-password --old="oldpassword" --new="newpassword"';
 
   final SidekickVault vault;
 
   _ChangePasswordCommand(this.vault) {
     argParser.addOption(
       'old',
-      help: 'old passphrase',
+      help: 'the current password for decryption. '
+          'If not provided it will be asked via stdin',
     );
     argParser.addOption(
       'new',
-      help: 'new passphrase',
+      help: 'the new password for encryption. '
+          'If not provided it will be asked via stdin',
     );
   }
 
@@ -214,6 +222,7 @@ class _ChangePasswordCommand extends Command {
     final vaultPath =
         relative(vault.location.path, from: entryWorkingDirectory.path);
     print('Changing password for vault "$vaultPath":');
+
     final oldPassword = _parseOldOption() ??
         ask(
           'Old Password:',
@@ -226,28 +235,63 @@ class _ChangePasswordCommand extends Command {
           validator: Ask.lengthMin(1),
           hidden: true,
         );
+
     if (oldPassword == newPassword) {
-      throw "Password is identical";
+      throw "New password must be different from the old password";
     }
+
     vault.unlock(oldPassword);
-    final encryptedFiles = vault.listEntries().map((file) {
-      final filename = relative(file.path, from: vault.location.path);
-      final decrypted = vault.loadFile(filename);
-      return MigrationEntry(
-        vaultKey: filename,
-        oldVaultFile: file,
-        decryptedFile: decrypted,
-      );
-    }).toList();
+    final vaultFiles = vault.listEntries();
 
-    vault.unlock(newPassword);
-    for (final entry in encryptedFiles) {
-      entry.oldVaultFile.deleteSync();
-      vault.saveFile(entry.decryptedFile, filename: entry.vaultKey);
-      print('✓ ${entry.vaultKey}');
+    if (vaultFiles.isEmpty) {
+      print(yellow('No encrypted files found in vault'));
+      return;
     }
 
-    print(green('Password for vault "$vaultPath" changed'));
+    print('Re-encrypting ${vaultFiles.length} file(s) with new password...');
+
+    // First, decrypt all files with old password
+    final List<MigrationEntry> entries = [];
+    for (final file in vaultFiles) {
+      final filename = relative(file.path, from: vault.location.path);
+      try {
+        final decrypted = vault.loadFile(filename);
+        entries.add(MigrationEntry(
+          vaultKey: filename,
+          oldVaultFile: file,
+          decryptedFile: decrypted,
+        ));
+      } catch (e) {
+        print(red('✗ Failed to decrypt $filename: $e'));
+      }
+    }
+
+    if (entries.isEmpty) {
+      print(red('No files could be decrypted with the provided password'));
+      return;
+    }
+
+    // Re-encrypt all successfully decrypted files with new password
+    vault.unlock(newPassword);
+    int successCount = 0;
+    for (final entry in entries) {
+      try {
+        entry.oldVaultFile.deleteSync();
+        vault.saveFile(entry.decryptedFile, filename: entry.vaultKey);
+        print(green('✓ ${entry.vaultKey}'));
+        successCount++;
+      } catch (e) {
+        print(red('✗ Failed to re-encrypt ${entry.vaultKey}: $e'));
+      } finally {
+        // Clean up temporary decrypted file
+        if (entry.decryptedFile.existsSync()) {
+          entry.decryptedFile.deleteSync();
+        }
+      }
+    }
+
+    print(green(
+        '\nSuccessfully changed password for $successCount of ${vaultFiles.length} file(s)'));
   }
 }
 
