@@ -233,7 +233,7 @@ void main() {
       expect(decryptedFile.readAsStringSync(), '42');
     });
 
-    test('throws when new password equals old password', () async {
+    test('throws when new password equals old password', () {
       expect(
         () => runner.run([
           'vault',

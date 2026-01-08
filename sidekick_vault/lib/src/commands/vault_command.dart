@@ -191,8 +191,7 @@ class _DecryptAllCommand extends Command {
 
 class _ChangePasswordCommand extends Command {
   @override
-  String get description =>
-      'Changes the password for all files in the vault';
+  String get description => 'Changes the password for all files in the vault';
 
   @override
   String get name => 'change-password';
