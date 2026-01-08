@@ -9,7 +9,7 @@ on:
 jobs:
   core_test:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     strategy:
       matrix:
         dart-version: ['3.5.0', '3.7.0', 'latest']

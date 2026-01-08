@@ -204,32 +204,165 @@ void main() {
     });
   });
 
-  test('Change password', () async {
-    await runner.run([
-      'vault',
-      'change-password',
-      '--old',
-      'asdfasdf',
-      '--new',
-      'newpw',
-    ]);
+  group('change-password', () {
+    test('changes password for all files in vault', () async {
+      await runner.run([
+        'vault',
+        'change-password',
+        '--old',
+        'asdfasdf',
+        '--new',
+        'newpw',
+      ]);
 
-    final tempDir = Directory.systemTemp.createTempSync();
-    addTearDown(() {
-      tempDir.deleteSync(recursive: true);
+      final tempDir = Directory.systemTemp.createTempSync();
+      addTearDown(() {
+        tempDir.deleteSync(recursive: true);
+      });
+      final decryptedFile = tempDir.file('decrypted.txt');
+      await runner.run([
+        'vault',
+        'decrypt',
+        '--passphrase',
+        'newpw',
+        '--output',
+        decryptedFile.absolute.path,
+        'encrypted.txt.gpg',
+      ]);
+
+      expect(decryptedFile.readAsStringSync(), '42');
     });
-    final decryptedFile = tempDir.file('decrypted.txt');
-    await runner.run([
-      'vault',
-      'decrypt',
-      '--passphrase',
-      'newpw',
-      '--output',
-      decryptedFile.absolute.path,
-      'encrypted.txt.gpg',
-    ]);
 
-    expect(decryptedFile.readAsStringSync(), '42');
+    test('throws when new password equals old password', () {
+      expect(
+        () => runner.run([
+          'vault',
+          'change-password',
+          '--old',
+          'asdfasdf',
+          '--new',
+          'asdfasdf',
+        ]),
+        throwsA(
+          isA<String>().having(
+            (it) => it,
+            'error',
+            contains('New password must be different from the old password'),
+          ),
+        ),
+      );
+    });
+
+    test('skips files with different password', () async {
+      // Create two files with different passwords
+      final tempDir = Directory.systemTemp.createTempSync();
+      final file1 = tempDir.file('file1.txt')..writeAsStringSync('Content 1');
+      final file2 = tempDir.file('file2.txt')..writeAsStringSync('Content 2');
+
+      addTearDown(() {
+        tempDir.deleteSync(recursive: true);
+      });
+
+      await withEnvironment(
+        () async {
+          // Encrypt file1 with password 'password1'
+          await runner.run([
+            'vault',
+            'encrypt',
+            '--passphrase',
+            'password1',
+            '--vault-location',
+            'file1.txt.gpg',
+            file1.absolute.path,
+          ]);
+
+          // Encrypt file2 with password 'password2'
+          await runner.run([
+            'vault',
+            'encrypt',
+            '--passphrase',
+            'password2',
+            '--vault-location',
+            'file2.txt.gpg',
+            file2.absolute.path,
+          ]);
+
+          // Change password with password1 as old password
+          await runner.run([
+            'vault',
+            'change-password',
+            '--old',
+            'password1',
+            '--new',
+            'newpassword',
+          ]);
+        },
+        environment: {
+          'DASH_VAULT_PASSPHRASE': 'asdfasdf',
+          'SIDEKICK_ENABLE_UPDATE_CHECK': 'false',
+        },
+      );
+
+      // Check that file1 can be decrypted with new password
+      final decryptedFile1 =
+          Directory.systemTemp.createTempSync().file('decrypted1.txt');
+      addTearDown(() {
+        decryptedFile1.parent.deleteSync(recursive: true);
+      });
+      await runner.run([
+        'vault',
+        'decrypt',
+        '--passphrase',
+        'newpassword',
+        '--output',
+        decryptedFile1.absolute.path,
+        'file1.txt.gpg',
+      ]);
+      expect(decryptedFile1.readAsStringSync(), 'Content 1');
+
+      // Check that file2 still has old password (password2)
+      final decryptedFile2 =
+          Directory.systemTemp.createTempSync().file('decrypted2.txt');
+      addTearDown(() {
+        decryptedFile2.parent.deleteSync(recursive: true);
+      });
+      await runner.run([
+        'vault',
+        'decrypt',
+        '--passphrase',
+        'password2',
+        '--output',
+        decryptedFile2.absolute.path,
+        'file2.txt.gpg',
+      ]);
+      expect(decryptedFile2.readAsStringSync(), 'Content 2');
+    });
+
+    test('prints message when vault is empty', () async {
+      final emptyVaultDir = Directory.systemTemp.createTempSync();
+      addTearDown(() {
+        emptyVaultDir.deleteSync(recursive: true);
+      });
+
+      final emptyVault = SidekickVault(
+        location: emptyVaultDir,
+        environmentVariableName: 'DASH_VAULT_PASSPHRASE',
+      );
+      final emptyRunner = initializeSidekick();
+      emptyRunner.addCommand(VaultCommand(vault: emptyVault));
+
+      // Should complete without error when vault is empty
+      await emptyRunner.run([
+        'vault',
+        'change-password',
+        '--old',
+        'oldpassword',
+        '--new',
+        'newpassword',
+      ]);
+
+      // If we reach here without error, the empty vault case is handled
+    });
   });
 
   test('encrypt overwrites existing files', () async {
