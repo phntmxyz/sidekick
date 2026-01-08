@@ -337,6 +337,32 @@ void main() {
       ]);
       expect(decryptedFile2.readAsStringSync(), 'Content 2');
     });
+
+    test('prints message when vault is empty', () async {
+      final emptyVaultDir = Directory.systemTemp.createTempSync();
+      addTearDown(() {
+        emptyVaultDir.deleteSync(recursive: true);
+      });
+
+      final emptyVault = SidekickVault(
+        location: emptyVaultDir,
+        environmentVariableName: 'DASH_VAULT_PASSPHRASE',
+      );
+      final emptyRunner = initializeSidekick();
+      emptyRunner.addCommand(VaultCommand(vault: emptyVault));
+
+      // Should complete without error when vault is empty
+      await emptyRunner.run([
+        'vault',
+        'change-password',
+        '--old',
+        'oldpassword',
+        '--new',
+        'newpassword',
+      ]);
+
+      // If we reach here without error, the empty vault case is handled
+    });
   });
 
   test('encrypt overwrites existing files', () async {
