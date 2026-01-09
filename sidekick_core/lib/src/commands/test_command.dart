@@ -57,7 +57,8 @@ class TestCommand extends Command {
       final result = await _runTestsAtPath(path);
       // noTests is an error when user explicitly requested a path
       collector.add(result, isError: result == _TestResult.noTests);
-      exit(collector.exitCode);
+      exitCode = collector.exitCode;
+      return;
     }
 
     if (packageArg != null) {
@@ -65,7 +66,8 @@ class TestCommand extends Command {
       final result = await _runTestsInPackageNamed(packageArg);
       // noTests is an error when user explicitly requested a package
       collector.add(result, isError: result == _TestResult.noTests);
-      exit(collector.exitCode);
+      exitCode = collector.exitCode;
+      return;
     }
 
     // outside of package, fallback to all packages
@@ -75,7 +77,7 @@ class TestCommand extends Command {
       if (!_fastFlag) print('\n');
     }
 
-    exit(collector.exitCode);
+    exitCode = collector.exitCode;
   }
 
   Future<_TestResult> _runTestsAtPath(String inputPath) async {
@@ -171,7 +173,7 @@ class TestCommand extends Command {
     String? relativePath,
   }) async {
     final stopwatch = Stopwatch()..start();
-    final result = await _runDartOrFlutter(package, args);
+    final result = await _runDartOrFlutter(package, args, nothrow: true);
     stopwatch.stop();
     final duration = (stopwatch.elapsedMilliseconds / 1000.0).toStringAsFixed(
       1,
@@ -193,21 +195,37 @@ class TestCommand extends Command {
     Progress? progress,
     bool nothrow = false,
   }) async {
+    // Capture subprocess output and manually write to stdout/stderr.
+    // This ensures output goes through IOOverrides (important for tests using
+    // FakeIoStreams) rather than directly to OS file descriptors.
+    final captureProgress = progress ?? Progress.capture();
+
+    final ProcessCompletion result;
     if (package.isFlutterPackage) {
-      return flutter(
+      result = await flutter(
         args,
         workingDirectory: package.root,
-        progress: progress,
+        progress: captureProgress,
         nothrow: nothrow,
       );
     } else {
-      return dart(
+      result = await dart(
         args,
         workingDirectory: package.root,
-        progress: progress,
+        progress: captureProgress,
         nothrow: nothrow,
       );
     }
+
+    // If no custom progress was provided, write captured output to stdout
+    // so it goes through IOOverrides
+    if (progress == null) {
+      for (final line in captureProgress.lines) {
+        stdout.writeln(line);
+      }
+    }
+
+    return result;
   }
 
   Future<_TestResult> _runFastTest(
