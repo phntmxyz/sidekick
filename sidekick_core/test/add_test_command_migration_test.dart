@@ -73,7 +73,7 @@ void main() {
   test('skips when TestCommand already exists', () async {
     await insideFakeProjectWithSidekick((dir) async {
       final mainFile = SidekickContext.sidekickPackage.cliMainFile;
-      final originalContent = '''
+      const originalContent = '''
 import 'package:sidekick_core/sidekick_core.dart';
 
 void main() {
@@ -109,7 +109,7 @@ void main() {
   test('skips when no suitable location found', () async {
     await insideFakeProjectWithSidekick((dir) async {
       final mainFile = SidekickContext.sidekickPackage.cliMainFile;
-      final originalContent = '''
+      const originalContent = '''
 import 'package:sidekick_core/sidekick_core.dart';
 
 void main() {
@@ -142,7 +142,7 @@ void main() {
   test('does not run migration when upgrading from 3.1.0 to 3.2.0', () async {
     await insideFakeProjectWithSidekick((dir) async {
       final mainFile = SidekickContext.sidekickPackage.cliMainFile;
-      final originalContent = '''
+      const originalContent = '''
 import 'package:sidekick_core/sidekick_core.dart';
 
 void main() {

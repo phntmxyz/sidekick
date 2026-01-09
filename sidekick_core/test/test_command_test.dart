@@ -179,7 +179,8 @@ void main() {
         stdout: () => streams.stdout,
         stderr: () => streams.stderr,
         body: () async {
-          final packageDir = dir.directory('packages/pkg_a')..createSync(recursive: true);
+          final packageDir = dir.directory('packages/pkg_a')
+            ..createSync(recursive: true);
           createPackageWithTests(packageDir, packageName: 'pkg_a');
 
           final testFile = packageDir.file('test/specific_test.dart')
@@ -217,7 +218,8 @@ void main() {
         stdout: () => streams.stdout,
         stderr: () => streams.stderr,
         body: () async {
-          final packageDir = dir.directory('packages/pkg_a')..createSync(recursive: true);
+          final packageDir = dir.directory('packages/pkg_a')
+            ..createSync(recursive: true);
           createPackageWithTests(packageDir, packageName: 'pkg_a');
 
           final testFile = packageDir.file('test/specific_test.dart')
@@ -255,10 +257,12 @@ void main() {
         stdout: () => streams.stdout,
         stderr: () => streams.stderr,
         body: () async {
-          final packageDir = dir.directory('packages/pkg_a')..createSync(recursive: true);
+          final packageDir = dir.directory('packages/pkg_a')
+            ..createSync(recursive: true);
           createPackageWithTests(packageDir, packageName: 'pkg_a');
 
-          final testDir = packageDir.directory('test/unit')..createSync(recursive: true);
+          final testDir = packageDir.directory('test/unit')
+            ..createSync(recursive: true);
           testDir.file('unit_test.dart').writeAsStringSync('''
 import 'package:test/test.dart';
 
@@ -292,10 +296,12 @@ void main() {
         stdout: () => streams.stdout,
         stderr: () => streams.stderr,
         body: () async {
-          final packageDir = dir.directory('packages/pkg_a')..createSync(recursive: true);
+          final packageDir = dir.directory('packages/pkg_a')
+            ..createSync(recursive: true);
           createPackageWithTests(packageDir, packageName: 'pkg_a');
 
-          final testDir = packageDir.directory('test/unit')..createSync(recursive: true);
+          final testDir = packageDir.directory('test/unit')
+            ..createSync(recursive: true);
           testDir.file('unit_test.dart').writeAsStringSync('''
 import 'package:test/test.dart';
 
@@ -329,7 +335,8 @@ void main() {
         stdout: () => streams.stdout,
         stderr: () => streams.stderr,
         body: () async {
-          final packageDir = dir.directory('packages/pkg_a')..createSync(recursive: true);
+          final packageDir = dir.directory('packages/pkg_a')
+            ..createSync(recursive: true);
           createPackageWithTests(packageDir, packageName: 'pkg_a');
 
           final runner = initializeSidekick(
@@ -355,7 +362,8 @@ void main() {
         stdout: () => streams.stdout,
         stderr: () => streams.stderr,
         body: () async {
-          final packageDir = dir.directory('packages/pkg_a')..createSync(recursive: true);
+          final packageDir = dir.directory('packages/pkg_a')
+            ..createSync(recursive: true);
           createPackageWithTests(packageDir, packageName: 'pkg_a');
 
           final runner = initializeSidekick(
@@ -390,7 +398,8 @@ void main() {
         () => runner.run(['test', testFile.path]),
         throwsA(
           predicate(
-            (e) => e.toString().contains('Could not determine package for path'),
+            (e) =>
+                e.toString().contains('Could not determine package for path'),
           ),
         ),
       );
@@ -490,7 +499,8 @@ void main() {
         stdout: () => streams.stdout,
         stderr: () => streams.stderr,
         body: () async {
-          final packageDir = dir.directory('packages/pkg_a')..createSync(recursive: true);
+          final packageDir = dir.directory('packages/pkg_a')
+            ..createSync(recursive: true);
           packageDir.file('pubspec.yaml')
             ..createSync(recursive: true)
             ..writeAsStringSync('''
@@ -538,7 +548,8 @@ void main() {
         stdout: () => streams.stdout,
         stderr: () => streams.stderr,
         body: () async {
-          final packageDir = dir.directory('packages/pkg_a')..createSync(recursive: true);
+          final packageDir = dir.directory('packages/pkg_a')
+            ..createSync(recursive: true);
           packageDir.file('pubspec.yaml')
             ..createSync(recursive: true)
             ..writeAsStringSync('''
@@ -586,7 +597,8 @@ void main() {
         stdout: () => streams.stdout,
         stderr: () => streams.stderr,
         body: () async {
-          final packageDir = dir.directory('packages/pkg_a')..createSync(recursive: true);
+          final packageDir = dir.directory('packages/pkg_a')
+            ..createSync(recursive: true);
           packageDir.file('pubspec.yaml')
             ..createSync(recursive: true)
             ..writeAsStringSync('''
@@ -637,12 +649,13 @@ void main() {
         stderr: () => streams.stderr,
         body: () async {
           createPackageWithTests(
-            dir.directory('packages/pkg_with_tests')..createSync(recursive: true),
+            dir.directory('packages/pkg_with_tests')
+              ..createSync(recursive: true),
             packageName: 'pkg_with_tests',
-            createTests: true,
           );
           createPackageWithTests(
-            dir.directory('packages/pkg_without_tests')..createSync(recursive: true),
+            dir.directory('packages/pkg_without_tests')
+              ..createSync(recursive: true),
             packageName: 'pkg_without_tests',
             createTests: false,
           );
@@ -674,12 +687,13 @@ void main() {
         stderr: () => streams.stderr,
         body: () async {
           createPackageWithTests(
-            dir.directory('packages/pkg_with_tests')..createSync(recursive: true),
+            dir.directory('packages/pkg_with_tests')
+              ..createSync(recursive: true),
             packageName: 'pkg_with_tests',
-            createTests: true,
           );
           createPackageWithTests(
-            dir.directory('packages/pkg_without_tests')..createSync(recursive: true),
+            dir.directory('packages/pkg_without_tests')
+              ..createSync(recursive: true),
             packageName: 'pkg_without_tests',
             createTests: false,
           );
@@ -711,7 +725,8 @@ void main() {
         stderr: () => streams.stderr,
         body: () async {
           // Create two packages with tests that output their working directory
-          final pkgADir = dir.directory('packages/pkg_a')..createSync(recursive: true);
+          final pkgADir = dir.directory('packages/pkg_a')
+            ..createSync(recursive: true);
           pkgADir.file('pubspec.yaml')
             ..createSync(recursive: true)
             ..writeAsStringSync('''
@@ -738,7 +753,8 @@ void main() {
 }
 ''');
 
-          final pkgBDir = dir.directory('packages/pkg_b')..createSync(recursive: true);
+          final pkgBDir = dir.directory('packages/pkg_b')
+            ..createSync(recursive: true);
           pkgBDir.file('pubspec.yaml')
             ..createSync(recursive: true)
             ..writeAsStringSync('''
@@ -793,7 +809,8 @@ void main() {
         stderr: () => streams.stderr,
         body: () async {
           // Create two packages with tests that output their working directory
-          final pkgADir = dir.directory('packages/pkg_a')..createSync(recursive: true);
+          final pkgADir = dir.directory('packages/pkg_a')
+            ..createSync(recursive: true);
           pkgADir.file('pubspec.yaml')
             ..createSync(recursive: true)
             ..writeAsStringSync('''
@@ -820,7 +837,8 @@ void main() {
 }
 ''');
 
-          final pkgBDir = dir.directory('packages/pkg_b')..createSync(recursive: true);
+          final pkgBDir = dir.directory('packages/pkg_b')
+            ..createSync(recursive: true);
           pkgBDir.file('pubspec.yaml')
             ..createSync(recursive: true)
             ..writeAsStringSync('''
@@ -915,14 +933,16 @@ void main() {
     });
   });
 
-  test('path argument takes precedence over --package flag (verbose)', () async {
+  test('path argument takes precedence over --package flag (verbose)',
+      () async {
     await insideFakeProjectWithSidekick((dir) async {
       final streams = FakeIoStreams();
       await overrideIoStreams(
         stdout: () => streams.stdout,
         stderr: () => streams.stderr,
         body: () async {
-          final packageDir = dir.directory('packages/pkg_a')..createSync(recursive: true);
+          final packageDir = dir.directory('packages/pkg_a')
+            ..createSync(recursive: true);
           createPackageWithTests(packageDir, packageName: 'pkg_a');
 
           final runner = initializeSidekick(
@@ -955,7 +975,8 @@ void main() {
         stdout: () => streams.stdout,
         stderr: () => streams.stderr,
         body: () async {
-          final packageDir = dir.directory('packages/pkg_a')..createSync(recursive: true);
+          final packageDir = dir.directory('packages/pkg_a')
+            ..createSync(recursive: true);
           createPackageWithTests(packageDir, packageName: 'pkg_a');
 
           final runner = initializeSidekick(
@@ -989,7 +1010,8 @@ void main() {
         stdout: () => streams.stdout,
         stderr: () => streams.stderr,
         body: () async {
-          final packageDir = dir.directory('packages/pkg_a')..createSync(recursive: true);
+          final packageDir = dir.directory('packages/pkg_a')
+            ..createSync(recursive: true);
           createPackageWithTests(packageDir, packageName: 'pkg_a');
 
           final testDir = packageDir.directory('test');
@@ -1017,7 +1039,8 @@ void main() {
         stdout: () => streams.stdout,
         stderr: () => streams.stderr,
         body: () async {
-          final packageDir = dir.directory('packages/pkg_a')..createSync(recursive: true);
+          final packageDir = dir.directory('packages/pkg_a')
+            ..createSync(recursive: true);
           createPackageWithTests(packageDir, packageName: 'pkg_a');
 
           final testDir = packageDir.directory('test');
@@ -1045,7 +1068,8 @@ void main() {
         stdout: () => streams.stdout,
         stderr: () => streams.stderr,
         body: () async {
-          final packageDir = dir.directory('packages/pkg_a')..createSync(recursive: true);
+          final packageDir = dir.directory('packages/pkg_a')
+            ..createSync(recursive: true);
           createPackageWithTests(packageDir, packageName: 'pkg_a');
 
           final runner = initializeSidekick(
@@ -1071,7 +1095,8 @@ void main() {
         stdout: () => streams.stdout,
         stderr: () => streams.stderr,
         body: () async {
-          final packageDir = dir.directory('packages/pkg_a')..createSync(recursive: true);
+          final packageDir = dir.directory('packages/pkg_a')
+            ..createSync(recursive: true);
           createPackageWithTests(packageDir, packageName: 'pkg_a');
 
           final runner = initializeSidekick(

@@ -14,7 +14,8 @@ import 'package:sidekick_core/sidekick_core.dart';
 /// - `<cli> test --fast -n "my test"` - Run tests matching name filter
 class TestCommand extends Command {
   @override
-  final String description = 'Runs all tests in all packages, a single package, or a specific file/directory';
+  final String description =
+      'Runs all tests in all packages, a single package, or a specific file/directory';
 
   @override
   final String name = 'test';
@@ -84,7 +85,8 @@ class TestCommand extends Command {
     final isDirectory = FileSystemEntity.isDirectorySync(inputPath);
     final entity = isDirectory ? Directory(inputPath) : File(inputPath);
     final absolutePath = entity.absolute.path;
-    final searchDir = isDirectory ? entity.absolute as Directory : entity.absolute.parent;
+    final searchDir =
+        isDirectory ? entity.absolute as Directory : entity.absolute.parent;
 
     // Find the package root
     final package = _findPackageRoot(searchDir);
@@ -97,8 +99,9 @@ class TestCommand extends Command {
     }
 
     // Normalize paths by removing trailing slashes for comparison
-    final normalizedPath =
-        absolutePath.endsWith('/') ? absolutePath.substring(0, absolutePath.length - 1) : absolutePath;
+    final normalizedPath = absolutePath.endsWith('/')
+        ? absolutePath.substring(0, absolutePath.length - 1)
+        : absolutePath;
     final packageRootPath = package.root.absolute.path;
 
     // If the path IS the package root, run all tests
@@ -121,7 +124,8 @@ class TestCommand extends Command {
     final allPackages = findAllPackages(SidekickContext.projectRoot);
     final package = allPackages.firstOrNullWhere((it) => it.name == name);
     if (package == null) {
-      final packageOptions = allPackages.map((it) => it.name).toList(growable: false);
+      final packageOptions =
+          allPackages.map((it) => it.name).toList(growable: false);
       error(
         'Could not find package $name. '
         'Please use one of ${packageOptions.joinToString()}',
@@ -331,7 +335,8 @@ class TestCommand extends Command {
       if (line.contains('The test description was:')) {
         if (i + 1 < lines.length) {
           final testNameLine = lines[i + 1].trim();
-          if (testNameLine.isNotEmpty && !testNameLine.startsWith('The test description was:')) {
+          if (testNameLine.isNotEmpty &&
+              !testNameLine.startsWith('The test description was:')) {
             failedTests.add(_FailedTest(testNameLine));
           }
         }
