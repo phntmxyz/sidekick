@@ -43,6 +43,7 @@ class TestCommand extends Command {
   }
 
   bool get _fastFlag => argResults?['fast'] as bool? ?? false;
+
   String? get _nameOption => argResults?['name'] as String?;
 
   @override
@@ -106,13 +107,13 @@ class TestCommand extends Command {
 
     // If the path IS the package root, run all tests
     if (normalizedPath == packageRootPath) {
-      return _executeTests(package, requireTests: true);
+      return await _executeTests(package, requireTests: true);
     }
 
     // Get the relative path from the package root
     final relativePath = normalizedPath.substring(packageRootPath.length + 1);
 
-    return _executeTests(
+    return await _executeTests(
       package,
       relativePath: relativePath,
       requireTests: true,
