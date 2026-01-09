@@ -6,6 +6,7 @@ import 'package:sidekick_core/src/update/patches/253_add_lock_file.patch.dart';
 import 'package:sidekick_core/src/update/patches/255_dcli_4.patch.dart';
 import 'package:sidekick_core/src/update/patches/260_dart_3_5_dcli_7.patch.dart';
 import 'package:sidekick_core/src/update/patches/272_add_sdk_initializer.patch.dart';
+import 'package:sidekick_core/src/update/patches/278_add_test_command.patch.dart';
 
 /// Migration steps from git patches
 List<MigrationStep> patchMigrations = [
@@ -16,4 +17,5 @@ List<MigrationStep> patchMigrations = [
   migrateDcli4_255,
   migrateDart35dcli7_260,
   migrateAddSdkInitializer_272,
+  addTestCommand278,
 ];
