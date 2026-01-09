@@ -1,7 +1,7 @@
 name: minimal_sidekick_plugin
 
 environment:
-  sdk: '>=3.5.0 <4.0.0'
+  sdk: '>=3.6.0 <4.0.0'
 
 dev_dependencies:
   sidekick_plugin_installer: ^2.0.0

@@ -7,6 +7,7 @@ import 'package:sidekick_core/src/update/patches/255_dcli_4.patch.dart';
 import 'package:sidekick_core/src/update/patches/260_dart_3_5_dcli_7.patch.dart';
 import 'package:sidekick_core/src/update/patches/272_add_sdk_initializer.patch.dart';
 import 'package:sidekick_core/src/update/patches/278_add_test_command.patch.dart';
+import 'package:sidekick_core/src/update/patches/280_update_dcli_8_pubspec_manager_3.patch.dart';
 
 /// Migration steps from git patches
 List<MigrationStep> patchMigrations = [
@@ -18,4 +19,5 @@ List<MigrationStep> patchMigrations = [
   migrateDart35dcli7_260,
   migrateAddSdkInitializer_272,
   addTestCommand278,
+  updateDcli8PubspecManager3_280,
 ];
