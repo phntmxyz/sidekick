@@ -8,7 +8,7 @@ topics:
   - cli
 
 environment:
-  sdk: '>=3.5.0 <3.999.0'
+  sdk: '>=3.6.0 <3.999.0'
 
 dependencies:
   acronym: ^0.5.1

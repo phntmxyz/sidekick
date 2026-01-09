@@ -15,7 +15,7 @@ name: foo_sidekick
 version: 1.0.0
 
 environment:
-  sdk: '>=3.5.0 <4.0.0'
+  sdk: '>=3.6.0 <4.0.0'
 
 dependencies:
   sidekick_core: ^3.0.0
@@ -51,7 +51,7 @@ name: foo_sidekick
 version: 1.0.0
 
 environment:
-  sdk: '>=3.5.0 <4.0.0'
+  sdk: '>=3.6.0 <4.0.0'
 
 dependencies:
   sidekick_core: ^3.0.0
@@ -79,7 +79,7 @@ name: foo_sidekick
 version: 1.0.0
 
 environment:
-  sdk: '>=3.5.0 <4.0.0'
+  sdk: '>=3.6.0 <4.0.0'
 
 dependencies:
   sidekick_core: ^3.0.0
@@ -97,8 +97,7 @@ dependencies:
     });
   });
 
-  test('updates both dependencies when both are present with old versions',
-      () async {
+  test('updates both dependencies when both are present with old versions', () async {
     await insideFakeProjectWithSidekick((dir) async {
       final pubspecFile = SidekickContext.sidekickPackage.pubspec;
 
@@ -107,7 +106,7 @@ name: foo_sidekick
 version: 1.0.0
 
 environment:
-  sdk: '>=3.5.0 <4.0.0'
+  sdk: '>=3.6.0 <4.0.0'
 
 dependencies:
   sidekick_core: ^3.0.0
@@ -138,7 +137,7 @@ name: foo_sidekick
 version: 1.0.0
 
 environment:
-  sdk: '>=3.5.0 <4.0.0'
+  sdk: '>=3.6.0 <4.0.0'
 
 dependencies:
   sidekick_core: ^3.0.0
@@ -167,7 +166,7 @@ name: foo_sidekick
 version: 1.0.0
 
 environment:
-  sdk: '>=3.5.0 <4.0.0'
+  sdk: '>=3.6.0 <4.0.0'
 
 dependencies:
   sidekick_core: ^3.0.0
@@ -198,7 +197,7 @@ name: foo_sidekick
 version: 1.0.0
 
 environment:
-  sdk: '>=3.5.0 <4.0.0'
+  sdk: '>=3.6.0 <4.0.0'
 
 dependencies:
   sidekick_core: ^3.0.0
