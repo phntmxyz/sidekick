@@ -13,7 +13,7 @@ environment:
 dependencies:
   analyzer: '>=4.0.0 <7.0.0'
   dcli: ^8.2.0
-  sidekick_core: ^3.0.0
+  sidekick_core: ^3.1.0
 
 dev_dependencies:
   lint: ^2.0.0
