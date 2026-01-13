@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.5.0](https://github.com/phntmxyz/sidekick/compare/sidekick_vault-v1.4.0..sidekick_vault-v1.5.0) (2026-1-13)
+
+- **New**: decryptAll command [#277](https://github.com/phntmxyz/sidekick/pull/277) <https://github.com/phntmxyz/sidekick/commit/6c4e63ef53aabeab415d43c25bc7db7d9f6be217>
+- **Improve** `change-password` command [#278](https://github.com/phntmxyz/sidekick/pull/278) <https://github.com/phntmxyz/sidekick/commit/20d1d9231a48dd180addf699e25b59d5d35d93db>
+- Update to sidekick_core to 3.1.0 <https://github.com/phntmxyz/sidekick/commit/2ae21c4e2eafafaa7c876601ea591002d580a536>
+- Upgrade dcli to 8.2.0 [#280](https://github.com/phntmxyz/sidekick/pull/280) <https://github.com/phntmxyz/sidekick/commit/d24ed64effcc958400e4bc292c7df50fed9af8a7>
+
+<!--
+Also package:sidekick_core updated (sidekick_core-v3.0.0 -> sidekick_core-v3.1.0), please consider those changes as well.
+-->
+
+sidekick_core diff: <https://github.com/phntmxyz/sidekick/compare/sidekick_core-v3.0.0...sidekick_core-v3.1.0>
+
 ## [1.4.0](https://github.com/phntmxyz/sidekick/compare/sidekick_vault-v1.3.0..sidekick_vault-v1.4.0) (2025-6-30)
 
 Full diff: <https://github.com/phntmxyz/sidekick/compare/sidekick_vault-v1.3.0...main>

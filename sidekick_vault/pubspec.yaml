@@ -1,6 +1,6 @@
 name: sidekick_vault
 description: Sidekick plugin managing project secrets stored GPG encrypted in the project/repo
-version: 1.4.0
+version: 1.5.0
 repository: https://github.com/phntmxyz/sidekick/tree/main/sidekick_vault
 issue_tracker: https://github.com/phntmxyz/sidekick/labels/sidekick_vault
 topics:
