@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.1.0](https://github.com/phntmxyz/sidekick/compare/sidekick_plugin_installer-v2.0.0..sidekick_plugin_installer-v2.1.0) (2026-1-13)
+
+- Upgrade sidekick_core to 3.1.0 <https://github.com/phntmxyz/sidekick/commit/b9b2124b0c0927a9ea9a146244447e5a49d410b4>
+- Upgrade dcli to 8.2.0 [#280](https://github.com/phntmxyz/sidekick/pull/280) <https://github.com/phntmxyz/sidekick/commit/d24ed64effcc958400e4bc292c7df50fed9af8a7>
+- Remove unnecessary library name <https://github.com/phntmxyz/sidekick/commit/43bbc01ced7c4c96c95a0c713248235b095a0111>
+- Await plugin installer calls <https://github.com/phntmxyz/sidekick/commit/33d5b736b8351f8188b4a64f8db7eb019c12a67d>
+
 ## [2.0.0](https://github.com/phntmxyz/sidekick/compare/sidekick_plugin_installer-v1.3.0..sidekick_plugin_installer-v2.0.0) (2025-6-25)
 
 Full diff: <https://github.com/phntmxyz/sidekick/compare/sidekick_plugin_installer-v1.3.0...main>
