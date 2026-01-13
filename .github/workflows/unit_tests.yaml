@@ -12,7 +12,7 @@ jobs:
     timeout-minutes: 20
     strategy:
       matrix:
-        dart-version: ['3.5.0', '3.7.0', 'latest']
+        dart-version: ['3.6.0', '3.7.0', 'latest']
       fail-fast: false
 
     container:
@@ -30,7 +30,7 @@ jobs:
     timeout-minutes: 15
 
     container:
-      image: dart:3.5.0
+      image: dart:3.6.0
 
     steps:
       - uses: actions/checkout@v1
@@ -46,7 +46,7 @@ jobs:
     timeout-minutes: 15
 
     container:
-      image: dart:3.5.0
+      image: dart:3.6.0
 
     steps:
       - uses: actions/checkout@v1

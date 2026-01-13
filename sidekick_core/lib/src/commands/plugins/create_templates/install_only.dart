@@ -13,9 +13,7 @@ class InstallOnlyTemplate extends PluginTemplateGenerator {
   @override
   void generate(PluginTemplateProperties props) {
     final pluginDirectory = props.pluginDirectory;
-    pluginDirectory
-        .file('pubspec.yaml')
-        .writeAsStringSync(props.pubspecTemplate);
+    pluginDirectory.file('pubspec.yaml').writeAsStringSync(props.pubspecTemplate);
 
     final toolDirectory = pluginDirectory.directory('tool')..createSync();
     toolDirectory.file('install.dart').writeAsStringSync(props.installTemplate);
@@ -35,7 +33,7 @@ topics:
   - sidekick-plugin
 
 environment:
-  sdk: '>=3.5.0 <4.0.0'
+  sdk: '>=3.6.0 <4.0.0'
 
 dependencies:
   sidekick_core: ^3.0.0

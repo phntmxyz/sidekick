@@ -15,10 +15,10 @@ void main() {
       initialSidekickCliVersion: Version.parse('1.1.0'),
       initialSidekickCoreVersion: Version.parse('1.1.0'),
       sidekickCoreReleases: [
-        _sidekick_core('3.0.0', sdk: '>=3.5.0 <4.0.0'),
+        _sidekick_core('3.0.0', sdk: '>=3.6.0 <4.0.0'),
       ],
       dartSdks: [
-        Version.parse('3.5.0'),
+        Version.parse('3.6.2'),
       ],
     );
     await testCase.execute((command) async {
