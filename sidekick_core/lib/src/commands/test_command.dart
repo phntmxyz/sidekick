@@ -58,41 +58,127 @@ class TestCommand extends Command {
     // If a path is provided as rest argument (file or directory)
     if (rest.isNotEmpty) {
       final path = rest.first;
-      final result = await _runTestsAtPath(path);
+      final execResult = await _runTestsAtPath(path);
       // noTests and noMatchingTests are errors when user explicitly requested a path
       collector.add(
-        result,
-        isError: result == TestResult.noTests ||
-            result == TestResult.noMatchingTests,
+        execResult.result,
+        isError: execResult.result == TestResult.noTests ||
+            execResult.result == TestResult.noMatchingTests,
+        packageName: null, // Package name would require parsing path
+        failedTests: execResult.failedTests,
       );
       exitCode = collector.exitCode;
+      _printSummary(collector);
       return;
     }
 
     if (packageArg != null) {
       // only run tests in selected package
-      final result = await _runTestsInPackageNamed(packageArg);
+      final execResult = await _runTestsInPackageNamed(packageArg);
       // noTests and noMatchingTests are errors when user explicitly requested a package
       collector.add(
-        result,
-        isError: result == TestResult.noTests ||
-            result == TestResult.noMatchingTests,
+        execResult.result,
+        isError: execResult.result == TestResult.noTests ||
+            execResult.result == TestResult.noMatchingTests,
+        packageName: packageArg,
+        failedTests: execResult.failedTests,
       );
       exitCode = collector.exitCode;
+      _printSummary(collector);
       return;
     }
 
     // outside of package, fallback to all packages
     for (final package in findAllPackages(SidekickContext.projectRoot)) {
-      final result = await _executeTests(package, requireTests: false);
-      collector.add(result);
+      final execResult = await _executeTests(package, requireTests: false);
+      collector.add(
+        execResult.result,
+        packageName: package.name,
+        failedTests: execResult.failedTests,
+      );
       if (!_fastFlag) print('\n');
     }
 
     exitCode = collector.exitCode;
+    _printSummary(collector);
   }
 
-  Future<TestResult> _runTestsAtPath(String inputPath) async {
+  void _printSummary(_TestResultCollector collector) {
+    final code = collector.exitCode;
+    final packageResults = collector.packageResults;
+    final allFailedTests = collector.allFailedTests;
+
+    // Print separator
+    print('\n${'=' * 60}');
+
+    // Print package results if we have multiple packages
+    if (packageResults.length > 1) {
+      print('Package Results:');
+      for (final pkg in packageResults) {
+        final icon = switch (pkg.result) {
+          TestResult.success => green('✓'),
+          TestResult.failed => red('✗'),
+          TestResult.noTests => '○',
+          TestResult.noMatchingTests => '○',
+        };
+        final status = switch (pkg.result) {
+          TestResult.success => 'passed',
+          TestResult.failed => 'failed',
+          TestResult.noTests => 'no tests',
+          TestResult.noMatchingTests => 'no matching tests',
+        };
+        print('  $icon ${pkg.packageName} - $status');
+      }
+      print('');
+    }
+
+    // Print failed tests summary if any
+    if (allFailedTests.isNotEmpty) {
+      print('${red('Failed Tests:')}');
+      for (final failed in allFailedTests) {
+        final pathStr = failed.path != null ? ' (${failed.path})' : '';
+        print('  - "${failed.name}"$pathStr');
+      }
+      print('');
+    }
+
+    // Print overall result
+    final hasAnyFailures = packageResults.any(
+      (pkg) => pkg.result == TestResult.failed,
+    );
+    final hasAnySuccess = packageResults.any(
+      (pkg) => pkg.result == TestResult.success,
+    );
+
+    // Show warning when using filter and some packages failed but we found tests
+    if (_nameOption != null && hasAnySuccess && hasAnyFailures) {
+      final failedPackages = packageResults
+          .where((pkg) => pkg.result == TestResult.failed)
+          .map((pkg) => pkg.packageName)
+          .join(', ');
+      print('${yellow('⚠')} Warning: Some packages could not be tested: $failedPackages');
+      print('  These packages might contain matching tests but failed to compile/run.');
+      print('');
+    }
+
+    if (code == 0) {
+      print('${green('✓ All tests passed')}');
+    } else if (code == -1) {
+      if (hasAnyFailures) {
+        print('${red('✗ Tests failed')}');
+      } else if (_nameOption != null) {
+        print('${red('✗ No tests matched filter')}: ${_nameOption}');
+      } else {
+        print('${red('✗ Tests failed')}');
+      }
+    } else if (code == -2) {
+      print('○ No tests found');
+    }
+
+    print('=' * 60);
+  }
+
+  Future<_TestExecutionResult> _runTestsAtPath(String inputPath) async {
     final isDirectory = FileSystemEntity.isDirectorySync(inputPath);
     final entity = isDirectory ? Directory(inputPath) : File(inputPath);
     final absolutePath = entity.absolute.path;
@@ -130,7 +216,7 @@ class TestCommand extends Command {
     );
   }
 
-  Future<TestResult> _runTestsInPackageNamed(String name) async {
+  Future<_TestExecutionResult> _runTestsInPackageNamed(String name) async {
     // only run tests in selected package
     final allPackages = findAllPackages(SidekickContext.projectRoot);
     final package = allPackages.firstOrNullWhere((it) => it.name == name);
@@ -150,7 +236,7 @@ class TestCommand extends Command {
   /// [relativePath] is a path relative to the package root. Can be a file
   /// (e.g., `test/foo_test.dart`) or directory (e.g., `test/unit/`).
   /// If null, runs all tests in the package.
-  Future<TestResult> _executeTests(
+  Future<_TestExecutionResult> _executeTests(
     DartPackage package, {
     String? relativePath,
     required bool requireTests,
@@ -166,7 +252,7 @@ class TestCommand extends Command {
       } else {
         print('○ ${package.name} (no tests)');
       }
-      return TestResult.noTests;
+      return _TestExecutionResult(TestResult.noTests);
     }
 
     // Build args
@@ -182,7 +268,7 @@ class TestCommand extends Command {
     }
   }
 
-  Future<TestResult> _runVerboseTest(
+  Future<_TestExecutionResult> _runVerboseTest(
     DartPackage package,
     List<String> args, {
     String? relativePath,
@@ -207,16 +293,17 @@ class TestCommand extends Command {
     // Check for "no matching tests" (exit code 79 is specific to this case)
     if (result.exitCode == 79) {
       print('○ ${package.name}$testPathStr (no matching tests)');
-      return TestResult.noMatchingTests;
+      return _TestExecutionResult(TestResult.noMatchingTests);
     }
 
     if (result.exitCode == 0) {
       print('${green('✓')} ${package.name}$testPathStr (${duration}s)');
-      return TestResult.success;
+      return _TestExecutionResult(TestResult.success);
     }
 
     print('${red('✗')} ${package.name}$testPathStr (${duration}s)');
-    return TestResult.failed;
+    // Verbose mode doesn't parse failed tests, they are shown in real-time output
+    return _TestExecutionResult(TestResult.failed);
   }
 
   Future<ProcessCompletion> _runDartOrFlutter(
@@ -245,7 +332,7 @@ class TestCommand extends Command {
     return result;
   }
 
-  Future<TestResult> _runFastTest(
+  Future<_TestExecutionResult> _runFastTest(
     DartPackage package,
     List<String> args, {
     String? relativePath,
@@ -279,7 +366,7 @@ class TestCommand extends Command {
     if (exitCode == 79 &&
         stdout.contains('No tests match regular expression')) {
       print('○ ${package.name}$testPathStr (no matching tests)');
-      return TestResult.noMatchingTests;
+      return _TestExecutionResult(TestResult.noMatchingTests);
     }
 
     if (exitCode == 0) {
@@ -288,7 +375,7 @@ class TestCommand extends Command {
         '${duration}s',
       ].join(', ');
       print('${green('✓')} ${package.name}$testPathStr ($stats)');
-      return TestResult.success;
+      return _TestExecutionResult(TestResult.success);
     }
 
     // Parse and show only failed tests
@@ -311,7 +398,10 @@ class TestCommand extends Command {
       print(stdout);
     }
 
-    return TestResult.failed;
+    return _TestExecutionResult(
+      TestResult.failed,
+      failedTests: failedTests ?? [],
+    );
   }
 
   /// Extracts the test count from test output (e.g., 25 from "+25: All tests passed!")
@@ -452,6 +542,12 @@ int calculateExitCodeFromResults(
   required int errorCount,
   required bool hasNameFilter,
 }) {
+  // When using name filter, success takes precedence
+  // If we found and passed at least one test, that's what matters
+  if (hasNameFilter && results.contains(TestResult.success)) {
+    return 0;
+  }
+
   // Actual test failures always fail
   if (results.contains(TestResult.failed)) {
     return -1;
@@ -478,12 +574,27 @@ int calculateExitCodeFromResults(
 
 class _TestResultCollector {
   final List<TestResult> _results = [];
+  final List<_PackageResult> _packageResults = [];
   int _errorCount = 0;
   bool _hasNameFilter = false;
 
-  void add(TestResult result, {bool isError = false}) {
+  void add(
+    TestResult result, {
+    bool isError = false,
+    String? packageName,
+    List<_FailedTest>? failedTests,
+  }) {
     _results.add(result);
     if (isError) _errorCount++;
+    if (packageName != null) {
+      _packageResults.add(
+        _PackageResult(
+          packageName: packageName,
+          result: result,
+          failedTests: failedTests ?? [],
+        ),
+      );
+    }
   }
 
   // ignore: use_setters_to_change_properties
@@ -497,6 +608,14 @@ class _TestResultCollector {
       errorCount: _errorCount,
       hasNameFilter: _hasNameFilter,
     );
+  }
+
+  List<_PackageResult> get packageResults => _packageResults;
+
+  List<_FailedTest> get allFailedTests {
+    return _packageResults
+        .expand((packageResult) => packageResult.failedTests)
+        .toList();
   }
 }
 
@@ -513,4 +632,23 @@ class _FailedTest {
   final String? path;
 
   _FailedTest(this.name, {this.path});
+}
+
+class _PackageResult {
+  final String packageName;
+  final TestResult result;
+  final List<_FailedTest> failedTests;
+
+  _PackageResult({
+    required this.packageName,
+    required this.result,
+    required this.failedTests,
+  });
+}
+
+class _TestExecutionResult {
+  final TestResult result;
+  final List<_FailedTest> failedTests;
+
+  _TestExecutionResult(this.result, {this.failedTests = const []});
 }

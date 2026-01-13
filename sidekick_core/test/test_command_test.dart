@@ -1332,7 +1332,7 @@ void main() {
       );
     });
 
-    test('returns -1 when any test failed', () {
+    test('returns -1 when any test failed (without name filter)', () {
       expect(
         calculateExitCodeFromResults(
           [TestResult.failed],
@@ -1349,6 +1349,9 @@ void main() {
         ),
         -1,
       );
+    });
+
+    test('returns -1 when tests failed with name filter (no success)', () {
       expect(
         calculateExitCodeFromResults(
           [TestResult.failed, TestResult.noMatchingTests],
@@ -1451,6 +1454,34 @@ void main() {
           hasNameFilter: false,
         ),
         -2,
+      );
+    });
+
+    test(
+        'mixed success and failed with name filter returns 0 (success takes precedence)',
+        () {
+      // When using -n filter, if we found and passed the test we're looking for,
+      // other packages failing to compile/run shouldn't fail the command
+      expect(
+        calculateExitCodeFromResults(
+          [TestResult.success, TestResult.failed],
+          errorCount: 0,
+          hasNameFilter: true,
+        ),
+        0,
+      );
+    });
+
+    test('mixed success and failed without name filter returns -1 (fails)',
+        () {
+      // When NOT using a filter, any failure should fail the command
+      expect(
+        calculateExitCodeFromResults(
+          [TestResult.success, TestResult.failed],
+          errorCount: 0,
+          hasNameFilter: false,
+        ),
+        -1,
       );
     });
   });
