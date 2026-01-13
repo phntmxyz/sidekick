@@ -44,6 +44,11 @@ class LockDependenciesCommand extends Command {
       }
     }
 
+    final pubspecOverrides = package.root.file('pubspec_overrides.yaml');
+    if (pubspecOverrides.existsSync()) {
+      pubspecOverrides.deleteSync();
+    }
+
     systemDart(
       ['pub', 'get'],
       workingDirectory: package.root,
