@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:meta/meta.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 
 /// Runs tests in all packages, a single package, or a specific file/directory.
@@ -49,6 +50,7 @@ class TestCommand extends Command {
   @override
   Future<void> run() async {
     final collector = _TestResultCollector();
+    collector.setHasNameFilter(_nameOption != null);
 
     final String? packageArg = argResults?['package'] as String?;
     final List<String> rest = argResults?.rest ?? [];
@@ -57,8 +59,12 @@ class TestCommand extends Command {
     if (rest.isNotEmpty) {
       final path = rest.first;
       final result = await _runTestsAtPath(path);
-      // noTests is an error when user explicitly requested a path
-      collector.add(result, isError: result == _TestResult.noTests);
+      // noTests and noMatchingTests are errors when user explicitly requested a path
+      collector.add(
+        result,
+        isError: result == TestResult.noTests ||
+            result == TestResult.noMatchingTests,
+      );
       exitCode = collector.exitCode;
       return;
     }
@@ -66,8 +72,12 @@ class TestCommand extends Command {
     if (packageArg != null) {
       // only run tests in selected package
       final result = await _runTestsInPackageNamed(packageArg);
-      // noTests is an error when user explicitly requested a package
-      collector.add(result, isError: result == _TestResult.noTests);
+      // noTests and noMatchingTests are errors when user explicitly requested a package
+      collector.add(
+        result,
+        isError: result == TestResult.noTests ||
+            result == TestResult.noMatchingTests,
+      );
       exitCode = collector.exitCode;
       return;
     }
@@ -82,7 +92,7 @@ class TestCommand extends Command {
     exitCode = collector.exitCode;
   }
 
-  Future<_TestResult> _runTestsAtPath(String inputPath) async {
+  Future<TestResult> _runTestsAtPath(String inputPath) async {
     final isDirectory = FileSystemEntity.isDirectorySync(inputPath);
     final entity = isDirectory ? Directory(inputPath) : File(inputPath);
     final absolutePath = entity.absolute.path;
@@ -120,7 +130,7 @@ class TestCommand extends Command {
     );
   }
 
-  Future<_TestResult> _runTestsInPackageNamed(String name) async {
+  Future<TestResult> _runTestsInPackageNamed(String name) async {
     // only run tests in selected package
     final allPackages = findAllPackages(SidekickContext.projectRoot);
     final package = allPackages.firstOrNullWhere((it) => it.name == name);
@@ -140,7 +150,7 @@ class TestCommand extends Command {
   /// [relativePath] is a path relative to the package root. Can be a file
   /// (e.g., `test/foo_test.dart`) or directory (e.g., `test/unit/`).
   /// If null, runs all tests in the package.
-  Future<_TestResult> _executeTests(
+  Future<TestResult> _executeTests(
     DartPackage package, {
     String? relativePath,
     required bool requireTests,
@@ -156,7 +166,7 @@ class TestCommand extends Command {
       } else {
         print('○ ${package.name} (no tests)');
       }
-      return _TestResult.noTests;
+      return TestResult.noTests;
     }
 
     // Build args
@@ -172,18 +182,21 @@ class TestCommand extends Command {
     }
   }
 
-  Future<_TestResult> _runVerboseTest(
+  Future<TestResult> _runVerboseTest(
     DartPackage package,
     List<String> args, {
     String? relativePath,
   }) async {
     final stopwatch = Stopwatch()..start();
+
+    // Stream output in real-time
     final result = await _runDartOrFlutter(
       package,
       args,
       progress: Progress.print(),
       nothrow: true,
     );
+
     stopwatch.stop();
     final duration = (stopwatch.elapsedMilliseconds / 1000.0).toStringAsFixed(
       1,
@@ -191,12 +204,19 @@ class TestCommand extends Command {
 
     final testPathStr = relativePath != null ? ' $relativePath' : '';
 
+    // Check for "no matching tests" (exit code 79 is specific to this case)
+    if (result.exitCode == 79) {
+      print('○ ${package.name}$testPathStr (no matching tests)');
+      return TestResult.noMatchingTests;
+    }
+
     if (result.exitCode == 0) {
       print('${green('✓')} ${package.name}$testPathStr (${duration}s)');
-      return _TestResult.success;
+      return TestResult.success;
     }
+
     print('${red('✗')} ${package.name}$testPathStr (${duration}s)');
-    return _TestResult.failed;
+    return TestResult.failed;
   }
 
   Future<ProcessCompletion> _runDartOrFlutter(
@@ -225,7 +245,7 @@ class TestCommand extends Command {
     return result;
   }
 
-  Future<_TestResult> _runFastTest(
+  Future<TestResult> _runFastTest(
     DartPackage package,
     List<String> args, {
     String? relativePath,
@@ -255,13 +275,20 @@ class TestCommand extends Command {
 
     final testPathStr = relativePath != null ? ' $relativePath' : '';
 
+    // Check for "no matching tests" BEFORE checking success
+    if (exitCode == 79 &&
+        stdout.contains('No tests match regular expression')) {
+      print('○ ${package.name}$testPathStr (no matching tests)');
+      return TestResult.noMatchingTests;
+    }
+
     if (exitCode == 0) {
       final stats = [
         if (testCount != null) '$testCount tests',
         '${duration}s',
       ].join(', ');
       print('${green('✓')} ${package.name}$testPathStr ($stats)');
-      return _TestResult.success;
+      return TestResult.success;
     }
 
     // Parse and show only failed tests
@@ -284,7 +311,7 @@ class TestCommand extends Command {
       print(stdout);
     }
 
-    return _TestResult.failed;
+    return TestResult.failed;
   }
 
   /// Extracts the test count from test output (e.g., 25 from "+25: All tests passed!")
@@ -414,31 +441,72 @@ class TestCommand extends Command {
   }
 }
 
-class _TestResultCollector {
-  final List<_TestResult> _results = [];
-  int _errorCount = 0;
+/// Calculates the exit code based on test results.
+/// Returns:
+/// - 0: At least one test succeeded
+/// - -1: Tests failed or all packages had no matching tests (when filter used)
+/// - -2: No tests ran
+@visibleForTesting
+int calculateExitCodeFromResults(
+  List<TestResult> results, {
+  required int errorCount,
+  required bool hasNameFilter,
+}) {
+  // Actual test failures always fail
+  if (results.contains(TestResult.failed)) {
+    return -1;
+  }
 
-  void add(_TestResult result, {bool isError = false}) {
+  // Explicit errors (user requested specific package with no tests)
+  if (errorCount > 0) {
+    return -1;
+  }
+
+  // At least one package succeeded - success!
+  if (results.contains(TestResult.success)) {
+    return 0;
+  }
+
+  // When using name filter, if ALL packages had noMatchingTests - fail
+  if (hasNameFilter && results.contains(TestResult.noMatchingTests)) {
+    return -1;
+  }
+
+  // No tests or all skipped
+  return -2;
+}
+
+class _TestResultCollector {
+  final List<TestResult> _results = [];
+  int _errorCount = 0;
+  bool _hasNameFilter = false;
+
+  void add(TestResult result, {bool isError = false}) {
     _results.add(result);
     if (isError) _errorCount++;
   }
 
+  // ignore: use_setters_to_change_properties
+  void setHasNameFilter(bool value) {
+    _hasNameFilter = value;
+  }
+
   int get exitCode {
-    if (_results.contains(_TestResult.failed)) {
-      return -1;
-    }
-    if (_errorCount > 0) {
-      return -1;
-    }
-    if (_results.contains(_TestResult.success)) {
-      return 0;
-    }
-    // no tests or all skipped
-    return -2;
+    return calculateExitCodeFromResults(
+      _results,
+      errorCount: _errorCount,
+      hasNameFilter: _hasNameFilter,
+    );
   }
 }
 
-enum _TestResult { success, failed, noTests }
+@visibleForTesting
+enum TestResult {
+  success, // Tests ran and passed
+  failed, // Tests ran but some failed
+  noTests, // No test directory
+  noMatchingTests, // Tests exist but filter matched none
+}
 
 class _FailedTest {
   final String name;

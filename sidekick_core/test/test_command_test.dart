@@ -1303,6 +1303,157 @@ void main() {
       );
     });
   });
+
+  group('calculateExitCodeFromResults', () {
+    test('returns 0 when at least one test succeeded', () {
+      expect(
+        calculateExitCodeFromResults(
+          [TestResult.success],
+          errorCount: 0,
+          hasNameFilter: false,
+        ),
+        0,
+      );
+      expect(
+        calculateExitCodeFromResults(
+          [TestResult.success, TestResult.noTests],
+          errorCount: 0,
+          hasNameFilter: false,
+        ),
+        0,
+      );
+      expect(
+        calculateExitCodeFromResults(
+          [TestResult.success, TestResult.noMatchingTests],
+          errorCount: 0,
+          hasNameFilter: true,
+        ),
+        0,
+      );
+    });
+
+    test('returns -1 when any test failed', () {
+      expect(
+        calculateExitCodeFromResults(
+          [TestResult.failed],
+          errorCount: 0,
+          hasNameFilter: false,
+        ),
+        -1,
+      );
+      expect(
+        calculateExitCodeFromResults(
+          [TestResult.success, TestResult.failed],
+          errorCount: 0,
+          hasNameFilter: false,
+        ),
+        -1,
+      );
+      expect(
+        calculateExitCodeFromResults(
+          [TestResult.failed, TestResult.noMatchingTests],
+          errorCount: 0,
+          hasNameFilter: true,
+        ),
+        -1,
+      );
+    });
+
+    test('returns -1 when errorCount > 0', () {
+      expect(
+        calculateExitCodeFromResults(
+          [TestResult.noTests],
+          errorCount: 1,
+          hasNameFilter: false,
+        ),
+        -1,
+      );
+      expect(
+        calculateExitCodeFromResults(
+          [TestResult.noMatchingTests],
+          errorCount: 1,
+          hasNameFilter: true,
+        ),
+        -1,
+      );
+    });
+
+    test('returns -1 when all packages have noMatchingTests with name filter',
+        () {
+      expect(
+        calculateExitCodeFromResults(
+          [TestResult.noMatchingTests],
+          errorCount: 0,
+          hasNameFilter: true,
+        ),
+        -1,
+      );
+      expect(
+        calculateExitCodeFromResults(
+          [TestResult.noMatchingTests, TestResult.noMatchingTests],
+          errorCount: 0,
+          hasNameFilter: true,
+        ),
+        -1,
+      );
+    });
+
+    test('returns -2 when no tests ran', () {
+      expect(
+        calculateExitCodeFromResults(
+          [TestResult.noTests],
+          errorCount: 0,
+          hasNameFilter: false,
+        ),
+        -2,
+      );
+      expect(
+        calculateExitCodeFromResults(
+          [],
+          errorCount: 0,
+          hasNameFilter: false,
+        ),
+        -2,
+      );
+    });
+
+    test('noMatchingTests without name filter is treated as noTests', () {
+      // This shouldn't happen in practice, but ensure graceful handling
+      expect(
+        calculateExitCodeFromResults(
+          [TestResult.noMatchingTests],
+          errorCount: 0,
+          hasNameFilter: false,
+        ),
+        -2,
+      );
+    });
+
+    test(
+        'mixed success and noMatchingTests with name filter returns 0 (success)',
+        () {
+      expect(
+        calculateExitCodeFromResults(
+          [TestResult.success, TestResult.noMatchingTests],
+          errorCount: 0,
+          hasNameFilter: true,
+        ),
+        0,
+      );
+    });
+
+    test('mixed noTests and noMatchingTests without name filter returns -2',
+        () {
+      expect(
+        calculateExitCodeFromResults(
+          [TestResult.noTests, TestResult.noMatchingTests],
+          errorCount: 0,
+          hasNameFilter: false,
+        ),
+        -2,
+      );
+    });
+  });
 }
 
 void createPackageWithTests(
