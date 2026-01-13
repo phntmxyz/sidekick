@@ -181,7 +181,7 @@ class TestCommand extends Command {
     final result = await _runDartOrFlutter(
       package,
       args,
-      progress: Progress.print(capture: true),
+      progress: Progress.print(),
       nothrow: true,
     );
     stopwatch.stop();

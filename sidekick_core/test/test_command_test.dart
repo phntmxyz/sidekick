@@ -1138,31 +1138,56 @@ dev_dependencies:
         ..createSync(recursive: true)
         ..writeAsStringSync('''
 import 'dart:async';
+import 'dart:io';
 import 'package:test/test.dart';
 
 void main() {
   test('test with delay', () async {
-    print('MARKER_START');
-    await Future.delayed(Duration(milliseconds: 500));
-    print('MARKER_END');
+    // Print MARKER_START with >4KB to force buffer flush
+    stdout.writeln('MARKER_START');
+    for (var i = 0; i < 100; i++) {
+      stdout.write('x' * 50);  // 50 chars * 100 = 5000 chars > 4KB
+    }
+    stdout.writeln();  // newline to complete the chunk
+    stdout.flush();
+
+    // Long delay before second marker
+    await Future.delayed(Duration(seconds: 2));
+
+    // Print MARKER_END with >4KB to force buffer flush
+    stdout.writeln('MARKER_END');
+    for (var i = 0; i < 100; i++) {
+      stdout.write('y' * 50);
+    }
+    stdout.writeln();
+    stdout.flush();
+
     expect(1 + 1, 2);
   });
 }
 ''');
 
-      // Track timestamps of when output appears
-      final timestamps = <String, DateTime>{};
       final streams = FakeIoStreams();
 
-      // Wrap stdout to capture timestamps when output is written
+      // Use Completers to track when markers appear in output
+      final sawStartMarker = Completer<void>();
+      final sawEndMarker = Completer<void>();
+
+      // Track timestamps when markers appear
+      DateTime? startTime;
+      DateTime? endTime;
+
+      // Wrap stdout to complete markers when they appear
       final wrappedStdout = FakeStdoutStream(onWrite: (text) {
-        if (text.contains('MARKER_START') && !timestamps.containsKey('start')) {
-          timestamps['start'] = DateTime.now();
+        if (text.contains('MARKER_START') && !sawStartMarker.isCompleted) {
+          startTime = DateTime.now();
+          sawStartMarker.complete();
         }
-        if (text.contains('MARKER_END') && !timestamps.containsKey('end')) {
-          timestamps['end'] = DateTime.now();
+        if (text.contains('MARKER_END') && !sawEndMarker.isCompleted) {
+          endTime = DateTime.now();
+          sawEndMarker.complete();
         }
-        // Also forward to original stdout
+        // Forward to original stdout
         streams.stdout.add(utf8.encode(text));
       });
 
@@ -1174,26 +1199,47 @@ void main() {
             dartSdkPath: testRunnerDartSdkPath(),
           );
           runner.addCommand(TestCommand());
-          await runner.run(['test', '-p', 'pkg_a']);
+
+          // Start the test command but don't await it yet
+          final testFuture = runner.run(['test', '-p', 'pkg_a']);
+
+          // Wait for MARKER_START to appear (should happen quickly)
+          await sawStartMarker.future.timeout(
+            const Duration(seconds: 15),
+            onTimeout: () {
+              throw TimeoutException('MARKER_START never appeared in output');
+            },
+          );
+
+          // Now wait for MARKER_END to eventually appear
+          await sawEndMarker.future.timeout(
+            const Duration(seconds: 15),
+            onTimeout: () {
+              throw TimeoutException('MARKER_END never appeared in output');
+            },
+          );
+
+          // Wait for test to complete
+          await testFuture;
         },
       );
 
       expect(exitCode, 0);
 
-      // Verify both markers appeared
-      expect(timestamps['start'], isNotNull,
-          reason: 'Should see MARKER_START in output');
-      expect(timestamps['end'], isNotNull,
-          reason: 'Should see MARKER_END in output');
+      // Verify timestamps were captured
+      expect(startTime, isNotNull,
+          reason: 'Should have captured MARKER_START timestamp');
+      expect(endTime, isNotNull,
+          reason: 'Should have captured MARKER_END timestamp');
 
-      // Verify streaming: MARKER_END should appear ~500ms after MARKER_START
-      // If output was buffered, they would appear at nearly the same time
-      final elapsed = timestamps['end']!.difference(timestamps['start']!);
+      // Verify the markers appeared ~2 seconds apart (streaming proof)
+      // If buffered, both would appear at nearly the same time (<50ms)
+      final elapsed = endTime!.difference(startTime!);
       expect(
         elapsed.inMilliseconds,
-        greaterThan(400),
+        greaterThan(1800),
         reason:
-            'MARKER_END should appear ~500ms after MARKER_START if streaming works. '
+            'MARKER_END should appear ~2000ms after MARKER_START if streaming works. '
             'Got ${elapsed.inMilliseconds}ms. If buffered, would be <50ms.',
       );
     });
