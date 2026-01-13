@@ -7,32 +7,35 @@ void main() {
   for (final testCase in _testCases) {
     test('patch 253 works (${testCase.name})', () async {
       final tempDir = Directory.systemTemp.createTempSync();
+      addTearDown(() => tempDir.deleteSync(recursive: true));
       final sidekickDir = tempDir.directory('dash_sidekick')..createSync();
-      env['SIDEKICK_PACKAGE_HOME'] = sidekickDir.absolute.path;
-      addTearDown(() {
-        tempDir.deleteSync(recursive: true);
-        env['SIDEKICK_PACKAGE_HOME'] = null;
+      await withEnvironmentAsync(() async {
+        env['SIDEKICK_ENTRYPOINT_FILE'] = null;
+        tempDir.file('dash').writeAsStringSync('# entrypoint file');
+        sidekickDir
+            .file('pubspec.yaml')
+            .writeAsStringSync('name: dash_sidekick');
+        final gitignore = sidekickDir.file('.gitignore');
+        gitignore.writeAsStringSync(testCase.fileContentBefore);
+
+        Object? error;
+        await migrate(
+          from: Version(2, 1, 1),
+          to: Version(2, 1, 2),
+          migrations: [forceAddPubspecLock253],
+          onMigrationStepError: (context) {
+            error = context.exception;
+            return MigrationErrorHandling.skip;
+          },
+        );
+
+        expect(gitignore.readAsStringSync(), testCase.fileContentAfter);
+        if (testCase.errorMatcher != null) {
+          expect(error, testCase.errorMatcher);
+        }
+      }, environment: {
+        'SIDEKICK_PACKAGE_HOME': sidekickDir.absolute.path,
       });
-      tempDir.file('dash').writeAsStringSync('# entrypoint file');
-      sidekickDir.file('pubspec.yaml').writeAsStringSync('name: dash_sidekick');
-      final gitignore = sidekickDir.file('.gitignore');
-      gitignore.writeAsStringSync(testCase.fileContentBefore);
-
-      Object? error;
-      await migrate(
-        from: Version(2, 1, 1),
-        to: Version(2, 1, 2),
-        migrations: [forceAddPubspecLock253],
-        onMigrationStepError: (context) {
-          error = context.exception;
-          return MigrationErrorHandling.skip;
-        },
-      );
-
-      expect(gitignore.readAsStringSync(), testCase.fileContentAfter);
-      if (testCase.errorMatcher != null) {
-        expect(error, testCase.errorMatcher);
-      }
     });
   }
 }

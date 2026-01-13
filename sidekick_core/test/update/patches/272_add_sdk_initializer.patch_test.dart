@@ -8,20 +8,18 @@ void main() {
       'migrateAddSdkInitializer_272 replaces addFlutterSdkInitializer in user files',
       () async {
     final tempDir = Directory.systemTemp.createTempSync();
-    env['SIDEKICK_ENTRYPOINT_HOME'] = tempDir.absolute.path;
-    addTearDown(() {
-      tempDir.deleteSync(recursive: true);
-      env['SIDEKICK_ENTRYPOINT_HOME'] = null;
-    });
-    tempDir.file('dash').writeAsStringSync('# entrypoint file');
+    addTearDown(() => tempDir.deleteSync(recursive: true));
+    await withEnvironmentAsync(() async {
+      env['SIDEKICK_ENTRYPOINT_FILE'] = null;
+      tempDir.file('dash').writeAsStringSync('# entrypoint file');
 
-    // Create directories and test files with the old method name
-    final libDir = tempDir.directory('lib')..createSync(recursive: true);
-    final testDir = tempDir.directory('test')..createSync(recursive: true);
-    final binDir = tempDir.directory('bin')..createSync(recursive: true);
+      // Create directories and test files with the old method name
+      final libDir = tempDir.directory('lib')..createSync(recursive: true);
+      final testDir = tempDir.directory('test')..createSync(recursive: true);
+      final binDir = tempDir.directory('bin')..createSync(recursive: true);
 
-    final libFile = libDir.file('main.dart');
-    libFile.writeAsStringSync('''
+      final libFile = libDir.file('main.dart');
+      libFile.writeAsStringSync('''
 import 'package:sidekick_core/sidekick_core.dart';
 
 void main() {
@@ -32,8 +30,8 @@ void main() {
 }
 ''');
 
-    final testFile = testDir.file('test.dart');
-    testFile.writeAsStringSync('''
+      final testFile = testDir.file('test.dart');
+      testFile.writeAsStringSync('''
 import 'package:sidekick_core/sidekick_core.dart';
 
 void testFunction() {
@@ -43,8 +41,8 @@ void testFunction() {
 }
 ''');
 
-    final binFile = binDir.file('script.dart');
-    binFile.writeAsStringSync('''
+      final binFile = binDir.file('script.dart');
+      binFile.writeAsStringSync('''
 import 'package:sidekick_core/sidekick_core.dart';
 
 void scriptMain() {
@@ -54,42 +52,43 @@ void scriptMain() {
 }
 ''');
 
-    // Apply the migration
-    await migrate(
-      from: Version(2, 1, 2),
-      to: Version(3, 0, 1),
-      migrations: [migrateAddSdkInitializer_272],
-    );
+      // Apply the migration
+      await migrate(
+        from: Version(2, 1, 2),
+        to: Version(3, 0, 1),
+        migrations: [migrateAddSdkInitializer_272],
+      );
 
-    // Verify the files were updated
-    final updatedLibContent = libFile.readAsStringSync();
-    final updatedTestContent = testFile.readAsStringSync();
-    final updatedBinContent = binFile.readAsStringSync();
+      // Verify the files were updated
+      final updatedLibContent = libFile.readAsStringSync();
+      final updatedTestContent = testFile.readAsStringSync();
+      final updatedBinContent = binFile.readAsStringSync();
 
-    expect(updatedLibContent, contains('addSdkInitializer'));
-    expect(updatedLibContent, isNot(contains('addFlutterSdkInitializer')));
-    expect(updatedTestContent, contains('addSdkInitializer'));
-    expect(updatedTestContent, isNot(contains('addFlutterSdkInitializer')));
-    expect(updatedBinContent, contains('addSdkInitializer'));
-    expect(updatedBinContent, isNot(contains('addFlutterSdkInitializer')));
+      expect(updatedLibContent, contains('addSdkInitializer'));
+      expect(updatedLibContent, isNot(contains('addFlutterSdkInitializer')));
+      expect(updatedTestContent, contains('addSdkInitializer'));
+      expect(updatedTestContent, isNot(contains('addFlutterSdkInitializer')));
+      expect(updatedBinContent, contains('addSdkInitializer'));
+      expect(updatedBinContent, isNot(contains('addFlutterSdkInitializer')));
+    }, environment: {
+      'SIDEKICK_ENTRYPOINT_HOME': tempDir.absolute.path,
+    });
   });
 
   test(
       'migrateAddSdkInitializer_272 does not modify files without the old method',
       () async {
     final tempDir = Directory.systemTemp.createTempSync();
-    env['SIDEKICK_ENTRYPOINT_HOME'] = tempDir.absolute.path;
-    addTearDown(() {
-      tempDir.deleteSync(recursive: true);
-      env['SIDEKICK_ENTRYPOINT_HOME'] = null;
-    });
-    tempDir.file('dash').writeAsStringSync('# entrypoint file');
+    addTearDown(() => tempDir.deleteSync(recursive: true));
+    await withEnvironmentAsync(() async {
+      env['SIDEKICK_ENTRYPOINT_FILE'] = null;
+      tempDir.file('dash').writeAsStringSync('# entrypoint file');
 
-    // Create directory and file without the old method name
-    final libDir = tempDir.directory('lib')..createSync(recursive: true);
-    final libFile = libDir.file('main.dart');
+      // Create directory and file without the old method name
+      final libDir = tempDir.directory('lib')..createSync(recursive: true);
+      final libFile = libDir.file('main.dart');
 
-    const originalContent = '''
+      const originalContent = '''
 import 'package:sidekick_core/sidekick_core.dart';
 
 void main() {
@@ -99,17 +98,20 @@ void main() {
   });
 }
 ''';
-    libFile.writeAsStringSync(originalContent);
+      libFile.writeAsStringSync(originalContent);
 
-    // Apply the migration
-    await migrate(
-      from: Version(2, 1, 2),
-      to: Version(3, 0, 1),
-      migrations: [migrateAddSdkInitializer_272],
-    );
+      // Apply the migration
+      await migrate(
+        from: Version(2, 1, 2),
+        to: Version(3, 0, 1),
+        migrations: [migrateAddSdkInitializer_272],
+      );
 
-    // Verify the file was not changed
-    final updatedContent = libFile.readAsStringSync();
-    expect(updatedContent, originalContent);
+      // Verify the file was not changed
+      final updatedContent = libFile.readAsStringSync();
+      expect(updatedContent, originalContent);
+    }, environment: {
+      'SIDEKICK_ENTRYPOINT_HOME': tempDir.absolute.path,
+    });
   });
 }
