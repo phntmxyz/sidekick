@@ -178,7 +178,12 @@ class TestCommand extends Command {
     String? relativePath,
   }) async {
     final stopwatch = Stopwatch()..start();
-    final result = await _runDartOrFlutter(package, args, nothrow: true);
+    final result = await _runDartOrFlutter(
+      package,
+      args,
+      progress: Progress.print(capture: true),
+      nothrow: true,
+    );
     stopwatch.stop();
     final duration = (stopwatch.elapsedMilliseconds / 1000.0).toStringAsFixed(
       1,
@@ -197,37 +202,24 @@ class TestCommand extends Command {
   Future<ProcessCompletion> _runDartOrFlutter(
     DartPackage package,
     List<String> args, {
-    Progress? progress,
+    required Progress progress,
     bool nothrow = false,
   }) async {
-    // Capture subprocess output and manually write to stdout/stderr.
-    // This ensures output goes through IOOverrides (important for tests using
-    // FakeIoStreams) rather than directly to OS file descriptors.
-    final captureProgress = progress ?? Progress.capture();
-
     final ProcessCompletion result;
     if (package.isFlutterPackage) {
       result = await flutter(
         args,
         workingDirectory: package.root,
-        progress: captureProgress,
+        progress: progress,
         nothrow: nothrow,
       );
     } else {
       result = await dart(
         args,
         workingDirectory: package.root,
-        progress: captureProgress,
+        progress: progress,
         nothrow: nothrow,
       );
-    }
-
-    // If no custom progress was provided, write captured output to stdout
-    // so it goes through IOOverrides
-    if (progress == null) {
-      for (final line in captureProgress.lines) {
-        stdout.writeln(line);
-      }
     }
 
     return result;
@@ -242,11 +234,7 @@ class TestCommand extends Command {
     final fullArgs = [...args, '--concurrency=$concurrency', '-r', 'compact'];
 
     final stopwatch = Stopwatch()..start();
-    final lines = <String>[];
-    final progress = Progress(
-      (line) => lines.add(line),
-      stderr: (line) => lines.add(line),
-    );
+    final progress = Progress.capture();
 
     final result = await _runDartOrFlutter(
       package,
@@ -259,7 +247,7 @@ class TestCommand extends Command {
       1,
     );
 
-    final stdout = lines.join('\n');
+    final stdout = progress.lines.join('\n');
     final exitCode = result.exitCode;
 
     // Extract test count from output (e.g., "+25" from "00:00 +25: All tests passed!")
