@@ -85,10 +85,10 @@ packages:
     dependency: transitive
     description:
       name: cli_completion
-      sha256: "595b192451285749369e99b3c2fd9a9aea7d74ed1aba61cddeb9ad8c84a44812"
+      sha256: "72e8ccc4545f24efa7bbdf3bff7257dc9d62b072dee77513cc54295575bc9220"
       url: "https://pub.dev"
     source: hosted
-    version: "0.3.0"
+    version: "0.5.1"
   cli_config:
     dependency: transitive
     description:
@@ -165,34 +165,34 @@ packages:
     dependency: "direct main"
     description:
       name: dcli
-      sha256: ea0eb92d25db5b03ff5b4307913779954e603dec51d9d129d3dae1bced1bf5b3
+      sha256: e0db69280b78819ff04352645768c6cd766593dd258e3d9373a24128cc53e901
       url: "https://pub.dev"
     source: hosted
-    version: "7.0.5"
+    version: "8.3.0"
   dcli_common:
     dependency: transitive
     description:
       name: dcli_common
-      sha256: "7385095109829de997967e704bc9f0f2570de763bfe9eb4c497cc44fd91df8e5"
+      sha256: "5011db274ac3ea61e5f62dc7d8054c171521af9190e0fe93b934f14940c0eda0"
       url: "https://pub.dev"
     source: hosted
-    version: "7.0.2"
+    version: "8.3.0"
   dcli_core:
     dependency: transitive
     description:
       name: dcli_core
-      sha256: "2843396a9fd0b6c31c30fe930fd7af4ea592cba5c9a856b5d099bd19169226ac"
+      sha256: "13fd7bd5efd82cf53fc748a8dd7236be40254a2aa1440d2a2cecfd92a7e91df2"
       url: "https://pub.dev"
     source: hosted
-    version: "7.0.3"
+    version: "8.3.0"
   dcli_terminal:
     dependency: transitive
     description:
       name: dcli_terminal
-      sha256: d34ba19905db65bc848c1ee28d8115c68f802e970726f100e4f8e062de92226a
+      sha256: cf74c59be53ef2bd259a4c4246889b56ae2000ddbcfca912cda82e6bd058d5e5
       url: "https://pub.dev"
     source: hosted
-    version: "7.0.3"
+    version: "8.3.0"
   equatable:
     dependency: transitive
     description:
@@ -349,10 +349,10 @@ packages:
     dependency: transitive
     description:
       name: mason_logger
-      sha256: "1fdf5c76870eb6fc3611ed6fbae1973a3794abe581ea5e22e68af2f73c688b93"
+      sha256: "6d5a989ff41157915cb5162ed6e41196d5e31b070d2f86e1c2edf216996a158c"
       url: "https://pub.dev"
     source: hosted
-    version: "0.2.16"
+    version: "0.3.3"
   matcher:
     dependency: transitive
     description:
@@ -381,18 +381,18 @@ packages:
     dependency: transitive
     description:
       name: mocktail
-      sha256: "80a996cd9a69284b3dc521ce185ffe9150cde69767c2d3a0720147d93c0cef53"
+      sha256: "890df3f9688106f25755f26b1c60589a92b3ab91a22b8b224947ad041bf172d8"
       url: "https://pub.dev"
     source: hosted
-    version: "0.3.0"
+    version: "1.0.4"
   native_synchronization_temp:
     dependency: transitive
     description:
       name: native_synchronization_temp
-      sha256: f9ad36a5054c606db10e3dc0c9c352e6d0d56d08621af5c470abf9fa41da40fa
+      sha256: da257795e9af30fcfa9a0df14c7e18aeb1d802dadd98307d684cc7f3ccd93136
       url: "https://pub.dev"
     source: hosted
-    version: "0.7.1"
+    version: "0.8.0"
   node_preamble:
     dependency: transitive
     description:
@@ -450,13 +450,13 @@ packages:
     source: hosted
     version: "3.0.2"
   pubspec_manager:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: pubspec_manager
-      sha256: "4000db36057ddc9c95f1c56fd209ce54b1e7c621280f52e159a83342b1e33d62"
+      sha256: "309acad155e25e324beb0617e65f0124fc47f3bc086813333c7ba866382dfddd"
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.2"
+    version: "3.2.0"
   pubspec_parse:
     dependency: "direct main"
     description:
@@ -525,16 +525,16 @@ packages:
     dependency: "direct main"
     description:
       name: sidekick_core
-      sha256: a30b80834abb2e858cafe86b5911371d35dfb910b456d70ab3e0733c8587f3e8
+      sha256: c7c2be7aefa6a23b6b343a47a8110f71081c52d85fabfdcb9e198e2a0b9b5f46
       url: "https://pub.dev"
     source: hosted
-    version: "3.0.0"
+    version: "3.1.0"
   sidekick_test:
     dependency: "direct dev"
     description:
       path: sidekick_test
-      ref: "sidekick_core-v3.0.0"
-      resolved-ref: e5cfa60c15cf2198dd276bc401794e430dbb8592
+      ref: "sidekick_core-v3.1.0"
+      resolved-ref: "599429297704d364fc4af04bc28f188d22fcd499"
       url: "https://github.com/phntmxyz/sidekick.git"
     source: git
     version: "2.0.0"
@@ -771,4 +771,4 @@ packages:
     source: hosted
     version: "2.2.2"
 sdks:
-  dart: ">=3.8.1 <3.999.0"
+  dart: ">=3.10.7 <3.999.0"
