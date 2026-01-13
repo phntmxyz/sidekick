@@ -1,5 +1,9 @@
 # Changelog
 
+## [3.1.1](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v3.1.0..sidekick_core-v3.1.1) (2026-1-13)
+
+- Export TestCommand <https://github.com/phntmxyz/sidekick/commit/e953451256629c8916b0b132c9b5dcce6e120d6d>
+
 ## [3.1.0](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v3.0.1..sidekick_core-v3.1.0) (2026-1-13)
 
 - Upgrade sidekick_core to dcli 8 [#280](https://github.com/phntmxyz/sidekick/pull/280) <https://github.com/phntmxyz/sidekick/commit/d24ed64effcc958400e4bc292c7df50fed9af8a7>
