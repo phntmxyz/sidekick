@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_test/fake_stdio.dart';
 import 'package:sidekick_test/sidekick_test.dart';
@@ -1109,6 +1112,146 @@ void main() {
             streams.combined.where((line) => line.contains('testing')),
             contains(contains('testing pkg_a...')),
           );
+        },
+      );
+    });
+  });
+
+  test('verbose mode streams test output in real-time', () async {
+    await insideFakeProjectWithSidekick((dir) async {
+      final packageDir = dir.directory('packages/pkg_a')
+        ..createSync(recursive: true);
+      packageDir.file('pubspec.yaml')
+        ..createSync(recursive: true)
+        ..writeAsStringSync('''
+name: pkg_a
+
+environment:
+  sdk: ^3.0.0
+
+dev_dependencies:
+  test: any
+''');
+
+      // Create a test with a delay to verify streaming happens during execution
+      packageDir.file('test/streaming_test.dart')
+        ..createSync(recursive: true)
+        ..writeAsStringSync('''
+import 'dart:async';
+import 'package:test/test.dart';
+
+void main() {
+  test('test with delay', () async {
+    print('MARKER_START');
+    await Future.delayed(Duration(milliseconds: 500));
+    print('MARKER_END');
+    expect(1 + 1, 2);
+  });
+}
+''');
+
+      // Track timestamps of when output appears
+      final timestamps = <String, DateTime>{};
+      final streams = FakeIoStreams();
+
+      // Wrap stdout to capture timestamps when output is written
+      final wrappedStdout = FakeStdoutStream(onWrite: (text) {
+        if (text.contains('MARKER_START') && !timestamps.containsKey('start')) {
+          timestamps['start'] = DateTime.now();
+        }
+        if (text.contains('MARKER_END') && !timestamps.containsKey('end')) {
+          timestamps['end'] = DateTime.now();
+        }
+        // Also forward to original stdout
+        streams.stdout.add(utf8.encode(text));
+      });
+
+      await overrideIoStreams(
+        stdout: () => wrappedStdout,
+        stderr: () => streams.stderr,
+        body: () async {
+          final runner = initializeSidekick(
+            dartSdkPath: testRunnerDartSdkPath(),
+          );
+          runner.addCommand(TestCommand());
+          await runner.run(['test', '-p', 'pkg_a']);
+        },
+      );
+
+      expect(exitCode, 0);
+
+      // Verify both markers appeared
+      expect(timestamps['start'], isNotNull,
+          reason: 'Should see MARKER_START in output');
+      expect(timestamps['end'], isNotNull,
+          reason: 'Should see MARKER_END in output');
+
+      // Verify streaming: MARKER_END should appear ~500ms after MARKER_START
+      // If output was buffered, they would appear at nearly the same time
+      final elapsed = timestamps['end']!.difference(timestamps['start']!);
+      expect(
+        elapsed.inMilliseconds,
+        greaterThan(400),
+        reason: 'MARKER_END should appear ~500ms after MARKER_START if streaming works. '
+            'Got ${elapsed.inMilliseconds}ms. If buffered, would be <50ms.',
+      );
+    });
+  });
+
+  test('fast mode does not stream detailed test output', () async {
+    await insideFakeProjectWithSidekick((dir) async {
+      final streams = FakeIoStreams();
+      await overrideIoStreams(
+        stdout: () => streams.stdout,
+        stderr: () => streams.stderr,
+        body: () async {
+          final packageDir = dir.directory('packages/pkg_a')
+            ..createSync(recursive: true);
+          packageDir.file('pubspec.yaml')
+            ..createSync(recursive: true)
+            ..writeAsStringSync('''
+name: pkg_a
+
+environment:
+  sdk: ^3.0.0
+
+dev_dependencies:
+  test: any
+''');
+
+          packageDir.file('test/streaming_test.dart')
+            ..createSync(recursive: true)
+            ..writeAsStringSync('''
+import 'package:test/test.dart';
+
+void main() {
+  test('first test', () {
+    print('Output from first test');
+    expect(1 + 1, 2);
+  });
+
+  test('second test', () {
+    print('Output from second test');
+    expect(2 + 2, 4);
+  });
+}
+''');
+
+          final runner = initializeSidekick(
+            dartSdkPath: testRunnerDartSdkPath(),
+          );
+          runner.addCommand(TestCommand());
+          await runner.run(['test', '--fast', '-p', 'pkg_a']);
+
+          expect(exitCode, 0);
+
+          final output = streams.combined.join('\n');
+
+          // Fast mode should NOT show individual test names or print statements
+          expect(output, isNot(contains('Output from first test')));
+          expect(output, isNot(contains('Output from second test')));
+          // Should only show the summary line
+          expect(output, contains('pkg_a'));
         },
       );
     });
