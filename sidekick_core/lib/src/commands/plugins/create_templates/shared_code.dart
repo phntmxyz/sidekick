@@ -15,15 +15,20 @@ class SharedCodeTemplate extends PluginTemplateGenerator {
   void generate(PluginTemplateProperties props) {
     final pluginDirectory = props.pluginDirectory;
 
-    pluginDirectory.file('pubspec.yaml').writeAsStringSync(props.pubspecTemplate);
+    pluginDirectory
+        .file('pubspec.yaml')
+        .writeAsStringSync(props.pubspecTemplate);
 
     final toolDirectory = pluginDirectory.directory('tool')..createSync();
     toolDirectory.file('install.dart').writeAsStringSync(props.installTemplate);
 
     final libDirectory = pluginDirectory.directory('lib')..createSync();
-    libDirectory.file('${props.pluginName.snakeCase}.dart').writeAsStringSync(props.helpers);
+    libDirectory
+        .file('${props.pluginName.snakeCase}.dart')
+        .writeAsStringSync(props.helpers);
 
-    final templateDirectory = pluginDirectory.directory('template')..createSync();
+    final templateDirectory = pluginDirectory.directory('template')
+      ..createSync();
     final pluginCommandTemplateFile = templateDirectory
         .file('commands/${props.commandName.snakeCase}_command.template.dart')
       ..createSync(recursive: true);

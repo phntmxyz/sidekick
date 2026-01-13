@@ -13,7 +13,9 @@ class InstallOnlyTemplate extends PluginTemplateGenerator {
   @override
   void generate(PluginTemplateProperties props) {
     final pluginDirectory = props.pluginDirectory;
-    pluginDirectory.file('pubspec.yaml').writeAsStringSync(props.pubspecTemplate);
+    pluginDirectory
+        .file('pubspec.yaml')
+        .writeAsStringSync(props.pubspecTemplate);
 
     final toolDirectory = pluginDirectory.directory('tool')..createSync();
     toolDirectory.file('install.dart').writeAsStringSync(props.installTemplate);

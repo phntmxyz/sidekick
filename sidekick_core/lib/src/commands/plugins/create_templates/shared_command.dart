@@ -15,16 +15,21 @@ class SharedCommandTemplate extends PluginTemplateGenerator {
   @override
   void generate(PluginTemplateProperties props) {
     final pluginDirectory = props.pluginDirectory;
-    pluginDirectory.file('pubspec.yaml').writeAsStringSync(props.pubspecTemplate);
+    pluginDirectory
+        .file('pubspec.yaml')
+        .writeAsStringSync(props.pubspecTemplate);
 
     final toolDirectory = pluginDirectory.directory('tool')..createSync();
     toolDirectory.file('install.dart').writeAsStringSync(props.installTemplate);
 
     final libDirectory = pluginDirectory.directory('lib')..createSync();
-    libDirectory.file('${props.pluginName.snakeCase}.dart').writeAsStringSync(props.library);
+    libDirectory
+        .file('${props.pluginName.snakeCase}.dart')
+        .writeAsStringSync(props.library);
 
     final srcDir = libDirectory.directory('src')..createSync();
-    final commandFile = srcDir.file('commands/${props.commandName.snakeCase}_command.dart');
+    final commandFile =
+        srcDir.file('commands/${props.commandName.snakeCase}_command.dart');
     commandFile
       ..createSync(recursive: true)
       ..writeAsStringSync(props.exampleCommand);

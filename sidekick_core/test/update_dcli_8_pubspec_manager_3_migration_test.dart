@@ -97,7 +97,8 @@ dependencies:
     });
   });
 
-  test('updates both dependencies when both are present with old versions', () async {
+  test('updates both dependencies when both are present with old versions',
+      () async {
     await insideFakeProjectWithSidekick((dir) async {
       final pubspecFile = SidekickContext.sidekickPackage.pubspec;
 

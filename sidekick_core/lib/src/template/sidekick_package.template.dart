@@ -43,8 +43,12 @@ class SidekickTemplate {
     props.packageLocation.file('.gitignore')
       ..createSync(recursive: true)
       ..writeAsStringSync(_gitignore);
-    props.packageLocation.file('pubspec.yaml').writeAsStringSync(props.pubspecYaml);
-    props.packageLocation.file('analysis_options.yaml').writeAsStringSync(_analysisOptionsYaml);
+    props.packageLocation
+        .file('pubspec.yaml')
+        .writeAsStringSync(props.pubspecYaml);
+    props.packageLocation
+        .file('analysis_options.yaml')
+        .writeAsStringSync(_analysisOptionsYaml);
 
     props.packageLocation.file('bin/main.dart')
       ..createSync(recursive: true)
@@ -52,7 +56,9 @@ class SidekickTemplate {
     props.packageLocation.file('lib/src/commands/clean_command.dart')
       ..createSync(recursive: true)
       ..writeAsStringSync(props.cleanCommandDart());
-    props.packageLocation.file('lib/${props.name.snakeCase}_sidekick.dart').writeAsStringSync(props.cliSidekickDart());
+    props.packageLocation
+        .file('lib/${props.name.snakeCase}_sidekick.dart')
+        .writeAsStringSync(props.cliSidekickDart());
   }
 }
 
@@ -172,7 +178,9 @@ class CleanCommand extends Command {
 
   String get pubspecYaml {
     final canonicalizedVersion = version.canonicalizedVersion;
-    final constraintRange = version.major > 0 ? '^$canonicalizedVersion' : "'>=$canonicalizedVersion <1.0.0'";
+    final constraintRange = version.major > 0
+        ? '^$canonicalizedVersion'
+        : "'>=$canonicalizedVersion <1.0.0'";
     return '''
 name: ${name.snakeCase}_sidekick
 description: Sidekick CLI for $name
