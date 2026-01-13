@@ -7,32 +7,33 @@ void main() {
   for (final testCase in _testCases) {
     test('patch 255 works (${testCase.name})', () async {
       final tempDir = Directory.systemTemp.createTempSync();
+      addTearDown(() => tempDir.deleteSync(recursive: true));
       final sidekickDir = tempDir.directory('dash_sidekick')..createSync();
-      env['SIDEKICK_PACKAGE_HOME'] = sidekickDir.absolute.path;
-      addTearDown(() {
-        tempDir.deleteSync(recursive: true);
-        env['SIDEKICK_PACKAGE_HOME'] = null;
+      await withEnvironmentAsync(() async {
+        env['SIDEKICK_ENTRYPOINT_FILE'] = null;
+        tempDir.file('dash').writeAsStringSync('# entrypoint file');
+
+        final pubspecFile = sidekickDir.file('pubspec.yaml');
+        pubspecFile.writeAsStringSync(testCase.fileContentBefore);
+
+        Object? error;
+        await migrate(
+          from: Version(2, 1, 2),
+          to: Version(3, 0, 0, pre: 'preview.0'),
+          migrations: [migrateDcli4_255],
+          onMigrationStepError: (context) {
+            error = context.exception;
+            return MigrationErrorHandling.skip;
+          },
+        );
+
+        expect(pubspecFile.readAsStringSync(), testCase.fileContentAfter);
+        if (testCase.errorMatcher != null) {
+          expect(error, testCase.errorMatcher);
+        }
+      }, environment: {
+        'SIDEKICK_PACKAGE_HOME': sidekickDir.absolute.path,
       });
-      tempDir.file('dash').writeAsStringSync('# entrypoint file');
-
-      final pubspecFile = sidekickDir.file('pubspec.yaml');
-      pubspecFile.writeAsStringSync(testCase.fileContentBefore);
-
-      Object? error;
-      await migrate(
-        from: Version(2, 1, 2),
-        to: Version(3, 0, 0, pre: 'preview.0'),
-        migrations: [migrateDcli4_255],
-        onMigrationStepError: (context) {
-          error = context.exception;
-          return MigrationErrorHandling.skip;
-        },
-      );
-
-      expect(pubspecFile.readAsStringSync(), testCase.fileContentAfter);
-      if (testCase.errorMatcher != null) {
-        expect(error, testCase.errorMatcher);
-      }
     });
   }
 }

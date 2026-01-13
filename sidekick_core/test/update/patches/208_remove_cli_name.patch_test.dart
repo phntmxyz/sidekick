@@ -7,33 +7,34 @@ void main() {
   for (final testCase in _testCases) {
     test('patch 208 works (${testCase.name})', () async {
       final tempDir = Directory.systemTemp.createTempSync();
+      addTearDown(() => tempDir.deleteSync(recursive: true));
       final sidekickDir = tempDir.directory('dash_sidekick')..createSync();
-      env['SIDEKICK_PACKAGE_HOME'] = sidekickDir.absolute.path;
-      addTearDown(() {
-        tempDir.deleteSync(recursive: true);
-        env['SIDEKICK_PACKAGE_HOME'] = null;
+      await withEnvironmentAsync(() async {
+        env['SIDEKICK_ENTRYPOINT_FILE'] = null;
+        tempDir.file('dash').writeAsStringSync('# entrypoint file');
+        sidekickDir.file('pubspec.yaml').writeAsStringSync('name: dash_sidekick');
+        final cliMainFile = sidekickDir.file('lib/dash_sidekick.dart')
+          ..createSync(recursive: true)
+          ..writeAsStringSync(testCase.fileContentBefore);
+
+        Object? error;
+        await migrate(
+          from: Version(0, 15, 1),
+          to: Version(1, 0, 0),
+          migrations: [fixUsageMessage208],
+          onMigrationStepError: (context) {
+            error = context.exception;
+            return MigrationErrorHandling.skip;
+          },
+        );
+
+        expect(cliMainFile.readAsStringSync(), testCase.fileContentAfter);
+        if (testCase.errorMatcher != null) {
+          expect(error, testCase.errorMatcher);
+        }
+      }, environment: {
+        'SIDEKICK_PACKAGE_HOME': sidekickDir.absolute.path,
       });
-      tempDir.file('dash').writeAsStringSync('# entrypoint file');
-      sidekickDir.file('pubspec.yaml').writeAsStringSync('name: dash_sidekick');
-      final cliMainFile = sidekickDir.file('lib/dash_sidekick.dart')
-        ..createSync(recursive: true)
-        ..writeAsStringSync(testCase.fileContentBefore);
-
-      Object? error;
-      await migrate(
-        from: Version(0, 15, 1),
-        to: Version(1, 0, 0),
-        migrations: [fixUsageMessage208],
-        onMigrationStepError: (context) {
-          error = context.exception;
-          return MigrationErrorHandling.skip;
-        },
-      );
-
-      expect(cliMainFile.readAsStringSync(), testCase.fileContentAfter);
-      if (testCase.errorMatcher != null) {
-        expect(error, testCase.errorMatcher);
-      }
     });
   }
 }
