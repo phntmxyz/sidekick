@@ -12,7 +12,9 @@ void main() {
       await withEnvironmentAsync(() async {
         env['SIDEKICK_ENTRYPOINT_FILE'] = null;
         tempDir.file('dash').writeAsStringSync('# entrypoint file');
-        sidekickDir.file('pubspec.yaml').writeAsStringSync('name: dash_sidekick');
+        sidekickDir
+            .file('pubspec.yaml')
+            .writeAsStringSync('name: dash_sidekick');
         final cliMainFile = sidekickDir.file('lib/dash_sidekick.dart')
           ..createSync(recursive: true)
           ..writeAsStringSync(testCase.fileContentBefore);

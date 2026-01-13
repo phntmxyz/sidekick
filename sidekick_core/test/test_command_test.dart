@@ -1192,7 +1192,8 @@ void main() {
       expect(
         elapsed.inMilliseconds,
         greaterThan(400),
-        reason: 'MARKER_END should appear ~500ms after MARKER_START if streaming works. '
+        reason:
+            'MARKER_END should appear ~500ms after MARKER_START if streaming works. '
             'Got ${elapsed.inMilliseconds}ms. If buffered, would be <50ms.',
       );
     });

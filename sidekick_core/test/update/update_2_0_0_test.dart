@@ -51,7 +51,8 @@ dependencies:
         },
       );
       print(pubspecFile.readAsStringSync());
-      await update_entrypoint.main(['test_sidekick', '1.2.0', '2.0.0-preview.1']);
+      await update_entrypoint
+          .main(['test_sidekick', '1.2.0', '2.0.0-preview.1']);
 
       print(pubspecFile.readAsStringSync());
 
