@@ -55,8 +55,8 @@ void main() {
 
         'git init'.start(workingDirectory: pluginDir.path);
         'git add .'.start(workingDirectory: pluginDir.path);
-        await withEnvironment(
-          () async =>
+        withEnvironment(
+          () =>
               'git commit -m "initial"'.start(workingDirectory: pluginDir.path),
           // without this, `git commit` crashes on CI
           environment: {

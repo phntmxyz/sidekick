@@ -26,6 +26,11 @@ Future<R> withSidekickCli<R>(
   addTearDown(() => copy.deleteSync(recursive: true));
   await (await _cachedSidekickCli).root.copyRecursively(copy);
 
+  final pubspecOverrides = copy.file('pubspec_overrides.yaml');
+  if (pubspecOverrides.existsSync()) {
+    pubspecOverrides.deleteSync();
+  }
+
   final cli = SidekickCli._(copy, 'dashi');
   return callback(cli);
 }
@@ -84,6 +89,11 @@ Future<GlobalSidekickCli> _buildGlobalSidekickCli() async {
 
   overrideSidekickCoreWithLocalPath(copy);
 
+  final pubspecOverrides = copy.file('pubspec_overrides.yaml');
+  if (pubspecOverrides.existsSync()) {
+    pubspecOverrides.deleteSync();
+  }
+
   // remove local dependency on sidekick_test, it breaks because of the
   // relative path but can be safely removed because it's just a dev_dependency
   await systemDart(
@@ -129,7 +139,7 @@ class GlobalSidekickCli {
     required Directory workingDirectory,
     Map<String, String>? environment,
   }) async {
-    return TestProcess.start(
+    return await TestProcess.start(
       executable.path,
       args,
       workingDirectory: workingDirectory.path,
