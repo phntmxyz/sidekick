@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.1.0](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v3.0.1..sidekick_core-v3.1.0) (2026-1-13)
+
+- Upgrade sidekick_core to dcli 8 [#280](https://github.com/phntmxyz/sidekick/pull/280) <https://github.com/phntmxyz/sidekick/commit/d24ed64effcc958400e4bc292c7df50fed9af8a7>
+- Add TestCommand (`<cli> test`) [#279](https://github.com/phntmxyz/sidekick/pull/279) <https://github.com/phntmxyz/sidekick/commit/45d35160e82dcdd1d286f9cc3c2f38f37adff558>
+- Fix `format` command, using the wrong workingDir <https://github.com/phntmxyz/sidekick/commit/f9f64ca025d77c33b16fe5fdfbdc4b39083ea12b>
+- Update plugin templates <https://github.com/phntmxyz/sidekick/commit/a0256b6c213d6179f25570d5694208bf2023853f>
+
 ## [3.0.1](https://github.com/phntmxyz/sidekick/compare/sidekick_core-v3.0.0..sidekick_core-v3.0.1) (2025-6-30)
 
 Full diff: <https://github.com/phntmxyz/sidekick/compare/sidekick_core-v3.0.0...main>
