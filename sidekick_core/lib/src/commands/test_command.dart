@@ -31,10 +31,10 @@ class TestCommand extends Command {
         'fast',
         help: 'Run tests with minimal output, only showing failures',
       )
-      ..addOption(
+      ..addMultiOption(
         'package',
         abbr: 'p',
-        help: 'Run tests for a specific package by name',
+        help: 'Run tests for specific packages by name (can be repeated)',
       )
       ..addOption(
         'name',
@@ -52,7 +52,8 @@ class TestCommand extends Command {
     final collector = _TestResultCollector();
     collector.setHasNameFilter(_nameOption != null);
 
-    final String? packageArg = argResults?['package'] as String?;
+    final List<String> packageArgs =
+        argResults?['package'] as List<String>? ?? [];
     final List<String> rest = argResults?.rest ?? [];
 
     // If a path is provided as rest argument (file or directory)
@@ -66,35 +67,52 @@ class TestCommand extends Command {
             execResult.result == TestResult.noMatchingTests,
         packageName: null, // Package name would require parsing path
         failedTests: execResult.failedTests,
+        testCount: execResult.testCount,
       );
       exitCode = collector.exitCode;
       _printSummary(collector);
       return;
     }
 
-    if (packageArg != null) {
-      // only run tests in selected package
-      final execResult = await _runTestsInPackageNamed(packageArg);
-      // noTests and noMatchingTests are errors when user explicitly requested a package
-      collector.add(
-        execResult.result,
-        isError: execResult.result == TestResult.noTests ||
-            execResult.result == TestResult.noMatchingTests,
-        packageName: packageArg,
-        failedTests: execResult.failedTests,
-      );
+    if (packageArgs.isNotEmpty) {
+      // Run tests in specified packages
+      for (final packageName in packageArgs) {
+        final execResult = await _runTestsInPackageNamed(packageName);
+        // noTests and noMatchingTests are errors when user explicitly requested a package
+        collector.add(
+          execResult.result,
+          isError: execResult.result == TestResult.noTests ||
+              execResult.result == TestResult.noMatchingTests,
+          packageName: packageName,
+          failedTests: execResult.failedTests,
+          testCount: execResult.testCount,
+        );
+        if (!_fastFlag) print('\n');
+      }
       exitCode = collector.exitCode;
       _printSummary(collector);
       return;
     }
 
     // outside of package, fallback to all packages
-    for (final package in findAllPackages(SidekickContext.projectRoot)) {
-      final execResult = await _executeTests(package, requireTests: false);
+    final allPackages = findAllPackages(SidekickContext.projectRoot);
+    final isOnlyPackage = allPackages.length == 1;
+    for (final package in allPackages) {
+      // Treat single package as explicitly selected
+      final explicitlySelected = isOnlyPackage;
+      final execResult = await _executeTests(
+        package,
+        explicitlySelected: explicitlySelected,
+      );
+      // Don't add packages without tests to summary unless explicitly selected
+      if (execResult.result == TestResult.noTests && !explicitlySelected) {
+        continue;
+      }
       collector.add(
         execResult.result,
         packageName: package.name,
         failedTests: execResult.failedTests,
+        testCount: execResult.testCount,
       );
       if (!_fastFlag) print('\n');
     }
@@ -107,9 +125,26 @@ class TestCommand extends Command {
     final code = collector.exitCode;
     final packageResults = collector.packageResults;
     final allFailedTests = collector.allFailedTests;
+    final totalTests = collector.totalTestsRun;
 
     // Print separator
     print('\n${'=' * 60}');
+
+    // Print test count summary
+    if (totalTests > 0) {
+      final passedTests = totalTests - allFailedTests.length;
+      print(
+          'Tests: $totalTests run, $passedTests passed, ${allFailedTests.length} failed');
+      print('');
+    }
+
+    // Determine overall status
+    final hasAnyFailures = packageResults.any(
+      (pkg) => pkg.result == TestResult.failed,
+    );
+    final hasAnySuccess = packageResults.any(
+      (pkg) => pkg.result == TestResult.success,
+    );
 
     // Print package results if we have multiple packages
     if (packageResults.length > 1) {
@@ -127,7 +162,10 @@ class TestCommand extends Command {
           TestResult.noTests => 'no tests',
           TestResult.noMatchingTests => 'no matching tests',
         };
-        print('  $icon ${pkg.packageName} - $status');
+        final testInfo = pkg.testCount != null && pkg.testCount! > 0
+            ? ' (${pkg.testCount} tests)'
+            : '';
+        print('  $icon ${pkg.packageName} - $status$testInfo');
       }
       print('');
     }
@@ -143,12 +181,6 @@ class TestCommand extends Command {
     }
 
     // Print overall result
-    final hasAnyFailures = packageResults.any(
-      (pkg) => pkg.result == TestResult.failed,
-    );
-    final hasAnySuccess = packageResults.any(
-      (pkg) => pkg.result == TestResult.success,
-    );
 
     // Show warning when using filter and some packages failed but we found tests
     if (_nameOption != null && hasAnySuccess && hasAnyFailures) {
@@ -156,13 +188,20 @@ class TestCommand extends Command {
           .where((pkg) => pkg.result == TestResult.failed)
           .map((pkg) => pkg.packageName)
           .join(', ');
-      print('${yellow('⚠')} Warning: Some packages could not be tested: $failedPackages');
-      print('  These packages might contain matching tests but failed to compile/run.');
+      print(
+          '${yellow('⚠')} Warning: Some packages could not be tested: $failedPackages');
+      print(
+          '  These packages might contain matching tests but failed to compile/run.');
       print('');
     }
 
     if (code == 0) {
-      print('${green('✓ All tests passed')}');
+      if (totalTests > 0) {
+        final testWord = totalTests == 1 ? 'test' : 'tests';
+        print('${green('✓')} $totalTests $testWord passed');
+      } else {
+        print('${green('✓ All tests passed')}');
+      }
     } else if (code == -1) {
       if (hasAnyFailures) {
         print('${red('✗ Tests failed')}');
@@ -203,7 +242,7 @@ class TestCommand extends Command {
 
     // If the path IS the package root, run all tests
     if (normalizedPath == packageRootPath) {
-      return await _executeTests(package, requireTests: true);
+      return await _executeTests(package, explicitlySelected: true);
     }
 
     // Get the relative path from the package root
@@ -212,7 +251,7 @@ class TestCommand extends Command {
     return await _executeTests(
       package,
       relativePath: relativePath,
-      requireTests: true,
+      explicitlySelected: true,
     );
   }
 
@@ -228,7 +267,7 @@ class TestCommand extends Command {
         'Please use one of ${packageOptions.joinToString()}',
       );
     }
-    return await _executeTests(package, requireTests: true);
+    return await _executeTests(package, explicitlySelected: true);
   }
 
   /// Runs tests in a package, optionally targeting a specific path.
@@ -236,24 +275,27 @@ class TestCommand extends Command {
   /// [relativePath] is a path relative to the package root. Can be a file
   /// (e.g., `test/foo_test.dart`) or directory (e.g., `test/unit/`).
   /// If null, runs all tests in the package.
+  ///
+  /// When [explicitlySelected] is true, shows the package in output even if
+  /// it has no tests. When false, silently skips packages without tests.
   Future<_TestExecutionResult> _executeTests(
     DartPackage package, {
     String? relativePath,
-    required bool requireTests,
+    required bool explicitlySelected,
   }) async {
+    // Check for test directory (only when running whole package)
+    if (relativePath == null && !package.testDir.existsSync()) {
+      if (explicitlySelected) {
+        // Explicitly selected package - show in output
+        print('${red('✗')} ${package.name} (no tests)');
+      }
+      // Skip silently when not explicitly selected
+      return _TestExecutionResult(TestResult.noTests);
+    }
+
     // Print header
     final suffix = relativePath != null ? ' $relativePath' : '';
     print('${blue('▶')} testing ${package.name}$suffix...');
-
-    // Check for test directory (only when running whole package)
-    if (relativePath == null && !package.testDir.existsSync()) {
-      if (requireTests) {
-        print('${red('✗')} ${package.name} (no tests)');
-      } else {
-        print('○ ${package.name} (no tests)');
-      }
-      return _TestExecutionResult(TestResult.noTests);
-    }
 
     // Build args
     final args = relativePath != null ? ['test', relativePath] : ['test'];
@@ -275,11 +317,12 @@ class TestCommand extends Command {
   }) async {
     final stopwatch = Stopwatch()..start();
 
-    // Stream output in real-time
+    // Stream output in real-time while also capturing for parsing
+    final progress = Progress.print(capture: true);
     final result = await _runDartOrFlutter(
       package,
       args,
-      progress: Progress.print(),
+      progress: progress,
       nothrow: true,
     );
 
@@ -288,22 +331,30 @@ class TestCommand extends Command {
       1,
     );
 
+    final stdout = progress.lines.join('\n');
+    final testCount = _extractTestCount(stdout);
+
     final testPathStr = relativePath != null ? ' $relativePath' : '';
 
     // Check for "no matching tests" (exit code 79 is specific to this case)
     if (result.exitCode == 79) {
       print('○ ${package.name}$testPathStr (no matching tests)');
-      return _TestExecutionResult(TestResult.noMatchingTests);
+      return _TestExecutionResult(TestResult.noMatchingTests, testCount: 0);
     }
 
     if (result.exitCode == 0) {
       print('${green('✓')} ${package.name}$testPathStr (${duration}s)');
-      return _TestExecutionResult(TestResult.success);
+      return _TestExecutionResult(TestResult.success, testCount: testCount);
     }
 
+    // Parse failed tests for summary
+    final failedTests = _extractFailedTests(stdout);
     print('${red('✗')} ${package.name}$testPathStr (${duration}s)');
-    // Verbose mode doesn't parse failed tests, they are shown in real-time output
-    return _TestExecutionResult(TestResult.failed);
+    return _TestExecutionResult(
+      TestResult.failed,
+      failedTests: failedTests ?? [],
+      testCount: testCount,
+    );
   }
 
   Future<ProcessCompletion> _runDartOrFlutter(
@@ -366,7 +417,7 @@ class TestCommand extends Command {
     if (exitCode == 79 &&
         stdout.contains('No tests match regular expression')) {
       print('○ ${package.name}$testPathStr (no matching tests)');
-      return _TestExecutionResult(TestResult.noMatchingTests);
+      return _TestExecutionResult(TestResult.noMatchingTests, testCount: 0);
     }
 
     if (exitCode == 0) {
@@ -375,10 +426,10 @@ class TestCommand extends Command {
         '${duration}s',
       ].join(', ');
       print('${green('✓')} ${package.name}$testPathStr ($stats)');
-      return _TestExecutionResult(TestResult.success);
+      return _TestExecutionResult(TestResult.success, testCount: testCount);
     }
 
-    // Parse and show only failed tests
+    // Parse failed tests but don't show them yet (shown in summary)
     final failedTests = _extractFailedTests(stdout);
     final failedCount = failedTests?.length ?? 0;
     final stats = [
@@ -387,20 +438,16 @@ class TestCommand extends Command {
       '${duration}s',
     ].join(', ');
     print('${red('✗')} ${package.name}$testPathStr ($stats)');
-    if (failedTests != null && failedTests.isNotEmpty) {
-      print('Failing tests:');
-      for (final failed in failedTests) {
-        final pathStr = failed.path != null ? ' (${failed.path})' : '';
-        print('  - "${failed.name}"$pathStr');
-      }
-    } else {
-      // Other errors (compilation, test not found, etc.) - dump full output
+
+    // Only dump full output if this is NOT a test failure (e.g., compilation error)
+    if (failedTests == null || failedTests.isEmpty) {
       print(stdout);
     }
 
     return _TestExecutionResult(
       TestResult.failed,
       failedTests: failedTests ?? [],
+      testCount: testCount,
     );
   }
 
@@ -583,6 +630,7 @@ class _TestResultCollector {
     bool isError = false,
     String? packageName,
     List<_FailedTest>? failedTests,
+    int? testCount,
   }) {
     _results.add(result);
     if (isError) _errorCount++;
@@ -592,6 +640,7 @@ class _TestResultCollector {
           packageName: packageName,
           result: result,
           failedTests: failedTests ?? [],
+          testCount: testCount,
         ),
       );
     }
@@ -617,6 +666,12 @@ class _TestResultCollector {
         .expand((packageResult) => packageResult.failedTests)
         .toList();
   }
+
+  int get totalTestsRun {
+    return _packageResults
+        .map((pkg) => pkg.testCount ?? 0)
+        .fold(0, (sum, count) => sum + count);
+  }
 }
 
 @visibleForTesting
@@ -638,17 +693,24 @@ class _PackageResult {
   final String packageName;
   final TestResult result;
   final List<_FailedTest> failedTests;
+  final int? testCount;
 
   _PackageResult({
     required this.packageName,
     required this.result,
     required this.failedTests,
+    this.testCount,
   });
 }
 
 class _TestExecutionResult {
   final TestResult result;
   final List<_FailedTest> failedTests;
+  final int? testCount;
 
-  _TestExecutionResult(this.result, {this.failedTests = const []});
+  _TestExecutionResult(
+    this.result, {
+    this.failedTests = const [],
+    this.testCount,
+  });
 }

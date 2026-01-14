@@ -1472,8 +1472,7 @@ void main() {
       );
     });
 
-    test('mixed success and failed without name filter returns -1 (fails)',
-        () {
+    test('mixed success and failed without name filter returns -1 (fails)', () {
       // When NOT using a filter, any failure should fail the command
       expect(
         calculateExitCodeFromResults(
