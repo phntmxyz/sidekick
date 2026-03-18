@@ -64,7 +64,7 @@ computeHash() {
     "tool" \
     "pubspec.yaml" \
     "pubspec.lock" \
-    -type f -print0 2>/dev/null | xargs -0 "$HASH_PROGRAM"
+    -type f -print0 2>/dev/null | xargs -0 "$HASH_PROGRAM" | sort
   cd "$SAVED" >/dev/null
 }
 
