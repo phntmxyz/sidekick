@@ -441,7 +441,7 @@ void main() {
   });
 
   test(
-    'Installs optional flutterw_sidekick_plugin',
+    'Installs optional puro_sidekick_plugin',
     () async {
       final projectRoot =
           setupTemplateProject('test/templates/minimal_flutter_package');
@@ -455,7 +455,7 @@ void main() {
         ],
         workingDirectory: projectRoot,
         environment: {
-          'SIDEKICK_INIT_APPROVE_FLUTTERW_INSTALL': 'true',
+          'SIDEKICK_INIT_APPROVE_PURO_INSTALL': 'true',
         },
       );
       process.stdoutStream().listen((line) {
@@ -471,10 +471,10 @@ void main() {
       expect(
         output,
         allOf([
-          contains('flutterw_sidekick_plugin'),
+          contains('puro_sidekick_plugin'),
           contains('Sidekick detected 1 Flutter package(s) in your project.'),
           contains(
-            'Do you want pin the Flutter version of this project with flutterw?',
+            'Do you want pin the Flutter version of this project with puro?',
           ),
         ]),
       );

@@ -66,7 +66,7 @@ class InitCommand extends Command {
 
     // Post-install phase:
     // optional steps to further improve the CLI
-    installFlutterWrapper(inputs);
+    installPuro(inputs);
   }
 
   /// Collects all information needed to create a sidekick CLI
@@ -260,8 +260,8 @@ class InitCommand extends Command {
     );
   }
 
-  /// Asks user to install flutterw_sidekick_plugin when a Flutter package is detected
-  void installFlutterWrapper(_InitInputs inputs) {
+  /// Asks user to install puro_sidekick_plugin when a Flutter package is detected
+  void installPuro(_InitInputs inputs) {
     final entryPoint = inputs.projectRoot.file(inputs.cliName);
 
     final flutterPackages = [
@@ -279,19 +279,20 @@ class InitCommand extends Command {
         "It's recommended to bind an exact Flutter version to your project "
         "and share the same version with your coworkers and CI. There are two ways to accomplish this:\n"
         " - Use FVM (https://fvm.app/)\n"
-        " - Use flutterw (https://github.com/passsy/flutter_wrapper)\n",
+        " - Use flutterw (https://github.com/passsy/flutter_wrapper)\n"
+        " - Use puro (https://puro.dev/)\n",
       );
 
       print(
-        '${dcli.green('Do you want pin the Flutter version of this project with flutterw?')}\n'
+        '${dcli.green('Do you want pin the Flutter version of this project with puro?')}\n'
         'This will download the Flutter SDK ~900mb',
       );
-      final confirmFlutterwInstall = dcli.confirm(
-        'Install flutterw_sidekick_plugin?',
+      final confirmPuroInstall = dcli.confirm(
+        'Install puro_sidekick_plugin?',
         defaultValue:
-            env['SIDEKICK_INIT_APPROVE_FLUTTERW_INSTALL'] == 'true' || false,
+            env['SIDEKICK_INIT_APPROVE_PURO_INSTALL'] == 'true' || false,
       );
-      if (confirmFlutterwInstall) {
+      if (confirmPuroInstall) {
         print('Preparing the ${inputs.cliName} CLI');
         final capture = Progress.capture();
         try {
@@ -303,7 +304,7 @@ class InitCommand extends Command {
         }
         dcli.startFromArgs(
           entryPoint.path,
-          ['sidekick', 'plugins', 'install', 'flutterw_sidekick_plugin'],
+          ['sidekick', 'plugins', 'install', 'puro_sidekick_plugin'],
         );
       }
     }
