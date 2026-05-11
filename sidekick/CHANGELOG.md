@@ -1,5 +1,10 @@
 # Changelog
 
+## [3.1.1](https://github.com/phntmxyz/sidekick/compare/sidekick-v3.1.0..sidekick-v3.1.1) (2026-5-11)
+
+- use puro as default [#283](https://github.com/phntmxyz/sidekick/pull/283)
+- Don't pin dev_dependencies [#284](https://github.com/phntmxyz/sidekick/pull/284)
+
 ## [3.1.0](https://github.com/phntmxyz/sidekick/compare/sidekick-v3.0.0..sidekick-v3.1.0) (2026-1-13)
 
 - Update dependencies <https://github.com/phntmxyz/sidekick/commit/39be2340232e92965d2160a8b0503cc6c22ad29b>
