@@ -109,14 +109,18 @@ void main() {
     final log = <String>[];
     await insideFakeProjectWithSidekick((_) async {
       final runner = initializeSidekick();
-      runner.addCommand(_Command('inner', () async {
-        addCleanup(() => log.add('inner'));
-      }));
-      runner.addCommand(_Command('outer', () async {
-        addCleanup(() => log.add('outer'));
-        await runner.run(['inner']);
-        expect(log, ['inner']);
-      }));
+      runner.addCommand(DelegatedCommand(
+        name: 'inner',
+        block: () => addCleanup(() => log.add('inner')),
+      ));
+      runner.addCommand(DelegatedCommand(
+        name: 'outer',
+        block: () async {
+          addCleanup(() => log.add('outer'));
+          await runner.run(['inner']);
+          expect(log, ['inner']);
+        },
+      ));
       await runner.run(['outer']);
     });
     expect(log, ['inner', 'outer']);
@@ -180,26 +184,11 @@ Future<void> _runCommand(
       stderr: stderr == null ? null : () => stderr,
       body: () async {
         final runner = initializeSidekick();
-        runner.addCommand(_Command('cmd', body));
+        runner.addCommand(DelegatedCommand(name: 'cmd', block: body));
         await runner.run(['cmd']);
       },
     );
   });
-}
-
-class _Command extends Command<void> {
-  _Command(this.name, this.body);
-
-  @override
-  final String name;
-
-  @override
-  String get description => 'test command';
-
-  final Future<void> Function() body;
-
-  @override
-  Future<void> run() => body();
 }
 
 /// A minimal sidekick CLI in a temp dir, depending on this sidekick_core, that
