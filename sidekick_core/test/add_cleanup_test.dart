@@ -125,6 +125,41 @@ void main() {
     expect(log, ['inner', 'outer']);
   });
 
+  test('a command started by cleanup owns its registrations', () async {
+    final log = <String>[];
+    await insideFakeProjectWithSidekick((_) async {
+      final runner = initializeSidekick();
+      runner.addCommand(DelegatedCommand(
+        name: 'inner',
+        block: () => addCleanup(() => log.add('inner')),
+      ));
+      runner.addCommand(DelegatedCommand(
+        name: 'outer',
+        block: () {
+          addCleanup(() async {
+            await runner.run(['inner']);
+            expect(log, ['inner']);
+            addCleanup(() => log.add('outer'));
+          });
+        },
+      ));
+      await runner.run(['outer']);
+    });
+    expect(log, ['inner', 'outer']);
+  });
+
+  test('a finished cleanup zone rejects new registrations', () async {
+    Zone? cleanupZone;
+    await _runCommand(() async {
+      addCleanup(() {
+        cleanupZone = Zone.current;
+      });
+    });
+    expect(cleanupZone, isNotNull);
+    expect(() => cleanupZone!.run(() => addCleanup(() {})),
+        throwsA(isA<OutOfCommandRunnerScopeException>()));
+  });
+
   group('termination signals', () {
     for (final (signal, expectedExitCode) in [
       (ProcessSignal.sigint, 130),
@@ -186,6 +221,24 @@ void main() {
         containsAllInOrder(
             ['outer cleanup', 'cleanup registered by outer cleanup']),
       );
+    });
+
+    test('cleanup registration survives an await while an inner run finishes',
+        () async {
+      final cli = _FakeCli();
+      final process = await cli.start(['outer', '--await-inner']);
+      await process.stdout.firstWhere((line) => line == 'inner ready');
+
+      process.kill(ProcessSignal.sigint);
+
+      expect(await process.exitCode, 130);
+      await process.stdout.drain<void>();
+      expect(process.stdoutLines, containsAllInOrder([
+        'outer cleanup',
+        'middle resumed',
+        'outer cleanup resumed',
+        'cleanup registered by outer cleanup',
+      ]));
     });
 
     test('a signal without pending cleanups exits quietly', () async {
@@ -296,12 +349,17 @@ class _CliProcess {
 }
 
 const _fakeCliMain = '''
+import 'dart:async';
 import 'package:sidekick_core/sidekick_core.dart' hide isEmpty;
+
+final innerMayReturn = Completer<void>();
+final middleResumed = Completer<void>();
 
 Future<void> main(List<String> args) async {
   final runner = initializeSidekick();
   runner.addCommand(HangCommand());
   runner.addCommand(OuterCommand(runner));
+  runner.addCommand(MiddleCommand(runner));
   runner.addCommand(InnerCommand());
   await runner.run(args);
 }
@@ -347,7 +405,9 @@ class HangCommand extends Command<void> {
 
 /// Registers a cleanup that registers another one, then runs [InnerCommand]
 class OuterCommand extends Command<void> {
-  OuterCommand(this.runner);
+  OuterCommand(this.runner) {
+    argParser.addFlag('await-inner', help: 'Await the inner run during cleanup');
+  }
 
   final CommandRunner<void> runner;
 
@@ -359,16 +419,47 @@ class OuterCommand extends Command<void> {
 
   @override
   Future<void> run() async {
-    addCleanup(() {
+    final awaitInner = argResults!['await-inner'] == true;
+    addCleanup(() async {
       print('outer cleanup');
+      if (awaitInner) {
+        innerMayReturn.complete();
+        await middleResumed.future;
+        print('outer cleanup resumed');
+      }
       addCleanup(() => print('cleanup registered by outer cleanup'));
     });
-    await runner.run(['inner']);
+    await runner.run([awaitInner ? 'middle' : 'inner']);
+  }
+}
+
+/// Keeps its scope active after the inner run finishes during outer cleanup
+class MiddleCommand extends Command<void> {
+  MiddleCommand(this.runner);
+
+  final CommandRunner<void> runner;
+
+  @override
+  String get name => 'middle';
+
+  @override
+  String get description => 'resumes while outer cleanup awaits';
+
+  @override
+  Future<void> run() async {
+    await runner.run(['inner', '--return-on-cleanup']);
+    print('middle resumed');
+    middleResumed.complete();
+    await Future<void>.delayed(const Duration(minutes: 1));
   }
 }
 
 /// Hangs until interrupted
 class InnerCommand extends Command<void> {
+  InnerCommand() {
+    argParser.addFlag('return-on-cleanup', help: 'Return when cleanup starts');
+  }
+
   @override
   String get name => 'inner';
 
@@ -378,6 +469,10 @@ class InnerCommand extends Command<void> {
   @override
   Future<void> run() async {
     print('inner ready');
+    if (argResults!['return-on-cleanup'] == true) {
+      await innerMayReturn.future;
+      return;
+    }
     await Future<void>.delayed(const Duration(minutes: 1));
   }
 }

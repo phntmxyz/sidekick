@@ -288,7 +288,7 @@ class SidekickCommandRunner<T> extends CompletionCommandRunner<T> {
 
     final unmount = mount(debugName: args.join(' '));
 
-    final cleanupScope = _CleanupScope(parent: _activeCleanupScope);
+    final cleanupScope = _CleanupScope(parent: _registrationCleanupScope);
     _activeCleanupScope = cleanupScope;
     // Only the outermost run reacts to signals, nested runs are cleaned up
     // through the parent chain
@@ -308,7 +308,10 @@ class SidekickCommandRunner<T> extends CompletionCommandRunner<T> {
           print(
               '${SidekickContext.cliName} is using sidekick version $version');
         } else {
-          result = await super.runCommand(parsedArgs);
+          result = await runZoned(
+            () => super.runCommand(parsedArgs!),
+            zoneValues: {_cleanupScopeZoneKey: cleanupScope},
+          );
         }
       } catch (e, stackTrace) {
         commandError = e;
@@ -515,8 +518,8 @@ SidekickCommandRunner? _activeRunner;
 ///
 /// Throws [OutOfCommandRunnerScopeException] when no command is executing.
 void addCleanup(Cleanup cleanup) {
-  final scope = _activeCleanupScope;
-  if (scope == null) {
+  final scope = _registrationCleanupScope;
+  if (scope == null || scope._drained) {
     throw OutOfCommandRunnerScopeException('addCleanup');
   }
   scope.add(cleanup);
@@ -532,6 +535,15 @@ typedef Cleanup = FutureOr<void> Function();
 
 /// The cleanups of the [SidekickCommandRunner.run] call that is executing
 _CleanupScope? _activeCleanupScope;
+
+/// Registration follows the callback across awaits, independently of runs
+/// completing elsewhere while signal cleanup is in progress.
+final Object _cleanupScopeZoneKey = Object();
+
+_CleanupScope? get _registrationCleanupScope {
+  return (Zone.current[_cleanupScopeZoneKey] as _CleanupScope?) ??
+      _activeCleanupScope;
+}
 
 /// The cleanups registered via [addCleanup] during one
 /// [SidekickCommandRunner.run] call
@@ -570,23 +582,19 @@ class _CleanupScope {
   Future<void> drain() => _drain ??= _runCleanups();
 
   Future<void> _runCleanups() async {
-    final previousScope = _activeCleanupScope;
     try {
       while (_cleanups.isNotEmpty) {
         final cleanup = _cleanups.removeLast();
-        // A cleanup that registers another cleanup adds it to the scope being
-        // drained, not to whichever scope happens to be active. That differs
-        // when a signal drains a parent scope while a nested command runs.
-        // Set it before every cleanup, an await in between may have moved it.
-        _activeCleanupScope = this;
         try {
-          await cleanup();
+          await runZoned(
+            cleanup,
+            zoneValues: {_cleanupScopeZoneKey: this},
+          );
         } catch (e, stackTrace) {
           _errors.add(_CleanupError(e, stackTrace));
         }
       }
     } finally {
-      _activeCleanupScope = previousScope;
       _drained = true;
     }
   }
