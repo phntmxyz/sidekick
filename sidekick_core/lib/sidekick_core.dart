@@ -315,11 +315,21 @@ class SidekickCommandRunner<T> extends CompletionCommandRunner<T> {
         commandStackTrace = stackTrace;
       }
 
-      // A failed command is more relevant than a failed cleanup, only surface
-      // cleanup errors as the result when the command itself succeeded
-      await cleanupScope.runAll(throwFirstError: commandError == null);
+      await cleanupScope.drain();
+      final cleanupErrors = cleanupScope.takeErrors();
       if (commandError != null) {
+        // A failed command is more relevant than a failed cleanup
+        for (final error in cleanupErrors) {
+          error.print();
+        }
         Error.throwWithStackTrace(commandError, commandStackTrace!);
+      }
+      if (cleanupErrors.isNotEmpty) {
+        for (final error in cleanupErrors.skip(1)) {
+          error.print();
+        }
+        Error.throwWithStackTrace(
+            cleanupErrors.first.error, cleanupErrors.first.stackTrace);
       }
       return result;
     } finally {
@@ -533,7 +543,15 @@ class _CleanupScope {
 
   final List<Cleanup> _cleanups = [];
 
-  bool get hasPendingCleanups => _cleanups.isNotEmpty;
+  /// The single drain of this scope, shared by whoever asks for it
+  Future<void>? _drain;
+
+  /// Failures of cleanups that ran, until a caller reports them
+  final List<_CleanupError> _errors = [];
+
+  bool get hasPendingCleanups =>
+      _cleanups.isNotEmpty || (_drain != null && !_drained);
+  bool _drained = false;
 
   void add(Cleanup cleanup) {
     _cleanups.add(cleanup);
@@ -542,29 +560,43 @@ class _CleanupScope {
   /// Runs all cleanups in reverse registration order, including cleanups that
   /// get registered while cleaning up
   ///
-  /// Every cleanup runs, even when an earlier one throws. Errors are printed
-  /// to stderr, except for the first one which is rethrown after all cleanups
-  /// ran when [throwFirstError] is set.
-  Future<void> runAll({required bool throwFirstError}) async {
-    Object? firstError;
-    StackTrace? firstStackTrace;
+  /// Every cleanup runs, even when an earlier one throws. Failures are
+  /// collected for [takeErrors], because how to report them depends on the
+  /// caller: normal completion may rethrow, signal handling only prints.
+  ///
+  /// There is only ever one drain per scope. A second caller, like a signal
+  /// arriving while the cleanups of a completed command are still running,
+  /// joins the drain in flight instead of racing it with an empty list.
+  Future<void> drain() => _drain ??= _runCleanups();
+
+  Future<void> _runCleanups() async {
     while (_cleanups.isNotEmpty) {
       final cleanup = _cleanups.removeLast();
       try {
         await cleanup();
       } catch (e, stackTrace) {
-        if (throwFirstError && firstError == null) {
-          firstError = e;
-          firstStackTrace = stackTrace;
-        } else {
-          printerr('Cleanup failed: $e\n$stackTrace');
-        }
+        _errors.add(_CleanupError(e, stackTrace));
       }
     }
-    if (firstError != null) {
-      Error.throwWithStackTrace(firstError, firstStackTrace!);
-    }
+    _drained = true;
   }
+
+  /// Hands out the collected failures once, so two callers awaiting the same
+  /// drain don't both report them
+  List<_CleanupError> takeErrors() {
+    final errors = List.of(_errors);
+    _errors.clear();
+    return errors;
+  }
+}
+
+class _CleanupError {
+  _CleanupError(this.error, this.stackTrace);
+
+  final Object error;
+  final StackTrace stackTrace;
+
+  void print() => printerr('Cleanup failed: $error\n$stackTrace');
 }
 
 List<StreamSubscription<ProcessSignal>>? _terminationSignalSubscriptions;
@@ -614,7 +646,10 @@ Future<void> _onTerminationSignal(ProcessSignal signal) async {
     printerr('Received $signal, cleaning up... (send it again to skip)');
   }
   while (scope != null) {
-    await scope.runAll(throwFirstError: false);
+    await scope.drain();
+    for (final error in scope.takeErrors()) {
+      error.print();
+    }
     scope = scope.parent;
   }
   exit(signalExitCode);

@@ -160,6 +160,18 @@ void main() {
       expect(process.stdoutLines, isNot(contains('cleanup 1')));
     });
 
+    test('a signal while a cleanup is already running waits for it', () async {
+      final cli = _FakeCli();
+      final process = await cli.start(['hang', '--return']);
+      await process.stdout.firstWhere((line) => line == 'cleanup 2 started');
+
+      process.kill(ProcessSignal.sigint);
+
+      expect(await process.exitCode, 130);
+      expect(process.stdoutLines,
+          containsAllInOrder(['cleanup 2 started', 'cleanup 2', 'cleanup 1']));
+    });
+
     test('a signal without pending cleanups exits quietly', () async {
       final cli = _FakeCli();
       final process = await cli.start(['hang', '--no-cleanups']);
@@ -273,6 +285,8 @@ import 'package:sidekick_core/sidekick_core.dart' hide isEmpty;
 Future<void> main(List<String> args) async {
   final runner = initializeSidekick();
   runner.addCommand(HangCommand());
+  runner.addCommand(OuterCommand(runner));
+  runner.addCommand(InnerCommand());
   await runner.run(args);
 }
 
@@ -281,6 +295,7 @@ class HangCommand extends Command<void> {
   HangCommand() {
     argParser.addFlag('stuck-cleanup', help: 'Register a cleanup that never completes');
     argParser.addFlag('no-cleanups', help: 'Register no cleanups at all');
+    argParser.addFlag('return', help: 'Return right away so the cleanups start running');
   }
 
   @override
@@ -300,12 +315,53 @@ class HangCommand extends Command<void> {
         });
       } else {
         addCleanup(() async {
-          await Future<void>.delayed(const Duration(milliseconds: 50));
+          print('cleanup 2 started');
+          await Future<void>.delayed(const Duration(milliseconds: 500));
           print('cleanup 2');
         });
       }
     }
     print('ready');
+    if (argResults!['return'] == true) {
+      return;
+    }
+    await Future<void>.delayed(const Duration(minutes: 1));
+  }
+}
+
+/// Registers a cleanup that registers another one, then runs [InnerCommand]
+class OuterCommand extends Command<void> {
+  OuterCommand(this.runner);
+
+  final CommandRunner<void> runner;
+
+  @override
+  String get name => 'outer';
+
+  @override
+  String get description => 'runs inner';
+
+  @override
+  Future<void> run() async {
+    addCleanup(() {
+      print('outer cleanup');
+      addCleanup(() => print('cleanup registered by outer cleanup'));
+    });
+    await runner.run(['inner']);
+  }
+}
+
+/// Hangs until interrupted
+class InnerCommand extends Command<void> {
+  @override
+  String get name => 'inner';
+
+  @override
+  String get description => 'hangs until interrupted';
+
+  @override
+  Future<void> run() async {
+    print('inner ready');
     await Future<void>.delayed(const Duration(minutes: 1));
   }
 }
