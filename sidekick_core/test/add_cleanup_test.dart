@@ -129,7 +129,7 @@ void main() {
     ]) {
       test('$signal runs the cleanups and exits with $expectedExitCode',
           () async {
-        final cli = await _FakeCli.create();
+        final cli = _FakeCli();
         final process = await cli.start(['hang']);
         await process.stdout.firstWhere((line) => line == 'ready');
 
@@ -145,7 +145,7 @@ void main() {
 
     test('a second signal exits immediately without waiting for cleanups',
         () async {
-      final cli = await _FakeCli.create();
+      final cli = _FakeCli();
       final process = await cli.start(['hang', '--stuck-cleanup']);
       await process.stdout.firstWhere((line) => line == 'ready');
 
@@ -158,7 +158,7 @@ void main() {
     });
 
     test('a signal without pending cleanups exits quietly', () async {
-      final cli = await _FakeCli.create();
+      final cli = _FakeCli();
       final process = await cli.start(['hang', '--no-cleanups']);
       await process.stdout.firstWhere((line) => line == 'ready');
 
@@ -205,52 +205,40 @@ class _Command extends Command<void> {
 /// A minimal sidekick CLI in a temp dir, depending on this sidekick_core, that
 /// can be started as a separate process to test signal handling
 class _FakeCli {
-  _FakeCli._(this.projectRoot, this.packageDir);
+  _FakeCli() : this._(Directory.systemTemp.createTempSync('sidekick_cleanup'));
 
-  final Directory projectRoot;
-  final Directory packageDir;
-
-  static Future<_FakeCli> create() async {
-    final projectRoot =
-        Directory.systemTemp.createTempSync('sidekick_cleanup_test');
-    addTearDown(() => projectRoot.deleteSync(recursive: true));
+  _FakeCli._(this.projectRoot)
+      : packageDir = projectRoot.directory('packages/dash') {
     projectRoot.file('pubspec.yaml').writeAsStringSync('name: main_project\n');
     projectRoot.file('dash').createSync();
-
-    final packageDir = projectRoot.directory('packages/dash')
-      ..createSync(recursive: true);
-    final sidekickCoreDir = Directory.current.absolute.path;
-    packageDir.file('pubspec.yaml').writeAsStringSync('''
-name: dash
-
-environment:
-  sdk: '>=3.6.0 <4.0.0'
-
-dependencies:
-  sidekick_core:
-    path: $sidekickCoreDir
-''');
+    packageDir.file('pubspec.yaml')
+      ..createSync(recursive: true)
+      ..writeAsStringSync('name: dash\n');
     packageDir.file('bin/main.dart')
       ..createSync(recursive: true)
       ..writeAsStringSync(_fakeCliMain);
     packageDir.file('lib/dash_sidekick.dart').createSync(recursive: true);
-
-    final pubGet = await Process.run('dart', ['pub', 'get'],
-        workingDirectory: packageDir.path);
-    if (pubGet.exitCode != 0) {
-      throw 'dart pub get failed:\n${pubGet.stdout}\n${pubGet.stderr}';
-    }
-    return _FakeCli._(projectRoot, packageDir);
+    addTearDown(() => projectRoot.deleteSync(recursive: true));
   }
+
+  final Directory projectRoot;
+  final Directory packageDir;
 
   Future<_CliProcess> start(List<String> args) async {
     final process = await Process.start(
       // The VM binary running this test, not a `dart` wrapper script from PATH
       // which would receive the signal instead of the CLI
       Platform.resolvedExecutable,
-      // `dart run` executes the script in a child VM and doesn't forward
-      // signals to it either, so run the script in this VM directly
-      ['--disable-dart-dev', 'bin/main.dart', ...args],
+      [
+        // `dart run` executes the script in a child VM and doesn't forward
+        // signals to it either, so run the script in this VM directly
+        '--disable-dart-dev',
+        // Resolve sidekick_core through the package config of this test run
+        // instead of running `dart pub get` against whatever is on PATH
+        '--packages=${Directory.current.path}/.dart_tool/package_config.json',
+        'bin/main.dart',
+        ...args,
+      ],
       workingDirectory: packageDir.path,
       environment: {
         'SIDEKICK_PACKAGE_HOME': packageDir.absolute.path,
