@@ -570,15 +570,25 @@ class _CleanupScope {
   Future<void> drain() => _drain ??= _runCleanups();
 
   Future<void> _runCleanups() async {
-    while (_cleanups.isNotEmpty) {
-      final cleanup = _cleanups.removeLast();
-      try {
-        await cleanup();
-      } catch (e, stackTrace) {
-        _errors.add(_CleanupError(e, stackTrace));
+    final previousScope = _activeCleanupScope;
+    try {
+      while (_cleanups.isNotEmpty) {
+        final cleanup = _cleanups.removeLast();
+        // A cleanup that registers another cleanup adds it to the scope being
+        // drained, not to whichever scope happens to be active. That differs
+        // when a signal drains a parent scope while a nested command runs.
+        // Set it before every cleanup, an await in between may have moved it.
+        _activeCleanupScope = this;
+        try {
+          await cleanup();
+        } catch (e, stackTrace) {
+          _errors.add(_CleanupError(e, stackTrace));
+        }
       }
+    } finally {
+      _activeCleanupScope = previousScope;
+      _drained = true;
     }
-    _drained = true;
   }
 
   /// Hands out the collected failures once, so two callers awaiting the same

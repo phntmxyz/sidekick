@@ -172,6 +172,22 @@ void main() {
           containsAllInOrder(['cleanup 2 started', 'cleanup 2', 'cleanup 1']));
     });
 
+    test('a signal during a nested run keeps cleanups registered by a cleanup',
+        () async {
+      final cli = _FakeCli();
+      final process = await cli.start(['outer']);
+      await process.stdout.firstWhere((line) => line == 'inner ready');
+
+      process.kill(ProcessSignal.sigint);
+
+      expect(await process.exitCode, 130);
+      expect(
+        process.stdoutLines,
+        containsAllInOrder(
+            ['outer cleanup', 'cleanup registered by outer cleanup']),
+      );
+    });
+
     test('a signal without pending cleanups exits quietly', () async {
       final cli = _FakeCli();
       final process = await cli.start(['hang', '--no-cleanups']);
