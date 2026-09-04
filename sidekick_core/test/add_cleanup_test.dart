@@ -98,11 +98,10 @@ void main() {
     expect(() => addCleanup(() {}),
         throwsA(isA<OutOfCommandRunnerScopeException>()));
 
-    late void Function() registerLate;
-    await _runCommand(() async {
-      registerLate = () => addCleanup(() {});
-    });
-    expect(registerLate, throwsA(isA<OutOfCommandRunnerScopeException>()));
+    // the scope is gone again once the command finished
+    await _runCommand(() async {});
+    expect(() => addCleanup(() {}),
+        throwsA(isA<OutOfCommandRunnerScopeException>()));
   });
 
   test('a nested run cleans up its own cleanups when it finishes', () async {
