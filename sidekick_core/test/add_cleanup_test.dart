@@ -233,12 +233,14 @@ void main() {
 
       expect(await process.exitCode, 130);
       await process.stdout.drain<void>();
-      expect(process.stdoutLines, containsAllInOrder([
-        'outer cleanup',
-        'middle resumed',
-        'outer cleanup resumed',
-        'cleanup registered by outer cleanup',
-      ]));
+      expect(
+          process.stdoutLines,
+          containsAllInOrder([
+            'outer cleanup',
+            'middle resumed',
+            'outer cleanup resumed',
+            'cleanup registered by outer cleanup',
+          ]));
     });
 
     test('a signal without pending cleanups exits quietly', () async {
