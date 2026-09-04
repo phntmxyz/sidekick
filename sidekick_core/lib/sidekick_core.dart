@@ -300,6 +300,8 @@ class SidekickCommandRunner<T> extends CompletionCommandRunner<T> {
     ArgResults? parsedArgs;
     try {
       T? result;
+      Object? commandError;
+      StackTrace? commandStackTrace;
       try {
         parsedArgs = parse(args);
         if (parsedArgs['version'] == true) {
@@ -308,12 +310,17 @@ class SidekickCommandRunner<T> extends CompletionCommandRunner<T> {
         } else {
           result = await super.runCommand(parsedArgs);
         }
-      } catch (_) {
-        // The command error is more relevant than any cleanup error
-        await cleanupScope.runAll(throwFirstError: false);
-        rethrow;
+      } catch (e, stackTrace) {
+        commandError = e;
+        commandStackTrace = stackTrace;
       }
-      await cleanupScope.runAll(throwFirstError: true);
+
+      // A failed command is more relevant than a failed cleanup, only surface
+      // cleanup errors as the result when the command itself succeeded
+      await cleanupScope.runAll(throwFirstError: commandError == null);
+      if (commandError != null) {
+        Error.throwWithStackTrace(commandError, commandStackTrace!);
+      }
       return result;
     } finally {
       // don't print anything additionally when running the hidden tab completion command (runs in the background when pressing tab),
