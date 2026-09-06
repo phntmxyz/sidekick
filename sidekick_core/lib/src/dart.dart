@@ -47,6 +47,11 @@ Future<ProcessCompletion> dart(
     progress: progress,
     nothrow: nothrow || throwOnError != null,
     terminal: progress == null,
+    // dcli hands over its complete environment map, so this does not shrink
+    // what the child receives. It stops the parent process from reinstating
+    // variables that were removed from the scoped environment, which is the
+    // only way `env['FOO'] = null` can reach a child process.
+    includeParentEnvironment: false,
   );
 
   final exitCode = process.exitCode ?? -1;
@@ -99,6 +104,7 @@ Future<int> systemDart(
       progress: progress,
       terminal: progress == null,
       nothrow: nothrow || throwOnError != null,
+      includeParentEnvironment: false,
     );
 
     exitCode = process.exitCode ?? -1;

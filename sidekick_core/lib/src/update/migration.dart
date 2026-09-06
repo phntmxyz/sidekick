@@ -112,6 +112,7 @@ class GitPatchMigrationStep extends MigrationStep {
           workingDirectory: workingDirectory().absolute.path,
           // A more detailed error will be thrown on exitCode != 0
           nothrow: true,
+          includeParentEnvironment: false,
         ).exitCode ??
         -1;
     if (exitCode != 0) {

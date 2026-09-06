@@ -297,7 +297,11 @@ class InitCommand extends Command {
         final capture = Progress.capture();
         try {
           // Reduce initial noise when running the CLI for the first time
-          dcli.start(entryPoint.path, progress: capture);
+          dcli.start(
+            entryPoint.path,
+            progress: capture,
+            includeParentEnvironment: false,
+          );
         } catch (e) {
           printerr(red(capture.lines.join('\n')));
           rethrow;
@@ -305,6 +309,7 @@ class InitCommand extends Command {
         dcli.startFromArgs(
           entryPoint.path,
           ['sidekick', 'plugins', 'install', 'puro_sidekick_plugin'],
+          includeParentEnvironment: false,
         );
       }
     }

@@ -61,6 +61,7 @@ dcli.Progress writeAndRunShellScript(
       workingDirectory: workingDirectory?.absolute.path,
       progress: scriptProgress,
       terminal: terminal,
+      includeParentEnvironment: false,
     );
   } catch (e) {
     print(
