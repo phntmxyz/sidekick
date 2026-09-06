@@ -62,12 +62,17 @@ class DepsCommand extends Command {
       }
       _warnIfNotInProject();
       // only get deps for selected package
-      await _getDependencies(package);
+      final result = await _getDependencies(package);
+      await _runAfterDepsHooks([result]);
+      if (!result.isSuccess) {
+        Error.throwWithStackTrace(result.error!, result.stackTrace!);
+      }
       return;
     }
 
     _warnIfNotInProject();
     final errorBuffer = StringBuffer();
+    final results = <DepsPackageResult>[];
 
     final globExcludes = excludeGlob
         .expand((rule) {
@@ -87,13 +92,15 @@ class DepsCommand extends Command {
       DartPackage.fromDirectory(SidekickContext.sidekickPackage.root)!,
     ];
 
-    for (final package in allPackages.whereNot(excluded.contains)) {
-      try {
-        await _getDependencies(package);
-      } catch (e, stack) {
+    final selectedPackages = allPackages.whereNot(excluded.contains).toList();
+    for (final package in selectedPackages) {
+      final result = await _getDependencies(package);
+      results.add(result);
+      if (!result.isSuccess) {
         print('Error while getting dependencies for ${package.name} '
             '(${package.root.path})');
-        errorBuffer.writeln("${package.name}: $e\n$stack");
+        errorBuffer
+            .writeln('${package.name}: ${result.error}\n${result.stackTrace}');
       }
     }
     final errorText = errorBuffer.toString();
@@ -104,19 +111,31 @@ class DepsCommand extends Command {
     } else {
       exitCode = 0;
     }
+    await _runAfterDepsHooks(results);
+    if (results.any((result) => !result.isSuccess)) {
+      exitCode = 1;
+    }
   }
 
-  Future<void> _getDependencies(DartPackage package) async {
+  /// Runs `pub get` for [package], reporting the outcome instead of throwing
+  /// so that all selected packages are attempted and hooks see every result.
+  Future<DepsPackageResult> _getDependencies(DartPackage package) async {
     print(yellow('=== package ${package.name} ==='));
     final packageDir = package.root;
     final dartOrFlutter = package.isFlutterPackage ? flutter : dart;
-    await dartOrFlutter(
-      ['pub', 'get'],
-      workingDirectory: packageDir,
-      throwOnError: () =>
-          'Failed to get dependencies for package ${packageDir.path}',
-    );
+    try {
+      await dartOrFlutter(
+        ['pub', 'get'],
+        workingDirectory: packageDir,
+        throwOnError: () =>
+            'Failed to get dependencies for package ${packageDir.path}',
+      );
+    } catch (error, stackTrace) {
+      return DepsPackageResult.failure(package,
+          error: error, stackTrace: stackTrace);
+    }
     print("\n");
+    return DepsPackageResult.success(package);
   }
 
   void _warnIfNotInProject() {
@@ -127,6 +146,90 @@ class DepsCommand extends Command {
           "working directory, but of project '${SidekickContext.cliName}'.");
     }
   }
+}
+
+/// Called once after dependency fetching was attempted for the selected
+/// packages. Register with [addAfterDepsHook].
+typedef AfterDepsHook = Future<void> Function(AfterDepsContext context);
+
+final List<AfterDepsHook> _afterDepsHooks = [];
+
+/// Registers a hook that runs after [DepsCommand] attempted to fetch
+/// dependencies for the selected packages.
+///
+/// Hooks apply to every [DepsCommand] instance and run sequentially in
+/// registration order, including `deps --package` and empty selections. They
+/// are awaited; an exception stops the remaining hooks. It fails the command
+/// when all dependencies were fetched successfully, otherwise the dependency
+/// failure stays the reported error and the hook exception is printed to
+/// stderr. Hooks also run after dependency failures; inspect
+/// [AfterDepsContext.isSuccess] before performing setup that requires
+/// successful dependencies. Argument/selection errors do not dispatch hooks.
+/// Hooks run while the normal Sidekick context is available.
+Removable addAfterDepsHook(AfterDepsHook hook) {
+  _afterDepsHooks.add(hook);
+  return () => _afterDepsHooks.remove(hook);
+}
+
+/// Runs all [AfterDepsHook]s, keeping a dependency failure the primary error.
+///
+/// A hook exception is only thrown when every package succeeded. After a
+/// dependency failure the hook exception is printed instead, so the caller can
+/// report the dependency error the user needs to act on.
+Future<void> _runAfterDepsHooks(List<DepsPackageResult> results) async {
+  final context = AfterDepsContext(results: results);
+  try {
+    for (final hook in _afterDepsHooks.toList()) {
+      await hook(context);
+    }
+  } catch (error, stackTrace) {
+    if (context.isSuccess) {
+      rethrow;
+    }
+    printerr('Error in after deps hook: $error\n$stackTrace');
+  }
+}
+
+/// Results of a dependency-fetching run, passed to an [AfterDepsHook].
+///
+/// Project information remains available from [SidekickContext], [mainProject],
+/// and [entryWorkingDirectory] while the hook runs.
+class AfterDepsContext {
+  AfterDepsContext({required List<DepsPackageResult> results})
+      : results = List.unmodifiable(results);
+
+  /// One result per attempted package, in execution order. Excluded packages
+  /// are omitted. An empty list means no packages needed processing.
+  final List<DepsPackageResult> results;
+
+  /// Whether every attempt succeeded. An empty run is successful.
+  /// This describes dependency fetching, not the outcome of other hooks.
+  bool get isSuccess => results.every((result) => result.isSuccess);
+}
+
+/// Outcome of fetching dependencies for one package.
+class DepsPackageResult {
+  const DepsPackageResult.success(this.package)
+      : error = null,
+        stackTrace = null;
+
+  const DepsPackageResult.failure(
+    this.package, {
+    required Object this.error,
+    required StackTrace this.stackTrace,
+  });
+
+  final DartPackage package;
+
+  /// The failure, or null when the attempt succeeded. For a nonzero pub exit,
+  /// this names the package path. SDK initialization and other exceptions are
+  /// preserved as thrown.
+  final Object? error;
+
+  /// The stack trace of the failure, or null when the attempt succeeded.
+  final StackTrace? stackTrace;
+
+  bool get isSuccess => error == null;
 }
 
 extension on Directory {

@@ -1,0 +1,304 @@
+import 'package:sidekick_core/sidekick_core.dart' hide isEmpty;
+import 'package:sidekick_test/fake_stdio.dart';
+import 'package:sidekick_test/sidekick_test.dart';
+import 'package:test/test.dart';
+
+void main() {
+  tearDown(() => exitCode = 0);
+
+  for (final filtered in [false, true]) {
+    test('awaits hooks with project context (filtered: $filtered)', () async {
+      await insideFakeProjectWithSidekick((dir) async {
+        final runner = initializeSidekick(
+          dartSdkPath: fakeDartSdk().path,
+          mainProjectPath: '.',
+        );
+        var calls = 0;
+        final removeHook = addAfterDepsHook((context) async {
+          expect(SidekickContext.projectRoot.path, dir.path);
+          expect(entryWorkingDirectory.path, dir.path);
+          expect(mainProject?.name, 'main_project');
+          expect(context.results.map((r) => r.package.name), ['main_project']);
+          expect(context.isSuccess, isTrue);
+          expect(context.results.single.error, isNull);
+          expect(context.results.single.stackTrace, isNull);
+          expect(() => context.results.clear(), throwsUnsupportedError);
+          await Future<void>.delayed(Duration.zero);
+          calls++;
+        });
+        addTearDown(() => removeHook());
+        runner.addCommand(DepsCommand());
+        await runner.run([
+          'deps',
+          if (filtered) ...['-p', 'main_project']
+        ]);
+        expect(calls, 1);
+      });
+    });
+
+    test('reports dependency failures to hooks (filtered: $filtered)',
+        () async {
+      await insideFakeProjectWithSidekick((_) async {
+        final runner =
+            initializeSidekick(dartSdkPath: fakeFailingDartSdk().path);
+        var called = false;
+        final removeHook = addAfterDepsHook((context) async {
+          expect(context.isSuccess, isFalse);
+          expect(context.results.single.package.name, 'main_project');
+          expect(context.results.single.error,
+              contains('Failed to get dependencies'));
+          expect(context.results.single.stackTrace, isNotNull);
+          await Future<void>.value();
+          called = true;
+          // A successful hook cannot turn a failed deps run into success.
+          exitCode = 0;
+        });
+        addTearDown(() => removeHook());
+        runner.addCommand(DepsCommand());
+        if (filtered) {
+          await expectLater(
+              runner.run(['deps', '-p', 'main_project']), throwsA(anything));
+        } else {
+          await runner.run(['deps']);
+          expect(exitCode, 1);
+        }
+        expect(called, isTrue);
+      });
+    });
+  }
+
+  test('reports mixed outcomes after attempting all packages', () async {
+    await insideFakeProjectWithSidekick((dir) async {
+      dir.file('broken/pubspec.yaml')
+        ..parent.createSync(recursive: true)
+        ..writeAsStringSync('name: broken\nenvironment:\n  sdk: ^3.6.0\n');
+      final sdk = fakeDartSdk();
+      sdk.file('bin/dart').writeAsStringSync(r'''
+#!/bin/sh
+case "$PWD" in */broken) exit 1;; esac
+'''
+          .trimLeft());
+      final runner = initializeSidekick(dartSdkPath: sdk.path);
+      AfterDepsContext? captured;
+      final removeHook = addAfterDepsHook((context) async {
+        captured = context;
+        expect(context.isSuccess, isFalse);
+        expect(context.results.map((r) => r.package.name),
+            containsAll(['main_project', 'broken']));
+        expect(
+            context.results
+                .singleWhere((r) => r.package.name == 'main_project')
+                .isSuccess,
+            isTrue);
+        expect(
+            context.results
+                .singleWhere((r) => r.package.name == 'broken')
+                .isSuccess,
+            isFalse);
+        await Future<void>.value();
+      });
+      addTearDown(() => removeHook());
+      runner.addCommand(DepsCommand());
+      await runner.run(['deps']);
+      expect(exitCode, 1);
+      expect(captured, isNotNull);
+    });
+  });
+
+  for (final filtered in [false, true]) {
+    test(
+        'successful dependencies propagate the hook error '
+        '(filtered: $filtered)', () async {
+      await insideFakeProjectWithSidekick((_) async {
+        final runner = initializeSidekick(
+          dartSdkPath: fakeDartSdk().path,
+          mainProjectPath: '.',
+        );
+        final hookError = StateError('hook failed after successful deps');
+        AfterDepsContext? captured;
+        final removeHook = addAfterDepsHook((context) async {
+          captured = context;
+          await Future<void>.value();
+          throw hookError;
+        });
+        addTearDown(() => removeHook());
+        runner.addCommand(DepsCommand());
+        await expectLater(
+          runner.run([
+            'deps',
+            if (filtered) ...['-p', 'main_project']
+          ]),
+          throwsA(same(hookError)),
+        );
+        expect(captured, isNotNull);
+        expect(captured!.isSuccess, isTrue);
+        expect(captured!.results.single.package.name, 'main_project');
+      });
+    });
+  }
+
+  for (final filtered in [false, true]) {
+    test(
+        'dependency failure stays primary when a hook throws '
+        '(filtered: $filtered)', () async {
+      await insideFakeProjectWithSidekick((_) async {
+        final runner =
+            initializeSidekick(dartSdkPath: fakeFailingDartSdk().path);
+        final hookError = StateError('secondary hook failure');
+        final diagnostics = FakeStdoutStream();
+        DepsPackageResult? attempted;
+        final removeHook = addAfterDepsHook((context) async {
+          attempted = context.results.single;
+          expect(attempted!.isSuccess, isFalse);
+          await Future<void>.value();
+          // A failing hook cannot turn a failed deps run into success.
+          exitCode = 0;
+          throw hookError;
+        });
+        addTearDown(() => removeHook());
+        runner.addCommand(DepsCommand());
+        Object? reportedError;
+        StackTrace? reportedStack;
+        await overrideIoStreams(
+          stderr: () => diagnostics,
+          body: () async {
+            try {
+              await runner.run([
+                'deps',
+                if (filtered) ...['-p', 'main_project']
+              ]);
+            } catch (error, stackTrace) {
+              reportedError = error;
+              reportedStack = stackTrace;
+            }
+          },
+        );
+        expect(attempted, isNotNull);
+        expect(attempted!.error, isNotNull);
+        expect(diagnostics.lines.join('\n'),
+            contains('Error in after deps hook: $hookError'));
+        if (filtered) {
+          expect(reportedError, same(attempted!.error));
+          expect(reportedStack.toString(), attempted!.stackTrace.toString());
+        } else {
+          expect(reportedError, isNull);
+          expect(exitCode, 1);
+        }
+      });
+    });
+  }
+
+  test('invalid package selection does not dispatch hooks', () async {
+    await insideFakeProjectWithSidekick((_) async {
+      final runner = initializeSidekick(dartSdkPath: fakeDartSdk().path);
+      final invocations = <AfterDepsContext>[];
+      final removeHook = addAfterDepsHook((context) {
+        invocations.add(context);
+        return Future<void>.value();
+      });
+      addTearDown(() => removeHook());
+      runner.addCommand(DepsCommand());
+      await expectLater(runner.run(['deps', '-p', 'missing_package']),
+          throwsA(contains('Package with name missing_package not found')));
+      expect(invocations, isEmpty);
+    });
+  });
+
+  test('hook failure propagates and stops later hooks, even with no packages',
+      () async {
+    await insideFakeProjectWithSidekick((dir) async {
+      final runner = initializeSidekick(dartSdkPath: fakeDartSdk().path);
+      final failure = StateError('setup failed');
+      final removeFailingHook = addAfterDepsHook((context) async {
+        expect(context.results, isEmpty);
+        expect(context.isSuccess, isTrue);
+        await Future<void>.error(failure);
+      });
+      addTearDown(() => removeFailingHook());
+      final removeLaterHook =
+          addAfterDepsHook((_) => Future<void>.error('must not run'));
+      addTearDown(() => removeLaterHook());
+      runner
+          .addCommand(DepsCommand(exclude: [DartPackage.fromDirectory(dir)!]));
+      await expectLater(runner.run(['deps']), throwsA(same(failure)));
+    });
+  });
+
+  test('multiple subscribers run sequentially across command instances',
+      () async {
+    await insideFakeProjectWithSidekick((_) async {
+      final events = <String>[];
+      final removeFirstHook = addAfterDepsHook((_) async {
+        await Future<void>.delayed(Duration.zero);
+        events.add('first');
+      });
+      addTearDown(() => removeFirstHook());
+      final removeSecondHook = addAfterDepsHook((_) async {
+        expect(events.last, 'first');
+        await Future<void>.value();
+        events.add('second');
+      });
+      addTearDown(() => removeSecondHook());
+      final sdk = fakeDartSdk();
+      for (var i = 0; i < 2; i++) {
+        final runner = initializeSidekick(dartSdkPath: sdk.path);
+        runner.addCommand(DepsCommand());
+        await runner.run(['deps']);
+      }
+      expect(events, ['first', 'second', 'first', 'second']);
+    });
+  });
+
+  test('registering the same function twice runs it twice', () async {
+    await insideFakeProjectWithSidekick((_) async {
+      final runner = initializeSidekick(dartSdkPath: fakeDartSdk().path);
+      runner.addCommand(DepsCommand());
+      var calls = 0;
+      Future<void> hook(AfterDepsContext _) async {
+        await Future<void>.value();
+        calls++;
+      }
+
+      final removeFirstRegistration = addAfterDepsHook(hook);
+      addTearDown(() => removeFirstRegistration());
+      final removeSecondRegistration = addAfterDepsHook(hook);
+      addTearDown(() => removeSecondRegistration());
+      await runner.run(['deps']);
+      expect(calls, 2);
+      removeFirstRegistration();
+      await runner.run(['deps']);
+      expect(calls, 3);
+    });
+  });
+
+  test('registration changes during dispatch take effect on the next run',
+      () async {
+    await insideFakeProjectWithSidekick((_) async {
+      final runner = initializeSidekick(dartSdkPath: fakeDartSdk().path);
+      runner.addCommand(DepsCommand());
+      final events = <String>[];
+      Future<void> third(AfterDepsContext _) async {
+        await Future<void>.value();
+        events.add('third');
+      }
+
+      late Removable removeSecondHook;
+      final removeFirstHook = addAfterDepsHook((_) async {
+        await Future<void>.value();
+        events.add('first');
+        removeSecondHook();
+        final removeThirdHook = addAfterDepsHook(third);
+        addTearDown(() => removeThirdHook());
+      });
+      addTearDown(() => removeFirstHook());
+      removeSecondHook = addAfterDepsHook((_) async {
+        await Future<void>.value();
+        events.add('second');
+      });
+      addTearDown(() => removeSecondHook());
+      await runner.run(['deps']);
+      await runner.run(['deps']);
+      expect(events, ['first', 'second', 'first', 'third']);
+    });
+  });
+}
