@@ -122,10 +122,11 @@ limitations under the License.
 
 ## Hooks after fetching dependencies
 
-Register plugins during CLI initialization, alongside SDK initializers:
+`addAfterDepsHook` runs a callback once `deps` has attempted every selected package.
+Register it during CLI initialization, alongside SDK initializers:
 
 ```dart
-addDepsHook((context) async {
+addAfterDepsHook((context) async {
   if (!context.isSuccess) {
     return;
   }
@@ -138,8 +139,8 @@ addDepsHook((context) async {
 runner.addCommand(DepsCommand());
 ```
 
-`addDepsHook` applies to every `DepsCommand`, so plugins do not need to modify command registrations or compose callbacks.
-Multiple hooks run sequentially in registration order after dependency fetching finishes, including failed or partially successful runs, `deps --package`, and empty selections.
+`addAfterDepsHook` applies to every `DepsCommand`, so plugins do not need to modify command registrations or compose callbacks.
+Multiple hooks run sequentially in registration order, including failed or partially successful runs, `deps --package`, and empty selections.
 All hooks are awaited.
 A hook failure stops the remaining hooks.
 It fails the command when all dependencies were fetched successfully.
@@ -147,7 +148,7 @@ After a dependency failure the dependency error stays the reported one and the h
 Dependency failures fail the command even when hooks succeed.
 Invalid package selection does not invoke hooks.
 
-`DepsContext` contains only run results:
+`AfterDepsContext` contains only run results:
 
 - `results`: an immutable list of `DepsPackageResult`, in execution order.
   Each has the attempted `package`, `isSuccess`, and the caught `error` and `stackTrace` on failure.

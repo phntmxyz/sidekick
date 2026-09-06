@@ -63,7 +63,7 @@ class DepsCommand extends Command {
       _warnIfNotInProject();
       // only get deps for selected package
       final result = await _getDependencies(package);
-      await _runDepsHooks([result]);
+      await _runAfterDepsHooks([result]);
       if (!result.isSuccess) {
         Error.throwWithStackTrace(result.error!, result.stackTrace!);
       }
@@ -111,7 +111,7 @@ class DepsCommand extends Command {
     } else {
       exitCode = 0;
     }
-    await _runDepsHooks(results);
+    await _runAfterDepsHooks(results);
     if (results.any((result) => !result.isSuccess)) {
       exitCode = 1;
     }
@@ -148,57 +148,54 @@ class DepsCommand extends Command {
   }
 }
 
-/// Called once after dependency fetching was attempted for the selected packages.
-typedef DepsHook = Future<void> Function(DepsContext context);
+/// Called once after dependency fetching was attempted for the selected
+/// packages. Register with [addAfterDepsHook].
+typedef AfterDepsHook = Future<void> Function(AfterDepsContext context);
 
-final List<DepsHook> _depsHooks = [];
+final List<AfterDepsHook> _afterDepsHooks = [];
 
-/// Registers a hook after [DepsCommand] finishes attempting dependency fetching.
+/// Registers a hook that runs after [DepsCommand] attempted to fetch
+/// dependencies for the selected packages.
 ///
-/// Hooks apply to every DepsCommand instance and run sequentially in registration
-/// order, including `deps --package` and empty selections. They are awaited;
-/// an exception stops the remaining hooks. It fails the command when all
-/// dependencies were fetched successfully, otherwise the dependency failure
-/// stays the reported error and the hook exception is printed to stderr.
-/// Hooks also run after dependency failures; inspect [DepsContext.isSuccess]
-/// before performing setup that requires successful dependencies.
-/// Argument/selection errors do not dispatch hooks. Hooks run while the normal
-/// Sidekick context is available.
-///
-/// Register during CLI initialization, alongside [addSdkInitializer]. The
-/// returned function unregisters the hook. Registering the same function twice
-/// runs it twice. Registrations persist until removed; changes during dispatch
-/// affect the next run.
-Removable addDepsHook(DepsHook hook) {
-  _depsHooks.add(hook);
-  return () => _depsHooks.remove(hook);
+/// Hooks apply to every [DepsCommand] instance and run sequentially in
+/// registration order, including `deps --package` and empty selections. They
+/// are awaited; an exception stops the remaining hooks. It fails the command
+/// when all dependencies were fetched successfully, otherwise the dependency
+/// failure stays the reported error and the hook exception is printed to
+/// stderr. Hooks also run after dependency failures; inspect
+/// [AfterDepsContext.isSuccess] before performing setup that requires
+/// successful dependencies. Argument/selection errors do not dispatch hooks.
+/// Hooks run while the normal Sidekick context is available.
+Removable addAfterDepsHook(AfterDepsHook hook) {
+  _afterDepsHooks.add(hook);
+  return () => _afterDepsHooks.remove(hook);
 }
 
-/// Runs all hooks, keeping a dependency failure the primary error.
+/// Runs all [AfterDepsHook]s, keeping a dependency failure the primary error.
 ///
 /// A hook exception is only thrown when every package succeeded. After a
 /// dependency failure the hook exception is printed instead, so the caller can
 /// report the dependency error the user needs to act on.
-Future<void> _runDepsHooks(List<DepsPackageResult> results) async {
-  final context = DepsContext(results: results);
+Future<void> _runAfterDepsHooks(List<DepsPackageResult> results) async {
+  final context = AfterDepsContext(results: results);
   try {
-    for (final hook in _depsHooks.toList()) {
+    for (final hook in _afterDepsHooks.toList()) {
       await hook(context);
     }
   } catch (error, stackTrace) {
     if (context.isSuccess) {
       rethrow;
     }
-    printerr('Error in deps hook: $error\n$stackTrace');
+    printerr('Error in after deps hook: $error\n$stackTrace');
   }
 }
 
-/// Results of a dependency-fetching run, passed to a [DepsHook].
+/// Results of a dependency-fetching run, passed to an [AfterDepsHook].
 ///
 /// Project information remains available from [SidekickContext], [mainProject],
 /// and [entryWorkingDirectory] while the hook runs.
-class DepsContext {
-  DepsContext({required List<DepsPackageResult> results})
+class AfterDepsContext {
+  AfterDepsContext({required List<DepsPackageResult> results})
       : results = List.unmodifiable(results);
 
   /// One result per attempted package, in execution order. Excluded packages
