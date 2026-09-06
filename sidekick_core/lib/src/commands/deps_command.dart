@@ -62,8 +62,8 @@ class DepsCommand extends Command {
       }
       _warnIfNotInProject();
       // only get deps for selected package
-      final result = await _attempt(package);
-      await _complete([result]);
+      final result = await _attemptGetDependencies(package);
+      await _runDepsHooks([result]);
       if (!result.isSuccess) {
         Error.throwWithStackTrace(result.error!, result.stackTrace!);
       }
@@ -94,7 +94,7 @@ class DepsCommand extends Command {
 
     final selectedPackages = allPackages.whereNot(excluded.contains).toList();
     for (final package in selectedPackages) {
-      final result = await _attempt(package);
+      final result = await _attemptGetDependencies(package);
       results.add(result);
       if (!result.isSuccess) {
         print('Error while getting dependencies for ${package.name} '
@@ -111,13 +111,13 @@ class DepsCommand extends Command {
     } else {
       exitCode = 0;
     }
-    await _complete(results);
+    await _runDepsHooks(results);
     if (results.any((result) => !result.isSuccess)) {
       exitCode = 1;
     }
   }
 
-  Future<DepsPackageResult> _attempt(DartPackage package) async {
+  Future<DepsPackageResult> _attemptGetDependencies(DartPackage package) async {
     try {
       await _getDependencies(package);
       return DepsPackageResult.success(package);
@@ -181,7 +181,7 @@ Removable addDepsHook(DepsHook hook) {
 /// A hook exception is only thrown when every package succeeded. After a
 /// dependency failure the hook exception is printed instead, so the caller can
 /// report the dependency error the user needs to act on.
-Future<void> _complete(List<DepsPackageResult> results) async {
+Future<void> _runDepsHooks(List<DepsPackageResult> results) async {
   final context = DepsContext(results: results);
   try {
     for (final hook in _depsHooks.toList()) {
