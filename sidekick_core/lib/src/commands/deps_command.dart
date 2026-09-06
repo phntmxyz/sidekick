@@ -138,14 +138,6 @@ class DepsCommand extends Command {
     }
   }
 
-  Future<void> _complete(List<DepsPackageResult> results) async {
-    final context = DepsContext(results: results);
-    // Snapshot registrations so changes made by hooks affect the next run.
-    for (final hook in _depsHooks.keys.toList()) {
-      await hook(context);
-    }
-  }
-
   Future<void> _getDependencies(DartPackage package) async {
     print(yellow('=== package ${package.name} ==='));
     final packageDir = package.root;
@@ -203,6 +195,13 @@ Removable addDepsHook(DepsHook hook) {
       _depsHooks.remove(hook);
     }
   };
+}
+
+Future<void> _complete(List<DepsPackageResult> results) async {
+  final context = DepsContext(results: results);
+  for (final hook in _depsHooks.keys.toList()) {
+    await hook(context);
+  }
 }
 
 /// Results of a dependency-fetching run, passed to a [DepsHook].
