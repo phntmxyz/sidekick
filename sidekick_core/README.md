@@ -119,3 +119,46 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 ```
+
+## Hooks after fetching dependencies
+
+Register plugins during CLI initialization, alongside SDK initializers:
+
+```dart
+addDepsHook((context) async {
+  if (!context.isSuccess) {
+    return;
+  }
+  await configureProject(
+    projectRoot: SidekickContext.projectRoot,
+    mainProject: mainProject,
+    workingDirectory: entryWorkingDirectory,
+  );
+});
+runner.addCommand(DepsCommand());
+```
+
+`addDepsHook` applies to every `DepsCommand`, so plugins do not need to modify
+command registrations or compose callbacks. Multiple hooks run sequentially in
+registration order after dependency fetching finishes, including failed or
+partially successful runs, `deps --package`, and empty selections. All hooks are
+awaited. A hook failure fails the command and stops remaining hooks. Dependency
+failures still fail the command even when hooks succeed. Invalid package
+selection does not invoke hooks.
+
+`DepsContext` contains only run results:
+
+- `results`: an immutable list of `DepsPackageResult`, in execution order. Each
+  has the attempted `package`, `isSuccess`, and the caught `error` and `stackTrace`
+  on failure. Excluded packages do not appear.
+- `isSuccess`: true when every attempt succeeded, including an empty selection.
+  This reports dependency fetching, not the outcome of other hooks.
+
+The normal Sidekick getters remain available while hooks execute:
+`SidekickContext.projectRoot`, `mainProject`, and `entryWorkingDirectory`.
+They are not duplicated in the results.
+
+Registering the same function twice has no effect. The returned `Removable`
+unregisters the hook, which is useful for tests or temporarily installed plugins.
+Registrations last until removed. Changes made during hook execution apply to
+the next run, keeping the current invocation deterministic.
