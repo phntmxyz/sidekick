@@ -4,6 +4,7 @@ import 'package:test/test.dart';
 void main() {
   test('dart respects scoped environment removals and additions', () async {
     final parentPath = Platform.environment['PATH'];
+    final originalScopedValue = env['SIDEKICK_RUNTIME_TEST'];
     expect(parentPath, isNotNull);
     final package = Directory.systemTemp.createTempSync('sidekick_runtime_');
     addTearDown(() => package.deleteSync(recursive: true));
@@ -32,6 +33,9 @@ void main() {
 
     final restoredProgress = Progress.capture();
     await runtime.dart([script.path], progress: restoredProgress);
-    expect(restoredProgress.firstLine, 'has PATH: true');
+    expect(restoredProgress.toList(), [
+      'has PATH: true',
+      'scoped: $originalScopedValue',
+    ]);
   });
 }
