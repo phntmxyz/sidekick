@@ -137,10 +137,10 @@ case "$PWD" in */broken) exit 1;; esac
     });
   });
 
-  test('filtered dependency failure stays primary when a hook throws', () async {
+  test('filtered dependency failure stays primary when a hook throws',
+      () async {
     await insideFakeProjectWithSidekick((_) async {
-      final runner =
-          initializeSidekick(dartSdkPath: fakeFailingDartSdk().path);
+      final runner = initializeSidekick(dartSdkPath: fakeFailingDartSdk().path);
       final hookError = StateError('secondary hook failure');
       final diagnostics = FakeStdoutStream();
       DepsPackageResult? attempted;
@@ -184,8 +184,8 @@ case "$PWD" in */broken) exit 1;; esac
         throw hookError;
       }));
       runner.addCommand(DepsCommand());
-      await expectLater(runner.run(['deps', '-p', 'main_project']),
-          throwsA(same(hookError)));
+      await expectLater(
+          runner.run(['deps', '-p', 'main_project']), throwsA(same(hookError)));
       expect(captured, isNotNull);
       expect(captured!.isSuccess, isTrue);
       expect(captured!.results.single.package.name, 'main_project');
@@ -195,8 +195,7 @@ case "$PWD" in */broken) exit 1;; esac
   test('unfiltered dependency failure stays nonzero when a hook throws',
       () async {
     await insideFakeProjectWithSidekick((_) async {
-      final runner =
-          initializeSidekick(dartSdkPath: fakeFailingDartSdk().path);
+      final runner = initializeSidekick(dartSdkPath: fakeFailingDartSdk().path);
       final hookError = StateError('hook resets status then fails');
       DepsContext? captured;
       addTearDown(addDepsHook((context) async {
