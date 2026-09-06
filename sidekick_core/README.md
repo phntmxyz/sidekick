@@ -141,8 +141,10 @@ runner.addCommand(DepsCommand());
 `addDepsHook` applies to every `DepsCommand`, so plugins do not need to modify command registrations or compose callbacks.
 Multiple hooks run sequentially in registration order after dependency fetching finishes, including failed or partially successful runs, `deps --package`, and empty selections.
 All hooks are awaited.
-A hook failure fails the command and stops remaining hooks.
-Dependency failures still fail the command even when hooks succeed.
+A hook failure stops the remaining hooks.
+It fails the command when all dependencies were fetched successfully.
+After a dependency failure the dependency error stays the reported one and the hook failure is printed to stderr.
+Dependency failures fail the command even when hooks succeed.
 Invalid package selection does not invoke hooks.
 
 `DepsContext` contains only run results:
@@ -156,7 +158,7 @@ Invalid package selection does not invoke hooks.
 The normal Sidekick getters remain available while hooks execute: `SidekickContext.projectRoot`, `mainProject`, and `entryWorkingDirectory`.
 They are not duplicated in the results.
 
-Registering the same function twice has no effect.
+Registering the same function twice runs it twice.
 The returned `Removable` unregisters the hook, which is useful for tests or temporarily installed plugins.
 Registrations last until removed.
 Changes made during hook execution apply to the next run, keeping the current invocation deterministic.

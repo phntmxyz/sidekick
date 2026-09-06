@@ -102,80 +102,86 @@ case "$PWD" in */broken) exit 1;; esac
     });
   });
 
-  test('filtered dependency failure stays primary when a hook throws',
-      () async {
-    await insideFakeProjectWithSidekick((_) async {
-      final runner = initializeSidekick(dartSdkPath: fakeFailingDartSdk().path);
-      final hookError = StateError('secondary hook failure');
-      final diagnostics = FakeStdoutStream();
-      DepsPackageResult? attempted;
-      addTearDown(addDepsHook((context) async {
-        attempted = context.results.single;
-        expect(attempted!.isSuccess, isFalse);
-        await Future<void>.value();
-        throw hookError;
-      }));
-      runner.addCommand(DepsCommand());
-      Object? reportedError;
-      StackTrace? reportedStack;
-      await overrideIoStreams(
-        stderr: () => diagnostics,
-        body: () async {
-          try {
-            await runner.run(['deps', '-p', 'main_project']);
-          } catch (error, stackTrace) {
-            reportedError = error;
-            reportedStack = stackTrace;
-          }
-        },
-      );
-      expect(attempted, isNotNull);
-      expect(attempted!.error, isNotNull);
-      expect(reportedError, same(attempted!.error));
-      expect(reportedStack.toString(), attempted!.stackTrace.toString());
-      expect(diagnostics.lines.join('\n'),
-          contains('Error in deps hook: $hookError'));
+  for (final filtered in [false, true]) {
+    test(
+        'successful dependencies propagate the hook error '
+        '(filtered: $filtered)', () async {
+      await insideFakeProjectWithSidekick((_) async {
+        final runner = initializeSidekick(
+          dartSdkPath: fakeDartSdk().path,
+          mainProjectPath: '.',
+        );
+        final hookError = StateError('hook failed after successful deps');
+        DepsContext? captured;
+        addTearDown(addDepsHook((context) async {
+          captured = context;
+          await Future<void>.value();
+          throw hookError;
+        }));
+        runner.addCommand(DepsCommand());
+        await expectLater(
+          runner.run([
+            'deps',
+            if (filtered) ...['-p', 'main_project']
+          ]),
+          throwsA(same(hookError)),
+        );
+        expect(captured, isNotNull);
+        expect(captured!.isSuccess, isTrue);
+        expect(captured!.results.single.package.name, 'main_project');
+      });
     });
-  });
+  }
 
-  test('filtered successful dependencies propagate the hook error', () async {
-    await insideFakeProjectWithSidekick((_) async {
-      final runner = initializeSidekick(dartSdkPath: fakeDartSdk().path);
-      final hookError = StateError('hook failed after successful deps');
-      DepsContext? captured;
-      addTearDown(addDepsHook((context) async {
-        captured = context;
-        await Future<void>.value();
-        throw hookError;
-      }));
-      runner.addCommand(DepsCommand());
-      await expectLater(
-          runner.run(['deps', '-p', 'main_project']), throwsA(same(hookError)));
-      expect(captured, isNotNull);
-      expect(captured!.isSuccess, isTrue);
-      expect(captured!.results.single.package.name, 'main_project');
+  for (final filtered in [false, true]) {
+    test(
+        'dependency failure stays primary when a hook throws '
+        '(filtered: $filtered)', () async {
+      await insideFakeProjectWithSidekick((_) async {
+        final runner =
+            initializeSidekick(dartSdkPath: fakeFailingDartSdk().path);
+        final hookError = StateError('secondary hook failure');
+        final diagnostics = FakeStdoutStream();
+        DepsPackageResult? attempted;
+        addTearDown(addDepsHook((context) async {
+          attempted = context.results.single;
+          expect(attempted!.isSuccess, isFalse);
+          await Future<void>.value();
+          // A failing hook cannot turn a failed deps run into success.
+          exitCode = 0;
+          throw hookError;
+        }));
+        runner.addCommand(DepsCommand());
+        Object? reportedError;
+        StackTrace? reportedStack;
+        await overrideIoStreams(
+          stderr: () => diagnostics,
+          body: () async {
+            try {
+              await runner.run([
+                'deps',
+                if (filtered) ...['-p', 'main_project']
+              ]);
+            } catch (error, stackTrace) {
+              reportedError = error;
+              reportedStack = stackTrace;
+            }
+          },
+        );
+        expect(attempted, isNotNull);
+        expect(attempted!.error, isNotNull);
+        expect(diagnostics.lines.join('\n'),
+            contains('Error in deps hook: $hookError'));
+        if (filtered) {
+          expect(reportedError, same(attempted!.error));
+          expect(reportedStack.toString(), attempted!.stackTrace.toString());
+        } else {
+          expect(reportedError, isNull);
+          expect(exitCode, 1);
+        }
+      });
     });
-  });
-
-  test('unfiltered dependency failure stays nonzero when a hook throws',
-      () async {
-    await insideFakeProjectWithSidekick((_) async {
-      final runner = initializeSidekick(dartSdkPath: fakeFailingDartSdk().path);
-      final hookError = StateError('hook resets status then fails');
-      DepsContext? captured;
-      addTearDown(addDepsHook((context) async {
-        captured = context;
-        exitCode = 0;
-        await Future<void>.value();
-        throw hookError;
-      }));
-      runner.addCommand(DepsCommand());
-      await expectLater(runner.run(['deps']), throwsA(same(hookError)));
-      expect(captured, isNotNull);
-      expect(captured!.isSuccess, isFalse);
-      expect(exitCode, 1);
-    });
-  });
+  }
 
   test('invalid package selection does not dispatch hooks', () async {
     await insideFakeProjectWithSidekick((_) async {
@@ -232,9 +238,7 @@ case "$PWD" in */broken) exit 1;; esac
     });
   });
 
-  test(
-      'deduplicates registrations and stale removers leave new registrations alone',
-      () async {
+  test('registering the same function twice runs it twice', () async {
     await insideFakeProjectWithSidekick((_) async {
       final runner = initializeSidekick(dartSdkPath: fakeDartSdk().path);
       runner.addCommand(DepsCommand());
@@ -244,19 +248,14 @@ case "$PWD" in */broken) exit 1;; esac
         calls++;
       }
 
-      final remove = addDepsHook(hook);
-      addTearDown(remove);
-      final duplicateRemove = addDepsHook(hook);
-      addTearDown(duplicateRemove);
-      await runner.run(['deps']);
-      expect(calls, 1);
-      remove();
-      await runner.run(['deps']);
-      expect(calls, 1);
+      final removeFirst = addDepsHook(hook);
+      addTearDown(removeFirst);
       addTearDown(addDepsHook(hook));
-      duplicateRemove();
       await runner.run(['deps']);
       expect(calls, 2);
+      removeFirst();
+      await runner.run(['deps']);
+      expect(calls, 3);
     });
   });
 

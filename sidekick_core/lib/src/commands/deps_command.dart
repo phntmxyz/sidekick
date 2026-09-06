@@ -63,15 +63,7 @@ class DepsCommand extends Command {
       _warnIfNotInProject();
       // only get deps for selected package
       final result = await _attempt(package);
-      try {
-        await _complete([result]);
-      } catch (error, stackTrace) {
-        if (result.isSuccess) {
-          rethrow;
-        }
-        // Keep the dependency error primary, but report the hook failure too.
-        printerr('Error in deps hook: $error\n$stackTrace');
-      }
+      await _complete([result]);
       if (!result.isSuccess) {
         Error.throwWithStackTrace(result.error!, result.stackTrace!);
       }
@@ -119,12 +111,9 @@ class DepsCommand extends Command {
     } else {
       exitCode = 0;
     }
-    try {
-      await _complete(results);
-    } finally {
-      if (results.any((result) => !result.isSuccess)) {
-        exitCode = 1;
-      }
+    await _complete(results);
+    if (results.any((result) => !result.isSuccess)) {
+      exitCode = 1;
     }
   }
 
@@ -164,34 +153,45 @@ class DepsCommand extends Command {
 /// Called once after dependency fetching was attempted for the selected packages.
 typedef DepsHook = Future<void> Function(DepsContext context);
 
-final Map<DepsHook, Object> _depsHooks = {};
+final List<DepsHook> _depsHooks = [];
 
 /// Registers a hook after [DepsCommand] finishes attempting dependency fetching.
 ///
 /// Hooks apply to every DepsCommand instance and run sequentially in registration
 /// order, including `deps --package` and empty selections. They are awaited;
-/// an exception fails the command and stops the remaining hooks. Hooks also run
-/// after dependency failures; inspect [DepsContext.isSuccess] before performing
-/// setup that requires successful dependencies. Argument/selection errors do not
-/// dispatch hooks. Hooks run while the normal Sidekick context is available.
+/// an exception stops the remaining hooks. It fails the command when all
+/// dependencies were fetched successfully, otherwise the dependency failure
+/// stays the reported error and the hook exception is printed to stderr.
+/// Hooks also run after dependency failures; inspect [DepsContext.isSuccess]
+/// before performing setup that requires successful dependencies.
+/// Argument/selection errors do not dispatch hooks. Hooks run while the normal
+/// Sidekick context is available.
 ///
-/// Register during CLI initialization, alongside [addSdkInitializer]. Registering
-/// the same function again has no effect. The returned function unregisters it.
-/// Registrations persist until removed; changes during dispatch affect the next
-/// run. Removing an old registration cannot remove a later re-registration.
+/// Register during CLI initialization, alongside [addSdkInitializer]. The
+/// returned function unregisters the hook. Registering the same function twice
+/// runs it twice. Registrations persist until removed; changes during dispatch
+/// affect the next run.
 Removable addDepsHook(DepsHook hook) {
-  final registration = _depsHooks.putIfAbsent(hook, Object.new);
-  return () {
-    if (identical(_depsHooks[hook], registration)) {
-      _depsHooks.remove(hook);
-    }
-  };
+  _depsHooks.add(hook);
+  return () => _depsHooks.remove(hook);
 }
 
+/// Runs all hooks, keeping a dependency failure the primary error.
+///
+/// A hook exception is only thrown when every package succeeded. After a
+/// dependency failure the hook exception is printed instead, so the caller can
+/// report the dependency error the user needs to act on.
 Future<void> _complete(List<DepsPackageResult> results) async {
   final context = DepsContext(results: results);
-  for (final hook in _depsHooks.keys.toList()) {
-    await hook(context);
+  try {
+    for (final hook in _depsHooks.toList()) {
+      await hook(context);
+    }
+  } catch (error, stackTrace) {
+    if (context.isSuccess) {
+      rethrow;
+    }
+    printerr('Error in deps hook: $error\n$stackTrace');
   }
 }
 
