@@ -187,6 +187,49 @@ void main() {
     );
 
     test(
+      'throws when sidekick init would downgrade an existing cli',
+      () async {
+        final projectRoot =
+            setupTemplateProject('test/templates/minimal_dart_package');
+        final cliPackage = projectRoot.directory('dashi_sidekick')..createSync();
+        cliPackage.file('pubspec.yaml').writeAsStringSync(
+          'name: dashi_sidekick\n'
+          'environment:\n'
+          "  sdk: '>=3.6.0 <4.0.0'\n"
+          'sidekick:\n'
+          '  cli_version: 99.0.0\n',
+        );
+        final sentinel = cliPackage.file('keep.txt')..writeAsStringSync('keep');
+
+        final process = await (await cachedGlobalSidekickCli).run(
+          [
+            'init',
+            '-n',
+            'dashi',
+            '--projectRoot',
+            projectRoot.path,
+            '--cliPackageDirectory',
+            projectRoot.path,
+          ],
+          workingDirectory: projectRoot,
+        );
+        process.stdoutStream().listen(printOnFailure);
+        await process.shouldExit(255);
+        final stderrText = (await process.stderr.rest.toList()).join('\n');
+        expect(stderrText, contains('downgrade'));
+        expect(stderrText, contains('99.0.0'));
+        expect(sentinel.readAsStringSync(), 'keep');
+        expect(
+          process.stdout,
+          isNot(
+            contains('Successfully generated dashi_sidekick 🎉'),
+          ),
+        );
+      },
+      timeout: const Timeout(Duration(minutes: 5)),
+    );
+
+    test(
       'throws error when cli name is invalid',
       () async {
         final process = await (await cachedGlobalSidekickCli).run(

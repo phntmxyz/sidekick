@@ -177,6 +177,16 @@ class InitCommand extends Command {
       '${white('cliPackageDirectory:', bold: false)} ${packageDir.absolute.path}\n',
     );
 
+    final existingCliPackage = packageDir.directory('${cliName}_sidekick');
+    final existingPubspec = existingCliPackage.file('pubspec.yaml');
+    if (existingPubspec.existsSync()) {
+      final existingVersion = _cliVersionFromPubspec(existingPubspec);
+      if (existingVersion != null && existingVersion > core.version) {
+        throw 'sidekick init would downgrade this CLI from $existingVersion '
+            'to ${core.version}. Use `$cliName sidekick update` instead.';
+      }
+    }
+
     final mainProjectPath = argResults!['mainProjectPath'] as String?;
     DartPackage? mainProject = mainProjectPath != null
         ? DartPackage.fromDirectory(Directory(mainProjectPath))
@@ -335,6 +345,22 @@ class _InitInputs {
     this.mainProject,
     this.packages = const [],
   });
+}
+
+/// Reads `sidekick.cli_version` from a generated CLI package pubspec.yaml.
+Version? _cliVersionFromPubspec(File pubspec) {
+  final match = RegExp(
+    r'^  cli_version:\s*(\S+)\s*$',
+    multiLine: true,
+  ).firstMatch(pubspec.readAsStringSync());
+  if (match == null) {
+    return null;
+  }
+  try {
+    return Version.parse(match.group(1)!);
+  } on FormatException {
+    return null;
+  }
 }
 
 void sleepForUser(int milliseconds) {
