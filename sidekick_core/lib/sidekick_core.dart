@@ -1,6 +1,8 @@
 /// The core library for Sidekick CLIs
 library;
 
+import 'dart:async';
+
 import 'package:cli_completion/cli_completion.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_core/src/commands/update_command.dart';
@@ -286,15 +288,52 @@ class SidekickCommandRunner<T> extends CompletionCommandRunner<T> {
 
     final unmount = mount(debugName: args.join(' '));
 
+    final cleanupScope = _CleanupScope(parent: _registrationCleanupScope);
+    _activeCleanupScope = cleanupScope;
+    // Only the outermost run reacts to signals, nested runs are cleaned up
+    // through the parent chain
+    final isOutermostRun = cleanupScope.parent == null;
+    if (isOutermostRun) {
+      _listenForTerminationSignals();
+    }
+
     ArgResults? parsedArgs;
     try {
-      parsedArgs = parse(args);
-      if (parsedArgs['version'] == true) {
-        print('${SidekickContext.cliName} is using sidekick version $version');
-        return null;
+      T? result;
+      Object? commandError;
+      StackTrace? commandStackTrace;
+      try {
+        parsedArgs = parse(args);
+        if (parsedArgs['version'] == true) {
+          print(
+              '${SidekickContext.cliName} is using sidekick version $version');
+        } else {
+          result = await runZoned(
+            () => super.runCommand(parsedArgs!),
+            zoneValues: {_cleanupScopeZoneKey: cleanupScope},
+          );
+        }
+      } catch (e, stackTrace) {
+        commandError = e;
+        commandStackTrace = stackTrace;
       }
 
-      final result = await super.runCommand(parsedArgs);
+      await cleanupScope.drain();
+      final cleanupErrors = cleanupScope.takeErrors();
+      if (commandError != null) {
+        // A failed command is more relevant than a failed cleanup
+        for (final error in cleanupErrors) {
+          error.print();
+        }
+        Error.throwWithStackTrace(commandError, commandStackTrace!);
+      }
+      if (cleanupErrors.isNotEmpty) {
+        for (final error in cleanupErrors.skip(1)) {
+          error.print();
+        }
+        Error.throwWithStackTrace(
+            cleanupErrors.first.error, cleanupErrors.first.stackTrace);
+      }
       return result;
     } finally {
       // don't print anything additionally when running the hidden tab completion command (runs in the background when pressing tab),
@@ -334,6 +373,10 @@ class SidekickCommandRunner<T> extends CompletionCommandRunner<T> {
           await _checkForUpdates();
         }
       } finally {
+        _activeCleanupScope = cleanupScope.parent;
+        if (isOutermostRun) {
+          _stopListeningForTerminationSignals();
+        }
         unmount();
       }
     }
@@ -443,6 +486,192 @@ typedef Unmount = void Function();
 
 /// The runner that is currently executing, used for nesting
 SidekickCommandRunner? _activeRunner;
+
+/// Registers [cleanup] to run once the currently executing command finishes,
+/// no matter whether the command completed, threw, or the process received
+/// SIGINT (Ctrl+C) or SIGTERM.
+///
+/// Call it right where a resource is acquired. Releasing it then no longer
+/// depends on every command wrapping its body in `try`/`finally`, and also
+/// happens when the user interrupts the command:
+///
+/// ```dart
+/// final client = http.Client();
+/// addCleanup(client.close);
+/// ```
+///
+/// Cleanups run in reverse registration order, so a resource that was opened
+/// last is closed first. Every registered cleanup runs, even when an earlier
+/// one throws. When the command completed, the first cleanup error is rethrown
+/// after all cleanups ran. When the command threw, the command error wins and
+/// cleanup errors are only printed.
+///
+/// Cleanups belong to the [SidekickCommandRunner.run] call that is executing.
+/// When a command runs another command via `runner.run`, the cleanups of the
+/// inner command run as soon as the inner run finishes.
+///
+/// On SIGINT or SIGTERM the cleanups of all running commands are executed
+/// before the process exits with the conventional `128 + signal number` exit
+/// code. A second signal exits immediately, skipping the remaining cleanups.
+/// Cleanups don't run when a command terminates the process itself with
+/// [exit].
+///
+/// Throws [OutOfCommandRunnerScopeException] when no command is executing.
+void addCleanup(Cleanup cleanup) {
+  final scope = _registrationCleanupScope;
+  if (scope == null || scope._drained) {
+    throw OutOfCommandRunnerScopeException('addCleanup');
+  }
+  scope.add(cleanup);
+}
+
+/// A callback registered with [addCleanup]
+///
+/// `FutureOr<void>` is deliberate: it accepts a sync tear-off like
+/// `client.close` as well as an async closure, and the runner awaits whatever
+/// comes back.
+// ignore: avoid_futureor_void
+typedef Cleanup = FutureOr<void> Function();
+
+/// The cleanups of the [SidekickCommandRunner.run] call that is executing
+_CleanupScope? _activeCleanupScope;
+
+/// Registration follows the callback across awaits, independently of runs
+/// completing elsewhere while signal cleanup is in progress.
+final Object _cleanupScopeZoneKey = Object();
+
+_CleanupScope? get _registrationCleanupScope {
+  return (Zone.current[_cleanupScopeZoneKey] as _CleanupScope?) ??
+      _activeCleanupScope;
+}
+
+/// The cleanups registered via [addCleanup] during one
+/// [SidekickCommandRunner.run] call
+class _CleanupScope {
+  _CleanupScope({required this.parent});
+
+  /// The scope of the enclosing run when commands are nested
+  final _CleanupScope? parent;
+
+  final List<Cleanup> _cleanups = [];
+
+  /// The single drain of this scope, shared by whoever asks for it
+  Future<void>? _drain;
+
+  /// Failures of cleanups that ran, until a caller reports them
+  final List<_CleanupError> _errors = [];
+
+  bool get hasPendingCleanups =>
+      _cleanups.isNotEmpty || (_drain != null && !_drained);
+  bool _drained = false;
+
+  void add(Cleanup cleanup) {
+    _cleanups.add(cleanup);
+  }
+
+  /// Runs all cleanups in reverse registration order, including cleanups that
+  /// get registered while cleaning up
+  ///
+  /// Every cleanup runs, even when an earlier one throws. Failures are
+  /// collected for [takeErrors], because how to report them depends on the
+  /// caller: normal completion may rethrow, signal handling only prints.
+  ///
+  /// There is only ever one drain per scope. A second caller, like a signal
+  /// arriving while the cleanups of a completed command are still running,
+  /// joins the drain in flight instead of racing it with an empty list.
+  Future<void> drain() => _drain ??= _runCleanups();
+
+  Future<void> _runCleanups() async {
+    try {
+      while (_cleanups.isNotEmpty) {
+        final cleanup = _cleanups.removeLast();
+        try {
+          await runZoned(
+            cleanup,
+            zoneValues: {_cleanupScopeZoneKey: this},
+          );
+        } catch (e, stackTrace) {
+          _errors.add(_CleanupError(e, stackTrace));
+        }
+      }
+    } finally {
+      _drained = true;
+    }
+  }
+
+  /// Hands out the collected failures once, so two callers awaiting the same
+  /// drain don't both report them
+  List<_CleanupError> takeErrors() {
+    final errors = List.of(_errors);
+    _errors.clear();
+    return errors;
+  }
+}
+
+class _CleanupError {
+  _CleanupError(this.error, this.stackTrace);
+
+  final Object error;
+  final StackTrace stackTrace;
+
+  void print() => printerr('Cleanup failed: $error\n$stackTrace');
+}
+
+List<StreamSubscription<ProcessSignal>>? _terminationSignalSubscriptions;
+
+/// Runs the pending cleanups when the process is asked to terminate, instead
+/// of letting the signal kill the process immediately
+void _listenForTerminationSignals() {
+  final signals = [
+    ProcessSignal.sigint,
+    // Windows doesn't support SIGTERM
+    if (!Platform.isWindows) ProcessSignal.sigterm,
+  ];
+  _terminationSignalSubscriptions = [
+    for (final signal in signals) signal.watch().listen(_onTerminationSignal),
+  ];
+}
+
+void _stopListeningForTerminationSignals() {
+  final subscriptions = _terminationSignalSubscriptions;
+  _terminationSignalSubscriptions = null;
+  for (final subscription
+      in subscriptions ?? <StreamSubscription<ProcessSignal>>[]) {
+    subscription.cancel();
+  }
+}
+
+bool _isHandlingTerminationSignal = false;
+
+/// Runs the cleanups of all executing commands, innermost first, then exits
+/// with the conventional exit code `128 + signal number`
+Future<void> _onTerminationSignal(ProcessSignal signal) async {
+  final signalExitCode = signal == ProcessSignal.sigterm ? 143 : 130;
+  if (_isHandlingTerminationSignal) {
+    // The user insists, don't wait for the remaining cleanups
+    exit(signalExitCode);
+  }
+  _isHandlingTerminationSignal = true;
+
+  var scope = _activeCleanupScope;
+  final hasPendingCleanups = () {
+    for (var s = scope; s != null; s = s.parent) {
+      if (s.hasPendingCleanups) return true;
+    }
+    return false;
+  }();
+  if (hasPendingCleanups) {
+    printerr('Received $signal, cleaning up... (send it again to skip)');
+  }
+  while (scope != null) {
+    await scope.drain();
+    for (final error in scope.takeErrors()) {
+      error.print();
+    }
+    scope = scope.parent;
+  }
+  exit(signalExitCode);
+}
 
 /// The working directory (cwd) from which the cli run method was started
 ///
