@@ -59,6 +59,9 @@ class SidekickDartRuntime {
       progress: progress,
       nothrow: nothrow,
       terminal: progress == null,
+      // dcli already supplies the scoped environment. Do not reintroduce
+      // variables that were explicitly removed from it.
+      includeParentEnvironment: false,
     );
   }
 
