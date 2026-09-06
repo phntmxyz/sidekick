@@ -7,41 +7,6 @@ void main() {
   tearDown(() => exitCode = 0);
 
   for (final filtered in [false, true]) {
-    test('captures actual pub diagnostics (filtered: $filtered)', () async {
-      await insideFakeProjectWithSidekick((dir) async {
-        dir.file('pubspec.yaml').writeAsStringSync('''
-name: main_project
-environment:
-  sdk: '>=3.0.0 <4.0.0'
-dependencies:
-  missing_local_dependency:
-    path: missing_local_dependency
-''');
-        final runner = initializeSidekick(
-          dartSdkPath: testRunnerDartSdkPath(),
-        );
-        DepsContext? captured;
-        addTearDown(addDepsHook((context) async {
-          captured = context;
-          await Future<void>.value();
-        }));
-        runner.addCommand(DepsCommand());
-        if (filtered) {
-          await expectLater(
-              runner.run(['deps', '-p', 'main_project']), throwsA(anything));
-        } else {
-          await runner.run(['deps']);
-          expect(exitCode, 1);
-        }
-        expect(captured, isNotNull);
-        expect(captured!.isSuccess, isFalse);
-        final error = captured!.results.single.error.toString();
-        expect(error, contains('missing_local_dependency'));
-        expect(error, contains("doesn't exist"));
-        expect(error, contains('version solving failed'));
-      });
-    });
-
     test('awaits hooks with project context (filtered: $filtered)', () async {
       await insideFakeProjectWithSidekick((dir) async {
         final runner = initializeSidekick(

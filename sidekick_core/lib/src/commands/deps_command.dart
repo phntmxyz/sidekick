@@ -142,20 +142,11 @@ class DepsCommand extends Command {
     print(yellow('=== package ${package.name} ==='));
     final packageDir = package.root;
     final dartOrFlutter = package.isFlutterPackage ? flutter : dart;
-    final progress = Progress(
-      print,
-      stderr: printerr,
-      captureStdout: true,
-      captureStderr: true,
-    );
     await dartOrFlutter(
       ['pub', 'get'],
       workingDirectory: packageDir,
-      progress: progress,
-      throwOnError: () => [
-        'Failed to get dependencies for package ${packageDir.path}',
-        ...progress.lines,
-      ].join('\n'),
+      throwOnError: () =>
+          'Failed to get dependencies for package ${packageDir.path}',
     );
     print("\n");
   }
@@ -236,8 +227,8 @@ class DepsPackageResult {
   final DartPackage package;
 
   /// The failure, or null when the attempt succeeded. For a nonzero pub exit,
-  /// this includes the package path and captured stdout/stderr diagnostics.
-  /// SDK initialization and other exceptions are preserved as thrown.
+  /// this names the package path. SDK initialization and other exceptions are
+  /// preserved as thrown.
   final Object? error;
 
   /// The stack trace of the failure, or null when the attempt succeeded.
