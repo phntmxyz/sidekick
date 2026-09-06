@@ -62,7 +62,7 @@ class DepsCommand extends Command {
       }
       _warnIfNotInProject();
       // only get deps for selected package
-      final result = await _attemptGetDependencies(package);
+      final result = await _getDependencies(package);
       await _runDepsHooks([result]);
       if (!result.isSuccess) {
         Error.throwWithStackTrace(result.error!, result.stackTrace!);
@@ -94,7 +94,7 @@ class DepsCommand extends Command {
 
     final selectedPackages = allPackages.whereNot(excluded.contains).toList();
     for (final package in selectedPackages) {
-      final result = await _attemptGetDependencies(package);
+      final result = await _getDependencies(package);
       results.add(result);
       if (!result.isSuccess) {
         print('Error while getting dependencies for ${package.name} '
@@ -117,27 +117,25 @@ class DepsCommand extends Command {
     }
   }
 
-  Future<DepsPackageResult> _attemptGetDependencies(DartPackage package) async {
+  /// Runs `pub get` for [package], reporting the outcome instead of throwing
+  /// so that all selected packages are attempted and hooks see every result.
+  Future<DepsPackageResult> _getDependencies(DartPackage package) async {
+    print(yellow('=== package ${package.name} ==='));
+    final packageDir = package.root;
+    final dartOrFlutter = package.isFlutterPackage ? flutter : dart;
     try {
-      await _getDependencies(package);
-      return DepsPackageResult.success(package);
+      await dartOrFlutter(
+        ['pub', 'get'],
+        workingDirectory: packageDir,
+        throwOnError: () =>
+            'Failed to get dependencies for package ${packageDir.path}',
+      );
     } catch (error, stackTrace) {
       return DepsPackageResult.failure(package,
           error: error, stackTrace: stackTrace);
     }
-  }
-
-  Future<void> _getDependencies(DartPackage package) async {
-    print(yellow('=== package ${package.name} ==='));
-    final packageDir = package.root;
-    final dartOrFlutter = package.isFlutterPackage ? flutter : dart;
-    await dartOrFlutter(
-      ['pub', 'get'],
-      workingDirectory: packageDir,
-      throwOnError: () =>
-          'Failed to get dependencies for package ${packageDir.path}',
-    );
     print("\n");
+    return DepsPackageResult.success(package);
   }
 
   void _warnIfNotInProject() {
