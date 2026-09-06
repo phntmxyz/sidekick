@@ -2,33 +2,6 @@ import 'package:glob/glob.dart';
 import 'package:glob/list_local_fs.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 
-/// Called once after dependency fetching was attempted for the selected packages.
-typedef DepsHook = Future<void> Function(DepsContext context);
-
-final Map<DepsHook, Object> _depsHooks = {};
-
-/// Registers a hook after [DepsCommand] finishes attempting dependency fetching.
-///
-/// Hooks apply to every DepsCommand instance and run sequentially in registration
-/// order, including `deps --package` and empty selections. They are awaited;
-/// an exception fails the command and stops the remaining hooks. Hooks also run
-/// after dependency failures; inspect [DepsContext.isSuccess] before performing
-/// setup that requires successful dependencies. Argument/selection errors do not
-/// dispatch hooks. Hooks run while the normal Sidekick context is available.
-///
-/// Register during CLI initialization, alongside [addSdkInitializer]. Registering
-/// the same function again has no effect. The returned function unregisters it.
-/// Registrations persist until removed; changes during dispatch affect the next
-/// run. Removing an old registration cannot remove a later re-registration.
-Removable addDepsHook(DepsHook hook) {
-  final registration = _depsHooks.putIfAbsent(hook, Object.new);
-  return () {
-    if (identical(_depsHooks[hook], registration)) {
-      _depsHooks.remove(hook);
-    }
-  };
-}
-
 /// Downloads dependencies of all Flutter/Dart packages in the repository
 class DepsCommand extends Command {
   @override
@@ -203,6 +176,33 @@ class DepsCommand extends Command {
           "working directory, but of project '${SidekickContext.cliName}'.");
     }
   }
+}
+
+/// Called once after dependency fetching was attempted for the selected packages.
+typedef DepsHook = Future<void> Function(DepsContext context);
+
+final Map<DepsHook, Object> _depsHooks = {};
+
+/// Registers a hook after [DepsCommand] finishes attempting dependency fetching.
+///
+/// Hooks apply to every DepsCommand instance and run sequentially in registration
+/// order, including `deps --package` and empty selections. They are awaited;
+/// an exception fails the command and stops the remaining hooks. Hooks also run
+/// after dependency failures; inspect [DepsContext.isSuccess] before performing
+/// setup that requires successful dependencies. Argument/selection errors do not
+/// dispatch hooks. Hooks run while the normal Sidekick context is available.
+///
+/// Register during CLI initialization, alongside [addSdkInitializer]. Registering
+/// the same function again has no effect. The returned function unregisters it.
+/// Registrations persist until removed; changes during dispatch affect the next
+/// run. Removing an old registration cannot remove a later re-registration.
+Removable addDepsHook(DepsHook hook) {
+  final registration = _depsHooks.putIfAbsent(hook, Object.new);
+  return () {
+    if (identical(_depsHooks[hook], registration)) {
+      _depsHooks.remove(hook);
+    }
+  };
 }
 
 /// Results of a dependency-fetching run, passed to a [DepsHook].
