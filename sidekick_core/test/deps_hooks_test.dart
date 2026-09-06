@@ -14,7 +14,7 @@ void main() {
           mainProjectPath: '.',
         );
         var calls = 0;
-        addTearDown(addAfterDepsHook((context) async {
+        final removeHook = addAfterDepsHook((context) async {
           expect(SidekickContext.projectRoot.path, dir.path);
           expect(entryWorkingDirectory.path, dir.path);
           expect(mainProject?.name, 'main_project');
@@ -25,7 +25,8 @@ void main() {
           expect(() => context.results.clear(), throwsUnsupportedError);
           await Future<void>.delayed(Duration.zero);
           calls++;
-        }));
+        });
+        addTearDown(() => removeHook());
         runner.addCommand(DepsCommand());
         await runner.run([
           'deps',
@@ -41,7 +42,7 @@ void main() {
         final runner =
             initializeSidekick(dartSdkPath: fakeFailingDartSdk().path);
         var called = false;
-        addTearDown(addAfterDepsHook((context) async {
+        final removeHook = addAfterDepsHook((context) async {
           expect(context.isSuccess, isFalse);
           expect(context.results.single.package.name, 'main_project');
           expect(context.results.single.error,
@@ -51,7 +52,8 @@ void main() {
           called = true;
           // A successful hook cannot turn a failed deps run into success.
           exitCode = 0;
-        }));
+        });
+        addTearDown(() => removeHook());
         runner.addCommand(DepsCommand());
         if (filtered) {
           await expectLater(
@@ -78,7 +80,7 @@ case "$PWD" in */broken) exit 1;; esac
           .trimLeft());
       final runner = initializeSidekick(dartSdkPath: sdk.path);
       AfterDepsContext? captured;
-      addTearDown(addAfterDepsHook((context) async {
+      final removeHook = addAfterDepsHook((context) async {
         captured = context;
         expect(context.isSuccess, isFalse);
         expect(context.results.map((r) => r.package.name),
@@ -94,7 +96,8 @@ case "$PWD" in */broken) exit 1;; esac
                 .isSuccess,
             isFalse);
         await Future<void>.value();
-      }));
+      });
+      addTearDown(() => removeHook());
       runner.addCommand(DepsCommand());
       await runner.run(['deps']);
       expect(exitCode, 1);
@@ -113,11 +116,12 @@ case "$PWD" in */broken) exit 1;; esac
         );
         final hookError = StateError('hook failed after successful deps');
         AfterDepsContext? captured;
-        addTearDown(addAfterDepsHook((context) async {
+        final removeHook = addAfterDepsHook((context) async {
           captured = context;
           await Future<void>.value();
           throw hookError;
-        }));
+        });
+        addTearDown(() => removeHook());
         runner.addCommand(DepsCommand());
         await expectLater(
           runner.run([
@@ -143,14 +147,15 @@ case "$PWD" in */broken) exit 1;; esac
         final hookError = StateError('secondary hook failure');
         final diagnostics = FakeStdoutStream();
         DepsPackageResult? attempted;
-        addTearDown(addAfterDepsHook((context) async {
+        final removeHook = addAfterDepsHook((context) async {
           attempted = context.results.single;
           expect(attempted!.isSuccess, isFalse);
           await Future<void>.value();
           // A failing hook cannot turn a failed deps run into success.
           exitCode = 0;
           throw hookError;
-        }));
+        });
+        addTearDown(() => removeHook());
         runner.addCommand(DepsCommand());
         Object? reportedError;
         StackTrace? reportedStack;
@@ -187,10 +192,11 @@ case "$PWD" in */broken) exit 1;; esac
     await insideFakeProjectWithSidekick((_) async {
       final runner = initializeSidekick(dartSdkPath: fakeDartSdk().path);
       final invocations = <AfterDepsContext>[];
-      addTearDown(addAfterDepsHook((context) {
+      final removeHook = addAfterDepsHook((context) {
         invocations.add(context);
         return Future<void>.value();
-      }));
+      });
+      addTearDown(() => removeHook());
       runner.addCommand(DepsCommand());
       await expectLater(runner.run(['deps', '-p', 'missing_package']),
           throwsA(contains('Package with name missing_package not found')));
@@ -203,12 +209,15 @@ case "$PWD" in */broken) exit 1;; esac
     await insideFakeProjectWithSidekick((dir) async {
       final runner = initializeSidekick(dartSdkPath: fakeDartSdk().path);
       final failure = StateError('setup failed');
-      addTearDown(addAfterDepsHook((context) async {
+      final removeFailingHook = addAfterDepsHook((context) async {
         expect(context.results, isEmpty);
         expect(context.isSuccess, isTrue);
         await Future<void>.error(failure);
-      }));
-      addTearDown(addAfterDepsHook((_) => Future<void>.error('must not run')));
+      });
+      addTearDown(() => removeFailingHook());
+      final removeLaterHook =
+          addAfterDepsHook((_) => Future<void>.error('must not run'));
+      addTearDown(() => removeLaterHook());
       runner
           .addCommand(DepsCommand(exclude: [DartPackage.fromDirectory(dir)!]));
       await expectLater(runner.run(['deps']), throwsA(same(failure)));
@@ -219,15 +228,17 @@ case "$PWD" in */broken) exit 1;; esac
       () async {
     await insideFakeProjectWithSidekick((_) async {
       final events = <String>[];
-      addTearDown(addAfterDepsHook((_) async {
+      final removeFirstHook = addAfterDepsHook((_) async {
         await Future<void>.delayed(Duration.zero);
         events.add('first');
-      }));
-      addTearDown(addAfterDepsHook((_) async {
+      });
+      addTearDown(() => removeFirstHook());
+      final removeSecondHook = addAfterDepsHook((_) async {
         expect(events.last, 'first');
         await Future<void>.value();
         events.add('second');
-      }));
+      });
+      addTearDown(() => removeSecondHook());
       final sdk = fakeDartSdk();
       for (var i = 0; i < 2; i++) {
         final runner = initializeSidekick(dartSdkPath: sdk.path);
@@ -248,12 +259,13 @@ case "$PWD" in */broken) exit 1;; esac
         calls++;
       }
 
-      final removeFirst = addAfterDepsHook(hook);
-      addTearDown(removeFirst);
-      addTearDown(addAfterDepsHook(hook));
+      final removeFirstRegistration = addAfterDepsHook(hook);
+      addTearDown(() => removeFirstRegistration());
+      final removeSecondRegistration = addAfterDepsHook(hook);
+      addTearDown(() => removeSecondRegistration());
       await runner.run(['deps']);
       expect(calls, 2);
-      removeFirst();
+      removeFirstRegistration();
       await runner.run(['deps']);
       expect(calls, 3);
     });
@@ -270,18 +282,20 @@ case "$PWD" in */broken) exit 1;; esac
         events.add('third');
       }
 
-      late Removable removeSecond;
-      addTearDown(addAfterDepsHook((_) async {
+      late Removable removeSecondHook;
+      final removeFirstHook = addAfterDepsHook((_) async {
         await Future<void>.value();
         events.add('first');
-        removeSecond();
-        addTearDown(addAfterDepsHook(third));
-      }));
-      removeSecond = addAfterDepsHook((_) async {
+        removeSecondHook();
+        final removeThirdHook = addAfterDepsHook(third);
+        addTearDown(() => removeThirdHook());
+      });
+      addTearDown(() => removeFirstHook());
+      removeSecondHook = addAfterDepsHook((_) async {
         await Future<void>.value();
         events.add('second');
       });
-      addTearDown(removeSecond);
+      addTearDown(() => removeSecondHook());
       await runner.run(['deps']);
       await runner.run(['deps']);
       expect(events, ['first', 'second', 'first', 'third']);
