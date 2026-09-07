@@ -219,7 +219,44 @@ void main() {
         final stderrText = (await process.stderr.rest.toList()).join('\n');
         expect(stderrText, contains('downgrade'));
         expect(stderrText, contains('99.0.0'));
+        expect(stderrText, isNot(contains('Warning:')));
         expect(sentinel.readAsStringSync(), 'keep');
+      },
+      timeout: const Timeout(Duration(minutes: 5)),
+    );
+
+    test(
+      'continues init with --force when it would downgrade an existing cli',
+      () async {
+        final projectRoot =
+            setupTemplateProject('test/templates/minimal_dart_package');
+        final cliPackage = projectRoot.directory('dashi_sidekick')
+          ..createSync();
+        cliPackage.file('pubspec.yaml').writeAsStringSync(
+              'name: dashi_sidekick\n'
+              'environment:\n'
+              "  sdk: '>=3.6.0 <4.0.0'\n"
+              'sidekick:\n'
+              "  cli_version: '^99.0.0' # keep\n",
+            );
+
+        final process = await (await cachedGlobalSidekickCli).run(
+          [
+            'init',
+            '-n',
+            'dashi',
+            '--force',
+            '--projectRoot',
+            projectRoot.path,
+            '--cliPackageDirectory',
+            projectRoot.path,
+          ],
+          workingDirectory: projectRoot,
+        );
+        process.stderrStream().listen(printOnFailure);
+        final stdout = await process.stdoutStream().join('\n');
+        expect(stdout, contains('Successfully generated dashi_sidekick'));
+        await process.shouldExit(0);
       },
       timeout: const Timeout(Duration(minutes: 5)),
     );

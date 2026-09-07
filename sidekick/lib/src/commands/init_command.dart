@@ -209,7 +209,6 @@ class InitCommand extends Command {
         final message =
             'sidekick init would downgrade this CLI from $existingVersion '
             'to ${core.version}. Use `$cliName sidekick update` instead.';
-        printerr('Warning: $message');
         final force = argResults!['force'] as bool;
         if (!force) {
           final proceed = Terminal().hasTerminal &&
@@ -218,6 +217,7 @@ class InitCommand extends Command {
             throw message;
           }
         }
+        printerr('Warning: $message');
       }
     }
 
