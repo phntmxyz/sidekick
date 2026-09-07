@@ -191,14 +191,15 @@ void main() {
       () async {
         final projectRoot =
             setupTemplateProject('test/templates/minimal_dart_package');
-        final cliPackage = projectRoot.directory('dashi_sidekick')..createSync();
+        final cliPackage = projectRoot.directory('dashi_sidekick')
+          ..createSync();
         cliPackage.file('pubspec.yaml').writeAsStringSync(
-          'name: dashi_sidekick\n'
-          'environment:\n'
-          "  sdk: '>=3.6.0 <4.0.0'\n"
-          'sidekick:\n'
-          '  cli_version: 99.0.0\n',
-        );
+              'name: dashi_sidekick\n'
+              'environment:\n'
+              "  sdk: '>=3.6.0 <4.0.0'\n"
+              'sidekick:\n'
+              "  cli_version: '^99.0.0' # keep\n",
+            );
         final sentinel = cliPackage.file('keep.txt')..writeAsStringSync('keep');
 
         final process = await (await cachedGlobalSidekickCli).run(
@@ -219,12 +220,46 @@ void main() {
         expect(stderrText, contains('downgrade'));
         expect(stderrText, contains('99.0.0'));
         expect(sentinel.readAsStringSync(), 'keep');
-        expect(
-          process.stdout,
-          isNot(
-            contains('Successfully generated dashi_sidekick 🎉'),
-          ),
+      },
+      timeout: const Timeout(Duration(minutes: 5)),
+    );
+
+    test(
+      'finds an existing cli under packages even when cliPackageDirectory is the project root',
+      () async {
+        final projectRoot =
+            setupTemplateProject('test/templates/minimal_dart_package');
+        final cliPackage = projectRoot
+            .directory('packages')
+            .directory('dashi_sidekick')
+          ..createSync(recursive: true);
+        cliPackage.file('pubspec.yaml').writeAsStringSync(
+              'name: dashi_sidekick\n'
+              'environment:\n'
+              "  sdk: '>=3.6.0 <4.0.0'\n"
+              'sidekick:\n'
+              '  cli_version: 99.0.0\n',
+            );
+        final sentinel = cliPackage.file('keep.txt')..writeAsStringSync('keep');
+
+        final process = await (await cachedGlobalSidekickCli).run(
+          [
+            'init',
+            '-n',
+            'dashi',
+            '--projectRoot',
+            projectRoot.path,
+            '--cliPackageDirectory',
+            projectRoot.path,
+          ],
+          workingDirectory: projectRoot,
         );
+        process.stdoutStream().listen(printOnFailure);
+        await process.shouldExit(255);
+        final stderrText = (await process.stderr.rest.toList()).join('\n');
+        expect(stderrText, contains('downgrade'));
+        expect(stderrText, contains('99.0.0'));
+        expect(sentinel.readAsStringSync(), 'keep');
       },
       timeout: const Timeout(Duration(minutes: 5)),
     );

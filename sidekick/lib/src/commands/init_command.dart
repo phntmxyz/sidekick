@@ -6,6 +6,8 @@ import 'package:sidekick/src/util/name_suggester.dart';
 import 'package:sidekick_core/sidekick_core.dart'
     hide cliName, cliNameOrNull, entryWorkingDirectory, mainProject, repository;
 import 'package:sidekick_core/sidekick_core.dart' as core;
+// ignore: implementation_imports
+import 'package:sidekick_core/src/version_checker.dart';
 
 class InitCommand extends Command {
   @override
@@ -43,6 +45,10 @@ class InitCommand extends Command {
       abbr: 'm',
       help:
           'Optionally sets the mainProject, the package that ultimately builds your app.',
+    );
+    argParser.addFlag(
+      'force',
+      help: 'Overwrite an existing CLI even if that would downgrade it.',
     );
   }
 
@@ -177,16 +183,6 @@ class InitCommand extends Command {
       '${white('cliPackageDirectory:', bold: false)} ${packageDir.absolute.path}\n',
     );
 
-    final existingCliPackage = packageDir.directory('${cliName}_sidekick');
-    final existingPubspec = existingCliPackage.file('pubspec.yaml');
-    if (existingPubspec.existsSync()) {
-      final existingVersion = _cliVersionFromPubspec(existingPubspec);
-      if (existingVersion != null && existingVersion > core.version) {
-        throw 'sidekick init would downgrade this CLI from $existingVersion '
-            'to ${core.version}. Use `$cliName sidekick update` instead.';
-      }
-    }
-
     final mainProjectPath = argResults!['mainProjectPath'] as String?;
     DartPackage? mainProject = mainProjectPath != null
         ? DartPackage.fromDirectory(Directory(mainProjectPath))
@@ -200,6 +196,30 @@ class InitCommand extends Command {
 
     final List<DartPackage> packages =
         projectRoot.existsSync() ? findAllPackages(projectRoot) : [];
+
+    final existingCli = packages
+        .where((package) => package.name == '${cliName}_sidekick')
+        .firstOrNull;
+    if (existingCli != null) {
+      final existingVersion = VersionChecker.getMinimumVersionConstraint(
+        existingCli,
+        ['sidekick', 'cli_version'],
+      );
+      if (existingVersion != null && existingVersion > core.version) {
+        final message =
+            'sidekick init would downgrade this CLI from $existingVersion '
+            'to ${core.version}. Use `$cliName sidekick update` instead.';
+        printerr('Warning: $message');
+        final force = argResults!['force'] as bool;
+        if (!force) {
+          final proceed = Terminal().hasTerminal &&
+              dcli.confirm('Continue anyway?', defaultValue: false);
+          if (!proceed) {
+            throw message;
+          }
+        }
+      }
+    }
 
     if (mainProject == null && packages.isNotEmpty) {
       // Ask user for a main project (optional)
@@ -345,22 +365,6 @@ class _InitInputs {
     this.mainProject,
     this.packages = const [],
   });
-}
-
-/// Reads `sidekick.cli_version` from a generated CLI package pubspec.yaml.
-Version? _cliVersionFromPubspec(File pubspec) {
-  final match = RegExp(
-    r'^  cli_version:\s*(\S+)\s*$',
-    multiLine: true,
-  ).firstMatch(pubspec.readAsStringSync());
-  if (match == null) {
-    return null;
-  }
-  try {
-    return Version.parse(match.group(1)!);
-  } on FormatException {
-    return null;
-  }
 }
 
 void sleepForUser(int milliseconds) {
