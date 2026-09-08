@@ -27,9 +27,12 @@ class SidekickDartRuntime {
 
   /// Downloads the SDK
   void download() {
-    dcli.run(
-      'sh tool/download_dart.sh',
+    // dcli.run() does not forward includeParentEnvironment, startFromArgs does
+    dcli.startFromArgs(
+      'sh',
+      ['tool/download_dart.sh'],
       workingDirectory: sidekickPackage.path,
+      includeParentEnvironment: false,
     );
     assert(isDownloaded(), 'Dart SDK was not downloaded');
   }
@@ -59,6 +62,8 @@ class SidekickDartRuntime {
       progress: progress,
       nothrow: nothrow,
       terminal: progress == null,
+      // See [dart] for why this does not shrink the child's environment.
+      includeParentEnvironment: false,
     );
   }
 

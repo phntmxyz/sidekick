@@ -34,6 +34,7 @@ Future<ProcessCompletion> flutter(
       nothrow: nothrow || throwOnError != null,
       progress: progress,
       terminal: progress == null,
+      includeParentEnvironment: false,
     );
 
     exitCode = process.exitCode ?? -1;

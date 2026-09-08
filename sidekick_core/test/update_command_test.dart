@@ -31,6 +31,10 @@ void main() {
 
       expect(installSh.existsSync(), isTrue);
       expect(runSh.existsSync(), isTrue);
+      expect(
+        testCase.projectDir.file('dash').readAsStringSync(),
+        contains('export SIDEKICK_ENTRYPOINT_FILE='),
+      );
     });
   });
 
@@ -568,13 +572,18 @@ class _UpdateCommandUnderTest {
 
   /// Calls the [UpdateCommand] with the given [args]
   Future<void> update([List<String> args = const []]) async {
-    final runner = initializeSidekick(dartSdkPath: systemDartSdkPath());
+    await withEnvironmentAsync(() async {
+      // Tests run through a Sidekick CLI inherit its entrypoint. Let the fake
+      // project discover its own entrypoint, including in migration processes.
+      env['SIDEKICK_ENTRYPOINT_FILE'] = null;
+      final runner = initializeSidekick(dartSdkPath: systemDartSdkPath());
 
-    final archive = _MockDartArchive();
-    archive.versions.addAll(testCase.dartSdks);
-    runner.addCommand(testCase.command..dartArchive = archive);
+      final archive = _MockDartArchive();
+      archive.versions.addAll(testCase.dartSdks);
+      runner.addCommand(testCase.command..dartArchive = archive);
 
-    await runner.run(['update', ...args]);
+      await runner.run(['update', ...args]);
+    }, environment: {});
   }
 }
 

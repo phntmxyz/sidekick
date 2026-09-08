@@ -86,6 +86,7 @@ class BashCommand extends ForwardCommand {
         workingDirectory: workingDirectory?.absolute.path,
         progress: progress,
         terminal: withStdIn,
+        includeParentEnvironment: false,
       );
     } catch (e, stack) {
       final int exitCode;
