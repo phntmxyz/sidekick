@@ -5,6 +5,5 @@ Future<void> pubGet(DartPackage package) async {
   await sidekickDartRuntime.dart(
     ['pub', 'get'],
     workingDirectory: package.root,
-    progress: Progress.printStdErr(),
   );
 }

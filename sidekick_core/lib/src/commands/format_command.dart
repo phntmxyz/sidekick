@@ -1,3 +1,4 @@
+import 'package:exec/exec.dart';
 import 'package:glob/glob.dart';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
@@ -219,8 +220,8 @@ class FormatCommand extends Command {
       print("No files to format");
       return;
     }
-    final progress =
-        verify ? Progress.capture() : Progress.print(capture: true);
+    // mirror captures as well, which is dcli's Progress.print(capture: true)
+    final output = verify ? ExecOutput.capture : ExecOutput.mirror;
     final completion = await dart(
       [
         'format',
@@ -236,14 +237,15 @@ class FormatCommand extends Command {
       nothrow: verify,
       // Lines like `Changed x.dart`, `Formatted x files (y changed) in z seconds`
       // should only be printed when the change is actually written to the files (when verify is false)
-      progress: progress,
+      output: output,
       workingDirectory: workingDirectory,
     );
-    exitCode = completion.exitCode ?? 1;
+    exitCode = completion.exitCode;
     if (exitCode != 0) {
       foundFormatError = true;
       unformattedFiles.addAll(
-        progress.lines
+        completion.combinedOutput
+            .split('\n')
             .where((it) => it.startsWith('Changed '))
             .map((it) => it.substring('Changed '.length)),
       );

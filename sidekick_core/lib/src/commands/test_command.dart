@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:exec/exec.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 
 /// Runs tests in all packages, a single package, or a specific file/directory.
@@ -181,7 +182,7 @@ class TestCommand extends Command {
     final result = await _runDartOrFlutter(
       package,
       args,
-      progress: Progress.print(),
+      output: ExecOutput.mirror,
       nothrow: true,
     );
     stopwatch.stop();
@@ -199,25 +200,25 @@ class TestCommand extends Command {
     return _TestResult.failed;
   }
 
-  Future<ProcessCompletion> _runDartOrFlutter(
+  Future<ExecResult> _runDartOrFlutter(
     DartPackage package,
     List<String> args, {
-    required Progress progress,
+    required ExecOutput output,
     bool nothrow = false,
   }) async {
-    final ProcessCompletion result;
+    final ExecResult result;
     if (package.isFlutterPackage) {
       result = await flutter(
         args,
         workingDirectory: package.root,
-        progress: progress,
+        output: output,
         nothrow: nothrow,
       );
     } else {
       result = await dart(
         args,
         workingDirectory: package.root,
-        progress: progress,
+        output: output,
         nothrow: nothrow,
       );
     }
@@ -234,12 +235,12 @@ class TestCommand extends Command {
     final fullArgs = [...args, '--concurrency=$concurrency', '-r', 'compact'];
 
     final stopwatch = Stopwatch()..start();
-    final progress = Progress.capture();
+    const output = ExecOutput.capture;
 
     final result = await _runDartOrFlutter(
       package,
       fullArgs,
-      progress: progress,
+      output: output,
       nothrow: true,
     );
     stopwatch.stop();
@@ -247,7 +248,7 @@ class TestCommand extends Command {
       1,
     );
 
-    final stdout = progress.lines.join('\n');
+    final stdout = result.combinedOutput;
     final exitCode = result.exitCode;
 
     // Extract test count from output (e.g., "+25" from "00:00 +25: All tests passed!")

@@ -1,6 +1,9 @@
 import 'dart:async';
 
-import 'package:sidekick_core/sidekick_core.dart';
+// sidekick_core gained its own TestCommand after 3.1.1, which collides with
+// sk_sidekick's. Unrelated to exec; it surfaces as soon as sidekick_core is
+// linked locally, and will break on the next sidekick_core release.
+import 'package:sidekick_core/sidekick_core.dart' hide TestCommand;
 import 'package:sk_sidekick/src/commands/bump_version_command.dart';
 import 'package:sk_sidekick/src/commands/coverage_command.dart';
 import 'package:sk_sidekick/src/commands/lock_dependencies_command.dart';

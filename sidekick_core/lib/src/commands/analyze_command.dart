@@ -17,6 +17,6 @@ class DartAnalyzeCommand extends ForwardCommand {
       workingDirectory: SidekickContext.projectRoot,
       nothrow: true,
     );
-    exitCode = completion.exitCode ?? 1;
+    exitCode = completion.exitCode;
   }
 }

@@ -13,6 +13,6 @@ class DartCommand extends ForwardCommand {
   @override
   Future<void> run() async {
     final completion = await dart(argResults!.arguments, nothrow: true);
-    exitCode = completion.exitCode ?? 1;
+    exitCode = completion.exitCode;
   }
 }

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:dcli/dcli.dart' as dcli;
+import 'package:exec/exec.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 
 /// Executes Flutter command from Flutter SDK set in [flutterSdk]
@@ -11,12 +12,12 @@ import 'package:sidekick_core/sidekick_core.dart';
 ///
 /// If [throwOnError] is given and the command returns a non-zero exit code,
 /// the result of [throwOnError] will be thrown regardless of [nothrow]
-Future<ProcessCompletion> flutter(
+Future<ExecResult> flutter(
   List<String> args, {
   Directory? workingDirectory,
-  dcli.Progress? progress,
   bool nothrow = false,
   String Function()? throwOnError,
+  ExecOutput output = ExecOutput.mirror,
 }) async {
   final sdk = flutterSdk;
   if (sdk == null) {
@@ -25,32 +26,33 @@ Future<ProcessCompletion> flutter(
 
   await initializeSdkForPackage(workingDirectory);
 
-  int exitCode = -1;
+  ExecResult? result;
   try {
-    final process = dcli.startFromArgs(
+    result = await Exec.run(
       Platform.isWindows ? 'bash' : sdk.file('bin/flutter').path,
       [if (Platform.isWindows) sdk.file('bin/flutter.exe').path, ...args],
       workingDirectory: workingDirectory?.absolute.path,
-      nothrow: nothrow || throwOnError != null,
-      progress: progress,
-      terminal: progress == null,
+      check: !(nothrow || throwOnError != null),
+      output: output,
+      environment: envs,
       includeParentEnvironment: false,
     );
-
-    exitCode = process.exitCode ?? -1;
   } catch (e) {
-    if (e is dcli.RunException) {
-      exitCode = e.exitCode ?? 1;
+    // A failed run keeps its diagnostics; a failed launch has none.
+    if (e is ExecException) {
+      result = e.result;
     }
     if (throwOnError == null) {
       rethrow;
     }
   }
-  if (exitCode != 0 && throwOnError != null) {
-    throw throwOnError();
+  if (result == null || result.exitCode != 0) {
+    if (throwOnError != null) {
+      throw throwOnError();
+    }
   }
 
-  return ProcessCompletion(exitCode: exitCode);
+  return result!;
 }
 
 /// The Flutter SDK path is not set in [initializeSidekick] (param [flutterSdk])
