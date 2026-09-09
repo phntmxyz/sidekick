@@ -55,15 +55,14 @@ class VerifyPublishStateCommand extends Command {
   /// Runs `dart pub publish --dry-run` and checks for warnings,
   /// manually ignoring some due to https://github.com/dart-lang/pub/issues/3807
   Future<void> dryRunPubPublish(DartPackage package) async {
-    final progress = Progress.print(capture: true);
-    dart(
+    // mirror captures as well, which is dcli's Progress.print(capture: true)
+    final result = await dart(
       ['pub', 'publish', '--dry-run'],
       workingDirectory: package.root,
-      progress: progress,
       nothrow: true,
     );
 
-    final output = progress.lines.join('\n');
+    final output = result.combined;
 
     // Parse "Package has X warning(s)." or "Package has X warnings." from entire output
     final warningMatch = RegExp(

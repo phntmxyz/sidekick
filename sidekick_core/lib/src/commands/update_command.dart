@@ -1,3 +1,4 @@
+import 'package:exec/exec.dart';
 import 'package:meta/meta.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_core/src/pub/dart_archive.dart';
@@ -396,7 +397,7 @@ class UpdateCommand extends Command {
         newMinimumVersion: dartVersionToInstall,
         preferCaret: false,
       );
-      sidekickDartRuntime.download();
+      await sidekickDartRuntime.download();
     }
 
     if (sidekickVersionToInstall != currentSidekickCliVersion) {
@@ -435,7 +436,8 @@ class UpdateCommand extends Command {
     await _dartCommand(
       ['pub', 'get'],
       workingDirectory: SidekickContext.sidekickPackage.root,
-      progress: Progress.devNull(),
+      // capture is silent; exec has no devNull that also drops stderr
+      output: ExecOutput.capture,
       // This pub get is a nice to have, and it doesn't matter if it fails or
       // not. It may fail when the Dart SDK version has been updated, because
       // `_dartCommand` still uses the "old" Dart SDK.
@@ -471,9 +473,9 @@ extension on ArgResults {
 /// This workaround is only required within this command. If any other command
 /// fails because it is missing the embedded Dart SDK, the user should update
 /// their cli.
-Future<void> Function(
+Future<ExecResult> Function(
   List<String> args, {
-  Progress? progress,
+  ExecOutput output,
   Directory? workingDirectory,
   bool nothrow,
 }) get _dartCommand {
@@ -521,8 +523,22 @@ class UpdateExecutor {
     await sidekickDartRuntime.dart(
       ['pub', 'get'],
       workingDirectory: location,
-      progress: Progress.printStdErr(),
+      output: ExecOutput.capture,
+      onLine: _printLine,
     );
+  }
+
+  /// Mirrors the child through `print`, not through the stdout sink.
+  ///
+  /// The update runs inside a zone that captures `print`, which is how its
+  /// log reaches the caller. Writing to stdout directly would bypass that
+  /// zone and the output would be lost.
+  static void _printLine(ExecLine line) {
+    if (line.source == ExecStream.stderr) {
+      printerr(line.text);
+    } else {
+      print(line.text);
+    }
   }
 
   /// Execute the update script from the new sidekick_core version
@@ -541,7 +557,8 @@ class UpdateExecutor {
         oldSidekickCoreVersion.canonicalizedVersion,
         newSidekickCoreVersion.canonicalizedVersion,
       ],
-      progress: Progress.print(),
+      output: ExecOutput.capture,
+      onLine: _printLine,
     );
   }
 }

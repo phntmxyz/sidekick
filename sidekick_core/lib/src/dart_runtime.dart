@@ -1,4 +1,6 @@
-import 'package:dcli/dcli.dart' as dcli;
+import 'dart:async';
+
+import 'package:exec/exec.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_core/src/version_checker.dart';
 
@@ -26,12 +28,13 @@ class SidekickDartRuntime {
       sidekickPackage.directory('build/cache/dart-sdk/');
 
   /// Downloads the SDK
-  void download() {
-    // dcli.run() does not forward includeParentEnvironment, startFromArgs does
-    dcli.startFromArgs(
+  Future<void> download() async {
+    await Exec.run(
       'sh',
       ['tool/download_dart.sh'],
       workingDirectory: sidekickPackage.path,
+      output: ExecOutput.mirror,
+      environment: envs,
       includeParentEnvironment: false,
     );
     assert(isDownloaded(), 'Dart SDK was not downloaded');
@@ -49,20 +52,25 @@ class SidekickDartRuntime {
   }
 
   /// Runs custom dart executable of this runtime
-  Future<void> dart(
+  ///
+  /// The output is mirrored to this process by default. Pass
+  /// [ExecOutput.capture] to read it off the returned [ExecResult] instead.
+  Future<ExecResult> dart(
     List<String> args, {
     Directory? workingDirectory,
-    dcli.Progress? progress,
     bool nothrow = false,
-  }) async {
-    dcli.startFromArgs(
+    ExecOutput output = ExecOutput.mirror,
+    FutureOr<void> Function(ExecLine line)? onLine,
+  }) {
+    return Exec.run(
       _dartExecutable.path,
       args,
       workingDirectory: workingDirectory?.path,
-      progress: progress,
-      nothrow: nothrow,
-      terminal: progress == null,
+      output: output,
+      onLine: onLine,
+      check: !nothrow,
       // See [dart] for why this does not shrink the child's environment.
+      environment: envs,
       includeParentEnvironment: false,
     );
   }

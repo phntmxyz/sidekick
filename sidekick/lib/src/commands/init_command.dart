@@ -1,4 +1,5 @@
 import 'package:dcli/dcli.dart' as dcli;
+import 'package:exec/exec.dart';
 import 'package:recase/recase.dart';
 import 'package:sidekick/src/util/dcli_ask_validators.dart';
 import 'package:sidekick/src/util/directory_extension.dart';
@@ -238,26 +239,24 @@ class InitCommand extends Command {
     SidekickTemplate().generate(props);
 
     // Download the bundled dart runtime for the CLI
-    final bundledDart = (SidekickDartRuntime(cliPackage)..download()).dart;
+    final dartRuntime = SidekickDartRuntime(cliPackage);
+    await dartRuntime.download();
+    final bundledDart = dartRuntime.dart;
 
     // make sure sidekick_core is up-to-date
-    final errorCapture = Progress.capture();
     try {
       await bundledDart(
         ['pub', 'upgrade', 'sidekick_core'],
         workingDirectory: cliPackage,
-        progress: errorCapture,
+        output: ExecOutput.capture,
       );
-    } catch (e) {
+    } on ExecException catch (e) {
       // print only in case of error
-      printerr(red(errorCapture.lines.join('\n')));
+      printerr(red(e.execution.combined));
       rethrow;
     }
 
-    await bundledDart(
-      ['format', cliPackage.path],
-      progress: dcli.Progress.printStdErr(),
-    );
+    await bundledDart(['format', cliPackage.path]);
   }
 
   /// Asks user to install puro_sidekick_plugin when a Flutter package is detected

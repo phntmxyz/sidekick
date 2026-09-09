@@ -48,6 +48,12 @@ class FakeStdoutStream with Fake implements Stdout {
 
   @override
   bool get supportsAnsiEscapes => false;
+
+  /// Nothing is buffered, so there is nothing to flush.
+  ///
+  /// Needed because a real [Stdout] consumer may flush after every write.
+  @override
+  Future<void> flush() async {}
 }
 
 /// A wrapper around both stdout and stderr fake streams that tracks

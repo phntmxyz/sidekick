@@ -1,3 +1,4 @@
+import 'package:exec/exec.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 
 class CoverageCommand extends Command {
@@ -9,7 +10,7 @@ class CoverageCommand extends Command {
 
   @override
   Future<void> run() async {
-    if (!_isPubGlobalInstalled('coverage')) {
+    if (!await _isPubGlobalInstalled('coverage')) {
       dart(['pub', 'global', 'activate', 'coverage']);
     }
     if (!isProgramInstalled('genhtml')) {
@@ -68,10 +69,15 @@ void _runCoverage(DartPackage package, {File? file}) {
   'open coverage/index.html'.start(workingDirectory: package.root.path);
 }
 
-bool _isPubGlobalInstalled(String packageName) {
-  final p = Progress.capture();
-  dart(['pub', 'global', 'list'], progress: p);
-  final output = p.lines.join('\n');
+Future<bool> _isPubGlobalInstalled(String packageName) async {
+  // Was synchronous only because dcli blocked; the result was read from a
+  // Progress that a never-awaited call had already filled in.
+  final result = await dart([
+    'pub',
+    'global',
+    'list',
+  ], output: ExecOutput.capture);
+  final output = result.combined;
   final regex = RegExp(r'(.+) \d.+');
   final matches = regex.allMatches(output);
   final packages = matches.map((m) => m.group(1)!).toList();

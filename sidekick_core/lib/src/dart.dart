@@ -1,4 +1,5 @@
 import 'package:dcli/dcli.dart' as dcli;
+import 'package:exec/exec.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 
 /// Executes the dart cli associated with the project via flutterw
@@ -12,12 +13,12 @@ import 'package:sidekick_core/sidekick_core.dart';
 ///
 /// If [throwOnError] is given and the command returns a non-zero exit code,
 /// the result of [throwOnError] will be thrown regardless of [nothrow]
-Future<ProcessCompletion> dart(
+Future<ExecResult> dart(
   List<String> args, {
   Directory? workingDirectory,
-  dcli.Progress? progress,
   bool nothrow = false,
   String Function()? throwOnError,
+  ExecOutput output = ExecOutput.mirror,
 }) async {
   Directory? sdk = dartSdk;
   if (sdk == null && flutterSdk != null) {
@@ -40,27 +41,25 @@ Future<ProcessCompletion> dart(
   final dart =
       Platform.isWindows ? sdk.file('bin/dart.exe') : sdk.file('bin/dart');
 
-  final process = dcli.startFromArgs(
+  final result = await Exec.run(
     dart.path,
     args,
     workingDirectory: workingDirectory?.path,
-    progress: progress,
-    nothrow: nothrow || throwOnError != null,
-    terminal: progress == null,
-    // dcli hands over its complete environment map, so this does not shrink
+    output: output,
+    check: !(nothrow || throwOnError != null),
+    // exec hands over its complete environment map, so this does not shrink
     // what the child receives. It stops the parent process from reinstating
     // variables that were removed from the scoped environment, which is the
     // only way `env['FOO'] = null` can reach a child process.
+    environment: envs,
     includeParentEnvironment: false,
   );
 
-  final exitCode = process.exitCode ?? -1;
-
-  if (exitCode != 0 && throwOnError != null) {
+  if (result.exitCode != 0 && throwOnError != null) {
     throw throwOnError();
   }
 
-  return ProcessCompletion(exitCode: exitCode);
+  return result;
 }
 
 /// The Dart SDK path is not set in [initializeSidekick] (param [dartSdk], neither is is the [flutterSdk])
@@ -86,9 +85,9 @@ class DartSdkNotSetException implements Exception {
 Future<int> systemDart(
   List<String> args, {
   Directory? workingDirectory,
-  dcli.Progress? progress,
   bool nothrow = false,
   String Function()? throwOnError,
+  ExecOutput output = ExecOutput.mirror,
 }) async {
   final systemDartExecutablePath = systemDartExecutable();
   if (systemDartExecutablePath == null) {
@@ -97,21 +96,19 @@ Future<int> systemDart(
 
   int exitCode = -1;
   try {
-    final process = dcli.startFromArgs(
+    final result = await Exec.run(
       systemDartExecutablePath,
       args,
       workingDirectory: workingDirectory?.path,
-      progress: progress,
-      terminal: progress == null,
-      nothrow: nothrow || throwOnError != null,
+      output: output,
+      check: !(nothrow || throwOnError != null),
+      environment: envs,
       includeParentEnvironment: false,
     );
 
-    exitCode = process.exitCode ?? -1;
-  } catch (e) {
-    if (e is dcli.RunException) {
-      exitCode = e.exitCode ?? 1;
-    }
+    exitCode = result.exitCode;
+  } on ExecException catch (e) {
+    exitCode = e.execution.exitCode;
     if (throwOnError == null) {
       rethrow;
     }
@@ -125,6 +122,8 @@ Future<int> systemDart(
 
 String? systemDartExecutable() =>
     // /opt/homebrew/bin/dart
+    // Stays on dcli: exec has no synchronous API and this is called from
+    // synchronous getters all over sidekick.
     dcli
         .start('which dart', progress: Progress.capture(), nothrow: true)
         .lines
