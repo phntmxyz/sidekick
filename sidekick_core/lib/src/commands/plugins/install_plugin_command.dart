@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:exec/exec.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:pubspec_parse/pubspec_parse.dart';
@@ -261,9 +259,8 @@ Future<Directory> _getPackageRootDirForHostedOrGitSource(
       output: ExecOutput.capture,
     );
   } catch (e) {
-    final lines = e is ExecException
-        ? const LineSplitter().convert(e.result.combinedOutput)
-        : const <String>[];
+    final lines =
+        e is ExecException ? e.result.combinedLines : const <String>[];
     // TODO for git-ref and git-path args we could add a check way earlier:
     // when the sidekick Dart version is too low either throw if the arg is given or hide the arg
     String parameterNotAvailableErrorMessage(
@@ -284,8 +281,7 @@ Future<Directory> _getPackageRootDirForHostedOrGitSource(
     print(lines.join('\n'));
     rethrow;
   }
-  // exec has no lines getter, so the captured output is split once here.
-  final progressLines = const LineSplitter().convert(activation.combinedOutput);
+  final progressLines = activation.combinedLines;
 
   // TODO We should definitely do this in a less hacky way
   // Our goal is to get the cache directory of the package.

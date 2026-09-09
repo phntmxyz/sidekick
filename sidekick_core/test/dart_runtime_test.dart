@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:exec/exec.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:test/test.dart';
@@ -31,15 +29,12 @@ void main() {
       scoped = await runtime.dart([script.path], output: ExecOutput.capture);
     }, environment: {});
 
-    expect(
-      const LineSplitter().convert(scoped.stdout),
-      ['has PATH: false', 'scoped: scoped'],
-    );
+    expect(scoped.stdoutLines, ['has PATH: false', 'scoped: scoped']);
     expect(env['PATH'], parentPath);
 
     final restored =
         await runtime.dart([script.path], output: ExecOutput.capture);
-    expect(const LineSplitter().convert(restored.stdout), [
+    expect(restored.stdoutLines, [
       'has PATH: true',
       'scoped: $originalScopedValue',
     ]);
