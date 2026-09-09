@@ -252,7 +252,7 @@ class InitCommand extends Command {
       );
     } on ExecException catch (e) {
       // print only in case of error
-      printerr(red(e.execution.combinedOutput));
+      printerr(red(e.execution.combined));
       rethrow;
     }
 

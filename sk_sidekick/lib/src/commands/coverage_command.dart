@@ -77,7 +77,7 @@ Future<bool> _isPubGlobalInstalled(String packageName) async {
     'global',
     'list',
   ], output: ExecOutput.capture);
-  final output = result.combinedOutput;
+  final output = result.combined;
   final regex = RegExp(r'(.+) \d.+');
   final matches = regex.allMatches(output);
   final packages = matches.map((m) => m.group(1)!).toList();

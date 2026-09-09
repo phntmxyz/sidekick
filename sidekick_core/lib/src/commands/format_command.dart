@@ -244,7 +244,7 @@ class FormatCommand extends Command {
     if (exitCode != 0) {
       foundFormatError = true;
       unformattedFiles.addAll(
-        completion.combinedOutput
+        completion.combined
             .split('\n')
             .where((it) => it.startsWith('Changed '))
             .map((it) => it.substring('Changed '.length)),

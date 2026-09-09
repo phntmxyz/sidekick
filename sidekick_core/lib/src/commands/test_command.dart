@@ -248,7 +248,7 @@ class TestCommand extends Command {
       1,
     );
 
-    final stdout = result.combinedOutput;
+    final stdout = result.combined;
     final exitCode = result.exitCode;
 
     // Extract test count from output (e.g., "+25" from "00:00 +25: All tests passed!")

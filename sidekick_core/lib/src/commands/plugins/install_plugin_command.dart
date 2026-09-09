@@ -147,7 +147,7 @@ class InstallPluginCommand extends Command {
         output: ExecOutput.capture,
       );
     } on ExecException catch (e) {
-      printerr(red(e.execution.combinedOutput));
+      printerr(red(e.execution.combined));
       rethrow;
     }
 
@@ -259,7 +259,7 @@ Future<Directory> _getPackageRootDirForHostedOrGitSource(
       output: ExecOutput.capture,
     );
   } catch (e) {
-    final output = e is ExecException ? e.execution.combinedOutput : '';
+    final output = e is ExecException ? e.execution.combined : '';
     // TODO for git-ref and git-path args we could add a check way earlier:
     // when the sidekick Dart version is too low either throw if the arg is given or hide the arg
     String parameterNotAvailableErrorMessage(
@@ -283,7 +283,7 @@ Future<Directory> _getPackageRootDirForHostedOrGitSource(
     print(output);
     rethrow;
   }
-  final activationOutput = activation.combinedOutput;
+  final activationOutput = activation.combined;
 
   // TODO We should definitely do this in a less hacky way
   // Our goal is to get the cache directory of the package.

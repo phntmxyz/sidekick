@@ -62,7 +62,7 @@ class VerifyPublishStateCommand extends Command {
       nothrow: true,
     );
 
-    final output = result.combinedOutput;
+    final output = result.combined;
 
     // Parse "Package has X warning(s)." or "Package has X warnings." from entire output
     final warningMatch = RegExp(
