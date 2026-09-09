@@ -147,7 +147,7 @@ class InstallPluginCommand extends Command {
         output: ExecOutput.capture,
       );
     } on ExecException catch (e) {
-      printerr(red(e.result.combinedOutput));
+      printerr(red(e.execution.combinedOutput));
       rethrow;
     }
 
@@ -260,7 +260,7 @@ Future<Directory> _getPackageRootDirForHostedOrGitSource(
     );
   } catch (e) {
     final lines =
-        e is ExecException ? e.result.combinedLines : const <String>[];
+        e is ExecException ? e.execution.combinedLines : const <String>[];
     // TODO for git-ref and git-path args we could add a check way earlier:
     // when the sidekick Dart version is too low either throw if the arg is given or hide the arg
     String parameterNotAvailableErrorMessage(

@@ -40,7 +40,7 @@ Future<ExecResult> flutter(
   } catch (e) {
     // A failed run keeps its diagnostics; a failed launch has none.
     if (e is ExecException) {
-      result = e.result;
+      result = e.execution;
     }
     if (throwOnError == null) {
       rethrow;

@@ -108,7 +108,7 @@ Future<int> systemDart(
 
     exitCode = result.exitCode;
   } on ExecException catch (e) {
-    exitCode = e.result.exitCode;
+    exitCode = e.execution.exitCode;
     if (throwOnError == null) {
       rethrow;
     }
