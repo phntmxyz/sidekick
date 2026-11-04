@@ -1,3 +1,4 @@
+import 'package:exec/exec.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:test/test.dart';
 
@@ -21,19 +22,19 @@ void main() {
   print('scoped: ${Platform.environment["SIDEKICK_RUNTIME_TEST"]}');
 }
 ''');
-    final progress = Progress.capture();
+    late final ExecResult scoped;
     await withEnvironmentAsync(() async {
       env['PATH'] = null;
       env['SIDEKICK_RUNTIME_TEST'] = 'scoped';
-      await runtime.dart([script.path], progress: progress);
+      scoped = await runtime.dart([script.path], output: ExecOutput.capture);
     }, environment: {});
 
-    expect(progress.toList(), ['has PATH: false', 'scoped: scoped']);
+    expect(scoped.stdoutLines, ['has PATH: false', 'scoped: scoped']);
     expect(env['PATH'], parentPath);
 
-    final restoredProgress = Progress.capture();
-    await runtime.dart([script.path], progress: restoredProgress);
-    expect(restoredProgress.toList(), [
+    final restored =
+        await runtime.dart([script.path], output: ExecOutput.capture);
+    expect(restored.stdoutLines, [
       'has PATH: true',
       'scoped: $originalScopedValue',
     ]);

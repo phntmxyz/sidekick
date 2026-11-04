@@ -1,5 +1,6 @@
 import 'package:dcli/dcli.dart';
 import 'package:dcli/posix.dart';
+import 'package:exec/exec.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_test/sidekick_test.dart';
 import 'package:test/test.dart';
@@ -71,7 +72,7 @@ void main() {
 
           await expectLater(
             () => runner.run(['flutter']),
-            throwsA(isA<RunException>()),
+            throwsA(isA<ExecException>()),
           );
         });
       },

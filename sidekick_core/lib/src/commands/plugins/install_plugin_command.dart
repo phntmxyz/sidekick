@@ -1,4 +1,4 @@
-import 'package:dcli/dcli.dart' as dcli;
+import 'package:exec/exec.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:pubspec_parse/pubspec_parse.dart';
 import 'package:sidekick_core/sidekick_core.dart';
@@ -140,15 +140,14 @@ class InstallPluginCommand extends Command {
     }
 
     // get installer dependencies
-    final capture = Progress.capture();
     try {
       await sidekickDartRuntime.dart(
         ['pub', 'get'],
         workingDirectory: workingDir,
-        progress: capture,
+        output: ExecOutput.capture,
       );
-    } catch (e) {
-      printerr(red(capture.lines.join('\n')));
+    } on ExecException catch (e) {
+      printerr(red(e.execution.combined));
       rethrow;
     }
 
@@ -253,15 +252,14 @@ Future<Directory> _getPackageRootDirForHostedOrGitSource(
     ...args.arguments,
   ];
 
-  final progress = dcli.Progress(
-    dcli.devNull,
-    // this parameter has a typo in dcli and actually is captureStdOut
-    captureStdout: true,
-    captureStderr: true,
-  );
+  ExecResult? activation;
   try {
-    await sidekickDartRuntime.dart(pubGlobalActivateArgs, progress: progress);
+    activation = await sidekickDartRuntime.dart(
+      pubGlobalActivateArgs,
+      output: ExecOutput.capture,
+    );
   } catch (e) {
+    final output = e is ExecException ? e.execution.combined : '';
     // TODO for git-ref and git-path args we could add a check way earlier:
     // when the sidekick Dart version is too low either throw if the arg is given or hide the arg
     String parameterNotAvailableErrorMessage(
@@ -272,16 +270,20 @@ Future<Directory> _getPackageRootDirForHostedOrGitSource(
         'the Dart SDK your sidekick CLI is using.\n'
         'It is available from Dart $requiredVersion.\n'
         'Try running ${cyan('${SidekickContext.cliName} sidekick update')} to update the Dart SDK of your sidekick CLI.';
-    if (progress.lines.contains('Could not find an option named "git-path".')) {
+    // Searched in the whole output rather than compared against a line: pub
+    // is free to wrap the message or prefix it, and an exact line match would
+    // then silently fall through to the raw error.
+    if (output.contains('Could not find an option named "git-path".')) {
       throw parameterNotAvailableErrorMessage('git-path', '2.17');
     }
-    if (progress.lines.contains('Could not find an option named "git-ref".')) {
+    if (output.contains('Could not find an option named "git-ref".')) {
       throw parameterNotAvailableErrorMessage('git-ref', '2.19');
     }
 
-    print(progress.lines.join('\n'));
+    print(output);
     rethrow;
   }
+  final activationOutput = activation.combined;
 
   // TODO We should definitely do this in a less hacky way
   // Our goal is to get the cache directory of the package.
@@ -322,9 +324,8 @@ Future<Directory> _getPackageRootDirForHostedOrGitSource(
   // https://github.com/dart-lang/pub/blob/master/lib/src/global_packages.dart#L188
   // https://github.com/dart-lang/pub/blob/master/lib/src/global_packages.dart#L276
   // https://github.com/dart-lang/pub/blob/master/lib/src/global_packages.dart#L459
-  final activationRegExp = RegExp(r'.*Activated ([a-z_][a-z\d_]*) (\S+)[. ]');
-  final activationInfo =
-      progress.lines.map(activationRegExp.matchAsPrefix).whereNotNull().single;
+  final activationRegExp = RegExp(r'Activated ([a-z_][a-z\d_]*) (\S+)[. ]');
+  final activationInfo = activationRegExp.allMatches(activationOutput).single;
   final packageName = activationInfo.group(1)!;
   final packageVersion = activationInfo.group(2)!;
   env['SIDEKICK_PLUGIN_NAME'] = packageName;
@@ -338,7 +339,6 @@ Future<Directory> _getPackageRootDirForHostedOrGitSource(
       'deactivate',
       packageName,
     ],
-    progress: Progress.printStdErr(),
   );
 
   final source = args['source'] as String;
@@ -361,10 +361,9 @@ Future<Directory> _getPackageRootDirForHostedOrGitSource(
     case 'git':
       final gitSHARegExp =
           // either git show or git checkout is executed depending on whether the package is already cached
-          RegExp(r'.*git (?:show|checkout) ([a-f0-9]{40})\b');
-      final gitSHA = progress.lines
-          .map(gitSHARegExp.matchAsPrefix)
-          .whereNotNull()
+          RegExp(r'git (?:show|checkout) ([a-f0-9]{40})\b');
+      final gitSHA = gitSHARegExp
+          .allMatches(activationOutput)
           .map((e) => e.group(1)!)
           .toSet()
           .single;
@@ -397,11 +396,10 @@ Future<Directory> _getPackageRootDirForHostedOrGitSource(
       // and one would also have to test this with all other possible git hosting solutions as well.
 
       final gitCachePackagePathRegExp = RegExp(
-        '.*"rootUri": ".*(${join(pub.pubCacheDir, 'git')}.*-$gitSHA\\b.*)"',
+        '"rootUri": ".*(${join(pub.pubCacheDir, 'git')}.*-$gitSHA\\b.*)"',
       );
-      final packageRootDir = progress.lines
-          .map(gitCachePackagePathRegExp.matchAsPrefix)
-          .whereNotNull()
+      final packageRootDir = gitCachePackagePathRegExp
+          .allMatches(activationOutput)
           .single
           .group(1)!;
 

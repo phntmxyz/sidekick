@@ -28,6 +28,24 @@ void overrideSidekickCoreWithLocalPath(Directory package) {
     dependency: 'sidekick_core',
     path: sidekickCorePath,
   );
+  // sidekick_core depends on the unpublished exec, so the local sidekick_core
+  // only resolves when exec is overridden along with it.
+  _overrideDependency(
+    package: package,
+    dependency: 'exec',
+    path: _execPackage.path,
+  );
+}
+
+/// The local `exec` checkout, which sidekick_core depends on.
+///
+/// exec is not on pub.dev yet, so a generated package that overrides
+/// sidekick_core to a local path cannot resolve it from anywhere else.
+/// Once exec lives in this repo the sibling fallback goes away.
+Directory get _execPackage {
+  final inRepo = Directory(canonicalize('$_gitRoot/exec'));
+  if (inRepo.existsSync()) return inRepo;
+  return Directory(canonicalize('$_gitRoot/../../passsy/exec'));
 }
 
 /// Changes the sidekick_plugin_installer dependency to a local override

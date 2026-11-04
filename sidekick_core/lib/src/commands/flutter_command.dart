@@ -14,6 +14,6 @@ class FlutterCommand extends ForwardCommand {
   Future<void> run() async {
     final args = argResults!.arguments;
     final completion = await flutter(args, nothrow: true);
-    exitCode = completion.exitCode ?? 1;
+    exitCode = completion.exitCode;
   }
 }

@@ -1,3 +1,4 @@
+import 'package:exec/exec.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 import 'package:sidekick_plugin_installer/sidekick_plugin_installer.dart';
 
@@ -113,12 +114,11 @@ Future<void> addDependency({
     await sidekickDartRuntime.dart(
       ['pub', 'remove', dependency],
       workingDirectory: package.root,
-      progress: Progress.devNull(),
+      output: ExecOutput.capture,
     );
   }
   await sidekickDartRuntime.dart(
     pubAddArgs,
     workingDirectory: package.root,
-    progress: Progress.printStdErr(),
   );
 }

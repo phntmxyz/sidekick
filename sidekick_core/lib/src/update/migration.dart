@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:dcli/dcli.dart';
+import 'package:exec/exec.dart';
 import 'package:recase/recase.dart';
 import 'package:sidekick_core/sidekick_core.dart';
 
@@ -106,15 +106,16 @@ class GitPatchMigrationStep extends MigrationStep {
     final text = patch();
     patchFile.writeAsStringSync(text);
 
-    final exitCode = startFromArgs(
-          'git',
-          ['apply', patchFile.absolute.path],
-          workingDirectory: workingDirectory().absolute.path,
-          // A more detailed error will be thrown on exitCode != 0
-          nothrow: true,
-          includeParentEnvironment: false,
-        ).exitCode ??
-        -1;
+    final exitCode = (await Exec.run(
+      'git',
+      ['apply', patchFile.absolute.path],
+      workingDirectory: workingDirectory().absolute.path,
+      // A more detailed error will be thrown on exitCode != 0
+      check: false,
+      environment: envs,
+      includeParentEnvironment: false,
+    ))
+        .exitCode;
     if (exitCode != 0) {
       throw '${red("Couldn't apply git patch ${patchFile.absolute.path} for migration step $description.")}\n'
           '${pullRequestLink != null ? 'Check $pullRequestLink for further information.\n' : ''}'
